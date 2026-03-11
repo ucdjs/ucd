@@ -1,5 +1,5 @@
 import type { PipelineEvent, PipelineEventInput } from "@ucdjs/pipelines-core";
-import { withPipelineEvent, withPipelineSpan } from "../log-context";
+import type { PipelineExecutionRuntime } from "../runtime";
 
 export interface EventEmitter {
   emit: (event: PipelineEventInput) => Promise<void>;
@@ -9,10 +9,11 @@ export interface EventEmitter {
 
 export interface EventHandlerOptions {
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
+  runtime: PipelineExecutionRuntime;
 }
 
 export function createEventEmitter(options: EventHandlerOptions): EventEmitter {
-  const { onEvent } = options;
+  const { onEvent, runtime } = options;
 
   let eventCounter = 0;
   const nextEventId = (): string => `evt_${Date.now()}_${++eventCounter}`;
@@ -27,7 +28,7 @@ export function createEventEmitter(options: EventHandlerOptions): EventEmitter {
       spanId: event.spanId ?? nextSpanId(),
     } satisfies PipelineEvent;
 
-    await withPipelineEvent(fullEvent, async () => {
+    await runtime.withEvent(fullEvent, async () => {
       await onEvent?.(fullEvent);
     });
   };
@@ -36,8 +37,9 @@ export function createEventEmitter(options: EventHandlerOptions): EventEmitter {
 }
 
 export async function emitWithSpan(
+  runtime: PipelineExecutionRuntime,
   spanId: string,
   fn: () => Promise<void>,
 ): Promise<void> {
-  await withPipelineSpan(spanId, fn);
+  await runtime.withSpan(spanId, fn);
 }

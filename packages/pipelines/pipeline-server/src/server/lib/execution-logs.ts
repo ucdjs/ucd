@@ -1,5 +1,6 @@
 import type { Database } from "#server/db";
 import type { ExecutionLogPayload, ExecutionLogStream } from "#server/db/schema";
+import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
@@ -156,5 +157,66 @@ export function buildTruncationBanner(
     stream,
     truncated: true,
     originalSize: total,
+  };
+}
+
+interface ExecutionCaptureState {
+  state: ExecutionLogState;
+  truncatedLogged: boolean;
+  limitReached: boolean;
+}
+
+export function createExecutionLogStore(db: Database) {
+  const stateByExecution = new Map<string, ExecutionCaptureState>();
+
+  return async (entry: PipelineLogEntry): Promise<void> => {
+    const payload: ExecutionLogPayload = {
+      message: entry.message,
+      stream: entry.stream,
+      args: entry.args && entry.args.length > 0 ? entry.args : undefined,
+      level: entry.level,
+      source: entry.source,
+      meta: entry.meta,
+      event: entry.event,
+    };
+
+    let executionState = stateByExecution.get(entry.executionId);
+    if (!executionState) {
+      executionState = {
+        state: createExecutionLogState(),
+        truncatedLogged: false,
+        limitReached: false,
+      };
+      stateByExecution.set(entry.executionId, executionState);
+    }
+
+    const result = await storeExecutionLog(db, executionState.state, {
+      executionId: entry.executionId,
+      workspaceId: entry.workspaceId,
+      spanId: entry.spanId,
+      stream: entry.stream,
+      message: entry.message,
+      payload,
+      timestamp: new Date(entry.timestamp),
+    });
+
+    if (result.limitReached) {
+      executionState.limitReached = true;
+    }
+
+    if ((result.truncated || executionState.limitReached) && !executionState.truncatedLogged) {
+      executionState.truncatedLogged = true;
+      const bannerPayload = buildTruncationBanner(executionState.state, entry.stream);
+      await storeExecutionLog(db, executionState.state, {
+        executionId: entry.executionId,
+        workspaceId: entry.workspaceId,
+        spanId: entry.spanId,
+        stream: entry.stream,
+        message: bannerPayload.message,
+        payload: bannerPayload,
+        timestamp: new Date(entry.timestamp),
+        force: true,
+      });
+    }
   };
 }

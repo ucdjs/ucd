@@ -1,5 +1,5 @@
 import type { PipelineEvent, PipelineEventType, PipelineGraph } from "@ucdjs/pipelines-core";
-import type { ExecutionStatus, PipelineSummary } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus, PipelineLogLevel, PipelineLogSource, PipelineSummary } from "@ucdjs/pipelines-executor";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export type ExecutionLogStream = "stdout" | "stderr";
@@ -8,6 +8,9 @@ export interface ExecutionLogPayload {
   message: string;
   stream: ExecutionLogStream;
   args?: unknown[];
+  level?: PipelineLogLevel;
+  source?: PipelineLogSource;
+  meta?: Record<string, unknown>;
   truncated?: boolean;
   originalSize?: number;
   event?: PipelineEvent;
@@ -24,6 +27,8 @@ export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
     .references(() => workspaces.id, { onDelete: "cascade" }),
+  sourceId: text("source_id"),
+  fileId: text("file_id"),
   pipelineId: text("pipeline_id").notNull(),
   status: text("status").$type<ExecutionStatus>().notNull(),
   startedAt: integer("started_at", { mode: "timestamp" }).notNull(),

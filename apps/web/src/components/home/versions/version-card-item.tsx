@@ -1,6 +1,6 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { Link } from "@tanstack/react-router";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { ArrowRight, Calendar, Code, Sparkles, Tag } from "lucide-react";
 

@@ -1,8 +1,8 @@
 import type { CLIArguments } from "../../../cli-utils";
+import { ensureRemoteLocator, parseRemoteSourceUrl } from "@ucdjs/pipelines-loader";
 import { printHelp } from "../../../cli-utils";
-import { parseRemoteSourceUrl, syncRemoteSource } from "@ucdjs/pipelines-loader";
-import { blankLine, dim, green, output, yellow } from "../../../output";
 import { CLIError } from "../../../errors";
+import { blankLine, dim, green, output, yellow } from "../../../output";
 
 export interface CLIPipelinesCacheRefreshOptions {
   flags: CLIArguments<{
@@ -51,8 +51,8 @@ export async function runPipelinesCacheRefresh({ flags }: CLIPipelinesCacheRefre
   output.info(`Syncing ${sourceType}:${parsed.owner}/${parsed.repo}@${parsed.ref}…`);
   output.info(`  ${dim("Resolving ref…")}`);
 
-  const syncResult = await syncRemoteSource({
-    source: sourceType,
+  const syncResult = await ensureRemoteLocator({
+    provider: sourceType,
     owner: parsed.owner,
     repo: parsed.repo,
     ref: parsed.ref,

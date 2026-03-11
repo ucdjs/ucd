@@ -1,8 +1,8 @@
 import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
 
 export default createTsdownConfig({
-  entry: [
-    "./src/index.ts",
-    "./src/types.ts",
-  ],
+  entry: {
+    index: "./src/index.ts",
+    node: "./src/runtime/node.ts",
+  },
 });

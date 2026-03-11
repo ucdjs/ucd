@@ -1,8 +1,6 @@
-import type { SourceRepositoryRef, SourceRepositoryRefWithCommitSha } from "../types";
-
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";
 
-export async function resolveGitLabRef(ref: SourceRepositoryRef): Promise<string> {
+export async function resolveGitLabRef(ref: { owner: string; repo: string; ref?: string }): Promise<string> {
   const { owner, repo, ref: refValue = "HEAD" } = ref;
 
   const url = `${GITLAB_API_BASE}/projects/${encodeURIComponent(`${owner}/${repo}`)}/repository/commits/${refValue}`;
@@ -19,7 +17,7 @@ export async function resolveGitLabRef(ref: SourceRepositoryRef): Promise<string
   return data.id;
 }
 
-export async function downloadGitLabArchive(ref: SourceRepositoryRefWithCommitSha): Promise<ArrayBuffer> {
+export async function downloadGitLabArchive(ref: { owner: string; repo: string; commitSha: string }): Promise<ArrayBuffer> {
   const { owner, repo, commitSha } = ref;
   const archiveUrl = `${GITLAB_API_BASE}/projects/${encodeURIComponent(`${owner}/${repo}`)}/repository/archive.tar.gz?sha=${commitSha}`;
   const response = await fetch(archiveUrl);

@@ -1,9 +1,7 @@
-import type { SourceRepositoryRef, SourceRepositoryRefWithCommitSha } from "../types";
-
 const GITHUB_API_BASE = "https://api.github.com";
 const GITHUB_ACCEPT_HEADER = "application/vnd.github.v3+json";
 
-export async function resolveGitHubRef(ref: SourceRepositoryRef): Promise<string> {
+export async function resolveGitHubRef(ref: { owner: string; repo: string; ref?: string }): Promise<string> {
   const { owner, repo, ref: refValue = "HEAD" } = ref;
 
   const response = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/commits/${refValue}`, {
@@ -24,7 +22,7 @@ export async function resolveGitHubRef(ref: SourceRepositoryRef): Promise<string
   return data.sha;
 }
 
-export async function downloadGitHubArchive(ref: SourceRepositoryRefWithCommitSha): Promise<ArrayBuffer> {
+export async function downloadGitHubArchive(ref: { owner: string; repo: string; commitSha: string }): Promise<ArrayBuffer> {
   const { owner, repo, commitSha } = ref;
   const archiveUrl = `${GITHUB_API_BASE}/repos/${owner}/${repo}/tarball/${commitSha}`;
   const response = await fetch(archiveUrl, {

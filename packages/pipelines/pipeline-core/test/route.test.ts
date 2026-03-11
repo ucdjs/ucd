@@ -1,3 +1,4 @@
+import type { PipelineLogger } from "../src/logger";
 import type {
   ArtifactDefinition,
   InferRoute,
@@ -10,6 +11,13 @@ import {
   definePipelineRoute,
 } from "../src/route";
 import { definePipelineTransform } from "../src/transform";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 function createFileContext(): FileContext {
   return {
@@ -30,6 +38,7 @@ function createMockResolveContext(): RouteResolveContext {
   return {
     version: "16.0.0",
     file: createFileContext(),
+    logger: noopLogger,
     getArtifact: vi.fn(),
     emitArtifact: vi.fn(),
     normalizeEntries: vi.fn((entries) => entries),

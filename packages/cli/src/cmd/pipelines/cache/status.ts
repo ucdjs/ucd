@@ -1,10 +1,10 @@
 import type { CLIArguments } from "../../../cli-utils";
-import { printHelp } from "../../../cli-utils";
 import {
   getRemoteSourceCacheStatus,
   listCachedSources,
   parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
+import { printHelp } from "../../../cli-utils";
 import {
   blankLine,
   bold,
@@ -90,7 +90,7 @@ export async function runPipelinesCacheStatus({ flags }: CLIPipelinesCacheStatus
   }
 
   const status = await getRemoteSourceCacheStatus({
-    source: sourceType,
+    provider: sourceType,
     owner: parsed.owner,
     repo: parsed.repo,
     ref: parsed.ref,

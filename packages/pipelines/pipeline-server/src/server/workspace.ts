@@ -1,5 +1,5 @@
 import type { Database } from "#server/db";
-import type { PipelineSource } from "@ucdjs/pipelines-loader";
+import type { PipelineSource } from "./app";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -23,9 +23,9 @@ export function resolveWorkspaceRoot(options: ResolveWorkspaceOptions = {}): str
   }
 
   const sources = options.sources ?? [];
-  const localSources = sources.filter((source) => source.type === "local");
+  const localSources = sources.filter((source) => source.kind === "local");
   if (localSources.length > 0) {
-    return localSources[0]?.cwd ?? process.cwd();
+    return localSources[0]?.path ?? process.cwd();
   }
 
   return process.cwd();

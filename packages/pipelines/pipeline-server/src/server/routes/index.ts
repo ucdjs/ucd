@@ -1,7 +1,9 @@
-export { pipelinesEventsRouter } from "./pipelines.events";
-export { pipelinesExecutionRouter } from "./pipelines.execution";
-export { pipelinesFileRouter } from "./pipelines.file";
-export { pipelinesGraphRouter } from "./pipelines.graph";
-export { pipelinesIndexRouter } from "./pipelines.index";
-export { pipelinesLogsRouter } from "./pipelines.logs";
-export { pipelinesPipelineRouter } from "./pipelines.pipeline";
+export { overviewRouter } from "./overview";
+export { sourcesEventsRouter } from "./sources.events";
+export { sourcesExecutionsRouter } from "./sources.executions";
+export { sourcesFileRouter } from "./sources.file";
+export { sourcesGraphRouter } from "./sources.graph";
+export { sourcesIndexRouter } from "./sources.index";
+export { sourcesLogsRouter } from "./sources.logs";
+export { sourcesPipelineRouter } from "./sources.pipeline";
+export { sourcesSourceRouter } from "./sources.source";

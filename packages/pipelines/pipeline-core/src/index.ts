@@ -48,6 +48,7 @@ export type {
   PipelineErrorScope,
   PipelineEvent,
   PipelineEventInput,
+  PipelineEventPhase,
   PipelineEventType,
   PipelineGraph,
   PipelineGraphEdge,
@@ -59,6 +60,11 @@ export type {
   ResolveStartEvent,
   VersionEndEvent,
   VersionStartEvent,
+} from "./events";
+
+export {
+  getPipelineEventPhase,
+  PIPELINE_EVENT_PHASES,
 } from "./events";
 
 export {
@@ -75,6 +81,8 @@ export {
   not,
   or,
 } from "./filters";
+
+export type { PipelineLogger } from "./logger";
 
 export type {
   AnyPipelineDefinition,
@@ -112,6 +120,7 @@ export type {
   InferSourceId,
   InferSourceIds,
   PipelineSourceDefinition,
+  ResolveSourceContext,
   SourceBackend,
   SourceFileContext,
   StreamOptions,

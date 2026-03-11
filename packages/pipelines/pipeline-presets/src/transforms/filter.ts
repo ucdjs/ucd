@@ -62,6 +62,7 @@ export function createFilterByPipelineFilter(filter: PipelineFilter) {
         const filterCtx = {
           file: ctx.file,
           row: row.property ? { property: row.property } : undefined,
+          logger: ctx.logger,
         };
 
         if (filter(filterCtx)) {
