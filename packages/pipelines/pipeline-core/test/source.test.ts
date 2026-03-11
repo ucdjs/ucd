@@ -1,8 +1,8 @@
 import type {
   InferSourceId,
   InferSourceIds,
-  ResolveSourceContext,
   PipelineSourceDefinition,
+  ResolveSourceContext,
   SourceFileContext,
 } from "../src/source";
 import type { FileContext, PipelineFilter } from "../src/types";
