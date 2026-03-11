@@ -2,8 +2,8 @@ import { VersionSelector } from "#components/detail/version-selector";
 import { PipelineHeader } from "#components/pipeline-header";
 import { PipelineTabs } from "#components/pipeline-tabs";
 import { usePipelineVersions } from "#hooks/use-pipeline-versions";
-import { sourceQueryOptions } from "#queries/source";
 import { pipelineQueryOptions } from "#queries/pipeline";
+import { sourceQueryOptions } from "#queries/source";
 import { isNotFoundError } from "#queries/utils";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
