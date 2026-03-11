@@ -88,7 +88,7 @@ describe("materializePipelineLocator", () => {
     });
 
     expect(result.issues).toEqual([]);
-    expect(result.filePath).toBe(`${tmpBaseDir}/github/ucdjs/ucd-pipelines/main/src/remote.ucd-pipeline.ts`);
+    expect(result.filePath).toBe(path.normalize(`${tmpBaseDir}/github/ucdjs/ucd-pipelines/main/src/remote.ucd-pipeline.ts`));
     expect(result.origin?.path).toBe("src/remote.ucd-pipeline.ts");
   });
 
