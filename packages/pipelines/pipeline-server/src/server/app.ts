@@ -8,7 +8,6 @@ import {
   overviewRouter,
   sourcesEventsRouter,
   sourcesExecutionsRouter,
-  sourcesFileRouter,
   sourcesGraphRouter,
   sourcesIndexRouter,
   sourcesLogsRouter,
@@ -96,7 +95,6 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/overview", overviewRouter);
   app.mount("/api/sources", sourcesIndexRouter);
   app.mount("/api/sources", sourcesSourceRouter);
-  app.mount("/api/sources", sourcesFileRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionsRouter);
   app.mount("/api/sources", sourcesEventsRouter);

@@ -18,6 +18,7 @@ interface ExecutionTableProps {
   emptyTitle: string;
   emptyDescription?: string;
   showPipelineColumn?: boolean;
+  showGraphLink?: boolean;
 }
 
 export function ExecutionTable({
@@ -25,6 +26,7 @@ export function ExecutionTable({
   emptyTitle,
   emptyDescription,
   showPipelineColumn = false,
+  showGraphLink = false,
 }: ExecutionTableProps) {
   if (executions.length === 0) {
     return (
@@ -123,18 +125,34 @@ export function ExecutionTable({
               <TableCell>
                 {canView
                   ? (
-                      <Link
-                        to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
-                        params={{
-                          sourceId,
-                          sourceFileId: fileId,
-                          pipelineId,
-                          executionId: execution.id,
-                        }}
-                        className="text-primary text-sm font-medium hover:underline"
-                      >
-                        View
-                      </Link>
+                      <div className="flex items-center gap-3">
+                        <Link
+                          to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                          params={{
+                            sourceId,
+                            sourceFileId: fileId,
+                            pipelineId,
+                            executionId: execution.id,
+                          }}
+                          className="text-primary text-sm font-medium hover:underline"
+                        >
+                          View
+                        </Link>
+                        {showGraphLink && execution.hasGraph && (
+                          <Link
+                            to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
+                            params={{
+                              sourceId,
+                              sourceFileId: fileId,
+                              pipelineId,
+                              executionId: execution.id,
+                            }}
+                            className="text-primary text-sm font-medium hover:underline"
+                          >
+                            Graph
+                          </Link>
+                        )}
+                      </div>
                     )
                   : (
                       <span className="text-muted-foreground text-sm">-</span>

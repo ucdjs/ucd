@@ -46,6 +46,7 @@ function ExecutionsListPage() {
             }))}
             emptyTitle="No executions yet"
             emptyDescription="Execute the pipeline to see results here"
+            showGraphLink
           />
         </CardContent>
       </Card>

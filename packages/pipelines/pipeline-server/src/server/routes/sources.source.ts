@@ -1,5 +1,6 @@
 import type { SourceResponse } from "#shared/schemas/source";
 import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
+import { toPipelineInfo } from "#shared/lib/pipeline-utils";
 import { H3, HTTPError } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
@@ -26,6 +27,7 @@ sourcesSourceRouter.get("/:sourceId", async (event) => {
       id: file.id,
       path: file.relativePath,
       label: file.label,
+      pipelines: file.pipelines.map((pipeline) => toPipelineInfo(pipeline)),
     })),
     errors: issues.map(({ cause: _cause, ...issue }) => issue),
   } satisfies SourceResponse;

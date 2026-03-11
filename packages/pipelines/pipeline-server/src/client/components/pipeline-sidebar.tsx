@@ -1,7 +1,6 @@
-import { sourceFileQueryOptions } from "#queries/file";
 import { sourceQueryOptions } from "#queries/source";
 import { sourcesQueryOptions } from "#queries/sources";
-import { useQueries, useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -177,9 +176,6 @@ function SourceFileList({
   toggleFile,
 }: SourceFileListProps) {
   const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId }));
-  const fileDetails = useQueries({
-    queries: (data?.files ?? []).map((file) => sourceFileQueryOptions({ sourceId, fileId: file.id })),
-  });
 
   if (isLoading) {
     return (
@@ -189,10 +185,7 @@ function SourceFileList({
     );
   }
 
-  const files = (data?.files ?? []).map((file) => ({
-    ...file,
-    pipelines: fileDetails.find((detail) => detail.data?.id === file.id)?.data?.pipelines ?? [],
-  }));
+  const files = data?.files ?? [];
 
   return (
     <SidebarMenu>

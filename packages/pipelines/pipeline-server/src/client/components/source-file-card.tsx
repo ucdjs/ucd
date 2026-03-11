@@ -1,13 +1,10 @@
-import type { SourceFileResponse } from "#shared/schemas/file";
 import type { SourceResponse } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { FileCode2, FolderTree, GitBranchPlus, Layers3, Workflow } from "lucide-react";
 
-export type SourceFileCardData = SourceResponse["files"][number] & {
-  pipelines: SourceFileResponse["pipelines"];
-};
+export type SourceFileCardData = SourceResponse["files"][number];
 
 interface SourceFileCardProps {
   sourceId: string;

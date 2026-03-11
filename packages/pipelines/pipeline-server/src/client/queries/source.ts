@@ -5,13 +5,6 @@ import { customFetch } from "@ucdjs-internal/shared";
 
 export type { SourceFileInfo, SourceResponse, SourceType };
 
-export interface SourceFilePipelineSummary {
-  id: string;
-  name?: string;
-  description?: string;
-  versions: string[];
-}
-
 export interface SourceParams {
   sourceId: string;
 }
