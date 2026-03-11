@@ -26,7 +26,7 @@ export function PipelineTabs() {
             aria-controls={`tabpanel-${tab.id}`}
             activeProps={{ className: "border-primary text-primary bg-primary/5" }}
             activeOptions={{
-              exact: true,
+              exact: tab.id === "overview",
             }}
             className="px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50"
           >

@@ -57,4 +57,49 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       hasMore: false,
     });
   });
+
+  it("scopes executions to the requested source and file", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
+
+    await seedExecution(db, {
+      sourceId: "local",
+      fileId: "simple",
+      pipelineId: "simple",
+    });
+    await seedExecution(db, {
+      sourceId: "other-source",
+      fileId: "other-file",
+      pipelineId: "simple",
+    });
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions"));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.executions).toHaveLength(1);
+    expect(data.executions[0]).toEqual(expect.objectContaining({
+      sourceId: "local",
+      fileId: "simple",
+      pipelineId: "simple",
+    }));
+  });
+
+  it("falls back to safe defaults for invalid pagination values", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
+
+    await seedExecution(db);
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions?limit=abc&offset=nope"));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.pagination).toEqual({
+      total: 1,
+      limit: 50,
+      offset: 0,
+      hasMore: false,
+    });
+  });
 });

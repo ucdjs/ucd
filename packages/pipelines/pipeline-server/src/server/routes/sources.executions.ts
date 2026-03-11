@@ -8,17 +8,20 @@ export const sourcesExecutionsRouter: H3 = new H3();
 sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/executions", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
+  const sourceId = event.context.params!.sourceId!;
+  const fileId = event.context.params!.fileId!;
   const pipelineId = event.context.params!.pipelineId!;
 
   const query = getQuery(event);
-  const limit = Math.min(
-    typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 50,
-    100,
-  );
-  const offset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
+  const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 50;
+  const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
+  const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 50, 100);
+  const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
 
   const where = and(
     eq(schema.executions.workspaceId, workspaceId),
+    eq(schema.executions.sourceId, sourceId),
+    eq(schema.executions.fileId, fileId),
     eq(schema.executions.pipelineId, pipelineId),
   );
 

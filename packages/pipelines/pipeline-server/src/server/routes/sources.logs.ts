@@ -11,22 +11,27 @@ sourcesLogsRouter.get(
   async (event) => {
     const { db } = event.context;
     const workspaceId = event.context.workspaceId;
+    const sourceId = event.context.params!.sourceId!;
+    const fileId = event.context.params!.fileId!;
+    const pipelineId = event.context.params!.pipelineId!;
     const executionId = event.context.params?.executionId;
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }
 
     const query = getQuery(event);
-    const limit = Math.min(
-      typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 200,
-      1000,
-    );
-    const offset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
+    const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 200;
+    const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
+    const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 200, 1000);
+    const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
     const spanId = typeof query.spanId === "string" ? query.spanId : undefined;
 
     const execution = await db.query.executions.findFirst({
       where: and(
         eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.sourceId, sourceId),
+        eq(schema.executions.fileId, fileId),
+        eq(schema.executions.pipelineId, pipelineId),
         eq(schema.executions.id, executionId),
       ),
       columns: { id: true, pipelineId: true, status: true },
