@@ -1,13 +1,13 @@
 import type { Prettify } from "@luxass/utils";
-import type { loadPipelinesFromPaths, PipelineSource } from "@ucdjs/pipelines-loader";
 import type { CLIArguments } from "../../cli-utils";
+import path from "node:path";
 import process from "node:process";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import {
-  findPipelineFiles,
   loadPipelineFile,
-  parseRemoteSourceUrl,
+  materializePipelineLocator,
 } from "@ucdjs/pipelines-loader";
+import { discoverPipelineFiles } from "@ucdjs/pipelines-loader/discover";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
@@ -46,61 +46,74 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     return;
   }
 
-  // Build sources for the server/UI
-  const sources: PipelineSource[] = [];
-  const sourceLabels: string[] = [];
+  const sources: Array<{
+    id: string;
+    kind: "local";
+    path: string;
+  } | {
+    id: string;
+    kind: "remote";
+    provider: "github" | "gitlab";
+    owner: string;
+    repo: string;
+    ref?: string;
+    path?: string;
+  }> = [];
 
   if (flags?.github) {
-    const ref = (flags.ref as string) ?? "HEAD";
-    const urlStr = `github://${flags.github as string}?ref=${ref}${flags.path ? `&path=${flags.path as string}` : ""}`;
-    const parsed = parseRemoteSourceUrl(urlStr);
-    if (!parsed) throw new Error(`Invalid github source: ${flags.github as string}`);
+    const [owner, repo] = String(flags.github).split("/");
+    if (!owner || !repo) {
+      throw new CLIError("Specify --github as <owner/repo>.");
+    }
+
     sources.push({
-      type: "github",
-      id: `github-${parsed.owner}-${parsed.repo}`,
-      owner: parsed.owner,
-      repo: parsed.repo,
-      ref: parsed.ref,
-      path: (flags.path as string) || undefined,
+      id: `github-${owner}-${repo}`,
+      kind: "remote",
+      provider: "github",
+      owner,
+      repo,
+      ref: String(flags.ref ?? "HEAD"),
+      path: flags.path,
     });
-    sourceLabels.push(`[github] ${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   if (flags?.gitlab) {
-    const ref = (flags.ref as string) ?? "HEAD";
-    const urlStr = `gitlab://${flags.gitlab as string}?ref=${ref}${flags.path ? `&path=${flags.path as string}` : ""}`;
-    const parsed = parseRemoteSourceUrl(urlStr);
-    if (!parsed) throw new Error(`Invalid gitlab source: ${flags.gitlab as string}`);
+    const [owner, repo] = String(flags.gitlab).split("/");
+    if (!owner || !repo) {
+      throw new CLIError("Specify --gitlab as <owner/repo>.");
+    }
+
     sources.push({
-      type: "gitlab",
-      id: `gitlab-${parsed.owner}-${parsed.repo}`,
-      owner: parsed.owner,
-      repo: parsed.repo,
-      ref: parsed.ref,
-      path: (flags.path as string) || undefined,
+      id: `gitlab-${owner}-${repo}`,
+      kind: "remote",
+      provider: "gitlab",
+      owner,
+      repo,
+      ref: String(flags.ref ?? "HEAD"),
+      path: flags.path,
     });
-    sourceLabels.push(`[gitlab] ${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
-  // Local source (default if no remote specified)
   if (sources.length === 0 || flags?.cwd) {
-    const cwd = (flags?.cwd as string) || process.cwd();
+    const cwd = String(flags.cwd ?? process.cwd());
     sources.push({
-      type: "local",
       id: "local",
-      cwd,
+      kind: "local",
+      path: flags.path ? path.join(cwd, String(flags.path)) : cwd,
     });
-    sourceLabels.push(`[local] ${cwd}`);
   }
 
   if (flags?.ui) {
     const { startServer } = await import("@ucdjs/pipelines-server");
     const port = flags?.port ?? 3030;
     output.info(`Starting Pipeline UI on port ${port}...`);
-    for (const label of sourceLabels) {
-      output.info(`  ${label}`);
+    for (const source of sources) {
+      if (source.kind === "local") {
+        output.info(`  [local] ${source.path}`);
+      } else {
+        output.info(`  [${source.provider}] ${source.owner}/${source.repo}${source.ref && source.ref !== "HEAD" ? `@${source.ref}` : ""}`);
+      }
     }
-    // Pass sources to the server - it will handle finding and loading files
     await startServer({ port, sources });
     return;
   }
@@ -108,38 +121,47 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   const selectors = (flags._ ?? []).slice(2).map(String).filter(Boolean);
 
   output.info("Running pipelines...");
-  for (const label of sourceLabels) {
-    output.info(`  ${label}`);
+  for (const source of sources) {
+    if (source.kind === "local") {
+      output.info(`  [local] ${source.path}`);
+    } else {
+      output.info(`  [${source.provider}] ${source.owner}/${source.repo}${source.ref && source.ref !== "HEAD" ? `@${source.ref}` : ""}`);
+    }
   }
 
-  // Find and load pipeline files from sources
   const pipelinePaths: string[] = [];
   const loadErrors: string[] = [];
 
   for (const source of sources) {
-    const { files, errors: discoveryErrors } = await findPipelineFiles({
-      source: source.type === "local"
-        ? { type: "local", cwd: source.cwd }
-        : { type: source.type, owner: source.owner, repo: source.repo, ref: source.ref, path: source.path },
-      patterns: source.type === "local"
-        ? "**/*.ucd-pipeline.ts"
-        : (source.path ? `${source.path}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts"),
-    });
-    for (const err of discoveryErrors) {
-      loadErrors.push(err.message);
+    const { id: _id, ...locator } = source;
+    const materialized = await materializePipelineLocator(locator);
+
+    if (materialized.issues.length > 0) {
+      loadErrors.push(...materialized.issues.map((issue) => issue.message));
+      continue;
     }
-    pipelinePaths.push(...files);
+
+    if (materialized.filePath) {
+      pipelinePaths.push(materialized.filePath);
+      continue;
+    }
+
+    const discovery = await discoverPipelineFiles({
+      repositoryPath: materialized.repositoryPath!,
+      ...(materialized.origin ? { origin: materialized.origin } : {}),
+    });
+
+    pipelinePaths.push(...discovery.files.map((file) => file.filePath));
+    loadErrors.push(...discovery.issues.map((issue) => issue.message));
   }
 
-  // Load all pipelines
-  const allPipelines: Awaited<ReturnType<typeof loadPipelinesFromPaths>>["pipelines"] = [];
-
+  const allPipelines = [];
   for (const filePath of pipelinePaths) {
     try {
       const result = await loadPipelineFile(filePath);
       allPipelines.push(...result.pipelines);
-    } catch (err) {
-      loadErrors.push(`${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+    } catch (error) {
+      loadErrors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -154,7 +176,7 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     : allPipelines;
 
   if (selectors.length > 0) {
-    const matched = new Set(selectedPipelines.flatMap((p) => [p.id, p.name].filter(Boolean) as string[]));
+    const matched = new Set(selectedPipelines.flatMap((pipeline) => [pipeline.id, pipeline.name].filter(Boolean) as string[]));
     const missing = selectors.filter((selector) => !matched.has(selector));
     if (missing.length > 0) {
       output.warning(`Unknown pipeline selector(s): ${missing.join(", ")}`);

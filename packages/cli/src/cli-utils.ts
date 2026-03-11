@@ -314,4 +314,3 @@ export async function runCLI(args: string[]): Promise<void> {
     setJsonMode(false);
   }
 }
-

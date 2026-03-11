@@ -1,5 +1,6 @@
 import type { z } from "zod";
 import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
+import type { PipelineLogger } from "./logger";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
   FileContext,
@@ -26,6 +27,7 @@ export interface RouteResolveContext<
 > {
   version: string;
   file: FileContext;
+  logger: PipelineLogger;
   getArtifact: <K extends TArtifactKeys>(key: K) => unknown;
   emitArtifact: <K extends keyof TEmits & string>(
     key: K,

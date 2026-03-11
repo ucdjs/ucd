@@ -30,11 +30,11 @@ export async function bundle(options: {
       throw new BundleResolveError(options.entryPath, importMatch?.[1] ?? "", { cause: err });
     }
 
-    if (/unexpected token|syntaxerror|parse error/i.test(msg)) {
+    if (/unexpected token|syntaxerror|parse error|expected|transform/i.test(msg)) {
       throw new BundleTransformError(options.entryPath, { cause: err });
     }
 
-    throw new BundleError(options.entryPath, `Failed to bundle ${options.entryPath}: ${msg}`, { cause: err });
+    throw new BundleTransformError(options.entryPath, { cause: err });
   }
 
   const outputs = Array.isArray(result) ? result : [result];

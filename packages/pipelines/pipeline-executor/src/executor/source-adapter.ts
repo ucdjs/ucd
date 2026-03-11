@@ -2,17 +2,20 @@ import type {
   FileContext,
   ParseContext,
   PipelineDefinition,
+  PipelineLogger,
   SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
+import type { PipelineExecutionRuntime } from "../runtime";
 import { resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
+import { createPipelineLogger } from "../logger";
 
 export interface SourceAdapter {
   listFiles: (version: string) => Promise<FileContext[]>;
   readFile: (file: FileContext) => Promise<string>;
 }
 
-export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter {
+export function createSourceAdapter(pipeline: PipelineDefinition, logger: PipelineLogger): SourceAdapter {
   if (pipeline.inputs.length === 0) {
     throw new Error("Pipeline requires at least one input source");
   }
@@ -23,7 +26,7 @@ export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter
   }
 
   return {
-    listFiles: async (version) => resolveMultipleSourceFiles(pipeline.inputs, version),
+    listFiles: async (version) => resolveMultipleSourceFiles(pipeline.inputs, version, { logger }),
     readFile: async (file) => {
       const sourceFile = file as SourceFileContext;
       if ("source" in sourceFile && sourceFile.source) {
@@ -43,11 +46,17 @@ export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter
   };
 }
 
-export function createParseContext(file: FileContext, source: SourceAdapter): ParseContext {
+export function createParseContext(
+  file: FileContext,
+  source: SourceAdapter,
+  runtime: PipelineExecutionRuntime,
+): ParseContext {
   let cachedContent: string | null = null;
+  const logger = createPipelineLogger(runtime);
 
   return {
     file,
+    logger,
     readContent: async () => {
       if (cachedContent === null) {
         cachedContent = await source.readFile(file);

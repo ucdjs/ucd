@@ -1,5 +1,5 @@
 import type { HTMLAttributes } from "react";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 
 export function PageHeader({ className, ...props }: HTMLAttributes<HTMLElement>) {

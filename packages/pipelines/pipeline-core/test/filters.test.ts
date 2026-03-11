@@ -1,3 +1,4 @@
+import type { PipelineLogger } from "../src/logger";
 import type { FileContext, FilterContext } from "../src/types";
 import { describe, expect, it } from "vitest";
 import {
@@ -14,6 +15,13 @@ import {
   not,
   or,
 } from "../src/filters";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 function createFileContext(overrides: Partial<FileContext> = {}): FileContext {
   return {
@@ -33,6 +41,7 @@ function createFilterContext(
 ): FilterContext {
   return {
     file: createFileContext(fileOverrides),
+    logger: noopLogger,
     row: rowProperty ? { property: rowProperty } : undefined,
     source: sourceId ? { id: sourceId } : undefined,
   };

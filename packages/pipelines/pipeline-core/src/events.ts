@@ -21,6 +21,32 @@ export type PipelineEventType
     | "cache:store"
     | "error";
 
+export const PIPELINE_EVENT_PHASES = [
+  "Pipeline",
+  "Version",
+  "Parse",
+  "Resolve",
+  "Artifact",
+  "File",
+  "Cache",
+  "Error",
+  "Other",
+] as const;
+
+export type PipelineEventPhase = typeof PIPELINE_EVENT_PHASES[number];
+
+export function getPipelineEventPhase(type: PipelineEventType | string): PipelineEventPhase {
+  if (type === "error") return "Error";
+  if (type.startsWith("pipeline:")) return "Pipeline";
+  if (type.startsWith("version:")) return "Version";
+  if (type.startsWith("parse:")) return "Parse";
+  if (type.startsWith("resolve:")) return "Resolve";
+  if (type.startsWith("artifact:")) return "Artifact";
+  if (type.startsWith("file:")) return "File";
+  if (type.startsWith("cache:")) return "Cache";
+  return "Other";
+}
+
 export interface PipelineStartEvent {
   id: string;
   type: "pipeline:start";

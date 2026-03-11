@@ -2,6 +2,7 @@ import type {
   InferSourceId,
   InferSourceIds,
   PipelineSourceDefinition,
+  ResolveSourceContext,
   SourceFileContext,
 } from "../src/source";
 import type { FileContext, PipelineFilter } from "../src/types";
@@ -12,6 +13,15 @@ import {
   resolveSourceFiles,
 } from "../src/source";
 import { createFile, createMockBackend } from "./_test-utils";
+
+const sourceContext: ResolveSourceContext = {
+  logger: {
+    debug: () => {},
+    info: () => {},
+    warn: () => {},
+    error: () => {},
+  },
+};
 
 describe("definePipelineSource", () => {
   it("should return source definition with correct types", () => {
@@ -94,7 +104,7 @@ describe("resolveSourceFiles", () => {
     const backend = createMockBackend(files);
     const source = definePipelineSource({ id: "test", backend });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(backend.listFiles).toHaveBeenCalledWith("16.0.0");
@@ -108,7 +118,7 @@ describe("resolveSourceFiles", () => {
     const backend = createMockBackend(files);
     const source = definePipelineSource({ id: "my-source", backend });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result[0]?.source).toEqual({ id: "my-source" });
     assert(result[0]?.source);
@@ -125,7 +135,7 @@ describe("resolveSourceFiles", () => {
     const includes = (ctx: any) => ctx.file.dir === "ucd";
 
     const source = definePipelineSource({ id: "test", backend, includes });
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(result.every((f) => f.dir === "ucd")).toBe(true);
@@ -142,7 +152,7 @@ describe("resolveSourceFiles", () => {
     const excludes = (ctx: any) => ctx.file.name === "ReadMe.txt";
 
     const source = definePipelineSource({ id: "test", backend, excludes });
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(result.some((f) => f.name === "ReadMe.txt")).toBe(false);
@@ -160,7 +170,7 @@ describe("resolveSourceFiles", () => {
     const excludes = (ctx: any) => ctx.file.name === "ReadMe.txt";
 
     const source = definePipelineSource({ id: "test", backend, includes, excludes });
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(1);
     expect(result[0]?.name).toBe("LineBreak.txt");
@@ -173,7 +183,7 @@ describe("resolveSourceFiles", () => {
     const includes = (ctx: any) => ctx.file.dir === "ucd";
 
     const source = definePipelineSource({ id: "test", backend, includes });
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(0);
     expect(result).toEqual([]);
@@ -183,7 +193,7 @@ describe("resolveSourceFiles", () => {
     const backend = createMockBackend([]);
     const source = definePipelineSource({ id: "test", backend });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(0);
     expect(result).toEqual([]);
@@ -200,7 +210,7 @@ describe("resolveSourceFiles", () => {
     const backend = createMockBackend([file]);
     const source = definePipelineSource({ id: "test-source", backend });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result[0]).toBeDefined();
     expect(result[0]).toMatchObject({
@@ -217,10 +227,10 @@ describe("resolveSourceFiles", () => {
     const backend = createMockBackend([createFile({ version: "15.0.0" })]);
     const source = definePipelineSource({ id: "test", backend });
 
-    await resolveSourceFiles(source, "15.0.0");
+    await resolveSourceFiles(source, "15.0.0", sourceContext);
     expect(backend.listFiles).toHaveBeenCalledWith("15.0.0");
 
-    await resolveSourceFiles(source, "16.0.0");
+    await resolveSourceFiles(source, "16.0.0", sourceContext);
     expect(backend.listFiles).toHaveBeenCalledWith("16.0.0");
   });
 });
@@ -239,7 +249,7 @@ describe("resolveMultipleSourceFiles", () => {
       backend: createMockBackend(source2Files),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expectTypeOf(result).toEqualTypeOf<SourceFileContext[]>();
@@ -262,7 +272,7 @@ describe("resolveMultipleSourceFiles", () => {
       backend: createMockBackend(source2Files),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(1);
     expect(result[0]?.source.id).toBe("source2");
@@ -270,7 +280,7 @@ describe("resolveMultipleSourceFiles", () => {
   });
 
   it("should handle empty sources array", async () => {
-    const result = await resolveMultipleSourceFiles([], "16.0.0");
+    const result = await resolveMultipleSourceFiles([], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(0);
     expect(result).toEqual([]);
@@ -286,7 +296,7 @@ describe("resolveMultipleSourceFiles", () => {
       backend: createMockBackend([]),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(0);
   });
@@ -310,7 +320,7 @@ describe("resolveMultipleSourceFiles", () => {
       backend: createMockBackend(source2Files),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(result.some((f) => f.name === "ReadMe.txt")).toBe(false);
@@ -333,7 +343,7 @@ describe("resolveMultipleSourceFiles", () => {
       ]),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(result.map((f) => f.name).sort()).toEqual(["A.txt", "C.txt"]);
@@ -354,7 +364,7 @@ describe("resolveMultipleSourceFiles", () => {
       backend: createMockBackend([createFile({ path: sharedPath, dir: "shared" })]),
     });
 
-    const result = await resolveMultipleSourceFiles([source1, source2, source3], "16.0.0");
+    const result = await resolveMultipleSourceFiles([source1, source2, source3], "16.0.0", sourceContext);
 
     expect(result).toHaveLength(1);
     expect(result[0]?.source.id).toBe("third"); // Last one wins
@@ -449,7 +459,7 @@ describe("type inference", () => {
         backend: createMockBackend([createFile()]),
       });
 
-      const result = await resolveSourceFiles(source, "16.0.0");
+      const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
       const file = result[0]!;
 
       expectTypeOf(file).toEqualTypeOf<SourceFileContext>();
@@ -489,7 +499,7 @@ describe("edge cases", () => {
     const backend = createMockBackend(files);
     const source = definePipelineSource({ id: "test", backend });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(1);
     expect(result[0]?.path).toBe("ucd/NamesList-16.0.0d1.txt");
@@ -504,7 +514,7 @@ describe("edge cases", () => {
       includes: () => false,
     });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(0);
   });
@@ -518,7 +528,7 @@ describe("edge cases", () => {
       excludes: () => false,
     });
 
-    const result = await resolveSourceFiles(source, "16.0.0");
+    const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
   });
@@ -549,7 +559,7 @@ describe("edge cases", () => {
       }),
     ];
 
-    const result = await resolveMultipleSourceFiles(sources, "16.0.0");
+    const result = await resolveMultipleSourceFiles(sources, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
     expect(result.find((f) => f.path === path1)?.source.id).toBe("s2");
@@ -573,7 +583,7 @@ describe("edge cases", () => {
       }),
     ];
 
-    const result = await resolveMultipleSourceFiles(sources, "16.0.0");
+    const result = await resolveMultipleSourceFiles(sources, "16.0.0", sourceContext);
 
     expect(result.map((f) => f.name)).toEqual(["a.txt", "b.txt", "c.txt"]);
   });

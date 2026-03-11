@@ -1,51 +1,33 @@
-import { readdirSync, existsSync, readFileSync } from "node:fs";
-// We use NodeURL to avoid issues with types when, worker tests files are open.
-import { fileURLToPath, URL as NodeURL } from "node:url";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { readConfigFile, sys } from "typescript";
 
-const pkgRoot = (root: string, pkg: string) =>
-  fileURLToPath(new NodeURL(`./${root}/${pkg}`, import.meta.url));
+const tsconfigPath = fileURLToPath(new URL("./tooling/tsconfig/base.json", import.meta.url));
+const tsconfigDir = dirname(tsconfigPath);
+const { config, error } = readConfigFile(tsconfigPath, sys.readFile);
 
-const alias = (root: string, pkg: string) => `${pkgRoot(root, pkg)}/src`;
-
-function collectAliasesFromRoot(root: string): Record<string, string> {
-  const rootDir = fileURLToPath(new NodeURL(`./${root}`, import.meta.url));
-  const dirs = readdirSync(rootDir)
-    .filter((dir) => existsSync(pkgRoot(root, dir) + "/package.json"));
-
-  return dirs.reduce<Record<string, string>>(
-    (acc, pkg) => {
-      const packageJsonPath = pkgRoot(root, pkg) + "/package.json";
-      let packageName: string | null = null;
-
-      try {
-        const raw = readFileSync(packageJsonPath, "utf8");
-        const parsed = JSON.parse(raw) as { name?: unknown };
-
-        if (typeof parsed.name === "string" && parsed.name.length > 0) {
-          packageName = parsed.name;
-        }
-      } catch {
-        packageName = null;
-      }
-
-      if (packageName) {
-        acc[packageName] = alias(root, pkg);
-        return acc;
-      }
-
-      acc[`@ucdjs/${pkg}`] = alias(root, pkg);
-      return acc;
-    }, {}
-  );
+if (error) {
+  throw new Error(`Failed to read ${tsconfigPath}: ${String(error.messageText)}`);
 }
 
-export const aliases = {
-  ...collectAliasesFromRoot("packages"),
-  ...collectAliasesFromRoot("packages/pipelines"),
-  "#test-utils/msw": alias("packages", "test-utils") + "/msw.ts",
-  "#test-utils/mock-store": alias("packages", "test-utils") + "/mock-store/index.ts",
-  "#test-utils/fs-bridges": alias("packages", "test-utils") + "/fs-bridges/index.ts",
-  "#test-utils/pipelines": alias("packages", "test-utils") + "/pipelines/index.ts",
-  "#test-utils": alias("packages", "test-utils") + "/index.ts",
-  "#internal/test-utils/conditions": fileURLToPath(new NodeURL("./test/utils/conditions.ts", import.meta.url)),
-};
+const baseUrl = config.compilerOptions?.baseUrl ?? ".";
+const paths = (config.compilerOptions?.paths ?? {}) as Record<string, string[]>;
+
+const normalizedEntries = Object.entries(paths).flatMap(([find, targets]) => {
+  const target = targets[0];
+
+  if (!target) {
+    return [];
+  }
+
+  const normalizedFind = find.includes("*") ? find.replace(/\*.*$/, "") : find;
+  const normalizedTarget = target.includes("*") ? target.replace(/\*.*$/, "") : target;
+
+  return [[normalizedFind, resolve(tsconfigDir, baseUrl, normalizedTarget)] as const];
+});
+
+export const aliases = normalizedEntries
+  .map(([find, replacement]) => {
+    return { find, replacement };
+  })
+  .sort((a, b) => b.find.length - a.find.length);

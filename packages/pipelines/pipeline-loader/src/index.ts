@@ -6,45 +6,38 @@ export {
   writeCacheMarker,
 } from "./cache";
 
+export type { RemoteOriginMeta } from "./discover";
+
 export {
   BundleError,
   BundleResolveError,
   BundleTransformError,
   CacheMissError,
   PipelineLoaderError,
+  type PipelineLoaderIssue,
 } from "./errors";
 
 export {
-  findPipelineFiles,
-  type FindPipelineFilesOptions,
+  type LoadedPipelineFile,
   loadPipelineFile,
   loadPipelinesFromPaths,
 } from "./loader";
 
-export type {
-  FindPipelineFilesResult,
-  LoadedPipelineFile,
-  LoadPipelinesResult,
-  PipelineLoadError,
-  PipelineLoadErrorCode,
-  PipelineLoadErrorScope,
-  PipelineSource,
-  PipelineSourceWithoutId,
-  RemotePipelineSource,
-} from "./types";
-
-export { PIPELINE_LOAD_ERROR_CODES } from "./types";
+export {
+  parsePipelineLocator,
+  parseRemoteSourceUrl,
+} from "./locator";
 
 export {
-  checkForRemoteUpdates,
-  downloadRemoteSourceArchive,
-  extractArchiveToCacheDir,
-  materializeArchiveToDir,
-  type MaterializeArchiveToDirOptions,
-  parseRemoteSourceUrl,
-  type RemoteSourceResult,
-  resolveRemoteSourceRef,
-  syncRemoteSource,
+  type LocalPipelineLocator,
+  materializePipelineLocator,
+  type PipelineLocator,
+  type RemotePipelineLocator,
+} from "./materialize";
+
+export {
+  checkRemoteLocatorUpdates,
+  ensureRemoteLocator,
   type SyncResult,
   type UpdateCheckResult,
-} from "./utils";
+} from "./remote";
