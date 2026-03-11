@@ -17,13 +17,15 @@ export const ExecutePipelineResponseSchema = z.object({
 });
 
 export const PipelineSummarySchema = z.object({
-  versions: z.array(z.string()),
-  totalFiles: z.number(),
-  matchedFiles: z.number(),
-  skippedFiles: z.number(),
-  fallbackFiles: z.number(),
-  totalOutputs: z.number(),
-  durationMs: z.number(),
+  versions: z.array(z.string()).optional(),
+  totalRoutes: z.number().optional(),
+  cached: z.number().optional(),
+  totalFiles: z.number().optional(),
+  matchedFiles: z.number().optional(),
+  skippedFiles: z.number().optional(),
+  fallbackFiles: z.number().optional(),
+  totalOutputs: z.number().optional(),
+  durationMs: z.number().optional(),
 });
 
 export const ExecutionSummaryItemSchema = z.object({

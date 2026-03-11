@@ -5,6 +5,8 @@ import type { PipelineExecutionRuntime } from "./runtime";
 
 export interface PipelineSummary {
   versions: string[];
+  totalRoutes: number;
+  cached: number;
   totalFiles: number;
   matchedFiles: number;
   skippedFiles: number;

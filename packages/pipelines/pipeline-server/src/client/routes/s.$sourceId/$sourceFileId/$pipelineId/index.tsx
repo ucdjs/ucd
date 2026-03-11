@@ -1,6 +1,7 @@
 import { ExecutionTable } from "#components/execution/execution-table";
 import { QuickActionsCard } from "#components/overview/quick-actions-card";
 import { executionsQueryOptions } from "#queries/execution";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
@@ -8,21 +9,25 @@ const ParentRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/")({
   loader: async ({ context, params }) => {
-    return {
-      executions: await context.queryClient.ensureQueryData(executionsQueryOptions({
-        sourceId: params.sourceId,
-        fileId: params.sourceFileId,
-        pipelineId: params.pipelineId,
-        limit: 6,
-      })),
-    };
+    await context.queryClient.prefetchQuery(executionsQueryOptions({
+      sourceId: params.sourceId,
+      fileId: params.sourceFileId,
+      pipelineId: params.pipelineId,
+      limit: 12,
+    }));
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { executions: executionsData } = Route.useLoaderData();
+  const { sourceId, sourceFileId, pipelineId } = Route.useParams();
   const { pipelineResponse } = ParentRoute.useLoaderData();
+  const { data: executionsData } = useSuspenseQuery(executionsQueryOptions({
+    sourceId,
+    fileId: sourceFileId,
+    pipelineId,
+    limit: 12,
+  }));
   const pipeline = pipelineResponse.pipeline;
   const recentExecutions = executionsData.executions;
   const cachedRouteCount = pipeline.routes.filter((route) => route.cache).length;

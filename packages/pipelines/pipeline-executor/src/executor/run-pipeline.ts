@@ -52,6 +52,8 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   const errors: PipelineError[] = [];
 
   let totalFiles = 0;
+  let totalRoutes = 0;
+  let cached = 0;
   let matchedFiles = 0;
   let skippedFiles = 0;
   let fallbackFiles = 0;
@@ -179,6 +181,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
         for (const file of matchingFiles) {
           processedFiles.add(file.path);
+          totalRoutes++;
 
           await processingQueue.add(async () => {
             const fileNodeId = graph.addFileNode(file);
@@ -217,6 +220,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
                   if (cachedResult.hit && cachedResult.result) {
                     result = cachedResult.result;
+                    cached++;
                     await events.emit({
                       type: "cache:hit",
                       routeId: route.id,
@@ -447,6 +451,8 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
   const summary: PipelineSummary = {
     versions: versionsToRun,
+    totalRoutes,
+    cached,
     totalFiles,
     matchedFiles,
     skippedFiles,

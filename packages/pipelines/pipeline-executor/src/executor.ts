@@ -48,6 +48,8 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               }],
               summary: {
                 versions: pipeline.versions,
+                totalRoutes: 0,
+                cached: 0,
                 totalFiles: 0,
                 matchedFiles: 0,
                 skippedFiles: 0,
