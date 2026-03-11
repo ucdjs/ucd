@@ -1,5 +1,4 @@
 import { useExecute } from "#hooks/use-execute";
-import { sourceFileQueryOptions } from "#queries/file";
 import { sourceQueryOptions } from "#queries/source";
 import { sourcesQueryOptions } from "#queries/sources";
 import { useHotkey } from "@tanstack/react-hotkeys";
@@ -48,16 +47,6 @@ export function PipelineCommandPalette() {
   const sourceQueries = useQueries({
     queries: sourcesData.map((source) => sourceQueryOptions({ sourceId: source.id })),
   });
-  const fileQueries = useQueries({
-    queries: sourceQueries.flatMap((query) => {
-      const source = query.data;
-      if (!source) {
-        return [];
-      }
-
-      return source.files.map((file) => sourceFileQueryOptions({ sourceId: source.id, fileId: file.id }));
-    }),
-  });
   const { execute, executing } = useExecute();
   const navigate = useNavigate();
   const {
@@ -67,26 +56,23 @@ export function PipelineCommandPalette() {
   } = useParams({ strict: false });
 
   const pipelines = useMemo(() => {
-    return fileQueries.flatMap((query) => {
-      const file = query.data;
-      if (!file) {
-        return [];
-      }
-
-      const source = sourceQueries.find((candidate) => candidate.data?.id === file.sourceId)?.data;
+    return sourceQueries.flatMap((query) => {
+      const source = query.data;
       if (!source) {
         return [];
       }
 
-      return file.pipelines.map((pipeline) => ({
-        ...pipeline,
-        sourceId: source.id,
-        sourceLabel: source.label,
-        fileId: file.id,
-        fileLabel: file.label,
-      }));
+      return source.files.flatMap((file) =>
+        file.pipelines.map((pipeline) => ({
+          ...pipeline,
+          sourceId: source.id,
+          sourceLabel: source.label,
+          fileId: file.id,
+          fileLabel: file.label,
+        }))
+      );
     });
-  }, [fileQueries, sourceQueries]);
+  }, [sourceQueries]);
 
   const currentPipeline = pipelines.find((pipeline) =>
     pipeline.sourceId === currentSourceId

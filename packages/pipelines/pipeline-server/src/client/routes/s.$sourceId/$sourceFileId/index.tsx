@@ -1,4 +1,3 @@
-import { sourceFileQueryOptions } from "#queries/file";
 import { sourceQueryOptions } from "#queries/source";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -12,7 +11,11 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/")({
 function RouteComponent() {
   const { sourceId, sourceFileId } = Route.useParams();
   const { data: source } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
-  const { data: file } = useSuspenseQuery(sourceFileQueryOptions({ sourceId, fileId: sourceFileId }));
+  const file = source.files.find((file) => file.id === sourceFileId) ?? null;
+
+  if (!file) {
+    throw new Error(`File "${sourceFileId}" not found in source "${sourceId}"`);
+  }
 
   return (
     <div className="p-6 space-y-6">

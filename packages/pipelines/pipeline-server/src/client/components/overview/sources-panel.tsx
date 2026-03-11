@@ -1,4 +1,5 @@
 import type { SourceSummary } from "#queries/sources";
+import { SourceIssuesDialog } from "#components/source-issues-dialog";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -56,19 +57,31 @@ export function SourcesPanel({
                   const statusClass = source.errors.length > 0 ? "bg-red-500/85" : "bg-emerald-500/85";
 
                   return (
-                    <Link
-                      key={source.id}
-                      to="/s/$sourceId"
-                      params={{ sourceId: source.id }}
-                      className="grid gap-2 px-3 py-3 transition-colors hover:bg-muted/20"
-                    >
+                    <div key={source.id} className="grid gap-2 px-3 py-3 transition-colors hover:bg-muted/20">
                       <div className="flex items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-2">
+                        <Link
+                          to="/s/$sourceId"
+                          params={{ sourceId: source.id }}
+                          className="flex min-w-0 items-center gap-2"
+                        >
                           <span className={`h-2 w-2 rounded-full ${statusClass}`} />
                           <span className="truncate text-sm font-medium">{source.label}</span>
-                        </div>
-                        <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                          {source.type}
+                        </Link>
+                        <div className="flex items-center gap-2">
+                          {source.errors.length > 0 && (
+                            <SourceIssuesDialog
+                              issues={source.errors}
+                              title={`${source.label} issues`}
+                              description="Detailed source loading issues for this source."
+                              triggerLabel={`${source.errors.length} issue${source.errors.length === 1 ? "" : "s"}`}
+                              triggerVariant="link"
+                              triggerSize="sm"
+                              triggerClassName="h-auto px-0 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
+                            />
+                          )}
+                          <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                            {source.type}
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -83,18 +96,8 @@ export function SourcesPanel({
                           {" "}
                           pipelines
                         </span>
-                        {source.errors.length > 0 && (
-                          <>
-                            <span>•</span>
-                            <span className="text-red-600 dark:text-red-400">
-                              {source.errors.length}
-                              {" "}
-                              issues
-                            </span>
-                          </>
-                        )}
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>

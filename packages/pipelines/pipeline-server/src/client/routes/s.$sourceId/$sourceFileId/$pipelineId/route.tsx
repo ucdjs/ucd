@@ -2,7 +2,7 @@ import { VersionSelector } from "#components/detail/version-selector";
 import { PipelineHeader } from "#components/pipeline-header";
 import { PipelineTabs } from "#components/pipeline-tabs";
 import { usePipelineVersions } from "#hooks/use-pipeline-versions";
-import { sourceFileQueryOptions } from "#queries/file";
+import { sourceQueryOptions } from "#queries/source";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { isNotFoundError } from "#queries/utils";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
@@ -10,17 +10,19 @@ import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
   loader: async ({ context, params }) => {
     try {
-      const [file, pipelineResponse] = await Promise.all([
-        context.queryClient.ensureQueryData(sourceFileQueryOptions({
-          sourceId: params.sourceId,
-          fileId: params.sourceFileId,
-        })),
+      const [source, pipelineResponse] = await Promise.all([
+        context.queryClient.ensureQueryData(sourceQueryOptions({ sourceId: params.sourceId })),
         context.queryClient.ensureQueryData(pipelineQueryOptions({
           sourceId: params.sourceId,
           fileId: params.sourceFileId,
           pipelineId: params.pipelineId,
         })),
       ]);
+
+      const file = source.files.find((file) => file.id === params.sourceFileId) ?? null;
+      if (!file) {
+        throw notFound();
+      }
 
       return {
         file,

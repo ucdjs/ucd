@@ -1,5 +1,5 @@
 import { useExecute } from "#hooks/use-execute";
-import { sourceFileQueryOptions } from "#queries/file";
+import { sourceQueryOptions } from "#queries/source";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
@@ -15,10 +15,7 @@ export interface PipelineHeaderProps {
 export function PipelineHeader({ selectedVersions }: PipelineHeaderProps) {
   const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
   const navigate = useNavigate();
-  const { data: file } = useSuspenseQuery(sourceFileQueryOptions({
-    sourceId,
-    fileId: sourceFileId,
-  }));
+  const { data: source } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
   const { data: pipelineResponse } = useSuspenseQuery(pipelineQueryOptions({
     sourceId,
     fileId: sourceFileId,
@@ -26,6 +23,11 @@ export function PipelineHeader({ selectedVersions }: PipelineHeaderProps) {
   }));
   const { execute, executing, executionId } = useExecute();
   const pipeline = pipelineResponse.pipeline;
+  const file = source.files.find((file) => file.id === sourceFileId) ?? null;
+
+  if (!file) {
+    throw new Error(`File "${sourceFileId}" not found in source "${sourceId}"`);
+  }
 
   const handleExecute = useCallback(async () => {
     const result = await execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions));

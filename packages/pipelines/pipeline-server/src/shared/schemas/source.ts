@@ -1,4 +1,5 @@
 import z from "zod";
+import { PipelineInfoSchema } from "./pipeline";
 
 const PipelineLoaderIssueSchema = z.object({
   code: z.string(),
@@ -15,6 +16,7 @@ export const SourceFileInfoSchema = z.object({
   id: z.string(),
   path: z.string(),
   label: z.string(),
+  pipelines: z.array(PipelineInfoSchema),
 });
 
 export const SourceResponseSchema = z.object({
