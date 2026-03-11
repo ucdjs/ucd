@@ -71,4 +71,43 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
 
     expect(res.status).toBe(404);
   });
+
+  it("returns 404 when the execution route context does not match", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);
+    const executionId = await seedExecution(db, {
+      sourceId: "other-source",
+      fileId: "other-file",
+      pipelineId: "other-pipeline",
+    });
+
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/logs`,
+    ));
+
+    expect(res.status).toBe(404);
+  });
+
+  it("falls back to safe defaults for invalid pagination values", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);
+    const executionId = await seedExecution(db);
+
+    await seedExecutionLog(db, {
+      executionId,
+      message: "first log",
+    });
+
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/logs?limit=abc&offset=nope`,
+    ));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.pagination).toEqual({
+      total: 1,
+      limit: 200,
+      offset: 0,
+      hasMore: false,
+    });
+  });
 });

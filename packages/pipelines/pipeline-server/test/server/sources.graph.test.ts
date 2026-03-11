@@ -74,4 +74,22 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
 
     expect(res.status).toBe(404);
   });
+
+  it("returns 404 when the execution belongs to another source or file", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
+    const executionId = await seedExecution(db, {
+      sourceId: "other-source",
+      fileId: "other-file",
+      graph: {
+        nodes: [],
+        edges: [],
+      } as never,
+    });
+
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/graph`,
+    ));
+
+    expect(res.status).toBe(404);
+  });
 });
