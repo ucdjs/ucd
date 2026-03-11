@@ -1,5 +1,6 @@
 import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { executionsQueryOptions } from "#queries/execution";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -14,21 +15,24 @@ import {
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/graphs")({
   loader: async ({ context, params }) => {
-    return {
-      executions: await context.queryClient.ensureQueryData(executionsQueryOptions({
-        sourceId: params.sourceId,
-        fileId: params.sourceFileId,
-        pipelineId: params.pipelineId,
-        limit: 50,
-      })),
-    };
+    await context.queryClient.prefetchQuery(executionsQueryOptions({
+      sourceId: params.sourceId,
+      fileId: params.sourceFileId,
+      pipelineId: params.pipelineId,
+      limit: 50,
+    }));
   },
   component: PipelineGraphsPage,
 });
 
 function PipelineGraphsPage() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
-  const { executions: data } = Route.useLoaderData();
+  const { data } = useSuspenseQuery(executionsQueryOptions({
+    sourceId,
+    fileId: sourceFileId,
+    pipelineId,
+    limit: 50,
+  }));
   const graphExecutions = data.executions.filter((execution) => execution.hasGraph);
 
   return (
@@ -63,7 +67,9 @@ function PipelineGraphsPage() {
                   </TableHeader>
                   <TableBody>
                     {graphExecutions.map((execution) => {
-                      const routeSummary = execution.summary as { totalRoutes?: number; cached?: number } | null;
+                      const routeSummary = execution.summary;
+                      const routeCount = routeSummary?.totalRoutes ?? routeSummary?.matchedFiles ?? null;
+                      const cachedCount = routeSummary?.cached;
 
                       return (
                         <TableRow key={execution.id} className="group">
@@ -94,17 +100,19 @@ function PipelineGraphsPage() {
                                 )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {routeSummary?.totalRoutes != null
+                            {routeCount != null
                               ? (
                                   <span className="text-sm">
-                                    {routeSummary.totalRoutes}
-                                    <span className="text-muted-foreground">
-                                      {" "}
-                                      (
-                                      {routeSummary.cached ?? 0}
-                                      {" "}
-                                      cached)
-                                    </span>
+                                    {routeCount}
+                                    {cachedCount != null && (
+                                      <span className="text-muted-foreground">
+                                        {" "}
+                                        (
+                                        {cachedCount}
+                                        {" "}
+                                        cached)
+                                      </span>
+                                    )}
                                   </span>
                                 )
                               : (

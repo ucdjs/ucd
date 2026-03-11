@@ -58,7 +58,9 @@ export function ExecutionTable({
       </TableHeader>
       <TableBody>
         {executions.map((execution) => {
-          const routeSummary = execution.summary as { totalRoutes?: number; cached?: number } | null;
+          const routeSummary = execution.summary;
+          const routeCount = routeSummary?.totalRoutes ?? routeSummary?.matchedFiles ?? null;
+          const cachedCount = routeSummary?.cached;
           const sourceId = execution.sourceId;
           const fileId = execution.fileId;
           const pipelineId = execution.pipelineId;
@@ -105,17 +107,19 @@ export function ExecutionTable({
                     )}
               </TableCell>
               <TableCell>
-                {routeSummary?.totalRoutes != null
+                {routeCount != null
                   ? (
                       <span className="text-sm">
-                        {routeSummary.totalRoutes}
-                        <span className="text-muted-foreground">
-                          {" "}
-                          (
-                          {routeSummary.cached ?? 0}
-                          {" "}
-                          cached)
-                        </span>
+                        {routeCount}
+                        {cachedCount != null && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            (
+                            {cachedCount}
+                            {" "}
+                            cached)
+                          </span>
+                        )}
                       </span>
                     )
                   : (
@@ -149,7 +153,7 @@ export function ExecutionTable({
                             }}
                             className="text-primary text-sm font-medium hover:underline"
                           >
-                            Graph
+                            View Graph
                           </Link>
                         )}
                       </div>

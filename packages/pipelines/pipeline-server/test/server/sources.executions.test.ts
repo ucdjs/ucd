@@ -30,13 +30,33 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       pipelineId: "simple",
       startedAt: new Date("2026-01-01T00:00:00.000Z"),
       completedAt: new Date("2026-01-01T00:00:05.000Z"),
-      summary: { totalRoutes: 1, cached: 0 } as never,
+      summary: {
+        versions: ["16.0.0"],
+        totalRoutes: 1,
+        cached: 0,
+        totalFiles: 1,
+        matchedFiles: 1,
+        skippedFiles: 0,
+        fallbackFiles: 0,
+        totalOutputs: 1,
+        durationMs: 5_000,
+      },
     });
     const newerId = await seedExecution(db, {
       pipelineId: "simple",
       startedAt: new Date("2026-01-01T01:00:00.000Z"),
       completedAt: new Date("2026-01-01T01:00:05.000Z"),
-      summary: { totalRoutes: 2, cached: 1 } as never,
+      summary: {
+        versions: ["16.0.0"],
+        totalRoutes: 2,
+        cached: 1,
+        totalFiles: 1,
+        matchedFiles: 1,
+        skippedFiles: 0,
+        fallbackFiles: 0,
+        totalOutputs: 1,
+        durationMs: 5_000,
+      },
     });
 
     const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions?limit=10&offset=0"));
