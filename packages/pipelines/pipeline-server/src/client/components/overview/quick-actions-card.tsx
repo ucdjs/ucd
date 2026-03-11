@@ -39,7 +39,7 @@ export function QuickActionsCard({
   }
 
   return (
-    <Card className="xl:col-span-4 xl:self-start">
+    <Card>
       <CardHeader>
         <CardTitle>Quick actions</CardTitle>
         <CardDescription>
