@@ -2,7 +2,6 @@ import { ExecutionTable } from "#components/execution/execution-table";
 import { ExecutionActivityChart } from "#components/overview/activity-chart";
 import { SourcesPanel } from "#components/overview/sources-panel";
 import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
-import { configQueryOptions } from "#queries/config";
 import { overviewQueryOptions } from "#queries/overview";
 import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -22,7 +21,6 @@ export const Route = createFileRoute("/")({
 function HomePage() {
   const { overview } = Route.useLoaderData();
   const { data: sources } = useSuspenseQuery(sourcesQueryOptions());
-  const { data: config } = useSuspenseQuery(configQueryOptions({ baseUrl: "" }));
   const sourceCount = sources.length;
   const pipelineCount = sources.reduce((sum, source) => sum + source.pipelineCount, 0);
   const fileCount = sources.reduce((sum, source) => sum + source.fileCount, 0);
@@ -32,12 +30,7 @@ function HomePage() {
       <div className="grid w-full gap-4 p-6">
         <div className="flex flex-col gap-3 border-b border-border/60 pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              {config.data?.workspaceId && <Badge variant="secondary">{config.data.workspaceId}</Badge>}
-              {config.data?.version && <Badge variant="outline">{config.data.version}</Badge>}
-              <span>Last 7 days</span>
-            </div>
-            <h1 className="text-2xl font-semibold tracking-tight">Pipeline dashboard</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <Badge variant="outline">
