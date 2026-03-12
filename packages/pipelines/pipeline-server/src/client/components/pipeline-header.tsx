@@ -1,7 +1,5 @@
+import type { PipelineDetails } from "#queries/pipeline";
 import { useExecute } from "#hooks/use-execute";
-import { sourceQueryOptions } from "#queries/source";
-import { pipelineQueryOptions } from "#queries/pipeline";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
@@ -10,24 +8,14 @@ import { useCallback } from "react";
 
 export interface PipelineHeaderProps {
   selectedVersions: Set<string>;
+  pipeline: PipelineDetails;
+  fileLabel: string;
 }
 
-export function PipelineHeader({ selectedVersions }: PipelineHeaderProps) {
+export function PipelineHeader({ selectedVersions, pipeline, fileLabel }: PipelineHeaderProps) {
   const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
   const navigate = useNavigate();
-  const { data: source } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
-  const { data: pipelineResponse } = useSuspenseQuery(pipelineQueryOptions({
-    sourceId,
-    fileId: sourceFileId,
-    pipelineId,
-  }));
   const { execute, executing, executionId } = useExecute();
-  const pipeline = pipelineResponse.pipeline;
-  const file = source.files.find((file) => file.id === sourceFileId) ?? null;
-
-  if (!file) {
-    throw new Error(`File "${sourceFileId}" not found in source "${sourceId}"`);
-  }
 
   const handleExecute = useCallback(async () => {
     const result = await execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions));
@@ -72,7 +60,7 @@ export function PipelineHeader({ selectedVersions }: PipelineHeaderProps) {
           <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
             {pipeline.description ?? "No description provided."}
           </p>
-          <p className="text-[11px] text-muted-foreground/80">{file.label}</p>
+          <p className="text-[11px] text-muted-foreground/80">{fileLabel}</p>
         </div>
 
         <div className="flex items-center gap-2">

@@ -26,11 +26,11 @@ const fitViewOptions = { padding: 0.2 } as const;
 const proOptions = { hideAttribution: true } as const;
 const minimapMaskColor = "rgba(0, 0, 0, 0.1)";
 const nodeTypes = {
-  source: SourceNode,
-  file: FileNode,
-  route: RouteNode,
-  artifact: ArtifactNode,
-  output: OutputNode,
+  "pipeline-source": SourceNode,
+  "pipeline-file": FileNode,
+  "pipeline-route": RouteNode,
+  "pipeline-artifact": ArtifactNode,
+  "pipeline-output": OutputNode,
 } as const;
 
 export interface PipelineGraphProps {
@@ -50,6 +50,7 @@ export function PipelineGraph({
   showMinimap = true,
   className,
 }: PipelineGraphProps) {
+  // Convert the persisted pipeline graph into React Flow primitives once per graph payload.
   const { allNodes, allEdges } = useMemo(() => {
     const { nodes, edges } = pipelineGraphToFlow(graph);
     return { allNodes: nodes, allEdges: edges };
@@ -60,6 +61,7 @@ export function PipelineGraph({
   );
   const [selectedNode, setSelectedNode] = useState<PipelineGraphNode | null>(null);
 
+  // Filtering and layout happen together so React Flow always receives a coherent visible slice.
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
     const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByType(
       allNodes,

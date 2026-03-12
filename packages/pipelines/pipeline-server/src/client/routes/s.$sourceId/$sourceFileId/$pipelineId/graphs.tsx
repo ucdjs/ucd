@@ -68,8 +68,6 @@ function PipelineGraphsPage() {
                   <TableBody>
                     {graphExecutions.map((execution) => {
                       const routeSummary = execution.summary;
-                      const routeCount = routeSummary?.totalRoutes ?? routeSummary?.matchedFiles ?? null;
-                      const cachedCount = routeSummary?.cached;
 
                       return (
                         <TableRow key={execution.id} className="group">
@@ -100,19 +98,17 @@ function PipelineGraphsPage() {
                                 )}
                           </TableCell>
                           <TableCell className="text-right">
-                            {routeCount != null
+                            {routeSummary
                               ? (
                                   <span className="text-sm">
-                                    {routeCount}
-                                    {cachedCount != null && (
-                                      <span className="text-muted-foreground">
-                                        {" "}
-                                        (
-                                        {cachedCount}
-                                        {" "}
-                                        cached)
-                                      </span>
-                                    )}
+                                    {routeSummary.totalRoutes}
+                                    <span className="text-muted-foreground">
+                                      {" "}
+                                      (
+                                      {routeSummary.cached}
+                                      {" "}
+                                      cached)
+                                    </span>
                                   </span>
                                 )
                               : (

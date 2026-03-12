@@ -39,6 +39,8 @@ export interface ExecuteResult {
   executionId?: string;
   summary?: {
     versions: string[];
+    totalRoutes: number;
+    cached: number;
     totalFiles: number;
     matchedFiles: number;
     skippedFiles: number;

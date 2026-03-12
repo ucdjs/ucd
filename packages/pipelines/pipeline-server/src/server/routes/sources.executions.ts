@@ -1,5 +1,6 @@
 import type { ExecutionsResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
+import { normalizeExecutionSummary } from "#shared/schemas/execution";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
@@ -47,7 +48,7 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
       startedAt: exec.startedAt.toISOString(),
       completedAt: exec.completedAt?.toISOString() ?? null,
       versions: exec.versions,
-      summary: exec.summary ?? null,
+      summary: normalizeExecutionSummary(exec.summary),
       hasGraph: Boolean(exec.graph),
       error: exec.error ?? null,
     })),

@@ -6,6 +6,7 @@ import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
 import { toPipelineDetails } from "#shared/lib/pipeline-utils";
+import { normalizeExecutionSummary } from "#shared/schemas/execution";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
 import { and, eq } from "drizzle-orm";
@@ -118,7 +119,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
       .set({
         status: pipelineResult?.status ?? "failed",
         completedAt: new Date(),
-        summary: pipelineResult?.summary ?? null,
+        summary: normalizeExecutionSummary(pipelineResult?.summary),
         graph: pipelineResult?.graph ?? null,
       })
       .where(and(

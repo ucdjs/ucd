@@ -69,6 +69,10 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       sourceId: "local",
       fileId: "simple",
       pipelineId: "simple",
+      summary: expect.objectContaining({
+        totalRoutes: 2,
+        cached: 1,
+      }),
     }));
     expect(data.pagination).toEqual({
       total: 2,
@@ -120,6 +124,39 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       limit: 50,
       offset: 0,
       hasMore: false,
+    });
+  });
+
+  it("normalizes legacy execution summaries", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
+
+    await seedExecution(db, {
+      summary: {
+        versions: ["16.0.0"],
+        totalFiles: 3,
+        matchedFiles: 4,
+        skippedFiles: 1,
+        fallbackFiles: 0,
+        totalOutputs: 2,
+        durationMs: 500,
+      } as never,
+    });
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions"));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.executions[0]?.summary).toEqual({
+      versions: ["16.0.0"],
+      totalRoutes: 4,
+      cached: 0,
+      totalFiles: 3,
+      matchedFiles: 4,
+      skippedFiles: 1,
+      fallbackFiles: 0,
+      totalOutputs: 2,
+      durationMs: 500,
     });
   });
 });

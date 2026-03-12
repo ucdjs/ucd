@@ -3,6 +3,7 @@ import type { NodeProps } from "@xyflow/react";
 import type { CSSProperties } from "react";
 import { Handle, Position } from "@xyflow/react";
 import { memo } from "react";
+import { NODE_HEIGHT, NODE_WIDTH } from "./graph-utils";
 
 export interface PipelineNodeData {
   pipelineNode: PipelineGraphNode;
@@ -16,7 +17,7 @@ interface NodeTypeStyle {
   icon: string;
 }
 
-// Hoisted outside component - these never change
+// Hoisted outside the component so React Flow nodes reuse a stable style lookup.
 const nodeTypeStyles: Record<string, NodeTypeStyle> = {
   source: {
     bg: "#eef2ff",
@@ -57,7 +58,7 @@ const defaultStyle: NodeTypeStyle = {
   icon: "?",
 };
 
-// Hoisted static styles - reused across all nodes
+// Shared style fragments keep node rendering cheap because React Flow mounts many nodes.
 const flexCenterStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
@@ -87,7 +88,7 @@ const labelStyle: CSSProperties = {
   textOverflow: "ellipsis",
 };
 
-// Cache for computed styles to avoid recreation
+// Cache computed styles by visual variant so node renders don't allocate fresh objects.
 const containerStyleCache = new Map<string, CSSProperties>();
 const iconStyleCache = new Map<string, CSSProperties>();
 const handleStyleCache = new Map<string, CSSProperties>();
@@ -101,8 +102,9 @@ function getContainerStyle(styles: NodeTypeStyle, selected: boolean): CSSPropert
       border: `2px solid ${styles.border}`,
       borderRadius: "10px",
       padding: "10px 14px",
-      minWidth: "150px",
-      maxWidth: "220px",
+      width: `${NODE_WIDTH}px`,
+      minHeight: `${NODE_HEIGHT}px`,
+      boxSizing: "border-box",
       boxShadow: selected
         ? `0 0 0 2px #3b82f6, 0 1px 3px rgba(0,0,0,0.1)`
         : "0 1px 3px rgba(0,0,0,0.1)",
@@ -158,7 +160,11 @@ function BaseNode({
   const styles = nodeTypeStyles[type] ?? defaultStyle;
 
   return (
-    <div style={getContainerStyle(styles, selected)}>
+    <div
+      style={getContainerStyle(styles, selected)}
+      data-node-id={data.pipelineNode.id}
+      data-node-type={type}
+    >
       <Handle
         type="target"
         position={Position.Left}
@@ -189,6 +195,7 @@ function BaseNode({
 };
 
 function createNodeComponent(type: string) {
+  // Each React Flow renderer is a thin wrapper around BaseNode with a fixed visual style.
   return memo((props: NodeProps & { data: PipelineNodeData }) => (
     <BaseNode {...props} type={type} />
   ));
