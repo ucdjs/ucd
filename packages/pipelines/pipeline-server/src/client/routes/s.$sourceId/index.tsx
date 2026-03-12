@@ -49,8 +49,6 @@ function RouteComponent() {
                 issues={source.errors}
                 title={`${source.label} issues`}
                 description="Detailed source loading issues for this source."
-                triggerLabel="View details"
-                triggerVariant="destructive"
               />
             </div>
           </CardContent>

@@ -12,34 +12,16 @@ export interface UseExecuteOptions {
 
 export interface UseExecuteReturn {
   execute: (
-    ...args:
-      | [sourceId: string, fileId: string, pipelineId: string, versions: string[]]
-      | [fileId: string, pipelineId: string, versions: string[]]
+    sourceId: string,
+    fileId: string,
+    pipelineId: string,
+    versions: string[],
   ) => Promise<ExecuteResult>;
   executing: boolean;
   result: ExecuteResult | null;
   error: string | null;
   executionId: string | null;
   reset: () => void;
-}
-
-function resolveSourceIdFromCache(queryClient: ReturnType<typeof useQueryClient>, fileId: string) {
-  const sourceEntries = queryClient.getQueriesData<{ id: string; files: Array<{ id: string }> }>({
-    queryKey: ["sources"],
-  });
-
-  for (const [, data] of sourceEntries) {
-    if (!data || !("files" in data) || !Array.isArray(data.files)) {
-      continue;
-    }
-
-    const hasFile = data.files.some((file) => file.id === fileId);
-    if (hasFile) {
-      return data.id;
-    }
-  }
-
-  return null;
 }
 
 export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
@@ -56,29 +38,10 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
   ));
 
   const execute = useCallback(
-    async (
-      ...args:
-        | [sourceId: string, fileId: string, pipelineId: string, versions: string[]]
-        | [fileId: string, pipelineId: string, versions: string[]]
-    ): Promise<ExecuteResult> => {
-      const [sourceId, fileId, pipelineId, versions] = args.length === 4
-        ? args
-        : [resolveSourceIdFromCache(queryClient, args[0]), args[0], args[1], args[2]];
-
+    async (sourceId: string, fileId: string, pipelineId: string, versions: string[]): Promise<ExecuteResult> => {
       setError(null);
       setResult(null);
       setExecutionId(null);
-
-      if (!sourceId) {
-        const resolutionError: ExecuteResult = {
-          success: false,
-          pipelineId,
-          error: "Could not resolve source for pipeline execution",
-        };
-        setResult(resolutionError);
-        setError(resolutionError.error ?? "Execution failed");
-        return resolutionError;
-      }
 
       try {
         const mutationResult = await mutation.mutateAsync({
@@ -107,7 +70,7 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
         return errorResult;
       }
     },
-    [mutation, queryClient],
+    [mutation],
   );
 
   const reset = useCallback(() => {

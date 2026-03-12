@@ -6,12 +6,19 @@ import type {
 } from "@ucdjs/pipelines-core";
 import type { Edge, Node } from "@xyflow/react";
 
+export type PipelineFlowNodeType =
+  | "pipeline-source"
+  | "pipeline-file"
+  | "pipeline-route"
+  | "pipeline-artifact"
+  | "pipeline-output";
+
 export interface PipelineFlowNode extends Node {
   data: {
     pipelineNode: PipelineGraphNode;
     label: string;
   };
-  type: PipelineGraphNodeType;
+  type: PipelineFlowNodeType;
 }
 
 export interface PipelineFlowEdge extends Edge {
@@ -21,19 +28,36 @@ export interface PipelineFlowEdge extends Edge {
 }
 
 export const nodeTypeColors: Record<string, string> = {
-  source: "#6366f1",
-  file: "#10b981",
-  route: "#f59e0b",
-  artifact: "#8b5cf6",
-  output: "#0ea5e9",
+  "pipeline-source": "#6366f1",
+  "pipeline-file": "#10b981",
+  "pipeline-route": "#f59e0b",
+  "pipeline-artifact": "#8b5cf6",
+  "pipeline-output": "#0ea5e9",
   default: "#6b7280",
 };
 
-export const NODE_WIDTH = 180;
-export const NODE_HEIGHT = 60;
+// These dimensions intentionally match the custom node shell in nodes.tsx.
+// The layout is static, so visual overlap appears immediately if these drift.
+export const NODE_WIDTH = 220;
+export const NODE_HEIGHT = 64;
 
 const HORIZONTAL_GAP = 80;
 const VERTICAL_GAP = 40;
+
+function getFlowNodeType(type: PipelineGraphNodeType): PipelineFlowNodeType {
+  switch (type) {
+    case "source":
+      return "pipeline-source";
+    case "file":
+      return "pipeline-file";
+    case "route":
+      return "pipeline-route";
+    case "artifact":
+      return "pipeline-artifact";
+    case "output":
+      return "pipeline-output";
+  }
+}
 
 function getNodeLabel(node: PipelineGraphNode): string {
   switch (node.type) {
@@ -79,9 +103,11 @@ export function getNodeColor(node: { type?: string }): string {
 export function pipelineGraphToFlow(
   graph: PipelineGraph,
 ): { nodes: PipelineFlowNode[]; edges: PipelineFlowEdge[] } {
+  // React Flow node types are renderer identifiers. Keep them separate from the
+  // pipeline domain node type so we don't collide with built-in types like "output".
   const nodes: PipelineFlowNode[] = graph.nodes.map((node) => ({
     id: node.id,
-    type: node.type,
+    type: getFlowNodeType(node.type),
     position: { x: 0, y: 0 },
     data: {
       pipelineNode: node,
@@ -108,7 +134,7 @@ export function filterNodesByType(
   edges: PipelineFlowEdge[],
   visibleTypes: Set<PipelineGraphNodeType>,
 ): { nodes: PipelineFlowNode[]; edges: PipelineFlowEdge[] } {
-  const filteredNodes = nodes.filter((node) => visibleTypes.has(node.type as PipelineGraphNodeType));
+  const filteredNodes = nodes.filter((node) => visibleTypes.has(node.data.pipelineNode.type));
   const filteredNodeIds = new Set(filteredNodes.map((node) => node.id));
 
   const filteredEdges = edges.filter(
@@ -126,6 +152,7 @@ export function applyLayout(
     return nodes;
   }
 
+  // Build a lightweight adjacency index from the currently visible graph slice.
   const incomingEdges = new Map<string, Set<string>>();
   const outgoingEdges = new Map<string, Set<string>>();
 
@@ -150,6 +177,8 @@ export function applyLayout(
     ? rootNodes.map((node) => ({ id: node.id, layer: 0 }))
     : firstNode ? [{ id: firstNode.id, layer: 0 }] : [];
 
+  // Assign each node to the deepest reachable layer via a simple BFS walk.
+  // This is not a full graph layout engine; it just gives us stable left-to-right ordering.
   while (queue.length > 0) {
     const item = queue.shift();
     if (!item) continue;
@@ -181,6 +210,7 @@ export function applyLayout(
   const sortedLayers = Array.from(layerGroups.entries()).sort((a, b) => a[0] - b[0]);
   const positionedNodes = new Map<string, PipelineFlowNode>();
 
+  // Center each layer vertically so sparse columns don't collapse to the top.
   for (const [layerIndex, layerNodes] of sortedLayers) {
     const x = layerIndex * (NODE_WIDTH + HORIZONTAL_GAP);
     const layerHeight = layerNodes.length * (NODE_HEIGHT + VERTICAL_GAP) - VERTICAL_GAP;

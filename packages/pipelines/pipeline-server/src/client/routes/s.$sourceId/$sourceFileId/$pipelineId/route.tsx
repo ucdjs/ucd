@@ -41,7 +41,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
 
 function RouteComponent() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
-  const { pipelineResponse } = Route.useLoaderData();
+  const { file, pipelineResponse } = Route.useLoaderData();
   const pipeline = pipelineResponse.pipeline;
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(
     pipelineId,
@@ -52,7 +52,7 @@ function RouteComponent() {
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border shrink-0">
-        <PipelineHeader selectedVersions={selectedVersions} />
+        <PipelineHeader selectedVersions={selectedVersions} pipeline={pipeline} fileLabel={file.label} />
         <div className="px-6 py-3 border-b border-border bg-muted/30">
           <VersionSelector
             versions={pipeline.versions}

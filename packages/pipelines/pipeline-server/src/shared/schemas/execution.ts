@@ -1,4 +1,5 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { PipelineSummary } from "@ucdjs/pipelines-executor";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import z from "zod";
 
@@ -17,15 +18,15 @@ export const ExecutePipelineResponseSchema = z.object({
 });
 
 export const PipelineSummarySchema = z.object({
-  versions: z.array(z.string()).optional(),
-  totalRoutes: z.number().optional(),
-  cached: z.number().optional(),
-  totalFiles: z.number().optional(),
-  matchedFiles: z.number().optional(),
-  skippedFiles: z.number().optional(),
-  fallbackFiles: z.number().optional(),
-  totalOutputs: z.number().optional(),
-  durationMs: z.number().optional(),
+  versions: z.array(z.string()),
+  totalRoutes: z.number(),
+  cached: z.number(),
+  totalFiles: z.number(),
+  matchedFiles: z.number(),
+  skippedFiles: z.number(),
+  fallbackFiles: z.number(),
+  totalOutputs: z.number(),
+  durationMs: z.number(),
 });
 
 export const ExecutionSummaryItemSchema = z.object({
@@ -97,6 +98,24 @@ export const ExecutionGraphResponseSchema = z.object({
   status: ExecutionStatusSchema,
   graph: z.custom<PipelineGraph>(() => true).nullable(),
 });
+
+export function normalizeExecutionSummary(summary: Partial<PipelineSummary> | null | undefined): PipelineSummary | null {
+  if (!summary) {
+    return null;
+  }
+
+  return {
+    versions: summary.versions ?? [],
+    totalRoutes: summary.totalRoutes ?? summary.matchedFiles ?? 0,
+    cached: summary.cached ?? 0,
+    totalFiles: summary.totalFiles ?? 0,
+    matchedFiles: summary.matchedFiles ?? summary.totalRoutes ?? 0,
+    skippedFiles: summary.skippedFiles ?? 0,
+    fallbackFiles: summary.fallbackFiles ?? 0,
+    totalOutputs: summary.totalOutputs ?? 0,
+    durationMs: summary.durationMs ?? 0,
+  };
+}
 
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
 export type ExecutionSummaryItem = z.infer<typeof ExecutionSummaryItemSchema>;

@@ -73,10 +73,6 @@ export function SourcesPanel({
                               issues={source.errors}
                               title={`${source.label} issues`}
                               description="Detailed source loading issues for this source."
-                              triggerLabel={`${source.errors.length} issue${source.errors.length === 1 ? "" : "s"}`}
-                              triggerVariant="link"
-                              triggerSize="sm"
-                              triggerClassName="h-auto px-0 text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
                             />
                           )}
                           <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">

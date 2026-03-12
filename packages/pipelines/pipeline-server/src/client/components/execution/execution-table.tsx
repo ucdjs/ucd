@@ -59,8 +59,6 @@ export function ExecutionTable({
       <TableBody>
         {executions.map((execution) => {
           const routeSummary = execution.summary;
-          const routeCount = routeSummary?.totalRoutes ?? routeSummary?.matchedFiles ?? null;
-          const cachedCount = routeSummary?.cached;
           const sourceId = execution.sourceId;
           const fileId = execution.fileId;
           const pipelineId = execution.pipelineId;
@@ -107,19 +105,17 @@ export function ExecutionTable({
                     )}
               </TableCell>
               <TableCell>
-                {routeCount != null
+                {routeSummary
                   ? (
                       <span className="text-sm">
-                        {routeCount}
-                        {cachedCount != null && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            (
-                            {cachedCount}
-                            {" "}
-                            cached)
-                          </span>
-                        )}
+                        {routeSummary.totalRoutes}
+                        <span className="text-muted-foreground">
+                          {" "}
+                          (
+                          {routeSummary.cached}
+                          {" "}
+                          cached)
+                        </span>
                       </span>
                     )
                   : (
