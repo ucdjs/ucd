@@ -176,6 +176,9 @@ interface SourceGroupProps extends SourceFileListProps {
   toggleSource: (sourceId: string) => void;
 }
 
+const treeRowClassName = "h-9 w-full gap-2 rounded-md px-2.5";
+const treeRowIconSlotClassName = "flex h-7 w-7 shrink-0 items-center justify-center";
+
 function SourceGroup({
   sourceId,
   sourceLabel,
@@ -192,15 +195,17 @@ function SourceGroup({
 
   return (
     <>
-      <div className="mx-1 flex min-w-0 items-center gap-2 rounded-md px-2.5 py-1">
-        <SidebarGroupAction
-          aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
-          className="static -ml-1.5 flex h-7 w-7 shrink-0 translate-y-0 items-center justify-center rounded-md p-0 hover:bg-sidebar-accent"
-          onClick={() => toggleSource(sourceId)}
-        >
-          <ChevronIcon className="size-4" />
-        </SidebarGroupAction>
-        <SidebarGroupLabel className="h-auto flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
+      <div className={`mx-1 flex min-w-0 items-center ${treeRowClassName}`}>
+        <div className={treeRowIconSlotClassName}>
+          <SidebarGroupAction
+            aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
+            className="static flex h-7 w-7 translate-y-0 items-center justify-center rounded-md p-0 hover:bg-sidebar-accent"
+            onClick={() => toggleSource(sourceId)}
+          >
+            <ChevronIcon className="size-4" />
+          </SidebarGroupAction>
+        </div>
+        <SidebarGroupLabel className="h-auto min-w-0 flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
           <Link
             to="/s/$sourceId"
             params={{ sourceId }}
@@ -263,7 +268,7 @@ function SourceFileList({
           <SidebarMenuItem key={file.id}>
             <SidebarMenuButton
               isActive={isFileActive}
-              className="h-9 w-full justify-start gap-2 rounded-md px-2.5"
+              className={treeRowClassName}
               onClick={(event: React.MouseEvent) => {
                 event.preventDefault();
                 toggleFile(fileKey);
@@ -273,7 +278,9 @@ function SourceFileList({
                   to="/s/$sourceId/$sourceFileId"
                   params={{ sourceId, sourceFileId: file.id }}
                 >
-                  {isOpen ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
+                  <span className={treeRowIconSlotClassName}>
+                    {isOpen ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
+                  </span>
                   <span className="truncate flex-1">{file.label}</span>
                   <span className="rounded-sm bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
                     {file.pipelines.length}

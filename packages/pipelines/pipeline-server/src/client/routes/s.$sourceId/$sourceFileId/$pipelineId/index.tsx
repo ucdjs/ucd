@@ -1,5 +1,5 @@
 import { ExecutionTable } from "#components/execution/execution-table";
-import { QuickActionsCard } from "#components/homepage/quick-actions-card";
+import { QuickActionsCard } from "#components/home/quick-actions-card";
 import { executionsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";

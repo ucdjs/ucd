@@ -1,5 +1,5 @@
 import type { SourceSummary } from "#queries/sources";
-import { SourceIssuesDialog } from "#components/source-issues-dialog";
+import { SourceIssuesDialog } from "#components/source/source-issues-dialog";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";

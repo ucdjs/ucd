@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { PipelineSidebar } from "#components/pipeline-sidebar";
+import { PipelineSidebar } from "#components/app/pipeline-sidebar";
 import { configQueryOptions } from "#queries/config";
 import { sourcesQueryOptions } from "#queries/sources";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -12,7 +12,7 @@ import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/side
 import { lazy, Suspense } from "react";
 
 const PipelineCommandPalette = lazy(() =>
-  import("#components/pipeline-command-palette").then((mod) => ({
+  import("#components/app/pipeline-command-palette").then((mod) => ({
     default: mod.PipelineCommandPalette,
   })),
 );

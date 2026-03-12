@@ -1,5 +1,5 @@
-import { SourceFileCard } from "#components/source-file-card";
-import { SourceIssuesDialog } from "#components/source-issues-dialog";
+import { SourceFileCard } from "#components/source/source-file-card";
+import { SourceIssuesDialog } from "#components/source/source-issues-dialog";
 import { sourceQueryOptions } from "#queries/source";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
