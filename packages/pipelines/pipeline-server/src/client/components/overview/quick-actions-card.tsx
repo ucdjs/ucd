@@ -11,12 +11,9 @@ interface QuickActionsCardProps {
 export function QuickActionsCard({
   versions,
 }: QuickActionsCardProps) {
-  const params = useParams({ strict: false });
+  const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
   const navigate = useNavigate();
   const { execute, executing } = useExecute();
-  const sourceId = "sourceId" in params && typeof params.sourceId === "string" ? params.sourceId : null;
-  const sourceFileId = "sourceFileId" in params && typeof params.sourceFileId === "string" ? params.sourceFileId : null;
-  const pipelineId = "pipelineId" in params && typeof params.pipelineId === "string" ? params.pipelineId : null;
   const canExecute = Boolean(sourceId && sourceFileId && pipelineId) && versions.length > 0;
 
   async function handleExecute() {
@@ -99,6 +96,7 @@ export function QuickActionsCard({
             <Link
               to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
               params={{ sourceId: sourceId ?? "", sourceFileId: sourceFileId ?? "", pipelineId: pipelineId ?? "" }}
+              search={{ q: undefined, route: undefined, transform: undefined, output: undefined }}
               {...props}
             >
               <span className="flex items-center gap-2">
