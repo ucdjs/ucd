@@ -1,41 +1,36 @@
 import type {
-  PipelineGraphNode,
   PipelineGraphNodeType,
-  PipelineGraph as PipelineGraphType,
 } from "@ucdjs/pipelines-core";
-import type { NodeMouseHandler } from "@xyflow/react";
+import type { ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
+import { getFlowNodeType, graphNodeTypes } from "#shared/lib/graph";
+import type { NodeMouseHandler, NodeTypes } from "@xyflow/react";
 import type { PipelineFlowNode } from "./graph-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import { useCallback, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./graph-details";
 import { PipelineGraphFilters } from "./graph-filters";
-import { applyLayout, filterNodesByType, getNodeColor, pipelineGraphToFlow } from "./graph-utils";
-import { ArtifactNode, FileNode, OutputNode, RouteNode, SourceNode } from "./nodes";
+import {
+  applyLayout,
+  filterNodesByType,
+  getNodeColor,
+  pipelineGraphToFlow,
+} from "./graph-utils";
+import { PipelineNodeRenderer } from "./nodes";
 import "@xyflow/react/dist/style.css";
 
-const defaultVisibleTypes: Set<PipelineGraphNodeType> = new Set([
-  "source",
-  "file",
-  "route",
-  "artifact",
-  "output",
-]);
+const defaultVisibleTypes: Set<PipelineGraphNodeType> = new Set(graphNodeTypes);
 
 const fitViewOptions = { padding: 0.2 } as const;
 const proOptions = { hideAttribution: true } as const;
 const minimapMaskColor = "rgba(0, 0, 0, 0.1)";
-const nodeTypes = {
-  "pipeline-source": SourceNode,
-  "pipeline-file": FileNode,
-  "pipeline-route": RouteNode,
-  "pipeline-artifact": ArtifactNode,
-  "pipeline-output": OutputNode,
-} as const;
+const nodeTypes = Object.fromEntries(
+  graphNodeTypes.map((type) => [getFlowNodeType(type), PipelineNodeRenderer]),
+) as NodeTypes;
 
 export interface PipelineGraphProps {
-  graph: PipelineGraphType;
-  onNodeSelect?: (node: PipelineGraphNode | null) => void;
+  graph: ExecutionGraphView;
+  onNodeSelect?: (node: ExecutionGraphNodeView | null) => void;
   showFilters?: boolean;
   showDetails?: boolean;
   showMinimap?: boolean;
@@ -59,7 +54,7 @@ export function PipelineGraph({
   const [visibleTypes, setVisibleTypes] = useState<Set<PipelineGraphNodeType>>(
     () => new Set(defaultVisibleTypes),
   );
-  const [selectedNode, setSelectedNode] = useState<PipelineGraphNode | null>(null);
+  const [selectedNode, setSelectedNode] = useState<ExecutionGraphNodeView | null>(null);
 
   // Filtering and layout happen together so React Flow always receives a coherent visible slice.
   const { layoutedNodes, layoutedEdges } = useMemo(() => {
@@ -88,9 +83,9 @@ export function PipelineGraph({
 
   const handleNodeClick: NodeMouseHandler<PipelineFlowNode> = useCallback(
     (_event, node) => {
-      const pipelineNode = node.data?.pipelineNode ?? null;
-      setSelectedNode(pipelineNode);
-      onNodeSelect?.(pipelineNode);
+      const selectedGraphNode = node.data?.graphNode ?? null;
+      setSelectedNode(selectedGraphNode);
+      onNodeSelect?.(selectedGraphNode);
     },
     [onNodeSelect],
   );

@@ -8,8 +8,13 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
     const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
     const executionId = await seedExecution(db, {
       graph: {
-        nodes: [],
-        edges: [],
+        nodes: [
+          { id: "source-1", type: "source", version: "1.0.0" },
+          { id: "output-1", type: "output", outputIndex: 0 },
+        ],
+        edges: [
+          { from: "source-1", to: "output-1", type: "resolved" },
+        ],
       } as never,
     });
 
@@ -25,8 +30,37 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       pipelineId: "simple",
       status: "completed",
       graph: {
-        nodes: [],
-        edges: [],
+        nodes: [
+          {
+            id: "source-1",
+            nodeType: "source",
+            flowType: "pipeline-source",
+            label: "v1.0.0",
+            detailFields: [
+              { label: "Node ID", type: "text", value: "source-1" },
+              { label: "Version", type: "text", value: "1.0.0" },
+            ],
+          },
+          {
+            id: "output-1",
+            nodeType: "output",
+            flowType: "pipeline-output",
+            label: "Output[0]",
+            detailFields: [
+              { label: "Node ID", type: "text", value: "output-1" },
+              { label: "Output Index", type: "text", value: 0 },
+            ],
+          },
+        ],
+        edges: [
+          {
+            id: "edge-0-source-1-output-1",
+            source: "source-1",
+            target: "output-1",
+            label: "resolved",
+            edgeType: "resolved",
+          },
+        ],
       },
     });
   });
