@@ -1,6 +1,7 @@
 import type {
   ExecutionGraphDetailField,
   ExecutionGraphEdgeView,
+  ExecutionGraphNodeAction,
   ExecutionGraphView,
   GraphDetailFieldType,
 } from "#shared/schemas/graph";
@@ -32,6 +33,12 @@ interface GraphDetailFieldSchema {
   key: string;
   type: GraphDetailFieldType;
   hideIfEmpty?: boolean;
+}
+
+interface GraphRouteContext {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
 }
 
 export const graphNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "artifact", "output"];
@@ -157,7 +164,10 @@ export function getGraphEdgeStyle(edgeType: PipelineGraphEdge["type"]): {
   }
 }
 
-export function buildExecutionGraphView(graph: PipelineGraph): ExecutionGraphView {
+export function buildExecutionGraphView(
+  graph: PipelineGraph,
+  routeContext: GraphRouteContext,
+): ExecutionGraphView {
   return {
     nodes: graph.nodes.map((node) => ({
       id: node.id,
@@ -165,6 +175,7 @@ export function buildExecutionGraphView(graph: PipelineGraph): ExecutionGraphVie
       flowType: getFlowNodeType(node.type),
       label: getNodeLabel(node),
       detailFields: getGraphDetailFields(node),
+      actions: getGraphNodeActions(node, routeContext),
     })),
     edges: graph.edges.map((edge, index) => ({
       id: `edge-${index}-${edge.from}-${edge.to}`,
@@ -174,6 +185,39 @@ export function buildExecutionGraphView(graph: PipelineGraph): ExecutionGraphVie
       edgeType: edge.type,
     })),
   };
+}
+
+function getGraphNodeActions(
+  node: PipelineGraphNode,
+  routeContext: GraphRouteContext,
+): ExecutionGraphNodeAction[] | undefined {
+  switch (node.type) {
+    case "route":
+      return [{
+        label: `Open ${node.routeId}`,
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
+        params: {
+          sourceId: routeContext.sourceId,
+          sourceFileId: routeContext.fileId,
+          pipelineId: routeContext.pipelineId,
+        },
+        search: {
+          route: node.routeId,
+        },
+      }];
+    case "output":
+      return [{
+        label: "Open outputs",
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+        params: {
+          sourceId: routeContext.sourceId,
+          sourceFileId: routeContext.fileId,
+          pipelineId: routeContext.pipelineId,
+        },
+      }];
+    default:
+      return undefined;
+  }
 }
 
 function getGraphDetailFields(node: PipelineGraphNode): ExecutionGraphDetailField[] {

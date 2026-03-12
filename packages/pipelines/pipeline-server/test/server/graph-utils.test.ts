@@ -34,7 +34,11 @@ describe("graph-utils", () => {
       ],
     };
 
-    const view = buildExecutionGraphView(graph);
+    const view = buildExecutionGraphView(graph, {
+      sourceId: "local",
+      fileId: "simple",
+      pipelineId: "simple",
+    });
 
     expect(view.nodes.map((node) => node.flowType)).toEqual([
       getFlowNodeType("source"),
@@ -43,6 +47,17 @@ describe("graph-utils", () => {
     expect(view.nodes[0]?.detailFields).toEqual([
       { label: "Node ID", type: "text", value: "source-1" },
       { label: "Version", type: "text", value: "1.0.0" },
+    ]);
+    expect(view.nodes[1]?.actions).toEqual([
+      {
+        label: "Open outputs",
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+        params: {
+          sourceId: "local",
+          sourceFileId: "simple",
+          pipelineId: "simple",
+        },
+      },
     ]);
     expect(view.edges).toHaveLength(1);
   });

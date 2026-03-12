@@ -38,7 +38,13 @@ sourcesGraphRouter.get(
       executionId: execution.id,
       pipelineId: execution.pipelineId,
       status: execution.status,
-      graph: execution.graph ? buildExecutionGraphView(execution.graph) : null,
+      graph: execution.graph
+        ? buildExecutionGraphView(execution.graph, {
+            sourceId,
+            fileId,
+            pipelineId,
+          })
+        : null,
     } satisfies ExecutionGraphResponse;
   },
 );
