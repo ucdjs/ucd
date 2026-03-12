@@ -1,19 +1,17 @@
-import {
-  StatusBadge,
-  StatusIcon,
-} from "#components/execution/execution-status";
+import type { ExecutionSpan } from "#lib/execution-utils";
+import { StatusBadge, StatusIcon } from "#components/execution/execution-status";
 import { ExecutionLogTable } from "#components/execution/log-table";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
+import { buildExecutionSpans } from "#lib/execution-utils";
 import { formatBytes } from "#lib/format";
 import { executionEventsQueryOptions, executionLogsQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
 import { useMemo, useState } from "react";
-import { buildExecutionSpans } from "../../../../../../components/execution/execution-utils";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/")({
   loader: async ({ context, params }) => {
@@ -64,7 +62,7 @@ function ExecutionDetailPage() {
 
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
-  const [activeSpan, setActiveSpan] = useState<ReturnType<typeof buildExecutionSpans>[number] | null>(null);
+  const [activeSpan, setActiveSpan] = useState<ExecutionSpan | null>(null);
 
   const events = executionData.events
     .map((event) => event.data)
@@ -84,7 +82,7 @@ function ExecutionDetailPage() {
     setExpandedLogId(null);
   }
 
-  function handleSpanClick(span: ReturnType<typeof buildExecutionSpans>[number]) {
+  function handleSpanClick(span: ExecutionSpan) {
     setActiveSpan(span);
   }
 
@@ -93,7 +91,7 @@ function ExecutionDetailPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col">
       <div className="border-b bg-background px-6 py-4 shrink-0">
         <div className="flex items-center gap-4">
           <Link
@@ -132,71 +130,79 @@ function ExecutionDetailPage() {
               </div>
             )}
 
-            <Link
-              to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
-              params={{ sourceId, sourceFileId, pipelineId, executionId }}
-              className="inline-flex items-center gap-1 rounded-md border px-3 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            <Button
+              nativeButton={false}
+              variant="secondary"
+              render={(props) => {
+                return (
+                  <Link
+                    to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
+                    params={{ sourceId, sourceFileId, pipelineId, executionId }}
+
+                    {...props}
+                  >
+                  </Link>
+                );
+              }}
             >
               <GitBranch className="h-4 w-4" />
               View Graph
-            </Link>
+            </Button>
           </div>
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
-        <div className="p-6 space-y-6">
-          {logsData.truncated && (
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              Logs truncated. Captured
-              {" "}
-              {formatBytes(logsData.capturedSize)}
-              {" "}
-              of
-              {" "}
-              {formatBytes(logsData.originalSize)}
-              .
-            </div>
-          )}
+      <div className="p-6 space-y-6">
+        {logsData.truncated && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            Logs truncated. Captured
+            {" "}
+            {formatBytes(logsData.capturedSize)}
+            {" "}
+            of
+            {" "}
+            {formatBytes(logsData.originalSize)}
+            .
+          </div>
+        )}
 
-          <section className="space-y-3">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-sm font-semibold">Timeline</h2>
-              </div>
-              {selectedSpanId && (
-                <div className="inline-flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 text-xs text-muted-foreground">
-                  <Filter className="h-3 w-3" />
-                  Logs filtered to the selected span
-                </div>
-              )}
-            </div>
-
-            <ExecutionWaterfall
-              spans={spans}
-              selectedSpanId={selectedSpanId}
-              onSelect={handleSpanSelect}
-              onSpanClick={handleSpanClick}
-            />
-          </section>
-
-          <section className="space-y-3">
+        <section className="space-y-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-sm font-semibold">Logs</h2>
-              <p className="text-sm text-muted-foreground">
-                {selectedSpanId
-                  ? "Showing logs for the selected span."
-                  : "Showing all captured logs for this execution."}
-              </p>
+              <h2 className="text-sm font-semibold">Timeline</h2>
             </div>
-            <ExecutionLogTable
-              logs={filteredLogs}
-              expandedLogId={expandedLogId}
-              onToggle={handleLogToggle}
-            />
-          </section>
-        </div>
-      </ScrollArea>
+            {selectedSpanId && (
+              <div className="inline-flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                <Filter className="h-3 w-3" />
+                Logs filtered to the selected span
+              </div>
+            )}
+          </div>
+
+          <ExecutionWaterfall
+            spans={spans}
+            selectedSpanId={selectedSpanId}
+            onSelect={handleSpanSelect}
+            onSpanClick={handleSpanClick}
+          />
+        </section>
+
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold">Logs</h2>
+            <p className="text-sm text-muted-foreground">
+              {selectedSpanId
+                ? "Showing logs for the selected span."
+                : "Showing all captured logs for this execution."}
+            </p>
+          </div>
+          <ExecutionLogTable
+            logs={filteredLogs}
+            expandedLogId={expandedLogId}
+            onToggle={handleLogToggle}
+          />
+        </section>
+      </div>
 
       <ExecutionSpanDrawer
         span={activeSpan}

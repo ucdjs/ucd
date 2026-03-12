@@ -1,6 +1,5 @@
 import type {
   ExecutionGraphDetailField,
-  ExecutionGraphEdgeView,
   ExecutionGraphNodeAction,
   ExecutionGraphView,
   GraphDetailFieldType,

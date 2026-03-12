@@ -1,8 +1,8 @@
 import type { ExecutionGraphDetailField, ExecutionGraphNodeView } from "#shared/schemas/graph";
 import { getGraphNodeConfig, getNodeBadgeClassName } from "#shared/lib/graph";
+import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -59,11 +59,12 @@ export function PipelineGraphDetails({
   node: ExecutionGraphNodeView | null;
   onClose: () => void;
 }) {
+  const navigate = useNavigate();
+
   if (!node) {
     return null;
   }
 
-  const navigate = useNavigate();
   const nodeConfig = getGraphNodeConfig(node.nodeType);
 
   return (

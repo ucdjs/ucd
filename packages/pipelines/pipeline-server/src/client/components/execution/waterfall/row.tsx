@@ -1,8 +1,6 @@
-import type { ExecutionSpan } from "../execution-utils";
+import type { ExecutionSpan } from "#lib/execution-utils";
 import { formatDuration } from "#lib/format";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { getPhaseAccentClass, getPhaseBarStyle, getPhaseColor } from "../execution-utils";
 import { getTimelineGridRange, getTimelineTickColumn, timelineColumns } from "./shared";
 
 export interface ExecutionWaterfallRowProps {
@@ -22,13 +20,6 @@ export function ExecutionWaterfallRow({
   ticks,
   onSelect,
 }: ExecutionWaterfallRowProps) {
-  const phaseColor = span.isError ? "bg-red-500/80" : getPhaseColor(span.phase);
-  const phaseBadgeClass = span.isError
-    ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
-    : getPhaseAccentClass(span.phase);
-  const phaseBarStyle = span.isError
-    ? { background: "linear-gradient(90deg, #ef4444 0%, #dc2626 100%)" }
-    : getPhaseBarStyle(span.phase);
   const { startColumn, endColumn } = getTimelineGridRange(
     span.start - start,
     span.end - start,
@@ -37,23 +28,22 @@ export function ExecutionWaterfallRow({
 
   return (
     <div
-      className={cn("grid gap-0 border-b border-border/25 px-3 py-1.5", selected && "bg-accent/20")}
+      className={cn("execution-phase grid gap-0 border-b border-border/25 px-3 py-1.5", selected && "bg-accent/20")}
+      data-phase={span.phase}
+      data-error={span.isError ? true : undefined}
       style={{ gridTemplateColumns: "15rem minmax(0, 1fr)" }}
     >
       <div className="min-w-0 border-r border-border/35 pr-4">
         <div className="flex min-w-0 gap-1.5">
-          <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", phaseColor)} />
+          <span className="execution-phase-dot mt-1 h-2 w-2 shrink-0 rounded-full" />
           <div className="min-w-0 space-y-0.5">
             <div className="truncate text-sm font-medium leading-tight" title={span.label}>
               {span.label}
             </div>
             <div className="flex items-center gap-1.5 text-xs leading-none text-muted-foreground">
-              <Badge
-                variant="outline"
-                className={cn("h-5 rounded-sm px-1.5 text-[10px] font-medium uppercase leading-none", phaseBadgeClass)}
-              >
+              <span className="execution-phase-chip inline-flex h-5 items-center rounded-md border px-2 py-1 text-[10px] font-medium uppercase leading-none">
                 {span.phase}
-              </Badge>
+              </span>
               <span className="font-medium text-muted-foreground">{formatDuration(span.durationMs)}</span>
               {span.isError && <span className="text-red-600 dark:text-red-400">Error</span>}
             </div>
@@ -81,13 +71,12 @@ export function ExecutionWaterfallRow({
           type="button"
           onClick={() => onSelect(span)}
           className={cn(
-            "my-1.5 h-3 rounded-[2px] px-1.5 text-xs font-medium text-white transition-all",
+            "execution-phase-bar my-1.5 h-3 rounded-[2px] px-1.5 text-xs font-medium text-white transition-all",
             selected && "ring-1 ring-foreground/50",
           )}
           style={{
             gridColumn: `${startColumn} / ${endColumn}`,
             gridRowStart: 1,
-            ...phaseBarStyle,
           }}
           title={`${span.label} · ${formatDuration(span.durationMs)}`}
         >

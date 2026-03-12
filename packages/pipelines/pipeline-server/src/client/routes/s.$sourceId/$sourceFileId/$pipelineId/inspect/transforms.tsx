@@ -101,7 +101,11 @@ function RouteComponent() {
 
                 <section className="space-y-3">
                   <div className="flex flex-wrap gap-2">
-                    <Badge variant="secondary">{selectedTransform.routes.length} routes use this transform</Badge>
+                    <Badge variant="secondary">
+                      {selectedTransform.routes.length}
+                      {" "}
+                      routes use this transform
+                    </Badge>
                   </div>
                   <div>
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Routes</h3>

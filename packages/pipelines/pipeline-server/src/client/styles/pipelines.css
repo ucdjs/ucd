@@ -2,6 +2,231 @@
 
 @source "../components/**/*.{ts,js,mjs,jsx,tsx}";
 
+:root {
+  --execution-phase-pipeline-dot:          rgb(56 189 248 / 0.75);
+  --execution-phase-pipeline-chip-border:  rgb(14 165 233 / 0.3);
+  --execution-phase-pipeline-chip-bg:      rgb(14 165 233 / 0.12);
+  --execution-phase-pipeline-chip-fg:      rgb(3 105 161);
+  --execution-phase-pipeline-bar-start:    #38bdf8;
+  --execution-phase-pipeline-bar:          #0ea5e9;
+  --execution-phase-version-dot:           rgb(52 211 153 / 0.75);
+  --execution-phase-version-chip-border:   rgb(16 185 129 / 0.3);
+  --execution-phase-version-chip-bg:       rgb(16 185 129 / 0.12);
+  --execution-phase-version-chip-fg:       rgb(4 120 87);
+  --execution-phase-version-bar-start:     #34d399;
+  --execution-phase-version-bar:           #10b981;
+  --execution-phase-parse-dot:             rgb(251 191 36 / 0.8);
+  --execution-phase-parse-chip-border:     rgb(245 158 11 / 0.3);
+  --execution-phase-parse-chip-bg:         rgb(245 158 11 / 0.14);
+  --execution-phase-parse-chip-fg:         rgb(161 98 7);
+  --execution-phase-parse-bar-start:       #fbbf24;
+  --execution-phase-parse-bar:             #f59e0b;
+  --execution-phase-resolve-dot:           rgb(167 139 250 / 0.8);
+  --execution-phase-resolve-chip-border:   rgb(139 92 246 / 0.3);
+  --execution-phase-resolve-chip-bg:       rgb(139 92 246 / 0.12);
+  --execution-phase-resolve-chip-fg:       rgb(109 40 217);
+  --execution-phase-resolve-bar-start:     #a78bfa;
+  --execution-phase-resolve-bar:           #8b5cf6;
+  --execution-phase-artifact-dot:          rgb(251 113 133 / 0.8);
+  --execution-phase-artifact-chip-border:  rgb(244 63 94 / 0.3);
+  --execution-phase-artifact-chip-bg:      rgb(244 63 94 / 0.12);
+  --execution-phase-artifact-chip-fg:      rgb(190 24 93);
+  --execution-phase-artifact-bar-start:    #fb7185;
+  --execution-phase-artifact-bar:          #f43f5e;
+  --execution-phase-file-dot:              rgb(34 211 238 / 0.8);
+  --execution-phase-file-chip-border:      rgb(6 182 212 / 0.3);
+  --execution-phase-file-chip-bg:          rgb(6 182 212 / 0.12);
+  --execution-phase-file-chip-fg:          rgb(14 116 144);
+  --execution-phase-file-bar-start:        #22d3ee;
+  --execution-phase-file-bar:              #06b6d4;
+  --execution-phase-cache-dot:             rgb(163 230 53 / 0.8);
+  --execution-phase-cache-chip-border:     rgb(132 204 22 / 0.3);
+  --execution-phase-cache-chip-bg:         rgb(132 204 22 / 0.14);
+  --execution-phase-cache-chip-fg:         rgb(77 124 15);
+  --execution-phase-cache-bar-start:       #a3e635;
+  --execution-phase-cache-bar:             #84cc16;
+  --execution-phase-other-dot:             rgb(148 163 184 / 0.75);
+  --execution-phase-other-chip-border:     rgb(148 163 184 / 0.3);
+  --execution-phase-other-chip-bg:         rgb(148 163 184 / 0.12);
+  --execution-phase-other-chip-fg:         rgb(51 65 85);
+  --execution-phase-other-bar-start:       #94a3b8;
+  --execution-phase-other-bar:             #64748b;
+  --execution-phase-error-dot:             rgb(239 68 68 / 0.85);
+  --execution-phase-error-chip-border:     rgb(239 68 68 / 0.3);
+  --execution-phase-error-chip-bg:         rgb(239 68 68 / 0.12);
+  --execution-phase-error-chip-fg:         rgb(185 28 28);
+  --execution-phase-error-bar-start:       #ef4444;
+  --execution-phase-error-bar:             #dc2626;
+}
+
+.dark {
+  --execution-phase-pipeline-chip-bg:  color-mix(in srgb, var(--execution-phase-pipeline-bar) 18%, transparent);
+  --execution-phase-pipeline-chip-fg:  rgb(125 211 252);
+  --execution-phase-version-chip-bg:   color-mix(in srgb, var(--execution-phase-version-bar)  18%, transparent);
+  --execution-phase-version-chip-fg:   rgb(110 231 183);
+  --execution-phase-parse-chip-bg:     color-mix(in srgb, var(--execution-phase-parse-bar)    18%, transparent);
+  --execution-phase-parse-chip-fg:     rgb(253 224 71);
+  --execution-phase-resolve-chip-bg:   color-mix(in srgb, var(--execution-phase-resolve-bar)  18%, transparent);
+  --execution-phase-resolve-chip-fg:   rgb(196 181 253);
+  --execution-phase-artifact-chip-bg:  color-mix(in srgb, var(--execution-phase-artifact-bar) 18%, transparent);
+  --execution-phase-artifact-chip-fg:  rgb(253 164 175);
+  --execution-phase-file-chip-bg:      color-mix(in srgb, var(--execution-phase-file-bar)     18%, transparent);
+  --execution-phase-file-chip-fg:      rgb(103 232 249);
+  --execution-phase-cache-chip-bg:     color-mix(in srgb, var(--execution-phase-cache-bar)    18%, transparent);
+  --execution-phase-cache-chip-fg:     rgb(190 242 100);
+  --execution-phase-other-chip-bg:     color-mix(in srgb, var(--execution-phase-other-bar)    18%, transparent);
+  --execution-phase-other-chip-fg:     rgb(203 213 225);
+  --execution-phase-error-chip-bg:     color-mix(in srgb, var(--execution-phase-error-bar)    18%, transparent);
+  --execution-phase-error-chip-fg:     rgb(252 165 165);
+}
+
+@theme inline {
+  --color-execution-phase-pipeline-dot:          var(--execution-phase-pipeline-dot);
+  --color-execution-phase-pipeline-chip-border:  var(--execution-phase-pipeline-chip-border);
+  --color-execution-phase-pipeline-chip-bg:      var(--execution-phase-pipeline-chip-bg);
+  --color-execution-phase-pipeline-chip-fg:      var(--execution-phase-pipeline-chip-fg);
+  --color-execution-phase-pipeline-bar:          var(--execution-phase-pipeline-bar);
+  --color-execution-phase-version-dot:           var(--execution-phase-version-dot);
+  --color-execution-phase-version-chip-border:   var(--execution-phase-version-chip-border);
+  --color-execution-phase-version-chip-bg:       var(--execution-phase-version-chip-bg);
+  --color-execution-phase-version-chip-fg:       var(--execution-phase-version-chip-fg);
+  --color-execution-phase-version-bar:           var(--execution-phase-version-bar);
+  --color-execution-phase-parse-dot:             var(--execution-phase-parse-dot);
+  --color-execution-phase-parse-chip-border:     var(--execution-phase-parse-chip-border);
+  --color-execution-phase-parse-chip-bg:         var(--execution-phase-parse-chip-bg);
+  --color-execution-phase-parse-chip-fg:         var(--execution-phase-parse-chip-fg);
+  --color-execution-phase-parse-bar:             var(--execution-phase-parse-bar);
+  --color-execution-phase-resolve-dot:           var(--execution-phase-resolve-dot);
+  --color-execution-phase-resolve-chip-border:   var(--execution-phase-resolve-chip-border);
+  --color-execution-phase-resolve-chip-bg:       var(--execution-phase-resolve-chip-bg);
+  --color-execution-phase-resolve-chip-fg:       var(--execution-phase-resolve-chip-fg);
+  --color-execution-phase-resolve-bar:           var(--execution-phase-resolve-bar);
+  --color-execution-phase-artifact-dot:          var(--execution-phase-artifact-dot);
+  --color-execution-phase-artifact-chip-border:  var(--execution-phase-artifact-chip-border);
+  --color-execution-phase-artifact-chip-bg:      var(--execution-phase-artifact-chip-bg);
+  --color-execution-phase-artifact-chip-fg:      var(--execution-phase-artifact-chip-fg);
+  --color-execution-phase-artifact-bar:          var(--execution-phase-artifact-bar);
+  --color-execution-phase-file-dot:              var(--execution-phase-file-dot);
+  --color-execution-phase-file-chip-border:      var(--execution-phase-file-chip-border);
+  --color-execution-phase-file-chip-bg:          var(--execution-phase-file-chip-bg);
+  --color-execution-phase-file-chip-fg:          var(--execution-phase-file-chip-fg);
+  --color-execution-phase-file-bar:              var(--execution-phase-file-bar);
+  --color-execution-phase-cache-dot:             var(--execution-phase-cache-dot);
+  --color-execution-phase-cache-chip-border:     var(--execution-phase-cache-chip-border);
+  --color-execution-phase-cache-chip-bg:         var(--execution-phase-cache-chip-bg);
+  --color-execution-phase-cache-chip-fg:         var(--execution-phase-cache-chip-fg);
+  --color-execution-phase-cache-bar:             var(--execution-phase-cache-bar);
+  --color-execution-phase-other-dot:             var(--execution-phase-other-dot);
+  --color-execution-phase-other-chip-border:     var(--execution-phase-other-chip-border);
+  --color-execution-phase-other-chip-bg:         var(--execution-phase-other-chip-bg);
+  --color-execution-phase-other-chip-fg:         var(--execution-phase-other-chip-fg);
+  --color-execution-phase-other-bar:             var(--execution-phase-other-bar);
+  --color-execution-phase-error-dot:             var(--execution-phase-error-dot);
+  --color-execution-phase-error-chip-border:     var(--execution-phase-error-chip-border);
+  --color-execution-phase-error-chip-bg:         var(--execution-phase-error-chip-bg);
+  --color-execution-phase-error-chip-fg:         var(--execution-phase-error-chip-fg);
+  --color-execution-phase-error-bar:             var(--execution-phase-error-bar);
+}
+
+@layer components {
+  .execution-phase {
+    --_dot:         var(--execution-phase-other-dot);
+    --_chip-border: var(--execution-phase-other-chip-border);
+    --_chip-bg:     var(--execution-phase-other-chip-bg);
+    --_chip-fg:     var(--execution-phase-other-chip-fg);
+    --_bar-start:   var(--execution-phase-other-bar-start);
+    --_bar:         var(--execution-phase-other-bar);
+  }
+
+  .execution-phase[data-phase="Pipeline"] {
+    --_dot:         var(--execution-phase-pipeline-dot);
+    --_chip-border: var(--execution-phase-pipeline-chip-border);
+    --_chip-bg:     var(--execution-phase-pipeline-chip-bg);
+    --_chip-fg:     var(--execution-phase-pipeline-chip-fg);
+    --_bar-start:   var(--execution-phase-pipeline-bar-start);
+    --_bar:         var(--execution-phase-pipeline-bar);
+  }
+
+  .execution-phase[data-phase="Version"] {
+    --_dot:         var(--execution-phase-version-dot);
+    --_chip-border: var(--execution-phase-version-chip-border);
+    --_chip-bg:     var(--execution-phase-version-chip-bg);
+    --_chip-fg:     var(--execution-phase-version-chip-fg);
+    --_bar-start:   var(--execution-phase-version-bar-start);
+    --_bar:         var(--execution-phase-version-bar);
+  }
+
+  .execution-phase[data-phase="Parse"] {
+    --_dot:         var(--execution-phase-parse-dot);
+    --_chip-border: var(--execution-phase-parse-chip-border);
+    --_chip-bg:     var(--execution-phase-parse-chip-bg);
+    --_chip-fg:     var(--execution-phase-parse-chip-fg);
+    --_bar-start:   var(--execution-phase-parse-bar-start);
+    --_bar:         var(--execution-phase-parse-bar);
+  }
+
+  .execution-phase[data-phase="Resolve"] {
+    --_dot:         var(--execution-phase-resolve-dot);
+    --_chip-border: var(--execution-phase-resolve-chip-border);
+    --_chip-bg:     var(--execution-phase-resolve-chip-bg);
+    --_chip-fg:     var(--execution-phase-resolve-chip-fg);
+    --_bar-start:   var(--execution-phase-resolve-bar-start);
+    --_bar:         var(--execution-phase-resolve-bar);
+  }
+
+  .execution-phase[data-phase="Artifact"] {
+    --_dot:         var(--execution-phase-artifact-dot);
+    --_chip-border: var(--execution-phase-artifact-chip-border);
+    --_chip-bg:     var(--execution-phase-artifact-chip-bg);
+    --_chip-fg:     var(--execution-phase-artifact-chip-fg);
+    --_bar-start:   var(--execution-phase-artifact-bar-start);
+    --_bar:         var(--execution-phase-artifact-bar);
+  }
+
+  .execution-phase[data-phase="File"] {
+    --_dot:         var(--execution-phase-file-dot);
+    --_chip-border: var(--execution-phase-file-chip-border);
+    --_chip-bg:     var(--execution-phase-file-chip-bg);
+    --_chip-fg:     var(--execution-phase-file-chip-fg);
+    --_bar-start:   var(--execution-phase-file-bar-start);
+    --_bar:         var(--execution-phase-file-bar);
+  }
+
+  .execution-phase[data-phase="Cache"] {
+    --_dot:         var(--execution-phase-cache-dot);
+    --_chip-border: var(--execution-phase-cache-chip-border);
+    --_chip-bg:     var(--execution-phase-cache-chip-bg);
+    --_chip-fg:     var(--execution-phase-cache-chip-fg);
+    --_bar-start:   var(--execution-phase-cache-bar-start);
+    --_bar:         var(--execution-phase-cache-bar);
+  }
+
+  .execution-phase[data-phase="Error"],
+  .execution-phase[data-error="true"] {
+    --_dot:         var(--execution-phase-error-dot);
+    --_chip-border: var(--execution-phase-error-chip-border);
+    --_chip-bg:     var(--execution-phase-error-chip-bg);
+    --_chip-fg:     var(--execution-phase-error-chip-fg);
+    --_bar-start:   var(--execution-phase-error-bar-start);
+    --_bar:         var(--execution-phase-error-bar);
+  }
+
+  .execution-phase-dot {
+    background-color: var(--_dot);
+  }
+
+  .execution-phase-chip {
+    border-color:     var(--_chip-border);
+    background-color: var(--_chip-bg);
+    color:            var(--_chip-fg);
+  }
+
+  .execution-phase-bar {
+    background-color: var(--_bar);
+    background-image: linear-gradient(90deg, var(--_bar-start) 0%, var(--_bar) 100%);
+  }
+}
+
 .pipeline-graph .react-flow__background {
   background-color: hsl(var(--background));
 }
