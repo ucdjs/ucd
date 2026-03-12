@@ -34,11 +34,11 @@ export function SourcesPanel({
       </CardHeader>
       <CardContent className="grid gap-3 pt-4">
         <div className="grid grid-cols-2 gap-2">
-          <div className="grid gap-1 border border-border/60 bg-muted/10 p-3">
+          <div className="grid gap-1 border border-border/60 bg-muted/30 p-3">
             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Healthy</div>
             <div className="text-xl font-semibold tabular-nums">{sources.length - sourcesWithIssues}</div>
           </div>
-          <div className="grid gap-1 border border-border/60 bg-muted/10 p-3">
+          <div className="grid gap-1 border border-border/60 bg-muted/30 p-3">
             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">With issues</div>
             <div className="text-xl font-semibold tabular-nums">{sourcesWithIssues}</div>
           </div>
@@ -46,8 +46,8 @@ export function SourcesPanel({
 
         {sources.length === 0
           ? (
-              <div className="rounded-md border border-dashed border-border/70 bg-muted/10 px-4 py-8 text-center">
-                <FolderKanban className="mx-auto mb-3 h-8 w-8 text-muted-foreground/40" />
+              <div className="rounded-md border border-dashed border-border/70 bg-muted/30 px-4 py-8 text-center">
+                <FolderKanban className="mx-auto mb-3 h-8 w-8 text-muted-foreground/60" />
                 <p className="text-sm font-medium">No sources configured</p>
               </div>
             )
@@ -57,7 +57,7 @@ export function SourcesPanel({
                   const statusClass = source.errors.length > 0 ? "bg-red-500/85" : "bg-emerald-500/85";
 
                   return (
-                    <div key={source.id} className="grid gap-2 px-3 py-3 transition-colors hover:bg-muted/20">
+                    <div key={source.id} className="grid gap-2 px-3 py-3 transition-colors hover:bg-muted/35">
                       <div className="flex items-center justify-between gap-3">
                         <Link
                           to="/s/$sourceId"

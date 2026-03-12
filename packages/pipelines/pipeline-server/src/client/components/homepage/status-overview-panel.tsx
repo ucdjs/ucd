@@ -24,7 +24,7 @@ export function StatusOverviewPanel({
         <CardDescription>Current execution totals across all tracked states.</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-2 pt-4 sm:grid-cols-2 xl:grid-cols-2">
-        <div className="grid gap-1 border border-border/60 bg-muted/10 p-3 sm:col-span-2">
+        <div className="grid gap-1 border border-border/60 bg-muted/30 p-3 sm:col-span-2">
           <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Executions</div>
           <div className="text-2xl font-semibold tabular-nums">{total}</div>
         </div>
@@ -32,7 +32,7 @@ export function StatusOverviewPanel({
           const Icon = state.icon;
 
           return (
-            <div key={state.key} className="grid gap-1 border border-border/60 bg-muted/10 p-3">
+            <div key={state.key} className="grid gap-1 border border-border/60 bg-muted/30 p-3">
               <div className="flex items-center gap-2">
                 <span className={`h-2 w-2 rounded-full ${state.markerClassName}`} />
                 <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">{state.label}</div>
