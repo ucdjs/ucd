@@ -231,7 +231,7 @@ export const playgroundAdvancedPipeline = definePipeline({
   id: "playground-advanced",
   name: "Advanced Pipeline Playground",
   description: "A comprehensive pipeline demonstrating all available features including dependencies, artifacts, transforms, and multiple sources",
-  versions: ["15.1.0", "16.0.0"],
+  versions: ["15.0.0", "15.1.0", "16.0.0"],
   inputs: [
     createMemorySource({
       id: "test-data",
@@ -275,7 +275,18 @@ export const playgroundAdvancedPipeline = definePipeline({
           {
             path: "ucd/UnicodeData.txt",
             content: `0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;
-0061;LATIN SMALL LETTER A;Ll;0;L;;;;;N;;;0041;;0041`,
+  0061;LATIN SMALL LETTER A;Ll;0;L;;;;;N;;;0041;;0041`,
+          },
+          {
+            path: "ucd/Blocks.txt",
+            content: `0000..007F; Basic Latin`,
+          },
+        ],
+        "15.0.0": [
+          {
+            path: "ucd/UnicodeData.txt",
+            content: `0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;
+  0061;LATIN SMALL LETTER A;Ll;0;L;;;;;N;;;0041;;0041`,
           },
           {
             path: "ucd/Blocks.txt",
