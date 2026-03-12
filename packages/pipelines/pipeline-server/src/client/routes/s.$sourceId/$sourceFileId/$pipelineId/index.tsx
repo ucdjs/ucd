@@ -1,5 +1,5 @@
 import { ExecutionTable } from "#components/execution/execution-table";
-import { QuickActionsCard } from "#components/home/quick-actions-card";
+import { QuickActionsCard } from "#components/pipeline/quick-actions-card";
 import { executionsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
@@ -91,7 +91,11 @@ function RouteComponent() {
               <section className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="text-sm font-medium">Busiest routes</h3>
-                  <span className="text-xs text-muted-foreground">{transformCount} transforms total</span>
+                  <span className="text-xs text-muted-foreground">
+                    {transformCount}
+                    {" "}
+                    transforms total
+                  </span>
                 </div>
 
                 {busiestRoutes.length > 0

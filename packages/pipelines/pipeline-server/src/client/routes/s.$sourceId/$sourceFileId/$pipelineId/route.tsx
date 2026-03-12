@@ -1,6 +1,6 @@
-import { PipelineHeader } from "#components/pipeline-overview/pipeline-header";
-import { PipelineTabs } from "#components/pipeline-overview/pipeline-tabs";
-import { VersionSelector } from "#components/pipeline-overview/version-selector";
+import { PipelineHeader } from "#components/pipeline/pipeline-header";
+import { PipelineTabs } from "#components/pipeline/pipeline-tabs";
+import { VersionSelector } from "#components/pipeline/version-selector";
 import { usePipelineVersions } from "#hooks/use-pipeline-versions";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { sourceQueryOptions } from "#queries/source";
