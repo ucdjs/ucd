@@ -109,7 +109,7 @@ export function PipelineSidebar({
       <SidebarContent>
         {currentSourceId
           ? (
-              <SidebarGroup>
+              <SidebarGroup className="px-3 py-2">
                 <SourceFileList
                   sourceId={currentSourceId}
                   currentFileId={currentFileId}
@@ -121,7 +121,7 @@ export function PipelineSidebar({
             )
           : (
               sources.map((source) => (
-                <SidebarGroup key={source.id}>
+                <SidebarGroup key={source.id} className="px-3 py-2">
                   <SourceGroup
                     sourceId={source.id}
                     sourceLabel={source.label}
@@ -192,24 +192,26 @@ function SourceGroup({
 
   return (
     <>
-      <SidebarGroupLabel
-        className="pr-8"
-        render={(
+      <div className="mx-1 flex min-w-0 items-center gap-2 rounded-md px-2.5 py-1">
+        <SidebarGroupAction
+          aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
+          className="static -ml-1.5 flex h-7 w-7 shrink-0 translate-y-0 items-center justify-center rounded-md p-0 hover:bg-sidebar-accent"
+          onClick={() => toggleSource(sourceId)}
+        >
+          <ChevronIcon className="size-4" />
+        </SidebarGroupAction>
+        <SidebarGroupLabel className="h-auto flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
           <Link
             to="/s/$sourceId"
             params={{ sourceId }}
-            className={isActive ? "text-sidebar-foreground" : undefined}
+            className={isActive
+              ? "block truncate text-sidebar-foreground"
+              : "block truncate hover:text-sidebar-foreground"}
           >
             {sourceLabel}
           </Link>
-        )}
-      />
-      <SidebarGroupAction
-        aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
-        onClick={() => toggleSource(sourceId)}
-      >
-        <ChevronIcon className="size-4" />
-      </SidebarGroupAction>
+        </SidebarGroupLabel>
+      </div>
       {isOpen && (
         <SourceFileList
           sourceId={sourceId}
@@ -242,7 +244,7 @@ function SourceFileList({
 
   if (isLoading) {
     return (
-      <SidebarMenu>
+      <SidebarMenu className="mt-1 gap-1.5">
         <div className="px-2 py-1 text-xs text-muted-foreground">Loading...</div>
       </SidebarMenu>
     );
@@ -251,17 +253,17 @@ function SourceFileList({
   const files = data?.files ?? [];
 
   return (
-    <SidebarMenu>
+    <SidebarMenu className="mt-1 gap-1.5">
       {files.map((file) => {
         const fileKey = `${sourceId}:${file.id}`;
         const isFileActive = currentFileId === file.id;
-        const isOpen = openFiles[fileKey] ?? isFileActive;
+        const isOpen = openFiles[fileKey] ?? (isFileActive || files[0]?.id === file.id);
 
         return (
           <SidebarMenuItem key={file.id}>
             <SidebarMenuButton
               isActive={isFileActive}
-              className="w-full justify-start gap-2"
+              className="h-9 w-full justify-start gap-2 rounded-md px-2.5"
               onClick={(event: React.MouseEvent) => {
                 event.preventDefault();
                 toggleFile(fileKey);
@@ -273,18 +275,21 @@ function SourceFileList({
                 >
                   {isOpen ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
                   <span className="truncate flex-1">{file.label}</span>
-                  <span className="text-[10px] text-muted-foreground">{file.pipelines.length}</span>
+                  <span className="rounded-sm bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    {file.pipelines.length}
+                  </span>
                 </Link>
               )}
             />
             {isOpen && file.pipelines.length > 0 && (
-              <SidebarMenuSub>
+              <SidebarMenuSub className="mx-3.5 mt-1 gap-1 border-l border-sidebar-border px-2.5 py-1.5">
                 {file.pipelines.map((pipeline) => {
                   const isActive = currentPipelineId === pipeline.id && currentFileId === file.id;
                   return (
                     <SidebarMenuSubItem key={`${file.id}-${pipeline.id}`}>
                       <SidebarMenuSubButton
                         isActive={isActive}
+                        className="h-8 rounded-md px-2.5"
                         render={(
                           <Link
                             to="/s/$sourceId/$sourceFileId/$pipelineId"

@@ -1,7 +1,7 @@
 import { ExecutionTable } from "#components/execution/execution-table";
-import { ExecutionActivityChart } from "#components/overview/activity-chart";
-import { SourcesPanel } from "#components/overview/sources-panel";
-import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
+import { ExecutionActivityChart } from "#components/homepage/activity-chart";
+import { SourcesPanel } from "#components/homepage/sources-panel";
+import { StatusOverviewPanel } from "#components/homepage/status-overview-panel";
 import { overviewQueryOptions } from "#queries/overview";
 import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -11,16 +11,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdj
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    return {
-      overview: await context.queryClient.ensureQueryData(overviewQueryOptions()),
-    };
+    context.queryClient.prefetchQuery(overviewQueryOptions());
   },
   component: HomePage,
 });
 
 function HomePage() {
-  const { overview } = Route.useLoaderData();
   const { data: sources } = useSuspenseQuery(sourcesQueryOptions());
+  const { data: overview } = useSuspenseQuery(overviewQueryOptions());
   const sourceCount = sources.length;
   const pipelineCount = sources.reduce((sum, source) => sum + source.pipelineCount, 0);
   const fileCount = sources.reduce((sum, source) => sum + source.fileCount, 0);
