@@ -1,13 +1,13 @@
+import type { ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
 import type {
   PipelineGraphNodeType,
 } from "@ucdjs/pipelines-core";
-import type { ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
+import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflow/react";
+import type { PipelineFlowEdge, PipelineFlowNode } from "./graph-utils";
 import { getFlowNodeType, graphNodeTypes } from "#shared/lib/graph";
-import type { NodeMouseHandler, NodeTypes } from "@xyflow/react";
-import type { PipelineFlowNode } from "./graph-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
-import { useCallback, useMemo, useState } from "react";
+import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./graph-details";
 import { PipelineGraphFilters } from "./graph-filters";
 import {
@@ -56,16 +56,23 @@ export function PipelineGraph({
   );
   const [selectedNode, setSelectedNode] = useState<ExecutionGraphNodeView | null>(null);
 
-  // Filtering and layout happen together so React Flow always receives a coherent visible slice.
-  const { layoutedNodes, layoutedEdges } = useMemo(() => {
+  const { initialNodes, initialEdges } = useMemo(() => {
     const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByType(
       allNodes,
       allEdges,
       visibleTypes,
     );
     const positioned = applyLayout(filteredNodes, filteredEdges);
-    return { layoutedNodes: positioned, layoutedEdges: filteredEdges };
+    return { initialNodes: positioned, initialEdges: filteredEdges };
   }, [allNodes, allEdges, visibleTypes]);
+
+  const [nodes, setNodes] = useState<PipelineFlowNode[]>(initialNodes);
+  const [edges, setEdges] = useState(initialEdges);
+
+  useEffect(() => {
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [initialNodes, initialEdges]);
 
   const handleToggleType = useCallback((type: PipelineGraphNodeType) => {
     setVisibleTypes((current) => {
@@ -90,6 +97,14 @@ export function PipelineGraph({
     [onNodeSelect],
   );
 
+  const handleNodesChange = useCallback((changes: NodeChange<PipelineFlowNode>[]) => {
+    setNodes((current) => applyNodeChanges(changes, current));
+  }, []);
+
+  const handleEdgesChange = useCallback((changes: EdgeChange<PipelineFlowEdge>[]) => {
+    setEdges((current) => applyEdgeChanges(changes, current));
+  }, []);
+
   const handlePaneClick = useCallback(() => {
     setSelectedNode(null);
     onNodeSelect?.(null);
@@ -113,8 +128,10 @@ export function PipelineGraph({
         )}
 
         <ReactFlow
-          nodes={layoutedNodes}
-          edges={layoutedEdges}
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
           onNodeClick={handleNodeClick}
           onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
@@ -123,7 +140,7 @@ export function PipelineGraph({
           minZoom={0.1}
           maxZoom={2}
           proOptions={proOptions}
-          nodesDraggable={false}
+          nodesDraggable
           nodesConnectable={false}
           className="bg-transparent"
         >
