@@ -9,6 +9,7 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
+  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
@@ -18,7 +19,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
+import { BookOpen, ChevronDown, ChevronRight, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
 import * as React from "react";
 import { SourceSwitcher } from "./source-switcher";
 
@@ -44,7 +45,12 @@ export function PipelineSidebar({
     ? params.pipelineId
     : undefined;
 
+  const [openSources, setOpenSources] = React.useState<Record<string, boolean>>({});
   const [openFiles, setOpenFiles] = React.useState<Record<string, boolean>>({});
+
+  const toggleSource = (sourceId: string) => {
+    setOpenSources((prev) => ({ ...prev, [sourceId]: !prev[sourceId] }));
+  };
 
   const toggleFile = (key: string) => {
     setOpenFiles((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -116,11 +122,14 @@ export function PipelineSidebar({
           : (
               sources.map((source) => (
                 <SidebarGroup key={source.id}>
-                  <SidebarGroupLabel>{source.label}</SidebarGroupLabel>
-                  <SourceFileList
+                  <SourceGroup
                     sourceId={source.id}
+                    sourceLabel={source.label}
+                    currentSourceId={currentSourceId}
                     currentFileId={currentFileId}
                     currentPipelineId={currentPipelineId}
+                    isOpen={openSources[source.id] ?? source.id === currentSourceId}
+                    toggleSource={toggleSource}
                     openFiles={openFiles}
                     toggleFile={toggleFile}
                   />
@@ -157,6 +166,60 @@ export function PipelineSidebar({
         </SidebarGroup>
       </SidebarFooter>
     </Sidebar>
+  );
+}
+
+interface SourceGroupProps extends SourceFileListProps {
+  sourceLabel: string;
+  currentSourceId: string | undefined;
+  isOpen: boolean;
+  toggleSource: (sourceId: string) => void;
+}
+
+function SourceGroup({
+  sourceId,
+  sourceLabel,
+  currentSourceId,
+  currentFileId,
+  currentPipelineId,
+  isOpen,
+  toggleSource,
+  openFiles,
+  toggleFile,
+}: SourceGroupProps) {
+  const isActive = currentSourceId === sourceId;
+  const ChevronIcon = isOpen ? ChevronDown : ChevronRight;
+
+  return (
+    <>
+      <SidebarGroupLabel
+        className="pr-8"
+        render={(
+          <Link
+            to="/s/$sourceId"
+            params={{ sourceId }}
+            className={isActive ? "text-sidebar-foreground" : undefined}
+          >
+            {sourceLabel}
+          </Link>
+        )}
+      />
+      <SidebarGroupAction
+        aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
+        onClick={() => toggleSource(sourceId)}
+      >
+        <ChevronIcon className="size-4" />
+      </SidebarGroupAction>
+      {isOpen && (
+        <SourceFileList
+          sourceId={sourceId}
+          currentFileId={currentFileId}
+          currentPipelineId={currentPipelineId}
+          openFiles={openFiles}
+          toggleFile={toggleFile}
+        />
+      )}
+    </>
   );
 }
 
