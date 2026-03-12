@@ -1,8 +1,7 @@
-import type { ExecutionSpan } from "./execution-utils";
+import type { ExecutionSpan } from "../../lib/execution-utils";
 import { formatDuration } from "#lib/format";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/ui/sheet";
-import { getPhaseColor } from "./execution-utils";
 
 export interface ExecutionSpanDrawerProps {
   span: ExecutionSpan | null;
@@ -27,8 +26,8 @@ export function ExecutionSpanDrawer({ span, baseTime, onClose }: ExecutionSpanDr
           <SheetTitle>Span Details</SheetTitle>
         </SheetHeader>
         <div className="px-4 pb-4 space-y-4">
-          <div className="flex items-center gap-2">
-            <span className={cn("h-2 w-2 rounded-full", span ? getPhaseColor(span.phase) : "bg-muted")} />
+          <div className="execution-phase flex items-center gap-2" data-phase={span?.phase} data-error={span?.isError ? true : undefined}>
+            <span className={cn("h-2 w-2 rounded-full", span ? "execution-phase-dot" : "bg-muted")} />
             <span className="text-sm font-medium truncate">
               {span?.label ?? "No span selected"}
             </span>

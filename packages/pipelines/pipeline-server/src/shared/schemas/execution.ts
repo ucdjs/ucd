@@ -1,8 +1,8 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineSummary } from "@ucdjs/pipelines-executor";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
-import { ExecutionGraphViewSchema } from "./graph";
 import z from "zod";
+import { ExecutionGraphViewSchema } from "./graph";
 
 const ExecutionStatusSchema = z.enum(EXECUTION_STATUSES);
 const PaginationSchema = z.object({

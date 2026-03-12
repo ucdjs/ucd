@@ -78,7 +78,11 @@ export function RouteTransformsSection() {
                 Routes in this pipeline that use the selected transform.
               </div>
             </div>
-            <Badge variant="outline">{transformRoutes.length} routes</Badge>
+            <Badge variant="outline">
+              {transformRoutes.length}
+              {" "}
+              routes
+            </Badge>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             {transformRoutes.map((route) => (

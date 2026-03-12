@@ -1,10 +1,11 @@
 import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
-import type { ExecutionSpan } from "./execution-utils";
+import type { ExecutionSpan } from "../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { useMemo, useState } from "react";
+import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
+import { useEffect, useMemo, useState } from "react";
 import { ExecutionWaterfallAxis } from "./waterfall/axis";
 import { ExecutionWaterfallRow } from "./waterfall/row";
-import { buildTicks, phaseOptions } from "./waterfall/shared";
+import { buildTicks } from "./waterfall/shared";
 import { ExecutionWaterfallToolbar } from "./waterfall/toolbar";
 
 export interface ExecutionWaterfallProps {
@@ -21,20 +22,27 @@ export function ExecutionWaterfall({
   onSpanClick,
 }: ExecutionWaterfallProps) {
   const hasSpans = spans.length > 0;
-  const availablePhases = useMemo(
-    () => phaseOptions.filter((phase) => spans.some((span) => span.phase === phase)),
-    [spans],
-  );
+  const start = hasSpans ? Math.min(...spans.map((span) => span.start)) : 0;
+  const end = hasSpans ? Math.max(...spans.map((span) => span.end)) : 0;
+  const duration = Math.max(end - start, 1);
+
+  const availablePhases = useMemo(() => PIPELINE_EVENT_PHASES.filter((phase) => spans.some((span) => span.phase === phase)), [spans]);
   const [activePhases, setActivePhases] = useState<Set<PipelineEventPhase>>(
-    () => new Set(phaseOptions),
+    () => new Set(availablePhases),
   );
+
+  useEffect(() => {
+    setActivePhases((current) => {
+      const next = new Set(availablePhases.filter((phase) => current.has(phase)));
+      return next.size === 0 ? new Set(availablePhases) : next;
+    });
+  }, [availablePhases]);
+
   const visibleActivePhases = useMemo(() => {
     const next = new Set(availablePhases.filter((phase) => activePhases.has(phase)));
     return next.size === 0 ? new Set(availablePhases) : next;
   }, [activePhases, availablePhases]);
-  const start = hasSpans ? Math.min(...spans.map((span) => span.start)) : 0;
-  const end = hasSpans ? Math.max(...spans.map((span) => span.end)) : 0;
-  const duration = Math.max(end - start, 1);
+
   const filteredSpans = useMemo(
     () => spans.filter((span) => visibleActivePhases.has(span.phase)),
     [spans, visibleActivePhases],
@@ -47,7 +55,7 @@ export function ExecutionWaterfall({
 
   function handleTogglePhase(phase: PipelineEventPhase) {
     setActivePhases((current) => {
-      const next = new Set(current);
+      const next = new Set(availablePhases.filter((item) => current.has(item)));
       if (next.has(phase)) {
         next.delete(phase);
       } else {

@@ -1,8 +1,8 @@
 import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
-import type { ExecutionSpan } from "../execution-utils";
+import type { ExecutionSpan } from "../../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { getPhaseAccentClass, getPhaseColor } from "../execution-utils";
-import { phaseLabels, phaseOptions } from "./shared";
+import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
+import { phaseLabels } from "./shared";
 
 export interface ExecutionWaterfallToolbarProps {
   spans: ExecutionSpan[];
@@ -24,7 +24,7 @@ export function ExecutionWaterfallToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex flex-wrap gap-1.5">
-        {phaseOptions.filter((phase) => presentPhases.has(phase)).map((phase) => {
+        {PIPELINE_EVENT_PHASES.filter((phase) => presentPhases.has(phase)).map((phase) => {
           const isActive = activePhases.has(phase);
           const visibleCount = spans.filter((span) => span.phase === phase).length;
 
@@ -33,14 +33,15 @@ export function ExecutionWaterfallToolbar({
               key={phase}
               type="button"
               onClick={() => onTogglePhase(phase)}
+              data-phase={phase}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors",
+                "execution-phase inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors",
                 isActive
-                  ? getPhaseAccentClass(phase)
+                  ? "execution-phase-chip"
                   : "border-border/40 bg-transparent text-muted-foreground/70",
               )}
             >
-              <span className={cn("h-2 w-2 rounded-full", getPhaseColor(phase))} />
+              <span className="execution-phase-dot h-2 w-2 rounded-full" />
               <span className="font-medium">{phaseLabels[phase]}</span>
               <span className="text-muted-foreground/80">{visibleCount}</span>
             </button>

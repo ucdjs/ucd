@@ -1,6 +1,5 @@
-import { sourceQueryOptions } from "#queries/source";
 import { sourcesQueryOptions } from "#queries/sources";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -9,18 +8,16 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ChevronDown, ChevronRight, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
+import { BookOpen, ExternalLink, Hash, Tag } from "lucide-react";
 import * as React from "react";
+import { SourceFileList } from "./pipeline-sidebar-source-file-list";
+import { SourceGroup } from "./pipeline-sidebar-source-group";
 import { SourceSwitcher } from "./source-switcher";
 
 export interface PipelineSidebarProps {
@@ -166,154 +163,5 @@ export function PipelineSidebar({
         </SidebarGroup>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-interface SourceGroupProps extends SourceFileListProps {
-  sourceLabel: string;
-  currentSourceId: string | undefined;
-  isOpen: boolean;
-  toggleSource: (sourceId: string) => void;
-}
-
-const treeRowClassName = "h-9 w-full gap-2 rounded-md px-2.5";
-const treeRowIconSlotClassName = "flex h-7 w-7 shrink-0 items-center justify-center";
-
-function SourceGroup({
-  sourceId,
-  sourceLabel,
-  currentSourceId,
-  currentFileId,
-  currentPipelineId,
-  isOpen,
-  toggleSource,
-  openFiles,
-  toggleFile,
-}: SourceGroupProps) {
-  const isActive = currentSourceId === sourceId;
-  const ChevronIcon = isOpen ? ChevronDown : ChevronRight;
-
-  return (
-    <>
-      <div className={`mx-1 flex min-w-0 items-center ${treeRowClassName}`}>
-        <div className={treeRowIconSlotClassName}>
-          <SidebarGroupAction
-            aria-label={`${isOpen ? "Collapse" : "Expand"} ${sourceLabel}`}
-            className="static flex h-7 w-7 translate-y-0 items-center justify-center rounded-md p-0 hover:bg-sidebar-accent"
-            onClick={() => toggleSource(sourceId)}
-          >
-            <ChevronIcon className="size-4" />
-          </SidebarGroupAction>
-        </div>
-        <SidebarGroupLabel className="h-auto min-w-0 flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
-          <Link
-            to="/s/$sourceId"
-            params={{ sourceId }}
-            className={isActive
-              ? "block truncate text-sidebar-foreground"
-              : "block truncate hover:text-sidebar-foreground"}
-          >
-            {sourceLabel}
-          </Link>
-        </SidebarGroupLabel>
-      </div>
-      {isOpen && (
-        <SourceFileList
-          sourceId={sourceId}
-          currentFileId={currentFileId}
-          currentPipelineId={currentPipelineId}
-          openFiles={openFiles}
-          toggleFile={toggleFile}
-        />
-      )}
-    </>
-  );
-}
-
-interface SourceFileListProps {
-  sourceId: string;
-  currentFileId: string | undefined;
-  currentPipelineId: string | undefined;
-  openFiles: Record<string, boolean>;
-  toggleFile: (key: string) => void;
-}
-
-function SourceFileList({
-  sourceId,
-  currentFileId,
-  currentPipelineId,
-  openFiles,
-  toggleFile,
-}: SourceFileListProps) {
-  const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId }));
-
-  if (isLoading) {
-    return (
-      <SidebarMenu className="mt-1 gap-1.5">
-        <div className="px-2 py-1 text-xs text-muted-foreground">Loading...</div>
-      </SidebarMenu>
-    );
-  }
-
-  const files = data?.files ?? [];
-
-  return (
-    <SidebarMenu className="mt-1 gap-1.5">
-      {files.map((file) => {
-        const fileKey = `${sourceId}:${file.id}`;
-        const isFileActive = currentFileId === file.id;
-        const isOpen = openFiles[fileKey] ?? (isFileActive || files[0]?.id === file.id);
-
-        return (
-          <SidebarMenuItem key={file.id}>
-            <SidebarMenuButton
-              isActive={isFileActive}
-              className={treeRowClassName}
-              onClick={(event: React.MouseEvent) => {
-                event.preventDefault();
-                toggleFile(fileKey);
-              }}
-              render={(
-                <Link
-                  to="/s/$sourceId/$sourceFileId"
-                  params={{ sourceId, sourceFileId: file.id }}
-                >
-                  <span className={treeRowIconSlotClassName}>
-                    {isOpen ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
-                  </span>
-                  <span className="truncate flex-1">{file.label}</span>
-                  <span className="rounded-sm bg-sidebar-accent/60 px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                    {file.pipelines.length}
-                  </span>
-                </Link>
-              )}
-            />
-            {isOpen && file.pipelines.length > 0 && (
-              <SidebarMenuSub className="mx-3.5 mt-1 gap-1 border-l border-sidebar-border px-2.5 py-1.5">
-                {file.pipelines.map((pipeline) => {
-                  const isActive = currentPipelineId === pipeline.id && currentFileId === file.id;
-                  return (
-                    <SidebarMenuSubItem key={`${file.id}-${pipeline.id}`}>
-                      <SidebarMenuSubButton
-                        isActive={isActive}
-                        className="h-8 rounded-md px-2.5"
-                        render={(
-                          <Link
-                            to="/s/$sourceId/$sourceFileId/$pipelineId"
-                            params={{ sourceId, sourceFileId: file.id, pipelineId: pipeline.id }}
-                          >
-                            <span className="truncate flex-1">{pipeline.name || pipeline.id}</span>
-                          </Link>
-                        )}
-                      />
-                    </SidebarMenuSubItem>
-                  );
-                })}
-              </SidebarMenuSub>
-            )}
-          </SidebarMenuItem>
-        );
-      })}
-    </SidebarMenu>
   );
 }

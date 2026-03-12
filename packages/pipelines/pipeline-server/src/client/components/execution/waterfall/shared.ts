@@ -1,8 +1,6 @@
 import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
 import { formatDuration } from "#lib/format";
-import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
 
-export const phaseOptions = PIPELINE_EVENT_PHASES;
 export const timelineColumns = 100;
 
 export const phaseLabels: Record<PipelineEventPhase, string> = {

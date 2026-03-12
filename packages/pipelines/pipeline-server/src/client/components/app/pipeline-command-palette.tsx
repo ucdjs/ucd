@@ -69,7 +69,7 @@ export function PipelineCommandPalette() {
           sourceLabel: source.label,
           fileId: file.id,
           fileLabel: file.label,
-        }))
+        })),
       );
     });
   }, [sourceQueries]);

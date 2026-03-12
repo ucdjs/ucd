@@ -44,7 +44,10 @@ export function RouteOutputsSection() {
               {selectedRoute.outputs.map((output, index) => (
                 <div key={`${output.dir ?? "none"}-${output.fileName ?? "none"}-${index}`} className="rounded-lg border border-border/60 bg-muted/10 p-4">
                   <div className="flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium">Output {index + 1}</div>
+                    <div className="text-sm font-medium">
+                      Output
+                      {index + 1}
+                    </div>
                     <button
                       type="button"
                       onClick={() => openOutput(index)}
