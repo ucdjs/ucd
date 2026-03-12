@@ -8,7 +8,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({
   loader: async ({ context, params }) => {
     try {
-      await context.queryClient.ensureQueryData(executionGraphQueryOptions({
+      await context.queryClient.prefetchQuery(executionGraphQueryOptions({
         sourceId: params.sourceId,
         fileId: params.sourceFileId,
         pipelineId: params.pipelineId,
@@ -41,9 +41,6 @@ function ExecutionGraphPage() {
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold">Execution graph</h1>
-            <p className="text-sm text-muted-foreground">
-              Inspect the recorded graph for this execution.
-            </p>
           </div>
           <StatusBadge status={data.status} />
         </div>
@@ -63,15 +60,6 @@ function ExecutionGraphPage() {
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="text-lg font-semibold">Execution graph</h1>
-          <p className="text-sm text-muted-foreground">
-            Execution
-            {" "}
-            <code className="font-mono text-xs">{executionId}</code>
-            {" "}
-            for pipeline
-            {" "}
-            <code className="font-mono text-xs">{pipelineId}</code>
-          </p>
         </div>
         <StatusBadge status={data.status} />
       </div>
