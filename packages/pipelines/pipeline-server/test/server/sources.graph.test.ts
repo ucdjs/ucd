@@ -10,10 +10,12 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       graph: {
         nodes: [
           { id: "source-1", type: "source", version: "1.0.0" },
+          { id: "route-1", type: "route", routeId: "basic-route" },
           { id: "output-1", type: "output", outputIndex: 0 },
         ],
         edges: [
-          { from: "source-1", to: "output-1", type: "resolved" },
+          { from: "source-1", to: "route-1", type: "parsed" },
+          { from: "route-1", to: "output-1", type: "resolved" },
         ],
       } as never,
     });
@@ -42,6 +44,30 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
             ],
           },
           {
+            id: "route-1",
+            nodeType: "route",
+            flowType: "pipeline-route",
+            label: "basic-route",
+            detailFields: [
+              { label: "Node ID", type: "text", value: "route-1" },
+              { label: "Route ID", type: "text", value: "basic-route" },
+            ],
+            actions: [
+              {
+                label: "Open basic-route",
+                to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
+                params: {
+                  sourceId: "local",
+                  sourceFileId: "simple",
+                  pipelineId: "simple",
+                },
+                search: {
+                  route: "basic-route",
+                },
+              },
+            ],
+          },
+          {
             id: "output-1",
             nodeType: "output",
             flowType: "pipeline-output",
@@ -50,12 +76,30 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
               { label: "Node ID", type: "text", value: "output-1" },
               { label: "Output Index", type: "text", value: 0 },
             ],
+            actions: [
+              {
+                label: "Open outputs",
+                to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+                params: {
+                  sourceId: "local",
+                  sourceFileId: "simple",
+                  pipelineId: "simple",
+                },
+              },
+            ],
           },
         ],
         edges: [
           {
-            id: "edge-0-source-1-output-1",
+            id: "edge-0-source-1-route-1",
             source: "source-1",
+            target: "route-1",
+            label: "parsed",
+            edgeType: "parsed",
+          },
+          {
+            id: "edge-1-route-1-output-1",
+            source: "route-1",
             target: "output-1",
             label: "resolved",
             edgeType: "resolved",

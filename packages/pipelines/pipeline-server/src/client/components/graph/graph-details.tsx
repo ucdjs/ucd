@@ -1,6 +1,8 @@
 import type { ExecutionGraphDetailField, ExecutionGraphNodeView } from "#shared/schemas/graph";
 import { getGraphNodeConfig, getNodeBadgeClassName } from "#shared/lib/graph";
 import { cn } from "@ucdjs-internal/shared-ui";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
@@ -61,6 +63,7 @@ export function PipelineGraphDetails({
     return null;
   }
 
+  const navigate = useNavigate();
   const nodeConfig = getGraphNodeConfig(node.nodeType);
 
   return (
@@ -86,6 +89,29 @@ export function PipelineGraphDetails({
               <FieldValue field={field} />
             </DetailRow>
           ))}
+          {node.actions && node.actions.length > 0 && (
+            <DetailRow label="Actions">
+              <div className="flex flex-wrap gap-2">
+                {node.actions.map((action) => (
+                  <Button
+                    key={`${action.to}:${action.label}`}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      navigate({
+                        to: action.to as never,
+                        params: action.params as never,
+                        search: action.search as never,
+                      });
+                    }}
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+              </div>
+            </DetailRow>
+          )}
         </div>
       </div>
     </div>

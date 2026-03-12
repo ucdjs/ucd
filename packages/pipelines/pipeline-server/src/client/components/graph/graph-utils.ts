@@ -36,6 +36,8 @@ export function pipelineGraphToFlow(
     id: node.id,
     type: node.flowType,
     position: { x: 0, y: 0 },
+    width: NODE_WIDTH,
+    height: NODE_HEIGHT,
     data: {
       graphNode: node,
     },
