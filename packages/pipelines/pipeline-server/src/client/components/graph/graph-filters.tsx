@@ -1,19 +1,11 @@
 import type { PipelineGraphNodeType } from "@ucdjs/pipelines-core";
+import { getGraphNodeConfig, graphNodeTypes } from "#shared/lib/graph";
 import { cn } from "@ucdjs-internal/shared-ui";
 
 interface PipelineGraphFiltersProps {
   visibleTypes: Set<PipelineGraphNodeType>;
   onToggleType: (type: PipelineGraphNodeType) => void;
 }
-
-const allNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "artifact", "output"] as const;
-const nodeTypeLabels: Record<PipelineGraphNodeType, { label: string; color: string }> = {
-  source: { label: "Source", color: "#6366f1" },
-  file: { label: "File", color: "#10b981" },
-  route: { label: "Route", color: "#f59e0b" },
-  artifact: { label: "Artifact", color: "#8b5cf6" },
-  output: { label: "Output", color: "#0ea5e9" },
-};
 
 export function PipelineGraphFilters({
   visibleTypes,
@@ -24,9 +16,9 @@ export function PipelineGraphFilters({
       <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
         Show
       </span>
-      {allNodeTypes.map((type) => {
+      {graphNodeTypes.map((type) => {
         const isVisible = visibleTypes.has(type);
-        const config = nodeTypeLabels[type];
+        const config = getGraphNodeConfig(type);
 
         return (
           <button

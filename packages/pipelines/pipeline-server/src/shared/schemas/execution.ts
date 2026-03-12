@@ -1,6 +1,7 @@
-import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineSummary } from "@ucdjs/pipelines-executor";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
+import { ExecutionGraphViewSchema } from "./graph";
 import z from "zod";
 
 const ExecutionStatusSchema = z.enum(EXECUTION_STATUSES);
@@ -96,7 +97,7 @@ export const ExecutionGraphResponseSchema = z.object({
   executionId: z.string(),
   pipelineId: z.string(),
   status: ExecutionStatusSchema,
-  graph: z.custom<PipelineGraph>(() => true).nullable(),
+  graph: ExecutionGraphViewSchema.nullable(),
 });
 
 export function normalizeExecutionSummary(summary: Partial<PipelineSummary> | null | undefined): PipelineSummary | null {

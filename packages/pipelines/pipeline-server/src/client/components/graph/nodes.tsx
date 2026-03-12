@@ -1,62 +1,10 @@
-import type { PipelineGraphNode } from "@ucdjs/pipelines-core";
 import type { NodeProps } from "@xyflow/react";
 import type { CSSProperties } from "react";
+import type { PipelineFlowNode } from "./graph-utils";
+import { getGraphNodeConfig } from "#shared/lib/graph";
 import { Handle, Position } from "@xyflow/react";
 import { memo } from "react";
 import { NODE_HEIGHT, NODE_WIDTH } from "./graph-utils";
-
-export interface PipelineNodeData {
-  pipelineNode: PipelineGraphNode;
-  label: string;
-}
-
-interface NodeTypeStyle {
-  bg: string;
-  border: string;
-  iconBg: string;
-  icon: string;
-}
-
-// Hoisted outside the component so React Flow nodes reuse a stable style lookup.
-const nodeTypeStyles: Record<string, NodeTypeStyle> = {
-  source: {
-    bg: "#eef2ff",
-    border: "#a5b4fc",
-    iconBg: "#6366f1",
-    icon: "S",
-  },
-  file: {
-    bg: "#ecfdf5",
-    border: "#6ee7b7",
-    iconBg: "#10b981",
-    icon: "F",
-  },
-  route: {
-    bg: "#fffbeb",
-    border: "#fcd34d",
-    iconBg: "#f59e0b",
-    icon: "R",
-  },
-  artifact: {
-    bg: "#f5f3ff",
-    border: "#c4b5fd",
-    iconBg: "#8b5cf6",
-    icon: "A",
-  },
-  output: {
-    bg: "#f0f9ff",
-    border: "#7dd3fc",
-    iconBg: "#0ea5e9",
-    icon: "O",
-  },
-};
-
-const defaultStyle: NodeTypeStyle = {
-  bg: "#f9fafb",
-  border: "#d1d5db",
-  iconBg: "#6b7280",
-  icon: "?",
-};
 
 // Shared style fragments keep node rendering cheap because React Flow mounts many nodes.
 const flexCenterStyle: CSSProperties = {
@@ -93,7 +41,10 @@ const containerStyleCache = new Map<string, CSSProperties>();
 const iconStyleCache = new Map<string, CSSProperties>();
 const handleStyleCache = new Map<string, CSSProperties>();
 
-function getContainerStyle(styles: NodeTypeStyle, selected: boolean): CSSProperties {
+function getContainerStyle(
+  styles: ReturnType<typeof getGraphNodeConfig>["visual"],
+  selected: boolean,
+): CSSProperties {
   const key = `${styles.bg}-${styles.border}-${selected}`;
   let cached = containerStyleCache.get(key);
   if (!cached) {
@@ -151,36 +102,35 @@ function getHandleStyle(border: string): CSSProperties {
   return cached;
 }
 
-// eslint-disable-next-line react-refresh/only-export-components
 function BaseNode({
   data,
   selected = false,
-  type,
-}: NodeProps & { data: PipelineNodeData; type: string }) {
-  const styles = nodeTypeStyles[type] ?? defaultStyle;
+}: NodeProps<PipelineFlowNode>) {
+  const nodeConfig = getGraphNodeConfig(data.graphNode.nodeType);
+  const { visual } = nodeConfig;
 
   return (
     <div
-      style={getContainerStyle(styles, selected)}
-      data-node-id={data.pipelineNode.id}
-      data-node-type={type}
+      style={getContainerStyle(visual, selected)}
+      data-node-id={data.graphNode.id}
+      data-node-type={data.graphNode.nodeType}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={getHandleStyle(styles.border)}
+        style={getHandleStyle(visual.border)}
       />
 
       <div style={flexCenterStyle}>
-        <span style={getIconStyle(styles.iconBg)}>
-          {styles.icon}
+        <span style={getIconStyle(visual.iconBg)}>
+          {visual.icon}
         </span>
         <div style={labelContainerStyle}>
           <span style={typeStyle}>
-            {type}
+            {nodeConfig.label}
           </span>
-          <span style={labelStyle} title={data.label}>
-            {data.label}
+          <span style={labelStyle} title={data.graphNode.label}>
+            {data.graphNode.label}
           </span>
         </div>
       </div>
@@ -188,21 +138,10 @@ function BaseNode({
       <Handle
         type="source"
         position={Position.Right}
-        style={getHandleStyle(styles.border)}
+        style={getHandleStyle(visual.border)}
       />
     </div>
   );
-};
-
-function createNodeComponent(type: string) {
-  // Each React Flow renderer is a thin wrapper around BaseNode with a fixed visual style.
-  return memo((props: NodeProps & { data: PipelineNodeData }) => (
-    <BaseNode {...props} type={type} />
-  ));
 }
 
-export const SourceNode = createNodeComponent("source");
-export const FileNode = createNodeComponent("file");
-export const RouteNode = createNodeComponent("route");
-export const ArtifactNode = createNodeComponent("artifact");
-export const OutputNode = createNodeComponent("output");
+export const PipelineNodeRenderer = memo(BaseNode);
