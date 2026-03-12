@@ -1,7 +1,7 @@
 import { ExecutionTable } from "#components/execution/execution-table";
-import { ExecutionActivityChart } from "#components/homepage/activity-chart";
-import { SourcesPanel } from "#components/homepage/sources-panel";
-import { StatusOverviewPanel } from "#components/homepage/status-overview-panel";
+import { ExecutionActivityChart } from "#components/home/activity-chart";
+import { SourcesPanel } from "#components/home/sources-panel";
+import { StatusOverviewPanel } from "#components/home/status-overview-panel";
 import { overviewQueryOptions } from "#queries/overview";
 import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
