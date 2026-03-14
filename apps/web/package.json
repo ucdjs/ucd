@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@rolldown/plugin-babel": "catalog:build",
     "@tailwindcss/vite": "catalog:build",
     "@tanstack/devtools-vite": "catalog:build",
     "@tanstack/router-plugin": "catalog:build",
