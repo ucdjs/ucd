@@ -39,14 +39,14 @@ function saveVersionsToStorage(storageKey: string, versions: Set<string>): void 
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(getStorageKey(storageKey), JSON.stringify(Array.from(versions)));
+    localStorage.setItem(getStorageKey(storageKey), JSON.stringify([...versions]));
   } catch {
     // Ignore storage errors
   }
 }
 
 function sanitizeVersions(versions: Iterable<string>, allVersions: string[]): Set<string> {
-  const valid = Array.from(versions).filter((v) => allVersions.includes(v));
+  const valid = [...versions].filter((v) => allVersions.includes(v));
   return new Set(valid.length > 0 ? valid : allVersions);
 }
 
@@ -82,7 +82,7 @@ export function usePipelineVersions(
       saveVersionsToStorage(storageKey, sanitized);
       return {
         ...prev,
-        [pipelineId]: Array.from(sanitized),
+        [pipelineId]: [...sanitized],
       };
     });
   }, [allVersions, pipelineId, selectedVersions, storageKey]);
@@ -93,7 +93,7 @@ export function usePipelineVersions(
       saveVersionsToStorage(storageKey, sanitized);
       setOverridesByPipeline((prev) => ({
         ...prev,
-        [pipelineId]: Array.from(sanitized),
+        [pipelineId]: [...sanitized],
       }));
     },
     [allVersions, pipelineId, storageKey],
@@ -104,7 +104,7 @@ export function usePipelineVersions(
     saveVersionsToStorage(storageKey, sanitized);
     setOverridesByPipeline((prev) => ({
       ...prev,
-      [pipelineId]: Array.from(sanitized),
+      [pipelineId]: [...sanitized],
     }));
   }, [allVersions, pipelineId, storageKey]);
 

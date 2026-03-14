@@ -31,8 +31,7 @@ function RouteComponent() {
       }
     }
 
-    return Array.from(transformMap.entries())
-      .map(([name, routes]) => ({ name, routes }))
+    return Array.from(transformMap.entries(), ([name, routes]) => ({ name, routes }))
       .sort((left, right) => left.name.localeCompare(right.name));
   }, [pipeline.routes]);
 

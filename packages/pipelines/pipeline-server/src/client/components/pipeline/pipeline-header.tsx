@@ -18,7 +18,7 @@ export function PipelineHeader({ selectedVersions, pipeline, fileLabel }: Pipeli
   const { execute, executing, executionId } = useExecute();
 
   const handleExecute = useCallback(async () => {
-    const result = await execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions));
+    const result = await execute(sourceId, sourceFileId, pipelineId, [...selectedVersions]);
     if (result.success && result.executionId) {
       navigate({
         to: "/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId",

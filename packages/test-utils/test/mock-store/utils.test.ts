@@ -88,7 +88,7 @@ describe("parseLatency", () => {
     expect(parseLatency(5000)).toBe(5000);
   });
 
-  it.for(Array.from({ length: 10 }, () => parseLatency("random")))(
+  it.for(Array.from({ length: 10 }).fill(parseLatency("random")))(
     "should return random latency between 100-999ms: %s",
     (latency) => {
       expect(latency).toBeGreaterThanOrEqual(100);

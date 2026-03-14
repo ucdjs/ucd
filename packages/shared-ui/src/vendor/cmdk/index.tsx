@@ -521,7 +521,7 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
   }
 
   function getValidItems() {
-    return Array.from(listInnerRef.current?.querySelectorAll(VALID_ITEM_SELECTOR) || []);
+    return [...listInnerRef.current?.querySelectorAll(VALID_ITEM_SELECTOR) || []];
   }
 
   /** Setters */
@@ -543,7 +543,7 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
     if (propsRef.current?.loop) {
       newSelected
         = index + change < 0
-          ? items[items.length - 1]
+          ? items.at(-1)
           : index + change === items.length
             ? items[0]
             : items[index + change];

@@ -123,10 +123,11 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
           const nestedCount = currentNestedStack.pop()!;
           if (currentNestedStack.length > 0) {
             // Multiply with parent nested group
-            currentNestedStack[currentNestedStack.length - 1]! *= nestedCount;
+            const lastIndex = currentNestedStack.length - 1!;
+            currentNestedStack[lastIndex]! *= nestedCount;
           } else if (topLevelOptions.length > 0) {
             // This nested group belongs to the current top-level option
-            topLevelOptions[topLevelOptions.length - 1]!.nestedMultiplier *= nestedCount;
+            topLevelOptions.at(-1)!.nestedMultiplier *= nestedCount;
           }
         }
       }
@@ -137,7 +138,8 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
       } else if (braceDepth > 1) {
         // Count options in nested braces
         if (currentNestedStack.length > 0) {
-          currentNestedStack[currentNestedStack.length - 1]! += 1;
+          const lastIndex = currentNestedStack.length - 1;
+          currentNestedStack[lastIndex]! += 1;
         }
       }
     }

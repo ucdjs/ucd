@@ -150,7 +150,7 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     }
 
     if (syncResult.removedFiles.size > 0) {
-      jsonOutput.orphanedFilesRemoved = Array.from(syncResult.removedFiles.entries()).map(([version, files]) => ({
+      jsonOutput.orphanedFilesRemoved = Array.from(syncResult.removedFiles.entries(), ([version, files]) => ({
         version,
         files,
       }));

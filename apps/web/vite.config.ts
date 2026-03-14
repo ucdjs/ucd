@@ -66,18 +66,22 @@ export default defineConfig((env) => ({
   resolve: {
     alias: [
       {
+        // eslint-disable-next-line e18e/prefer-static-regex
         find: /^use-sync-external-store\/shim$/,
         replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
+        // eslint-disable-next-line e18e/prefer-static-regex
         find: /^use-sync-external-store\/shim\/index\.js$/,
         replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
+        // eslint-disable-next-line e18e/prefer-static-regex
         find: /^use-sync-external-store\/shim\/with-selector$/,
         replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
+        // eslint-disable-next-line e18e/prefer-static-regex
         find: /^use-sync-external-store\/shim\/with-selector\.js$/,
         replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },

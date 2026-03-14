@@ -24,7 +24,7 @@ function CharacterPage() {
   const copyCharacter = async () => {
     await navigator.clipboard.writeText(character.character);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(setCopied, 2000, false);
   };
 
   return (
@@ -211,7 +211,7 @@ function PropertyRow({
 function getUtf8Encoding(char: string): string {
   const encoder = new TextEncoder();
   const bytes = encoder.encode(char);
-  return Array.from(bytes).map((b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
+  return Array.from(bytes, (b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
 }
 
 function getUtf16Encoding(char: string): string {

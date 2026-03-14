@@ -22,7 +22,7 @@ function flattenVersion(version: string): string {
   // split version into parts
   const parts = version.split(".");
   // remove trailing zeros
-  while (parts.length > 1 && parts[parts.length - 1] === "0") {
+  while (parts.length > 1 && parts.at(-1) === "0") {
     parts.pop();
   }
   return parts.join(".");
@@ -33,6 +33,8 @@ interface FileWithVersion {
   version: string;
 }
 
+const VERSION_PATTERN_RE = /v(\d+\.\d+\.\d+)/;
+
 async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
   const resolvedInputPath = path.resolve(inputPath);
   const isDirectory = (await stat(resolvedInputPath)).isDirectory();
@@ -41,7 +43,7 @@ async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
   if (!isDirectory) {
     // single file case - look for version in parent directory name
     const parentDir = path.dirname(resolvedInputPath);
-    const versionMatch = parentDir.match(/v(\d+\.\d+\.\d+)/);
+    const versionMatch = parentDir.match(VERSION_PATTERN_RE);
     const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
     filesWithVersion.push({ filePath: resolvedInputPath, version });
   } else {
@@ -57,7 +59,7 @@ async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
 
       const filePath = path.join(file.parentPath, file.name);
       // extract version from path (e.g., v16.0.0)
-      const versionMatch = filePath.match(/v(\d+\.\d+\.\d+)/);
+      const versionMatch = filePath.match(VERSION_PATTERN_RE);
       const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
       filesWithVersion.push({ filePath, version });
     }
@@ -200,7 +202,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
   }
 
   // write bundled files with concurrency limit
-  const bundlePromises = Array.from(resultsByVersion.entries()).map(([version, versionResults]) => writeBundledFile(version, versionResults, bundleTemplate, outputDir));
+  const bundlePromises = Array.from(resultsByVersion.entries(), ([version, versionResults]) => writeBundledFile(version, versionResults, bundleTemplate, outputDir));
 
   await Promise.all(bundlePromises);
 }

@@ -31,7 +31,7 @@ export function buildExecutionSpans(events: PipelineEvent[]): ExecutionSpan[] {
   const startMap = new Map<string, PipelineEvent>();
   const spans: ExecutionSpan[] = [];
 
-  const sorted = [...events].sort((a, b) => a.timestamp - b.timestamp);
+  const sorted = events.toSorted((a, b) => a.timestamp - b.timestamp);
   for (const event of sorted) {
     if (event.type.endsWith(":start")) {
       startMap.set(event.spanId, event);

@@ -154,7 +154,7 @@ async function _sync(
 
     const added = versionsToConsider.filter((v) => !currentVersions.has(v));
 
-    const unchanged = Array.from(currentVersions).filter((v) => {
+    const unchanged = [...currentVersions].filter((v) => {
       // If the removeUnavailable is set to true, we will only keep the versions that
       // is available and already exist as unchanged. If the version is not available,
       // we will remove it from the unchanged list.
@@ -175,11 +175,11 @@ async function _sync(
 
     if (removeUnavailable) {
       // Remove versions not available in API
-      removed = Array.from(currentVersions).filter((v) => !availableVersionsSet.has(v));
+      removed = [...currentVersions].filter((v) => !availableVersionsSet.has(v));
       // When removing unavailable, if specific versions were requested, use those + existing available
       // Otherwise use all available from API
       if (options?.versions && options.versions.length > 0) {
-        finalVersions = [...new Set([...Array.from(currentVersions).filter((v) => availableVersionsSet.has(v)), ...versionsToConsider])];
+        finalVersions = [...new Set([...[...currentVersions].filter((v) => availableVersionsSet.has(v)), ...versionsToConsider])];
       } else {
         finalVersions = availableVersionsFromApi;
       }

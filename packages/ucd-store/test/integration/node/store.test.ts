@@ -127,7 +127,7 @@ describe.todo("node integration: store creation", () => {
         verify: false,
       });
 
-      expect([...store.versions].sort()).toEqual(["15.1.0", "16.0.0"]);
+      expect(store.versions.toSorted()).toEqual(["15.1.0", "16.0.0"]);
     });
   });
 

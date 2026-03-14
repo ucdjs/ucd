@@ -83,7 +83,7 @@ export async function resolveMultipleSourceFiles(
     }
   }
 
-  return Array.from(filesByPath.values());
+  return [...filesByPath.values()];
 }
 
 export type InferSourceId<T> = T extends PipelineSourceDefinition<infer TId> ? TId : never;

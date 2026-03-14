@@ -34,13 +34,12 @@ function RouteComponent() {
   const emittedArtifactCount = pipeline.routes.reduce((count, route) => count + route.emits.length, 0);
   const transformCount = pipeline.routes.reduce((count, route) => count + route.transforms.length, 0);
   const outputCount = pipeline.routes.reduce((count, route) => count + route.outputs.length, 0);
-  const busiestRoutes = [...pipeline.routes]
-    .sort((left, right) => {
-      const leftScore = left.depends.length + left.transforms.length + left.emits.length;
-      const rightScore = right.depends.length + right.transforms.length + right.emits.length;
+  const busiestRoutes = pipeline.routes.toSorted((left, right) => {
+    const leftScore = left.depends.length + left.transforms.length + left.emits.length;
+    const rightScore = right.depends.length + right.transforms.length + right.emits.length;
 
-      return rightScore - leftScore;
-    })
+    return rightScore - leftScore;
+  })
     .slice(0, 3);
 
   return (
