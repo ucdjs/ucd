@@ -43,7 +43,6 @@ catalogs:
     "@tanstack/router-plugin": 1.166.8
     "@tanstack/devtools-vite": 0.5.5
     vite-tsconfig-paths: 6.1.1
-    "@vitejs/devtools": 0.1.0
     chokidar: 5.0.0
     drizzle-kit: 0.31.9
     oxc-transform: 0.118.0
