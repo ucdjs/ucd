@@ -1,5 +1,7 @@
 import type { ArtifactDefinition, ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
 
+const TXT_EXTENSION_RE = /\.txt$/;
+
 export interface PropertyJsonResolverOptions {
   property?: string;
   includeDefaults?: boolean;
@@ -52,7 +54,7 @@ export function createPropertyJsonResolver(options: PropertyJsonResolverOptions 
       }
     }
 
-    const propertyName = options.property || ctx.file.name.replace(/\.txt$/, "");
+    const propertyName = options.property || ctx.file.name.replace(TXT_EXTENSION_RE, "");
 
     return [{
       version: ctx.version,

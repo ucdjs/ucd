@@ -1,4 +1,7 @@
+import { trimLeadingSlash } from "@luxass/utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
+
+const UCD_PREFIX_SEGMENTS_RE = /(?:\/ucd)+\//g;
 
 /**
  * Transforms a file path for fetching from Unicode.org
@@ -12,7 +15,7 @@ import { hasUCDFolderPath } from "@unicode-utils/core";
  * // Returns: "4.0.1/Blocks.txt"
  */
 export function transformPathForUnicodeOrg(version: string, filepath: string): string {
-  const cleanPath = filepath.replace(/^\/+/, "");
+  const cleanPath = filepath === "/" ? "" : trimLeadingSlash(filepath);
   const needsUCD = hasUCDFolderPath(version);
 
   if (needsUCD) {
@@ -46,7 +49,7 @@ export function transformPathForUnicodeOrg(version: string, filepath: string): s
  * ```
  */
 export function stripUCDPrefix(path: string): string {
-  return path.replace(/(?:\/ucd)+\//g, "/");
+  return path.replace(UCD_PREFIX_SEGMENTS_RE, "/");
 }
 
 /**
@@ -61,7 +64,7 @@ export function stripUCDPrefix(path: string): string {
  */
 export function extractFilename(manifestPath: string, version: string): string {
   // Remove leading slashes
-  let path = manifestPath.replace(/^\/+/, "");
+  let path = manifestPath === "/" ? "" : trimLeadingSlash(manifestPath);
 
   // Remove version prefix
   if (path.startsWith(`${version}/`)) {

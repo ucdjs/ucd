@@ -20,7 +20,7 @@ const validateVersionMiddleware = createMiddleware({
       // eslint-disable-next-line no-console
       console.info(`Redirecting 'latest' to stable version: ${latest}`);
       throw redirect({
-        to: pathname.replace(/latest/, latest),
+        to: pathname.replace("latest", latest),
       });
     }
 

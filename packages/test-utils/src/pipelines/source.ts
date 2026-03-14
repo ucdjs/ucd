@@ -12,6 +12,7 @@ export type NamedExportValue = PipelineDefinition | string;
 export type NamedExportConfig = Record<string, NamedExportValue>;
 
 export type PipelineModuleSourceNamed = string[] | NamedExportConfig;
+const OBJECT_KEY_RE = /"(\w+)":/g;
 
 export interface PipelineModuleSourceOptions {
   named?: PipelineModuleSourceNamed;
@@ -40,7 +41,7 @@ function buildDefinition(
     routes: [],
     ...overrides,
   };
-  return JSON.stringify(def).replace(/"(\w+)":/g, "$1:");
+  return JSON.stringify(def).replace(OBJECT_KEY_RE, "$1:");
 }
 
 function buildNamedExports(

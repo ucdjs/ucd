@@ -1,6 +1,8 @@
 import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
 
+const PATH_SEGMENT_SEPARATOR_RE = /[/\\]+/;
+
 /**
  * Default picomatch options used across the shared package.
  * These options ensure consistent glob matching behavior:
@@ -181,7 +183,7 @@ export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits
   if (pattern.length > maxLength) return false;
   if (pattern.includes("\0")) return false;
 
-  const segments = pattern.split(/[/\\]+/).filter(Boolean);
+  const segments = pattern.split(PATH_SEGMENT_SEPARATOR_RE).filter(Boolean);
   if (segments.length > maxSegments) return false;
 
   const { stars, questions } = countWildcards(pattern);

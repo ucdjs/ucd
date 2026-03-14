@@ -6,6 +6,8 @@ import { getRemoteManifestEtag, uploadManifest, waitForUploadCompletion } from "
 import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
+const WEAK_ETAG_PREFIX_RE = /^W\//i;
+const SURROUNDING_QUOTES_RE = /^"|"$/g;
 
 interface QueuedUpload {
   version: string;
@@ -14,7 +16,7 @@ interface QueuedUpload {
 }
 
 function normalizeEtag(etag: string): string {
-  return etag.trim().replace(/^W\//i, "").replace(/^"|"$/g, "");
+  return etag.trim().replace(WEAK_ETAG_PREFIX_RE, "").replace(SURROUNDING_QUOTES_RE, "");
 }
 
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {

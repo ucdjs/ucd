@@ -2,6 +2,7 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { FSEntry } from "@ucdjs/fs-bridge";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
+import { trimLeadingSlash } from "@luxass/utils";
 import {
   createDebugger,
   filterTreeStructure,
@@ -13,6 +14,10 @@ import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
+
+function trimLeadingSlashToEmpty(value: string): string {
+  return value === "/" ? "" : trimLeadingSlash(value);
+}
 
 export interface ListFilesOptions extends SharedOperationOptions {
   /**
@@ -109,7 +114,7 @@ async function _listFiles(
           const original = pathMapping.get(normalizedPath);
           if (!original) {
             // Fallback: construct the path if mapping fails
-            return `/${version}/${normalizedPath.replace(/^\/+/, "")}`;
+            return `/${version}/${trimLeadingSlashToEmpty(normalizedPath)}`;
           }
           return original;
         });
@@ -170,7 +175,7 @@ async function _listFiles(
     return filteredNormalizedPaths.map((normalizedPath) => {
       const original = pathMapping.get(normalizedPath);
       if (!original) {
-        return `/${version}/${normalizedPath.replace(/^\/+/, "")}`;
+        return `/${version}/${trimLeadingSlashToEmpty(normalizedPath)}`;
       }
       return original;
     });

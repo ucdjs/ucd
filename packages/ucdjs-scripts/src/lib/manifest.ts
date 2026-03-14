@@ -10,6 +10,7 @@ import { getClient } from "./utils";
 const EXCLUDED_EXTENSIONS = new Set(
   (DEFAULT_EXCLUDED_EXTENSIONS as readonly string[]).map((ext) => ext.toLowerCase()),
 );
+const VERSIONED_UCD_PREFIX_RE = /^(\/[^/]+)\/ucd\//;
 
 function shouldExcludeFile(filePath: string): boolean {
   const lowerPath = filePath.toLowerCase();
@@ -38,7 +39,7 @@ function mapFileTreeToExpected(tree: UnicodeFileTree): ExpectedFile[] {
         collect.push({
           name: node.name,
           path: node.path,
-          storePath: node.path.replace(/^(\/[^/]+)\/ucd\//, "$1/"),
+          storePath: node.path.replace(VERSIONED_UCD_PREFIX_RE, "$1/"),
         });
         continue;
       }

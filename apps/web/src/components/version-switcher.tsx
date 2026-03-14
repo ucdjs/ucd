@@ -7,6 +7,8 @@ import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { ChevronsUpDown, Layers } from "lucide-react";
 import * as React from "react";
 
+const VERSION_ROUTE_RE = /^\/v\/([^/]+)(\/.*)?$/;
+
 function getBadgeLabel(date?: string | number, isDraft?: boolean) {
   const year = date ? Number.parseInt(String(date), 10) : undefined;
   const age = year ? new Date().getFullYear() - year : undefined;
@@ -35,7 +37,7 @@ export function VersionSwitcher() {
     if (!selectedVersion || selectedVersion === currentVersion) return;
 
     const currentPath = window.location.pathname;
-    const match = currentPath.match(/^\/v\/([^/]+)(\/.*)?$/);
+    const match = currentPath.match(VERSION_ROUTE_RE);
 
     if (match) {
       const subRoute = match[2] || "/";

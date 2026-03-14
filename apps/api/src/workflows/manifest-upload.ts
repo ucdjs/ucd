@@ -3,6 +3,8 @@ import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { parseTar } from "nanotar";
 
+const LEADING_DOT_SLASH_RE = /^\.\//;
+
 interface ManifestUploadParams {
   version: string;
   r2Key: string;
@@ -36,7 +38,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       for (const file of parsed) {
         if (!file.data) continue;
 
-        const fileName = file.name.replace(/^\.\//, "");
+        const fileName = file.name.replace(LEADING_DOT_SLASH_RE, "");
         if (!fileName) continue;
 
         // Convert data to ArrayBuffer if needed

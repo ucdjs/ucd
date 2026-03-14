@@ -14,6 +14,8 @@ import { parse } from "apache-autoindex-parse";
 import { HTML_EXTENSIONS } from "../constants";
 import { determineContentTypeFromExtension, isInvalidPath } from "../routes/v1_files/utils";
 
+const UCD_SEGMENT_RE = /\/ucd\//g;
+
 /**
  * Parses an HTML directory listing from Unicode.org and extracts file/directory entries.
  *
@@ -76,10 +78,9 @@ export interface RawUnicodeAssetResult {
   extension: string;
 }
 
-const PATH_TRIM_RE = /^\/+|\/+$/g;
-
 export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
-  const normalizedPath = path.trim().replace(PATH_TRIM_RE, "");
+  let normalizedPath = path.trim();
+  normalizedPath = normalizedPath === "/" ? "" : trimLeadingSlash(trimTrailingSlash(normalizedPath));
   const url = normalizedPath ? `https://unicode.org/Public/${normalizedPath}?F=2` : "https://unicode.org/Public?F=2";
 
   const response = await fetch(url, {
@@ -248,7 +249,7 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
       let entries = await parseUnicodeDirectory(await response.text(), normalizedPath || "/");
 
       if (options.stripUCDPrefix) {
-        entries = entries.map((e) => ({ ...e, path: e.path.replace(/\/ucd\//g, "/") }));
+        entries = entries.map((e) => ({ ...e, path: e.path.replace(UCD_SEGMENT_RE, "/") }));
       }
 
       if (options.pattern && !isValidGlobPattern(options.pattern, { maxLength: 128, maxSegments: 8 })) {

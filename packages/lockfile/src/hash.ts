@@ -1,6 +1,8 @@
 // TODO: A lot of this will be replaced with a proper unicode library later
 // @unicode-utils/core
 
+const HEADER_FILE_VERSION_RE = /\d{1,3}\.\d{1,3}\.\d{1,3}\.txt$/;
+
 /**
  * Checks if a line looks like a Unicode header line.
  * Header lines typically contain:
@@ -19,7 +21,7 @@ function isHeaderLine(line: string): boolean {
     || line.includes("©")
     || lower.includes("unicode®")
     || lower.includes("unicode, inc")
-    || /\d{1,3}\.\d{1,3}\.\d{1,3}\.txt$/.test(line)
+    || HEADER_FILE_VERSION_RE.test(line)
   );
 }
 

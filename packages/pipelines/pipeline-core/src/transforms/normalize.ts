@@ -2,8 +2,10 @@ import type { PipelineTransformDefinition } from "../transform";
 import type { ParsedRow } from "../types";
 import { definePipelineTransform } from "../transform";
 
+const LEADING_ZEROES_RE = /^0+/;
+
 function normalizeHex(hex: string): string {
-  return hex.toUpperCase().replace(/^0+/, "") || "0";
+  return hex.toUpperCase().replace(LEADING_ZEROES_RE, "") || "0";
 }
 
 function padHex(hex: string, length = 4): string {

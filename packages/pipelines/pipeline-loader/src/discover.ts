@@ -2,6 +2,9 @@ import type { PipelineLoaderIssue } from "./errors";
 import { relative } from "node:path";
 import { glob } from "tinyglobby";
 
+const TRAILING_SLASH_RE = /\/$/;
+const BACKSLASH_RE = /\\/g;
+
 export interface RemoteOriginMeta {
   provider: "github" | "gitlab";
   owner: string;
@@ -30,7 +33,7 @@ function joinOriginPath(origin: RemoteOriginMeta | undefined, relativePath: stri
   return {
     ...origin,
     path: origin.path
-      ? `${origin.path.replace(/\/$/, "")}/${relativePath}`
+      ? `${origin.path.replace(TRAILING_SLASH_RE, "")}/${relativePath}`
       : relativePath,
   };
 }
@@ -52,7 +55,7 @@ export async function discoverPipelineFiles(
 
     return {
       files: files.map((filePath) => {
-        const relativePath = relative(options.repositoryPath, filePath).replace(/\\/g, "/");
+        const relativePath = relative(options.repositoryPath, filePath).replace(BACKSLASH_RE, "/");
         return {
           filePath,
           relativePath,

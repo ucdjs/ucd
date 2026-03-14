@@ -4,6 +4,8 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 import { getRemoteSourceCacheStatus } from "./cache";
 
+const BACKSLASH_RE = /\\/g;
+
 export interface LocalPipelineLocator {
   kind: "local";
   path: string;
@@ -142,7 +144,7 @@ export async function materializePipelineLocator(
   if (pathKind === "directory") {
     return {
       repositoryPath: targetPath,
-      relativePath: locator.path.replace(/\\/g, "/"),
+      relativePath: locator.path.replace(BACKSLASH_RE, "/"),
       origin,
       issues: [],
     };

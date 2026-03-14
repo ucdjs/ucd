@@ -9,13 +9,14 @@ import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
 const debug = createDebugger("ucdjs:fs-bridge:node");
+const BACKSLASH_RE = /\\/g;
 
 /**
  * Normalizes path separators to forward slashes for cross-platform consistency.
  * On Windows, converts backslashes to forward slashes.
  */
 function normalizePathSeparators(path: string): string {
-  return path.replace(/\\/g, "/");
+  return path.replace(BACKSLASH_RE, "/");
 }
 
 async function safeExists(path: string): Promise<boolean> {

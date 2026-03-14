@@ -1,6 +1,8 @@
 // @ts-check
 import { ESLintUtils } from "@typescript-eslint/utils";
 
+const NON_ALPHANUMERIC_UPPERCASE_RE = /[^A-Z0-9]/g;
+
 export default ESLintUtils.RuleCreator.withoutDocs({
   meta: {
     type: "problem",
@@ -43,7 +45,7 @@ export default ESLintUtils.RuleCreator.withoutDocs({
           }
 
           const tagValue = element.value;
-          const constantName = tagValue.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+          const constantName = tagValue.toUpperCase().replace(NON_ALPHANUMERIC_UPPERCASE_RE, "_");
 
           context.report({
             node: element,

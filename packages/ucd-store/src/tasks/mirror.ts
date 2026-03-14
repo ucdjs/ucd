@@ -8,7 +8,7 @@ import type {
   ReportFile,
   SharedOperationOptions,
 } from "../types";
-import { prependLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,
   createDebugger,
@@ -36,6 +36,10 @@ import {
 } from "../utils/reports";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
+
+function trimLeadingSlashToEmpty(value: string): string {
+  return value === "/" ? "" : trimLeadingSlash(value);
+}
 
 export interface MirrorOptions extends SharedOperationOptions {
   /**
@@ -234,7 +238,7 @@ async function _mirror(
       for (const filePath of filePaths) {
         // Store subdomain returns clean paths - no transformation needed
         // filePath is already normalized by normalizeTreeForFiltering (e.g., "Blocks.txt" or "auxiliary/file.txt")
-        const normalized = filePath.replace(/^\/+/, "");
+        const normalized = trimLeadingSlashToEmpty(filePath);
         const localPath = patheJoin(version, normalized);
         // For remote path, we need to add /ucd/ prefix for versions that have it
         const remotePath = patheJoin(version, hasUCDFolderPath(version) ? "ucd" : "", normalized);

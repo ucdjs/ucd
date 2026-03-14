@@ -3,6 +3,9 @@ import { env, commands as vscodeCommands, window } from "vscode";
 import { useOverrideGenerator } from "../composables/useOverrideGenerator";
 import { commands } from "../generated/meta";
 
+const UNICODE_VERSION_RE = /Unicode\s+(\d+\.\d+\.\d+)/i;
+const DATE_YEAR_RE = /Date:\s*(\d{4})/;
+
 function detectHeadingBounds(content: string): { start: number; end: number } {
   const lines = content.split("\n");
   let end = 0;
@@ -21,12 +24,12 @@ function detectHeadingBounds(content: string): { start: number; end: number } {
 }
 
 function extractVersionFromContent(content: string): string {
-  const versionMatch = content.match(/Unicode\s+(\d+\.\d+\.\d+)/i);
+  const versionMatch = content.match(UNICODE_VERSION_RE);
   if (versionMatch?.[1]) {
     return versionMatch[1];
   }
 
-  const dateMatch = content.match(/Date:\s*(\d{4})/);
+  const dateMatch = content.match(DATE_YEAR_RE);
   if (dateMatch?.[1]) {
     return `${dateMatch[1]}.0.0`;
   }
