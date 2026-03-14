@@ -11,8 +11,10 @@ export default createTsdownConfig({
     "matchers/types": "./src/matchers/types.d.ts",
     "pipelines": "./src/pipelines/index.ts",
   },
-  external: [
-    "vitest",
-    /^@vitest\//,
-  ],
+  deps: {
+    neverBundle: [
+      "vitest",
+      /^@vitest\//,
+    ],
+  },
 });

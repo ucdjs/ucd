@@ -1,15 +1,15 @@
 import { fileURLToPath } from "node:url";
-import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
-const config = defineConfig({
+export default defineConfig((env) => ({
   plugins: [
     devtools(),
     nitro({
@@ -20,7 +20,7 @@ const config = defineConfig({
         deployConfig: false,
         nodeCompat: true,
       },
-      minify: true,
+      minify: env.mode === "build",
       wasm: false,
     }),
     // this is the plugin that enables path aliases
@@ -47,28 +47,21 @@ const config = defineConfig({
         entry: "server.ts",
       },
     }),
-    viteReact({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
     Inspect({
       build: true,
-    }),
-    sentryTanstackStart({
-      org: "ucdjs",
-      project: "web",
-      // eslint-disable-next-line node/prefer-global/process
-      authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],
   build: {
     rolldownOptions: {
       experimental: {
-        lazyBarrel: true,
+        lazyBarrel: false,
       },
     },
-    minify: false,
+    minify: env.mode === "build",
   },
   resolve: {
     alias: [
@@ -90,6 +83,4 @@ const config = defineConfig({
       },
     ],
   },
-});
-
-export default config;
+}));
