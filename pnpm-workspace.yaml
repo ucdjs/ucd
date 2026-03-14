@@ -107,7 +107,7 @@ catalogs:
 
   types:
     "@types/picomatch": 4.0.2
-    "@types/node": 25.5.0
+    "@types/node": 22.19.15
     "@types/yargs-parser": 21.0.3
     "@types/react": 19.2.14
     "@types/react-dom": 19.2.3
