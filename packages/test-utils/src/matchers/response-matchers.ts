@@ -2,6 +2,8 @@ import type { ApiError } from "@ucdjs/schemas";
 import type { MatcherState, RawMatcherFn } from "@vitest/expect";
 import { tryOr } from "@ucdjs-internal/shared";
 
+const MAX_AGE_RE = /max-age=\d+/;
+
 export interface ApiErrorOptions {
   status: number;
   message?: string | RegExp;
@@ -169,7 +171,7 @@ export const toMatchResponse: RawMatcherFn<MatcherState, [ResponseMatcherOptions
       };
     }
 
-    if (!options.cacheMaxAgePattern && !/max-age=\d+/.test(cacheControl)) {
+    if (!options.cacheMaxAgePattern && !MAX_AGE_RE.test(cacheControl)) {
       return {
         pass: false,
         message: () => `Expected cache-control to${isNot ? " not" : ""} have max-age`,

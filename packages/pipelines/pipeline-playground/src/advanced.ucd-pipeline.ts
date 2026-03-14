@@ -23,6 +23,8 @@ import {
   unicodeDataParser,
 } from "@ucdjs/pipelines-presets";
 
+const UNDERSCORE_RE = /_/g;
+
 const filterEmptyValues = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "filter-empty-values",
   async* fn(_ctx, rows) {
@@ -60,7 +62,7 @@ const unicodeDataRoute = definePipelineRoute({
   ],
   resolver: propertyJsonResolver,
   out: {
-    fileName: (pj: PropertyJson) => `properties/${pj.property.toLowerCase().replace(/_/g, "-")}.json`,
+    fileName: (pj: PropertyJson) => `properties/${pj.property.toLowerCase().replace(UNDERSCORE_RE, "-")}.json`,
   },
 });
 

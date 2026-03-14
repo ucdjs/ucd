@@ -7,6 +7,8 @@ import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
 import { genArrayFromRaw, genInterface } from "knitwork";
 import { generateFields } from "./fields";
 
+const TXT_EXTENSION_RE = /\.txt$/;
+
 export interface SchemaGenFile {
   /**
    * The filePath to the data file.
@@ -95,7 +97,7 @@ async function processFile(request: ProcessFileRequest): Promise<ProcessedFile |
     // eslint-disable-next-line no-console
     console.log(`Processing file: ${filePath}`);
     const content = await readFile(filePath, "utf-8");
-    const fileName = path.basename(filePath).replace(/\.txt$/, "");
+    const fileName = path.basename(filePath).replace(TXT_EXTENSION_RE, "");
     const datafile = new RawDataFile(content, fileName);
 
     if (datafile.heading == null) {

@@ -9,6 +9,11 @@ import {
 } from "@unicode-utils/core";
 
 const log = createLogger("ucd:api:v1_versions:utils");
+const VERSION_LABEL_RE = /Unicode \d+\.\d+\.\d+/;
+const TABLE_RE = /<table[^>]*>[\s\S]*?<\/table>/g;
+const TABLE_ROW_RE = /<tr>[\s\S]*?<\/tr>/g;
+const YEAR_CELL_RE = /<td[^>]*>(\d{4})<\/td>/;
+const SCRIPT_LINE_RE = /^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*(\w+)/;
 
 export async function getAllVersionsFromList() {
   return wrapTry(async (): Promise<UnicodeVersion[]> => {
@@ -38,9 +43,8 @@ export async function getAllVersionsFromList() {
     }
 
     const html = await response.text();
-    const versionPattern = /Unicode \d+\.\d+\.\d+/;
-    const tableMatch = html.match(/<table[^>]*>[\s\S]*?<\/table>/g)?.find((table) =>
-      versionPattern.test(table),
+    const tableMatch = html.match(TABLE_RE)?.find((table) =>
+      VERSION_LABEL_RE.test(table),
     );
 
     log.info("Fetched and parsed Unicode versions page", {
@@ -107,11 +111,11 @@ export async function getAllVersionsFromList() {
     });
 
     // match any row that contains a cell
-    const rows = tableMatch.match(/<tr>[\s\S]*?<\/tr>/g) || [];
+    const rows = tableMatch.match(TABLE_ROW_RE) || [];
 
     for (const row of rows) {
       // look for Unicode version pattern in the row
-      const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>\\s*(${versionPattern.source})\\s*</a>`));
+      const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>\\s*(${VERSION_LABEL_RE.source})\\s*</a>`));
       if (!versionMatch) {
         continue;
       }
@@ -120,7 +124,7 @@ export async function getAllVersionsFromList() {
       const version = versionMatch[2]!.replace("Unicode ", "");
 
       // look for a year pattern anywhere in the row
-      const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
+      const dateMatch = row.match(YEAR_CELL_RE);
       if (!dateMatch) continue;
       const ucdVersion = resolveUCDVersion(version);
       const publicUrl = `https://www.unicode.org/Public/${ucdVersion}`;
@@ -262,7 +266,7 @@ export async function calculateStatistics(
       const scriptLines = scriptsText.split("\n").filter((line) => line.trim() && !line.startsWith("#"));
       const uniqueScripts = new Set<string>();
       for (const line of scriptLines) {
-        const match = line.match(/^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*(\w+)/);
+        const match = line.match(SCRIPT_LINE_RE);
         if (match) {
           uniqueScripts.add(match[3]!);
         }

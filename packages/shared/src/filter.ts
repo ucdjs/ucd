@@ -1,7 +1,19 @@
 import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { PicomatchOptions } from "picomatch";
+import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import picomatch from "picomatch";
 import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
+
+const BACKSLASH_RE = /\\/g;
+const LEADING_DOT_SLASH_RE = /^\.\/+/;
+
+function trimLeadingSlashForMatching(value: string): string {
+  return value === "/" ? "" : trimLeadingSlash(value);
+}
+
+function trimTrailingSlashForMatching(value: string): string {
+  return value === "/" ? "" : trimTrailingSlash(value);
+}
 
 /**
  * File extensions excluded by default in createPathFilter.
@@ -143,16 +155,16 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
 
 function normalizeForMatching(value: string): string {
   // 1) unify slashes
-  let normalized = value.replace(/\\/g, "/");
+  let normalized = value.replace(BACKSLASH_RE, "/");
 
   // 2) drop leading "./" segments
-  normalized = normalized.replace(/^\.\/+/, "");
+  normalized = normalized.replace(LEADING_DOT_SLASH_RE, "");
 
   // 3) drop leading slash to let relative globs match absolute-style inputs
-  normalized = normalized.replace(/^\//, "");
+  normalized = trimLeadingSlashForMatching(normalized);
 
   // 4) drop trailing slash so directory paths don't require it in patterns
-  normalized = normalized.replace(/\/$/, "");
+  normalized = trimTrailingSlashForMatching(normalized);
 
   return normalized;
 }

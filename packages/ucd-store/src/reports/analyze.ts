@@ -21,6 +21,7 @@ import {
 } from "../utils/reports";
 
 const debug = createDebugger("ucdjs:ucd-store:analyze");
+const FILE_EXTENSION_RE = /\.[^/.]+$/;
 
 export interface AnalyzeOptions extends SharedOperationOptions {
   /**
@@ -259,6 +260,6 @@ export function analyze(
 }
 
 function getExtension(filePath: string): string {
-  const match = filePath.match(/\.[^/.]+$/);
+  const match = filePath.match(FILE_EXTENSION_RE);
   return match ? match[0] : "no_extension";
 }

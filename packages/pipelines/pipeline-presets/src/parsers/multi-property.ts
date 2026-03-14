@@ -20,6 +20,7 @@ function parseCodePointOrRange(field: string): { kind: ParsedRow["kind"]; start?
 
 export function createMultiPropertyParser(options: MultiPropertyParserOptions = {}): ParserFn {
   const { delimiter = ";", propertyMarker = "@", trimFields = true } = options;
+  const propertyPrefix = `# ${propertyMarker}`;
 
   return async function* multiPropertyParser(ctx: ParseContext): AsyncIterable<ParsedRow> {
     let currentProperty: string | undefined;
@@ -27,10 +28,15 @@ export function createMultiPropertyParser(options: MultiPropertyParserOptions = 
     for await (const line of ctx.readLines()) {
       const trimmedLine = line.trim();
 
-      if (trimmedLine.startsWith(`# ${propertyMarker}`)) {
-        const match = trimmedLine.match(/# @(\w+)=(\w+)/);
-        if (match && match[2]) {
-          currentProperty = match[2];
+      if (trimmedLine.startsWith(propertyPrefix)) {
+        const assignment = trimmedLine.slice(propertyPrefix.length);
+        const separatorIndex = assignment.indexOf("=");
+
+        if (separatorIndex > 0) {
+          const value = assignment.slice(separatorIndex + 1).trim();
+          if (value) {
+            currentProperty = value;
+          }
         }
         continue;
       }

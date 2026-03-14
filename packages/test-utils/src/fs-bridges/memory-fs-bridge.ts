@@ -1,6 +1,6 @@
 import type { FileSystemBridgeOperations, FSEntry } from "@ucdjs/fs-bridge";
 import { Buffer } from "node:buffer";
-import { appendTrailingSlash, prependLeadingSlash } from "@luxass/utils/path";
+import { appendTrailingSlash, prependLeadingSlash, trimLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
@@ -185,9 +185,10 @@ export const createMemoryMockFS = defineFileSystemBridge({
         const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
 
         // Used for emitted FSEntry.path (bridge-root-relative paths)
-        const requestedPath = normalizeRootPath(path)
-          .replace(/^\/+/, "")
-          .replace(/\/+$/, "");
+        const rootRelativePath = normalizeRootPath(path);
+        const requestedPath = rootRelativePath
+          ? trimTrailingSlash(trimLeadingSlash(rootRelativePath))
+          : "";
 
         const prefixToRoot = (relative: string): string => {
           if (!requestedPath) {

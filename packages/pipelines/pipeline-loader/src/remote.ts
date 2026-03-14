@@ -5,6 +5,8 @@ import { downloadGitHubArchive, resolveGitHubRef } from "./adapters/github";
 import { downloadGitLabArchive, resolveGitLabRef } from "./adapters/gitlab";
 import { getRemoteSourceCacheStatus, writeCacheMarker } from "./cache";
 
+const LEADING_PATH_SEPARATORS_RE = /^([/\\])+/;
+
 async function extractArchiveToDirectory(
   archiveBuffer: ArrayBuffer,
   targetDir: string,
@@ -23,7 +25,7 @@ async function extractArchiveToDirectory(
     if (!relativePath) continue;
 
     let safeRelativePath = path.normalize(relativePath);
-    safeRelativePath = safeRelativePath.replace(/^([/\\])+/, "");
+    safeRelativePath = safeRelativePath.replace(LEADING_PATH_SEPARATORS_RE, "");
 
     if (!safeRelativePath) {
       continue;

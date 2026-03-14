@@ -9,6 +9,9 @@ import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import { createContext, use, useState } from "react";
 import { ExplorerTreeEntry } from "./explorer-entry";
 
+const LEADING_SLASHES_RE = /^\/+/;
+const TRAILING_SLASH_RE = /\/$/;
+
 interface ExplorerSidebarContextValue {
   currentPath: string;
   query: string;
@@ -22,7 +25,7 @@ function useExplorerSidebar() {
   return ctx;
 }
 
-const normalize = (p: string) => p.replace(/^\/+/, "").replace(/\/$/, "");
+const normalize = (p: string) => p.replace(LEADING_SLASHES_RE, "").replace(TRAILING_SLASH_RE, "");
 const buildPath = (parent: string, name: string) => (normalize(parent) ? `${normalize(parent)}/${name}` : name);
 
 export function ExplorerSidebar() {

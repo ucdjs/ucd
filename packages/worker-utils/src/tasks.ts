@@ -2,11 +2,12 @@ export const MAX_TAR_SIZE_BYTES = 10 * 1024 * 1024;
 
 export const MAX_WORKFLOW_INSTANCE_ID_LENGTH = 100;
 export const ALLOWED_STRING_ID_PATTERN = "^\\w[\\w-]*$";
+const DOT_RE = /\./g;
 
 const ALLOWED_WORKFLOW_INSTANCE_ID_REGEX = new RegExp(ALLOWED_STRING_ID_PATTERN);
 
 export function makeManifestUploadId(version: string, now: () => number = Date.now): string {
-  const normalizedVersion = version.replace(/\./g, "-");
+  const normalizedVersion = version.replace(DOT_RE, "-");
   return `manifest-upload-${normalizedVersion}-${now()}`;
 }
 

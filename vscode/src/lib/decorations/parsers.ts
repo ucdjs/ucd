@@ -10,6 +10,12 @@ import {
   getVersionHover,
 } from "./hovers";
 
+const FILE_METADATA_RE = /#\s*([A-Z]\w*)-(\d+\.\d+\.\d+)(\.txt)/i;
+const DATE_RE = /(\d{4}-\d{2}-\d{2})/;
+const VERSION_RE = /(?:Version\s+|v)(\d+\.\d+\.\d+)/i;
+const RANGE_RE = /^([0-9A-F]{4,6})\.\.([0-9A-F]{4,6})/i;
+const CODE_POINT_RE = /^([0-9A-F]{4,6})/i;
+
 export interface ParsedDecorations {
   codePoints: DecorationOptions[];
   ranges: DecorationOptions[];
@@ -31,7 +37,7 @@ export function parseMetadataLine(line: string): MetadataMatch {
   const result: MetadataMatch = {};
 
   // Regex: SomeFile-16.0.0.txt
-  const fileMatch = line.match(/#\s*([A-Z]\w*)-(\d+\.\d+\.\d+)(\.txt)/i);
+  const fileMatch = line.match(FILE_METADATA_RE);
   if (fileMatch?.[1] && fileMatch[2]) {
     const fullMatch = fileMatch[0];
     const matchStart = line.indexOf(fullMatch);
@@ -47,7 +53,7 @@ export function parseMetadataLine(line: string): MetadataMatch {
   }
 
   // Regex: YYYY-MM-DD
-  const dateMatch = line.match(/(\d{4}-\d{2}-\d{2})/);
+  const dateMatch = line.match(DATE_RE);
   if (dateMatch?.[1]) {
     const dateStart = line.indexOf(dateMatch[1]);
     const dateEnd = dateStart + dateMatch[1].length;
@@ -56,7 +62,7 @@ export function parseMetadataLine(line: string): MetadataMatch {
 
   // Regex: Version X.Y.Z or vX.Y.Z
   if (!result.version) {
-    const versionMatch = line.match(/(?:Version\s+|v)(\d+\.\d+\.\d+)/i);
+    const versionMatch = line.match(VERSION_RE);
     if (versionMatch?.[1]) {
       const versionNum = versionMatch[1];
       const versionNumStart = line.indexOf(versionNum, line.indexOf(versionMatch[0]));
@@ -78,7 +84,7 @@ export function parseDataLine(line: string): DataLineMatch {
   const result: DataLineMatch = { fields: [] };
 
   // Regex: XXXX..YYYY (range)
-  const rangeMatch = line.match(/^([0-9A-F]{4,6})\.\.([0-9A-F]{4,6})/i);
+  const rangeMatch = line.match(RANGE_RE);
   if (rangeMatch?.[0] && rangeMatch[1] && rangeMatch[2]) {
     const rangeStart = line.indexOf(rangeMatch[0]);
     result.range = {
@@ -89,7 +95,7 @@ export function parseDataLine(line: string): DataLineMatch {
     };
   } else {
     // Regex: XXXX (single code point)
-    const codePointMatch = line.match(/^([0-9A-F]{4,6})/i);
+    const codePointMatch = line.match(CODE_POINT_RE);
     if (codePointMatch?.[1]) {
       result.codePoint = {
         text: codePointMatch[1],

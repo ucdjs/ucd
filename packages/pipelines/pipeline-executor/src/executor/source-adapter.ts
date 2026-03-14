@@ -10,6 +10,8 @@ import type { PipelineExecutionRuntime } from "../runtime";
 import { resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "../logger";
 
+const LINE_SPLIT_RE = /\r?\n/;
+
 export interface SourceAdapter {
   listFiles: (version: string) => Promise<FileContext[]>;
   readFile: (file: FileContext) => Promise<string>;
@@ -65,7 +67,7 @@ export function createParseContext(
     },
     async* readLines() {
       const content = await source.readFile(file);
-      const lines = content.split(/\r?\n/);
+      const lines = content.split(LINE_SPLIT_RE);
       for (const line of lines) {
         yield line;
       }

@@ -1,6 +1,7 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
+import { trimLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,
   createDebugger,
@@ -13,6 +14,10 @@ import { getFile } from "../files/get";
 import { listFiles } from "../files/list";
 
 const debug = createDebugger("ucdjs:ucd-store:compare");
+
+function trimLeadingSlashToEmpty(value: string): string {
+  return value === "/" ? "" : trimLeadingSlash(value);
+}
 
 /**
  * Single mode types for comparison.
@@ -158,7 +163,7 @@ function normalizeFilePath(filePath: string, version: string): string {
   }
 
   // Already normalized or doesn't have version prefix
-  return filePath.replace(/^\/+/, "");
+  return trimLeadingSlashToEmpty(filePath);
 }
 
 /**

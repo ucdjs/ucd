@@ -7,6 +7,8 @@ interface UVersionProps {
   className?: string;
 }
 
+const TRAILING_ZERO_VERSION_SEGMENTS_RE = /(?:\.0)+$/;
+
 export function UVersion({
   version,
   size = 24,
@@ -17,7 +19,7 @@ export function UVersion({
 }: UVersionProps) {
   // Shorten versions by removing trailing ".0" segments
   // "17.0.0" -> "17", "15.1.0" -> "15.1"
-  const label = String(version).replace(/(?:\.0)+$/, "");
+  const label = String(version).replace(TRAILING_ZERO_VERSION_SEGMENTS_RE, "");
 
   // Ensure numeric size, clamp to maximum 32px
   const numericSize = typeof size === "number" ? size : Number.parseInt(String(size), 10) || 24;

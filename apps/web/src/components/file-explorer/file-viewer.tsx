@@ -5,6 +5,9 @@ import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+const LINE_HASH_RE = /^#L(\d+)(?:-L?(\d+))?$/;
+const HTML_LINE_CLASS_RE = /class="line"/g;
+
 export interface FileViewerProps {
   html: string;
   fileName: string;
@@ -24,7 +27,7 @@ export interface LineSelection {
 function parseLineHash(hash: string): LineSelection | null {
   if (!hash || !hash.startsWith("#L")) return null;
 
-  const match = hash.match(/^#L(\d+)(?:-L?(\d+))?$/);
+  const match = hash.match(LINE_HASH_RE);
   if (!match) return null;
 
   const start = Number.parseInt(match[1]!, 10);
@@ -50,7 +53,7 @@ function generateLineHash(selection: LineSelection): string {
 
 function countLinesFromHtml(html: string) {
   if (!html) return 0;
-  const matches = html.match(/class="line"/g);
+  const matches = html.match(HTML_LINE_CLASS_RE);
   return matches ? matches.length : 0;
 }
 

@@ -1,4 +1,4 @@
-import { prependLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { createDebugger } from "@ucdjs-internal/shared";
 import pathe from "pathe";
 import {
@@ -18,6 +18,10 @@ import { assertNotUNCPath, getWindowsDriveLetter, isWindowsDrivePath, toUnixForm
 import { isCaseSensitive, osPlatform } from "./utils";
 
 const debug = createDebugger("ucdjs:path-utils:security");
+const ENCODED_DOT_RE = /%2e/gi;
+const ENCODED_FORWARD_SLASH_RE = /%2f/gi;
+const ENCODED_BACKSLASH_RE = /%5c/gi;
+const BACKSLASH_RE = /\\/g;
 
 /**
  * Checks if the resolved path is within the specified base path, considering case sensitivity.
@@ -105,9 +109,9 @@ export function decodePathSafely(encodedPath: string): string {
 
     // handle common manual encodings
     decodedPath = decodedPath
-      .replace(/%2e/gi, ".") // encoded dots
-      .replace(/%2f/gi, "/") // encoded forward slashes
-      .replace(/%5c/gi, "\\"); // encoded backslashes
+      .replace(ENCODED_DOT_RE, ".") // encoded dots
+      .replace(ENCODED_FORWARD_SLASH_RE, "/") // encoded forward slashes
+      .replace(ENCODED_BACKSLASH_RE, "\\"); // encoded backslashes
 
     iterations++;
   } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
@@ -251,7 +255,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   }
 
   // convert to unix format but don't normalize yet to preserve traversal sequences
-  const unixPath = decodedPath.replace(/\\/g, "/");
+  const unixPath = decodedPath.replace(BACKSLASH_RE, "/");
 
   if (pathe.isAbsolute(unixPath)) {
     debug?.("resolveSafePath: handling absolute Unix path", { unixPath, normalizedBasePath });
@@ -359,7 +363,7 @@ function internal_handleAbsolutePath(absoluteUnixPath: string, basePath: string)
   }
 
   // strip leading slash and resolve relative to boundary root
-  const pathWithoutLeadingSlash = absoluteUnixPath.replace(/^\/+/, "");
+  const pathWithoutLeadingSlash = absoluteUnixPath === "/" ? "" : trimLeadingSlash(absoluteUnixPath);
   const resolved = pathe.resolve(basePath, pathWithoutLeadingSlash);
 
   debug?.("internal_handleAbsolutePath: resolved", {

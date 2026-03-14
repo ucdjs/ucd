@@ -2,6 +2,10 @@ import type { RolldownOutput } from "rolldown";
 import { build } from "rolldown";
 import { BundleError, BundleResolveError, BundleTransformError } from "./errors";
 
+const RESOLVE_ERROR_RE = /could not resolve|cannot find module/i;
+const QUOTED_IMPORT_RE = /"([^"]+)"/;
+const TRANSFORM_ERROR_RE = /unexpected token|syntaxerror|parse error|expected|transform/i;
+
 export interface BundleResult {
   code: string;
   dataUrl: string;
@@ -25,12 +29,12 @@ export async function bundle(options: {
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
 
-    if (/could not resolve|cannot find module/i.test(msg)) {
-      const importMatch = msg.match(/"([^"]+)"/);
+    if (RESOLVE_ERROR_RE.test(msg)) {
+      const importMatch = msg.match(QUOTED_IMPORT_RE);
       throw new BundleResolveError(options.entryPath, importMatch?.[1] ?? "", { cause: err });
     }
 
-    if (/unexpected token|syntaxerror|parse error|expected|transform/i.test(msg)) {
+    if (TRANSFORM_ERROR_RE.test(msg)) {
       throw new BundleTransformError(options.entryPath, { cause: err });
     }
 

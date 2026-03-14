@@ -3,6 +3,8 @@ import type { Hono } from "hono";
 import type { HonoEnv } from "../types";
 import { badGateway } from "@ucdjs-internal/worker-utils";
 
+const MANIFEST_KEY_RE = /^manifest\/([^/]+)\/manifest\.json$/;
+
 interface ManifestData {
   expectedFiles: string[];
 }
@@ -26,7 +28,7 @@ export function registerLockfileRoute(router: Hono<HonoEnv>) {
 
       for (const obj of listed.objects) {
         // Extract version from path: manifest/{version}/manifest.json
-        const match = obj.key.match(/^manifest\/([^/]+)\/manifest\.json$/);
+        const match = obj.key.match(MANIFEST_KEY_RE);
         if (!match) continue;
 
         const version = match[1]!;

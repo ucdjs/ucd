@@ -1,12 +1,17 @@
 const PATH_SEPARATOR = "~";
+const BACKSLASH_RE = /\\/g;
+const LEADING_DOT_SLASH_RE = /^\.\/+/;
+const DUPLICATE_SLASH_RE = /\/+/g;
+const TILDE_RE = /~/g;
+const WHITESPACE_RE = /\s+/g;
 
 export const PIPELINE_FILE_SUFFIXES = [".ucd-pipeline.ts", ".ts"] as const;
 
 function normalizePathSegments(filePath: string): string[] {
   const normalized = filePath
-    .replace(/\\/g, "/")
-    .replace(/^\.\/+/, "")
-    .replace(/\/+/g, "/");
+    .replace(BACKSLASH_RE, "/")
+    .replace(LEADING_DOT_SLASH_RE, "")
+    .replace(DUPLICATE_SLASH_RE, "/");
 
   return normalized.split("/").filter(Boolean);
 }
@@ -25,7 +30,7 @@ export function stripSuffixes(
 }
 
 export function sanitizeSegment(segment: string): string {
-  return segment.trim().replace(/~/g, "-").replace(/\s+/g, "-");
+  return segment.trim().replace(TILDE_RE, "-").replace(WHITESPACE_RE, "-");
 }
 
 export function fileIdFromPath(
