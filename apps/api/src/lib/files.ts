@@ -41,7 +41,7 @@ export async function parseUnicodeDirectory(html: string, basePath = ""): Promis
   });
 
   return files.map((entry) => {
-    entry.name = trimLeadingSlash(trimTrailingSlash(entry.name));
+    entry.name = entry.name ? trimLeadingSlash(trimTrailingSlash(entry.name)) : "";
     return entry;
   });
 }
@@ -80,7 +80,11 @@ export interface RawUnicodeAssetResult {
 
 export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
   let normalizedPath = path.trim();
-  normalizedPath = normalizedPath === "/" ? "" : trimLeadingSlash(trimTrailingSlash(normalizedPath));
+  if (!normalizedPath || normalizedPath === "/") {
+    normalizedPath = "";
+  } else {
+    normalizedPath = trimLeadingSlash(trimTrailingSlash(normalizedPath));
+  }
   const url = normalizedPath ? `https://unicode.org/Public/${normalizedPath}?F=2` : "https://unicode.org/Public?F=2";
 
   const response = await fetch(url, {

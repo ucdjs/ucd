@@ -109,7 +109,7 @@ export function hashArtifact(value: unknown): string {
   }
 
   if (value instanceof Map) {
-    const entries = value.entries().toSorted(([a], [b]) => String(a).localeCompare(String(b)))
+    const entries = [...value.entries()].toSorted(([a], [b]) => String(a).localeCompare(String(b)))
       .map(([k, v]) => `${String(k)}=${String(v)}`)
       .join(";");
     return defaultHashFn(entries);
