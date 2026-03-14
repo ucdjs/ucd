@@ -14,6 +14,28 @@ const defaultSources: PipelineSource[] = [{
   path: playgroundPath,
 }];
 
+type ExecutionInsert = typeof schema.executions.$inferInsert;
+type EventInsert = typeof schema.events.$inferInsert;
+type LogInsert = typeof schema.executionLogs.$inferInsert;
+
+type SeedExecutionOptions = Partial<Omit<ExecutionInsert, "id">> & { id?: string };
+type SeedExecutionEventOptions = Pick<EventInsert, "executionId"> & Partial<Omit<EventInsert, "id" | "executionId">>;
+type SeedExecutionLogOptions = Pick<LogInsert, "executionId" | "message"> & Partial<Omit<LogInsert, "id" | "executionId" | "message">>;
+
+interface SeedExecutionInput extends SeedExecutionOptions {
+  events?: Omit<SeedExecutionEventOptions, "executionId">[];
+  logs?: Omit<SeedExecutionLogOptions, "executionId">[];
+}
+
+interface CreateTestRoutesAppOptions {
+  sources?: PipelineSource[];
+  seed?: {
+    executions?: SeedExecutionInput[];
+    events?: SeedExecutionEventOptions[];
+    logs?: SeedExecutionLogOptions[];
+  };
+}
+
 export async function createTestApp(options: { sources?: PipelineSource[] } = {}) {
   const { createApp } = await import("#server/app");
   const db = createDatabase({ url: "file::memory:" });
@@ -29,7 +51,7 @@ export async function createTestApp(options: { sources?: PipelineSource[] } = {}
   return { app, db, storePath: playgroundPath, workspaceId: "test" as const };
 }
 
-export async function createTestRoutesApp(routers: H3[], options: { sources?: PipelineSource[] } = {}) {
+export async function createTestRoutesApp(routers: H3[], options: CreateTestRoutesAppOptions = {}) {
   const db = createDatabase({ url: "file::memory:" });
   await runMigrations(db);
   await ensureWorkspace(db, "test", playgroundPath);
@@ -46,7 +68,47 @@ export async function createTestRoutesApp(routers: H3[], options: { sources?: Pi
     app.mount("/api/sources", router);
   }
 
-  return { app, db, storePath: playgroundPath, workspaceId: "test" as const };
+  const executionIds: string[] = [];
+
+  if (options.seed) {
+    for (const execution of options.seed.executions ?? []) {
+      const { events, logs, ...executionOptions } = execution;
+      const executionId = await seedExecution(db, executionOptions);
+      executionIds.push(executionId);
+
+      for (const event of events ?? []) {
+        await seedExecutionEvent(db, {
+          ...event,
+          executionId,
+        });
+      }
+
+      for (const log of logs ?? []) {
+        await seedExecutionLog(db, {
+          ...log,
+          executionId,
+        });
+      }
+    }
+
+    for (const event of options.seed.events ?? []) {
+      await seedExecutionEvent(db, event);
+    }
+
+    for (const log of options.seed.logs ?? []) {
+      await seedExecutionLog(db, log);
+    }
+  }
+
+  return {
+    app,
+    db,
+    storePath: playgroundPath,
+    workspaceId: "test" as const,
+    seeded: {
+      executionIds,
+    },
+  };
 }
 
 export async function createTestExecution(app: H3) {
@@ -64,22 +126,8 @@ export async function createTestExecution(app: H3) {
   return execData.executionId as string;
 }
 
-interface SeedExecutionOptions {
-  workspaceId?: string;
-  sourceId?: string | null;
-  fileId?: string | null;
-  pipelineId?: string;
-  status?: "running" | "completed" | "failed";
-  startedAt?: Date;
-  completedAt?: Date | null;
-  versions?: string[] | null;
-  summary?: typeof schema.executions.$inferInsert.summary;
-  graph?: typeof schema.executions.$inferInsert.graph;
-  error?: string | null;
-}
-
 export async function seedExecution(db: Database, options: SeedExecutionOptions = {}) {
-  const executionId = randomUUID();
+  const executionId = options.id ?? randomUUID();
 
   await db.insert(schema.executions).values({
     id: executionId,
@@ -99,39 +147,17 @@ export async function seedExecution(db: Database, options: SeedExecutionOptions 
   return executionId;
 }
 
-interface SeedExecutionEventOptions {
-  executionId: string;
-  workspaceId?: string;
-  type?: string;
-  timestamp?: Date;
-  data?: typeof schema.events.$inferInsert.data;
-}
-
 export async function seedExecutionEvent(db: Database, options: SeedExecutionEventOptions) {
+  const eventType: EventInsert["type"] = options.type ?? "pipeline:start";
+
   await db.insert(schema.events).values({
     id: randomUUID(),
     workspaceId: options.workspaceId ?? "test",
     executionId: options.executionId,
-    type: options.type as typeof schema.events.$inferInsert.type ?? "pipeline:start",
+    type: eventType,
     timestamp: options.timestamp ?? new Date("2026-01-01T00:00:01.000Z"),
-    data: options.data ?? ({
-      type: "pipeline:start",
-      timestamp: options.timestamp?.toISOString() ?? "2026-01-01T00:00:01.000Z",
-      executionId: options.executionId,
-      pipelineId: "simple",
-      workspaceId: options.workspaceId ?? "test",
-    } as never),
+    data: options.data,
   });
-}
-
-interface SeedExecutionLogOptions {
-  executionId: string;
-  workspaceId?: string;
-  spanId?: string | null;
-  stream?: "stdout" | "stderr";
-  message: string;
-  timestamp?: Date;
-  payload?: typeof schema.executionLogs.$inferInsert.payload;
 }
 
 export async function seedExecutionLog(db: Database, options: SeedExecutionLogOptions) {

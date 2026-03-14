@@ -1,29 +1,33 @@
 import { sourcesLogsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp, seedExecution, seedExecutionLog } from "./helpers";
+import { createTestRoutesApp } from "./helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/logs", () => {
   it("returns paginated logs and supports span filtering", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);
-    const executionId = await seedExecution(db);
-
-    await seedExecutionLog(db, {
-      executionId,
-      spanId: "span-1",
-      message: "first log",
-      payload: {
-        message: "first log",
-        stream: "stdout",
-        truncated: true,
-        originalSize: 2048,
+    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+      seed: {
+        executions: [{
+          logs: [
+            {
+              spanId: "span-1",
+              message: "first log",
+              payload: {
+                message: "first log",
+                stream: "stdout",
+                truncated: true,
+                originalSize: 2048,
+              },
+            },
+            {
+              spanId: "span-2",
+              message: "second log",
+            },
+          ],
+        }],
       },
     });
-    await seedExecutionLog(db, {
-      executionId,
-      spanId: "span-2",
-      message: "second log",
-    });
+    const executionId = seeded.executionIds[0]!;
 
     const allLogsRes = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/logs?limit=10&offset=0`,
@@ -73,12 +77,16 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution route context does not match", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);
-    const executionId = await seedExecution(db, {
-      sourceId: "other-source",
-      fileId: "other-file",
-      pipelineId: "other-pipeline",
+    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+      seed: {
+        executions: [{
+          sourceId: "other-source",
+          fileId: "other-file",
+          pipelineId: "other-pipeline",
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/logs`,
@@ -88,13 +96,16 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("falls back to safe defaults for invalid pagination values", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);
-    const executionId = await seedExecution(db);
-
-    await seedExecutionLog(db, {
-      executionId,
-      message: "first log",
+    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+      seed: {
+        executions: [{
+          logs: [{
+            message: "first log",
+          }],
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/logs?limit=abc&offset=nope`,
