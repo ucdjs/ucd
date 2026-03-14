@@ -2,7 +2,6 @@ import type { HonoEnv } from "#types";
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { getRawUnicodeAsset } from "#lib/files";
 import { createLogger } from "#lib/logger";
-import { captureParseError, captureUpstreamError, COMPONENTS } from "#lib/sentry";
 import { wrapTry } from "@ucdjs-internal/shared";
 import {
   getCurrentDraftVersion,
@@ -25,18 +24,14 @@ export async function getAllVersionsFromList() {
 
     if (!response.ok) {
       const error = new Error(`Failed to fetch Unicode versions page: HTTP ${response.status}`);
-      captureUpstreamError(error, {
-        component: COMPONENTS.V1_VERSIONS,
+      log.error("Failed to fetch Unicode versions page", {
+        error,
+        component: "v1_versions",
         operation: "getAllVersionsFromList",
         upstreamService: "unicode.org",
-        tags: {
-          http_status: response.status.toString(),
-        },
-        extra: {
-          status: response.status,
-          statusText: response.statusText,
-          url: "https://www.unicode.org/versions/enumeratedversions.html",
-        },
+        httpStatus: response.status,
+        statusText: response.statusText,
+        url: "https://www.unicode.org/versions/enumeratedversions.html",
       });
 
       throw error;
@@ -55,17 +50,14 @@ export async function getAllVersionsFromList() {
 
     if (!tableMatch) {
       const error = new Error("Could not find version table in Unicode versions page");
-      captureParseError(error, {
-        component: COMPONENTS.V1_VERSIONS,
+      log.error("Could not find version table in Unicode versions page", {
+        error,
+        component: "v1_versions",
         operation: "getAllVersionsFromList",
-        tags: {
-          issue_type: "missing_table",
-          upstream_service: "unicode.org",
-        },
-        extra: {
-          html_length: html.length,
-          html_preview: html.substring(0, 500), // First 500 chars for debugging
-        },
+        issueType: "missing_table",
+        upstreamService: "unicode.org",
+        htmlLength: html.length,
+        htmlPreview: html.substring(0, 500),
       });
 
       throw error;
@@ -84,8 +76,9 @@ export async function getAllVersionsFromList() {
             tmpError = error;
           }
 
-          captureUpstreamError(tmpError, {
-            component: COMPONENTS.V1_VERSIONS,
+          log.error("Error fetching current draft version", {
+            error: tmpError,
+            component: "v1_versions",
             operation: "getCurrentDraftVersion",
             upstreamService: "unicode.org",
           });
@@ -99,9 +92,10 @@ export async function getAllVersionsFromList() {
       });
     } catch (err) {
       // If getCurrentDraftVersion throws, log it and continue without draft
-      log.error("getCurrentDraftVersion threw an error", { error: err });
-      captureUpstreamError(err instanceof Error ? err : new Error("Unknown error", { cause: err }), {
-        component: COMPONENTS.V1_VERSIONS,
+      const tmpError = err instanceof Error ? err : new Error("Unknown error", { cause: err });
+      log.error("getCurrentDraftVersion threw an error", {
+        error: tmpError,
+        component: "v1_versions",
         operation: "getCurrentDraftVersion",
         upstreamService: "unicode.org",
       });
@@ -180,18 +174,14 @@ async function getDraftVersionText() {
 
   if (!ok) {
     const error = new Error(`Failed to fetch draft ReadMe: HTTP ${status}`);
-    captureUpstreamError(error, {
-      component: COMPONENTS.V1_VERSIONS,
+    log.error("Failed to fetch draft ReadMe", {
+      error,
+      component: "v1_versions",
       operation: "getCurrentDraftVersion",
+      issueType: "fetch_failed",
       upstreamService: "unicode.org",
-      tags: {
-        issue_type: "fetch_failed",
-        http_status: status.toString(),
-      },
-      extra: {
-        status,
-        url,
-      },
+      httpStatus: status,
+      url,
     });
 
     throw error;
@@ -203,16 +193,12 @@ async function getDraftVersionText() {
     text = await response.text();
   } catch (err) {
     const tmpError = err instanceof Error ? err : new Error("Unknown error reading response body", { cause: err });
-    captureParseError(tmpError, {
-      component: COMPONENTS.V1_VERSIONS,
+    log.error("Failed to read draft ReadMe response body", {
+      error: tmpError,
+      component: "v1_versions",
       operation: "getCurrentDraftVersion",
-      tags: {
-        issue_type: "body_read_failed",
-        upstream_service: "unicode.org",
-      },
-      extra: {
-        error_message: tmpError.message,
-      },
+      issueType: "body_read_failed",
+      upstreamService: "unicode.org",
     });
 
     throw tmpError;

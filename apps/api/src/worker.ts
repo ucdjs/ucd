@@ -1,7 +1,6 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import * as Sentry from "@sentry/cloudflare";
 import {
   errorHandler,
   notFoundHandler,
@@ -87,19 +86,4 @@ app.notFound(notFoundHandler);
 
 export const getOpenAPI31Document: OpenAPIHono<HonoEnv>["getOpenAPI31Document"] = app.getOpenAPI31Document;
 
-export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
-  const { id: versionId } = env.CF_VERSION_METADATA;
-
-  return {
-    dsn: env.SENTRY_DSN,
-    release: versionId,
-    // Adds request headers and IP for users, for more info visit:
-    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#sendDefaultPii
-    sendDefaultPii: false,
-    enabled: env.ENVIRONMENT !== "testing",
-  };
-}, {
-  fetch: (request, env, ctx) => {
-    return app.fetch(request, env, ctx);
-  },
-});
+export default app;

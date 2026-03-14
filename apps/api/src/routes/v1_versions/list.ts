@@ -1,7 +1,6 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { createLogger } from "#lib/logger";
-import { captureError, captureUpstreamError, COMPONENTS } from "#lib/sentry";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { badGateway, MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
@@ -87,12 +86,15 @@ export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
     const [versions, error] = await getAllVersionsFromList();
 
     if (error) {
-      log.error("Error fetching Unicode versions", { error });
-      captureUpstreamError(error, {
-        component: COMPONENTS.V1_VERSIONS,
+      log.error("Error fetching Unicode versions", {
+        error,
+        component: "v1_versions",
         operation: "getAllVersionsFromList",
         upstreamService: "unicode.org",
-        context: c,
+        request: {
+          method: c.req.method,
+          path: c.req.path,
+        },
       });
 
       return badGateway(c, {
@@ -101,17 +103,15 @@ export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
     }
 
     if (!versions || versions.length === 0) {
-      log.error("No versions found after successful fetch");
-      const emptyResultError = new Error("No Unicode versions found after successful fetch from enumerated page");
-      captureError(emptyResultError, {
-        component: COMPONENTS.V1_VERSIONS,
+      log.error("No versions found after successful fetch", {
+        error: new Error("No Unicode versions found after successful fetch from enumerated page"),
+        component: "v1_versions",
         operation: "getAllVersionsFromList",
-        context: c,
-        tags: {
-          issue_type: "empty_result",
-        },
-        extra: {
-          versions_count: versions?.length ?? 0,
+        issueType: "empty_result",
+        versionsCount: versions?.length ?? 0,
+        request: {
+          method: c.req.method,
+          path: c.req.path,
         },
       });
 

@@ -2,7 +2,7 @@
   "name": "@ucdjs/web",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.32.1",
   "imports": {
     "#functions/*": "./src/functions/*.ts",
     "#components/*": "./src/components/*.tsx",
@@ -10,15 +10,14 @@
     "#apis/*": "./src/apis/*.ts"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000",
-    "build": "vite build && cp instrument.server.mjs .output/server",
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
-    "@sentry/tanstackstart-react": "catalog:frontend",
     "@tanstack/react-devtools": "catalog:frontend",
     "@tanstack/react-form": "catalog:frontend",
     "@tanstack/react-hotkeys": "catalog:frontend",
@@ -41,6 +40,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@rolldown/plugin-babel": "catalog:build",
     "@tailwindcss/vite": "catalog:build",
     "@tanstack/devtools-vite": "catalog:build",
     "@tanstack/router-plugin": "catalog:build",

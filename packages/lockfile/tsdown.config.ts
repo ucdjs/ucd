@@ -5,7 +5,9 @@ export default createTsdownConfig({
     "./src/index.ts",
     "./src/test-utils/index.ts",
   ],
-  inlineOnly: [
-    "hookable",
-  ],
+  deps: {
+    onlyBundle: [
+      "hookable",
+    ],
+  },
 });

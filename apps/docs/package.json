@@ -2,7 +2,7 @@
   "name": "@ucdjs/docs",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.30.3",
+  "packageManager": "pnpm@10.32.1",
   "scripts": {
     "dev": "vite dev --port 3001",
     "build": "vite build",
@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@rolldown/plugin-babel": "catalog:build",
     "@tanstack/devtools-vite": "catalog:build",
     "@types/mdx": "catalog:types",
     "@types/node": "catalog:types",

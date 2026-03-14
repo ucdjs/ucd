@@ -2,7 +2,6 @@ import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
 import { createLogger } from "#lib/logger";
-import { captureUpstreamError, COMPONENTS } from "#lib/sentry";
 import { VERSION_ROUTE_PARAM } from "#lib/shared-parameters";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
@@ -179,17 +178,15 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
 
     // If there's an error (upstream service failure), return 502
     if (error) {
-      log.error("Error fetching version from upstream service", { error });
-      captureUpstreamError(error, {
-        component: COMPONENTS.V1_VERSIONS,
+      log.error("Error fetching version from upstream service", {
+        error,
+        component: "v1_versions",
         operation: "getVersionFromList",
         upstreamService: "unicode.org",
-        context: c,
-        tags: {
-          requested_version: version,
-        },
-        extra: {
-          version,
+        requestedVersion: version,
+        request: {
+          method: c.req.method,
+          path: c.req.path,
         },
       });
       return badGateway(c, {
