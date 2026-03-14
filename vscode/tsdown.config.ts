@@ -90,14 +90,16 @@ export default createTsdownConfig({
   dts: false,
   exports: false,
   publint: false,
-  external: [
-    "vscode",
-  ],
-  // Bundle workspace packages so they're included in the extension
-  noExternal: [
-    /^@ucdjs\//,
-  ],
-  inlineOnly: false,
+  deps: {
+    neverBundle: [
+      "vscode",
+    ],
+    // Bundle workspace packages so they're included in the extension
+    alwaysBundle: [
+      /^@ucdjs\//,
+    ],
+    onlyBundle: false,
+  },
   plugins: [
     {
       name: "copy-grammars-to-syntaxes",

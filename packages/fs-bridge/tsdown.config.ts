@@ -7,13 +7,15 @@ export default createTsdownConfig({
     "./src/bridges/http.ts",
     "./src/errors.ts",
   ],
-  // TODO:
-  // This should probably just be bundled in the shared package.
-  // and then redistributed that way.
-  noExternal: [
-    "@luxass/msw-utils",
-  ],
-  inlineOnly: [
-    "@luxass/msw-utils",
-  ],
+  deps: {
+    // TODO:
+    // This should probably just be bundled in the shared package.
+    // and then redistributed that way.
+    alwaysBundle: [
+      "@luxass/msw-utils",
+    ],
+    onlyBundle: [
+      "@luxass/msw-utils",
+    ],
+  },
 });

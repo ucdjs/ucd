@@ -64,5 +64,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "inlinedDependencies": {
+    "pathe": "2.0.3",
+    "std-env": "4.0.0"
   }
 }
