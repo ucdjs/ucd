@@ -3,13 +3,13 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import { DevTools } from "@vitejs/devtools";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
+import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
-const config = defineConfig({
+export default defineConfig((env) => ({
   plugins: [
     devtools(),
     nitro({
@@ -20,12 +20,7 @@ const config = defineConfig({
         deployConfig: false,
         nodeCompat: true,
       },
-      minify: true,
-      rolldownConfig: {
-        devtools: {
-          sessionId: "nitro",
-        },
-      },
+      minify: env.mode === "build",
       wasm: false,
     }),
     // this is the plugin that enables path aliases
@@ -56,21 +51,17 @@ const config = defineConfig({
     babel({
       presets: [reactCompilerPreset()],
     }),
-    DevTools(),
+    Inspect({
+      build: true,
+    }),
   ],
   build: {
     rolldownOptions: {
-      devtools: {
-        sessionId: "app",
-      },
       experimental: {
         lazyBarrel: false,
       },
     },
-    minify: true,
-  },
-  devtools: {
-    enabled: true,
+    minify: env.mode === "build",
   },
   resolve: {
     alias: [
@@ -92,6 +83,4 @@ const config = defineConfig({
       },
     ],
   },
-});
-
-export default config;
+}));

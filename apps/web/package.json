@@ -52,7 +52,6 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/env": "workspace:*",
-    "@vitejs/devtools": "catalog:build",
     "@vitejs/plugin-react": "catalog:build",
     "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
@@ -61,6 +60,7 @@
     "tailwindcss": "catalog:build",
     "typescript": "catalog:build",
     "vite": "catalog:build",
+    "vite-plugin-inspect": "catalog:build",
     "vite-tsconfig-paths": "catalog:build",
     "wrangler": "catalog:backend"
   }
