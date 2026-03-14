@@ -1,29 +1,26 @@
 import { sourcesEventsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp, seedExecution, seedExecutionEvent } from "./helpers";
+import { createTestRoutesApp } from "./helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/events", () => {
   it("returns paginated events for an execution", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesEventsRouter]);
-    const executionId = await seedExecution(db);
-
-    await seedExecutionEvent(db, {
-      executionId,
-      timestamp: new Date("2026-01-01T00:00:01.000Z"),
+    const { app, seeded } = await createTestRoutesApp([sourcesEventsRouter], {
+      seed: {
+        executions: [{
+          events: [
+            {
+              timestamp: new Date("2026-01-01T00:00:01.000Z"),
+            },
+            {
+              type: "pipeline:end",
+              timestamp: new Date("2026-01-01T00:00:02.000Z"),
+            },
+          ],
+        }],
+      },
     });
-    await seedExecutionEvent(db, {
-      executionId,
-      type: "pipeline:complete",
-      timestamp: new Date("2026-01-01T00:00:02.000Z"),
-      data: {
-        type: "pipeline:complete",
-        timestamp: "2026-01-01T00:00:02.000Z",
-        executionId,
-        pipelineId: "simple",
-        workspaceId: "test",
-      } as never,
-    });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/events?limit=1&offset=0`,
@@ -57,12 +54,16 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution route context does not match", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesEventsRouter]);
-    const executionId = await seedExecution(db, {
-      sourceId: "other-source",
-      fileId: "other-file",
-      pipelineId: "other-pipeline",
+    const { app, seeded } = await createTestRoutesApp([sourcesEventsRouter], {
+      seed: {
+        executions: [{
+          sourceId: "other-source",
+          fileId: "other-file",
+          pipelineId: "other-pipeline",
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/events`,

@@ -1,6 +1,6 @@
 import { sourcesExecutionsRouter } from "#server/routes/sources.executions";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp, seedExecution } from "./helpers";
+import { createTestRoutesApp } from "./helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => {
@@ -24,40 +24,46 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns executions ordered by most recent start time", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
-
-    const olderId = await seedExecution(db, {
-      pipelineId: "simple",
-      startedAt: new Date("2026-01-01T00:00:00.000Z"),
-      completedAt: new Date("2026-01-01T00:00:05.000Z"),
-      summary: {
-        versions: ["16.0.0"],
-        totalRoutes: 1,
-        cached: 0,
-        totalFiles: 1,
-        matchedFiles: 1,
-        skippedFiles: 0,
-        fallbackFiles: 0,
-        totalOutputs: 1,
-        durationMs: 5_000,
+    const { app, seeded } = await createTestRoutesApp([sourcesExecutionsRouter], {
+      seed: {
+        executions: [
+          {
+            pipelineId: "simple",
+            startedAt: new Date("2026-01-01T00:00:00.000Z"),
+            completedAt: new Date("2026-01-01T00:00:05.000Z"),
+            summary: {
+              versions: ["16.0.0"],
+              totalRoutes: 1,
+              cached: 0,
+              totalFiles: 1,
+              matchedFiles: 1,
+              skippedFiles: 0,
+              fallbackFiles: 0,
+              totalOutputs: 1,
+              durationMs: 5_000,
+            },
+          },
+          {
+            pipelineId: "simple",
+            startedAt: new Date("2026-01-01T01:00:00.000Z"),
+            completedAt: new Date("2026-01-01T01:00:05.000Z"),
+            summary: {
+              versions: ["16.0.0"],
+              totalRoutes: 2,
+              cached: 1,
+              totalFiles: 1,
+              matchedFiles: 1,
+              skippedFiles: 0,
+              fallbackFiles: 0,
+              totalOutputs: 1,
+              durationMs: 5_000,
+            },
+          },
+        ],
       },
     });
-    const newerId = await seedExecution(db, {
-      pipelineId: "simple",
-      startedAt: new Date("2026-01-01T01:00:00.000Z"),
-      completedAt: new Date("2026-01-01T01:00:05.000Z"),
-      summary: {
-        versions: ["16.0.0"],
-        totalRoutes: 2,
-        cached: 1,
-        totalFiles: 1,
-        matchedFiles: 1,
-        skippedFiles: 0,
-        fallbackFiles: 0,
-        totalOutputs: 1,
-        durationMs: 5_000,
-      },
-    });
+    const olderId = seeded.executionIds[0]!;
+    const newerId = seeded.executionIds[1]!;
 
     const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions?limit=10&offset=0"));
 
@@ -83,17 +89,21 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("scopes executions to the requested source and file", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
-
-    await seedExecution(db, {
-      sourceId: "local",
-      fileId: "simple",
-      pipelineId: "simple",
-    });
-    await seedExecution(db, {
-      sourceId: "other-source",
-      fileId: "other-file",
-      pipelineId: "simple",
+    const { app } = await createTestRoutesApp([sourcesExecutionsRouter], {
+      seed: {
+        executions: [
+          {
+            sourceId: "local",
+            fileId: "simple",
+            pipelineId: "simple",
+          },
+          {
+            sourceId: "other-source",
+            fileId: "other-file",
+            pipelineId: "simple",
+          },
+        ],
+      },
     });
 
     const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions"));
@@ -110,9 +120,11 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("falls back to safe defaults for invalid pagination values", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
-
-    await seedExecution(db);
+    const { app } = await createTestRoutesApp([sourcesExecutionsRouter], {
+      seed: {
+        executions: [{}],
+      },
+    });
 
     const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions?limit=abc&offset=nope"));
 
@@ -124,39 +136,6 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       limit: 50,
       offset: 0,
       hasMore: false,
-    });
-  });
-
-  it("normalizes legacy execution summaries", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesExecutionsRouter]);
-
-    await seedExecution(db, {
-      summary: {
-        versions: ["16.0.0"],
-        totalFiles: 3,
-        matchedFiles: 4,
-        skippedFiles: 1,
-        fallbackFiles: 0,
-        totalOutputs: 2,
-        durationMs: 500,
-      } as never,
-    });
-
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions"));
-
-    expect(res.status).toBe(200);
-
-    const data = await res.json();
-    expect(data.executions[0]?.summary).toEqual({
-      versions: ["16.0.0"],
-      totalRoutes: 4,
-      cached: 0,
-      totalFiles: 3,
-      matchedFiles: 4,
-      skippedFiles: 1,
-      fallbackFiles: 0,
-      totalOutputs: 2,
-      durationMs: 500,
     });
   });
 });

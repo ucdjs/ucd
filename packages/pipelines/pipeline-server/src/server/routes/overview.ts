@@ -1,7 +1,6 @@
 import type { OverviewResponse } from "#shared/schemas/overview";
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { schema } from "#server/db";
-import { normalizeExecutionSummary } from "#shared/schemas/execution";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { H3 } from "h3";
 
@@ -82,7 +81,7 @@ overviewRouter.get("/", async (event) => {
         startedAt: exec.startedAt.toISOString(),
         completedAt: exec.completedAt?.toISOString() ?? null,
         versions: exec.versions,
-        summary: normalizeExecutionSummary(exec.summary),
+        summary: exec.summary ?? null,
         hasGraph: Boolean(exec.graph),
         error: exec.error ?? null,
       };

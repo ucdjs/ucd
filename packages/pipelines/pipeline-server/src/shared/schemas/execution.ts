@@ -1,5 +1,4 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import type { PipelineSummary } from "@ucdjs/pipelines-executor";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import z from "zod";
 import { ExecutionGraphViewSchema } from "./graph";
@@ -99,24 +98,6 @@ export const ExecutionGraphResponseSchema = z.object({
   status: ExecutionStatusSchema,
   graph: ExecutionGraphViewSchema.nullable(),
 });
-
-export function normalizeExecutionSummary(summary: Partial<PipelineSummary> | null | undefined): PipelineSummary | null {
-  if (!summary) {
-    return null;
-  }
-
-  return {
-    versions: summary.versions ?? [],
-    totalRoutes: summary.totalRoutes ?? summary.matchedFiles ?? 0,
-    cached: summary.cached ?? 0,
-    totalFiles: summary.totalFiles ?? 0,
-    matchedFiles: summary.matchedFiles ?? summary.totalRoutes ?? 0,
-    skippedFiles: summary.skippedFiles ?? 0,
-    fallbackFiles: summary.fallbackFiles ?? 0,
-    totalOutputs: summary.totalOutputs ?? 0,
-    durationMs: summary.durationMs ?? 0,
-  };
-}
 
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
 export type ExecutionSummaryItem = z.infer<typeof ExecutionSummaryItemSchema>;

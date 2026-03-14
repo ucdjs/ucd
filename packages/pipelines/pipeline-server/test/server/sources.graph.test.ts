@@ -1,24 +1,28 @@
 import { sourcesGraphRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp, seedExecution } from "./helpers";
+import { createTestRoutesApp } from "./helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/graph", () => {
   it("returns graph data and status", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
-    const executionId = await seedExecution(db, {
-      graph: {
-        nodes: [
-          { id: "source-1", type: "source", version: "1.0.0" },
-          { id: "route-1", type: "route", routeId: "basic-route" },
-          { id: "output-1", type: "output", outputIndex: 0 },
-        ],
-        edges: [
-          { from: "source-1", to: "route-1", type: "parsed" },
-          { from: "route-1", to: "output-1", type: "resolved" },
-        ],
-      } as never,
+    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+      seed: {
+        executions: [{
+          graph: {
+            nodes: [
+              { id: "source-1", type: "source", version: "1.0.0" },
+              { id: "route-1", type: "route", routeId: "basic-route" },
+              { id: "output-1", type: "output", outputIndex: 0 },
+            ],
+            edges: [
+              { from: "source-1", to: "route-1", type: "parsed" },
+              { from: "route-1", to: "output-1", type: "resolved" },
+            ],
+          },
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/graph`,
@@ -110,8 +114,12 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns null when the execution has no graph", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
-    const executionId = await seedExecution(db);
+    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+      seed: {
+        executions: [{}],
+      },
+    });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/graph`,
@@ -137,14 +145,18 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution belongs to another pipeline", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
-    const executionId = await seedExecution(db, {
-      pipelineId: "other",
-      graph: {
-        nodes: [],
-        edges: [],
-      } as never,
+    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+      seed: {
+        executions: [{
+          pipelineId: "other",
+          graph: {
+            nodes: [],
+            edges: [],
+          },
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/graph`,
@@ -154,15 +166,19 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution belongs to another source or file", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);
-    const executionId = await seedExecution(db, {
-      sourceId: "other-source",
-      fileId: "other-file",
-      graph: {
-        nodes: [],
-        edges: [],
-      } as never,
+    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+      seed: {
+        executions: [{
+          sourceId: "other-source",
+          fileId: "other-file",
+          graph: {
+            nodes: [],
+            edges: [],
+          },
+        }],
+      },
     });
+    const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/graph`,
