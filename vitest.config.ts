@@ -81,7 +81,7 @@ export default defineConfig({
     ]
   },
   oxc: {
-    target: "es2022"
+    target: "es2024"
   },
   resolve: { alias: aliases },
 });

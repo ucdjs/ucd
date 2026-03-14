@@ -180,4 +180,24 @@ describe("getRawUnicodeAsset", () => {
     const text = await result.response.text();
     expect(text).toBe(content);
   });
+
+  it("normalizes empty and root paths to the unicode public root", async () => {
+    mockFetch([
+      ["GET", "https://unicode.org/Public", () => {
+        return HttpResponse.text("", {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+          },
+        });
+      }],
+    ]);
+
+    const emptyResult = await getRawUnicodeAsset("");
+    expect(emptyResult.normalizedPath).toBe("");
+    expect(emptyResult.url).toBe("https://unicode.org/Public?F=2");
+
+    const rootResult = await getRawUnicodeAsset("/");
+    expect(rootResult.normalizedPath).toBe("");
+    expect(rootResult.url).toBe("https://unicode.org/Public?F=2");
+  });
 });
