@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@rolldown/plugin-babel": "catalog:build",
     "@tanstack/devtools-vite": "catalog:build",
     "@types/mdx": "catalog:types",
     "@types/node": "catalog:types",

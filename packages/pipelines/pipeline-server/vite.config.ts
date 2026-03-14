@@ -1,7 +1,8 @@
 import { cp } from "node:fs/promises";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
@@ -25,6 +26,9 @@ export default defineConfig((config) => {
         generatedRouteTree: "./src/client/routeTree.gen.ts",
       }),
       react(),
+      babel({
+        presets: [reactCompilerPreset()],
+      }),
       tailwindcss(),
       h3DevServerPlugin(),
       {
@@ -56,6 +60,10 @@ export default defineConfig((config) => {
     },
     builder: {
       async buildApp(builder) {
+        if (builder.environments.client == null || builder.environments.server == null) {
+          throw new Error("Both client and server environments must be defined");
+        }
+
         await builder.build(builder.environments.client);
         await builder.build(builder.environments.server);
       },

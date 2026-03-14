@@ -80,6 +80,7 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:lint",
     "@luxass/eslint-config": "catalog:lint",
+    "@rolldown/plugin-babel": "catalog:build",
     "@tailwindcss/vite": "catalog:build",
     "@tanstack/react-router": "catalog:frontend",
     "@tanstack/router-plugin": "catalog:build",

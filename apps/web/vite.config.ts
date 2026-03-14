@@ -1,9 +1,10 @@
 import { fileURLToPath } from "node:url";
+import babel from "@rolldown/plugin-babel";
 import { sentryTanstackStart } from "@sentry/tanstackstart-react/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import viteReact from "@vitejs/plugin-react";
+import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
@@ -47,10 +48,9 @@ const config = defineConfig({
         entry: "server.ts",
       },
     }),
-    viteReact({
-      babel: {
-        plugins: ["babel-plugin-react-compiler"],
-      },
+    react(),
+    babel({
+      presets: [reactCompilerPreset()],
     }),
     Inspect({
       build: true,
