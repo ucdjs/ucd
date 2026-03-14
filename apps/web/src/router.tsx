@@ -1,35 +1,9 @@
-/* eslint-disable node/prefer-global/process */
-import * as Sentry from "@sentry/tanstackstart-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { UCDJS_API_BASE_URL, UCDJS_DOCS_URL } from "@ucdjs/env";
 import { UNICODE_STABLE_VERSION } from "@unicode-utils/core";
-import { z } from "zod";
 import { routeTree } from "./routeTree.gen";
-
-const originalAdd = z.globalRegistry.add;
-
-// terrible hack for vite's HMR:
-// without this monkey-patch, zod will throw an error whenever editing a schema file that uses
-// `.register` as it would try to re-register the schema with the same ID again
-// with this patch, re-registering will just replace the schema in the registry
-// https://github.com/colinhacks/zod/issues/4145
-z.globalRegistry.add = (
-  schema: Parameters<typeof originalAdd>[0],
-  meta: Parameters<typeof originalAdd>[1],
-) => {
-  if (!meta.id) {
-    return originalAdd.call(z.globalRegistry, schema, meta);
-  }
-
-  const existingSchema = z.globalRegistry._idmap.get(meta.id);
-  if (existingSchema) {
-    z.globalRegistry.remove(existingSchema);
-    z.globalRegistry._idmap.delete(meta.id);
-  }
-  return originalAdd.call(z.globalRegistry, schema, meta);
-};
 
 export function getRouter() {
   const queryClient = new QueryClient();
@@ -51,19 +25,6 @@ export function getRouter() {
       );
     },
   });
-
-  if (!router.isServer) {
-    Sentry.init({
-      dsn: process.env.SENTRY_DSN,
-      enabled: process.env.ENVIRONMENT !== "testing",
-
-      // Adds request headers and IP for users, for more info visit:
-      // https://docs.sentry.io/platforms/javascript/guides/tanstackstart-react/configuration/options/#sendDefaultPii
-      sendDefaultPii: true,
-      integrations: [
-      ],
-    });
-  }
 
   setupRouterSsrQueryIntegration({ router, queryClient });
 

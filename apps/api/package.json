@@ -26,7 +26,6 @@
     "@hono/zod-openapi": "catalog:backend",
     "@luxass/utils": "catalog:runtime",
     "@scalar/hono-api-reference": "catalog:backend",
-    "@sentry/cloudflare": "catalog:backend",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/worker-utils": "workspace:*",
     "@ucdjs/env": "workspace:*",

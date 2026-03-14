@@ -1,5 +1,4 @@
 import type { HonoEnv } from "./types";
-import * as Sentry from "@sentry/cloudflare";
 import {
   errorHandler,
   notFoundHandler,
@@ -36,19 +35,4 @@ app.get("/", (c) => {
 app.onError(errorHandler);
 app.notFound(notFoundHandler);
 
-export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
-  const { id: versionId } = env.CF_VERSION_METADATA;
-
-  return {
-    dsn: env.SENTRY_DSN,
-    release: versionId,
-    // Adds request headers and IP for users, for more info visit:
-    // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#sendDefaultPii
-    sendDefaultPii: false,
-    enabled: env.ENVIRONMENT !== "testing",
-  };
-}, {
-  fetch: (request, env, ctx) => {
-    return app.fetch(request, env, ctx);
-  },
-});
+export default app;

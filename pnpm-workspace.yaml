@@ -3,7 +3,7 @@ saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 strictPeerDependencies: false
 engineStrict: true
-minimumReleaseAge: 1440 # 1 day
+# minimumReleaseAge: 1440 # 1 day
 trustPolicy: "no-downgrade"
 
 minimumReleaseAgeExclude:
@@ -43,6 +43,7 @@ catalogs:
     "@tanstack/router-plugin": 1.166.8
     "@tanstack/devtools-vite": 0.5.5
     vite-tsconfig-paths: 6.1.1
+    "@vitejs/devtools": 0.1.0
     chokidar: 5.0.0
     drizzle-kit: 0.31.9
     oxc-transform: 0.118.0
@@ -99,7 +100,6 @@ catalogs:
     "@scalar/hono-api-reference": 0.10.3
     hono: 4.12.7
     "@cloudflare/workers-types": 4.20260313.1
-    "@sentry/cloudflare": 10.43.0
     h3: 2.0.1-rc.16
     crossws: 0.4.4
     drizzle-orm: 0.45.1
@@ -138,7 +138,6 @@ catalogs:
     "@base-ui/utils": 0.2.6
     "@fontsource-variable/inter": 5.2.8
     "@xyflow/react": 12.10.1
-    "@sentry/tanstackstart-react": 10.43.0
     "@tanstack/react-hotkeys": 0.4.1
     "@tanstack/react-hotkeys-devtools": 0.4.1
 

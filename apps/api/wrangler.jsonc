@@ -4,8 +4,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-02-17",
   "compatibility_flags": [
-    "enable_request_signal",
-    "nodejs_als"
+    "enable_request_signal"
   ],
   "observability": {
     "logs": {
