@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@luxass/utils": "catalog:runtime",
-    "@sentry/cloudflare": "catalog:backend",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/worker-utils": "workspace:*",
     "@ucdjs/env": "workspace:*",

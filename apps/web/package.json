@@ -10,15 +10,14 @@
     "#apis/*": "./src/apis/*.ts"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--import ./instrument.server.mjs' vite dev --port 3000",
-    "build": "vite build && cp instrument.server.mjs .output/server",
+    "dev": "vite dev --port 3000",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
-    "@sentry/tanstackstart-react": "catalog:frontend",
     "@tanstack/react-devtools": "catalog:frontend",
     "@tanstack/react-form": "catalog:frontend",
     "@tanstack/react-hotkeys": "catalog:frontend",
@@ -53,6 +52,7 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@vitejs/devtools": "catalog:build",
     "@vitejs/plugin-react": "catalog:build",
     "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
@@ -61,7 +61,6 @@
     "tailwindcss": "catalog:build",
     "typescript": "catalog:build",
     "vite": "catalog:build",
-    "vite-plugin-inspect": "catalog:build",
     "vite-tsconfig-paths": "catalog:build",
     "wrangler": "catalog:backend"
   }
