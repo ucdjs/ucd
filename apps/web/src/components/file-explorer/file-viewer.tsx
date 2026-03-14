@@ -69,7 +69,7 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
     const container = contentRef.current;
     if (!container) return;
 
-    const lines = Array.from(container.querySelectorAll<HTMLElement>(".line"));
+    const lines = [...container.querySelectorAll<HTMLElement>(".line")];
     lineElementsRef.current = lines;
     lines.forEach((line, index) => {
       line.dataset.line = String(index + 1);
@@ -146,7 +146,7 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
     const url = `${window.location.origin}${window.location.pathname}${generateLineHash(selection)}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(setCopied, 2000, false);
   }, [selection]);
 
   return (

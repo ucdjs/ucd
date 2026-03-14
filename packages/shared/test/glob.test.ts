@@ -193,12 +193,12 @@ describe("glob", () => {
         [3, { maxSegments: 2 }],
         [10, { maxSegments: 5 }],
       ])("should reject patterns with too many segments (segments: %d)", (segments, limits) => {
-        const pattern = Array.from({ length: segments }, () => "seg").join("/");
+        const pattern = Array.from({ length: segments }).fill("seg").join("/");
         expect(isValidGlobPattern(pattern, limits)).toBe(false);
       });
 
       it("should accept patterns within segment limit", () => {
-        const pattern = Array.from({ length: MAX_GLOB_SEGMENTS }, () => "seg").join("/");
+        const pattern = Array.from({ length: MAX_GLOB_SEGMENTS }).fill("seg").join("/");
         expect(isValidGlobPattern(pattern)).toBe(true);
         expect(isValidGlobPattern("a/b", { maxSegments: 3 })).toBe(true);
       });
@@ -305,7 +305,7 @@ describe("glob", () => {
         // Very long pattern
         expect(isValidGlobPattern("a".repeat(300))).toBe(false);
         // Too many segments
-        expect(isValidGlobPattern(Array.from({ length: 20 }, () => "seg").join("/"))).toBe(false);
+        expect(isValidGlobPattern(Array.from({ length: 20 }).fill("seg").join("/"))).toBe(false);
         // Too many brace expansions
         const manyOptions = Array.from({ length: 30 }, (_, i) => `opt${i}`).join(",");
         expect(isValidGlobPattern(`{${manyOptions}}`)).toBe(false);
@@ -330,7 +330,7 @@ describe("glob", () => {
 
         // Patterns that exceed API limits
         expect(isValidGlobPattern("a".repeat(130), apiLimits)).toBe(false);
-        expect(isValidGlobPattern(Array.from({ length: 10 }, () => "seg").join("/"), apiLimits)).toBe(false);
+        expect(isValidGlobPattern(Array.from({ length: 10 }).fill("seg").join("/"), apiLimits)).toBe(false);
         const manyOptions = Array.from({ length: 10 }, (_, i) => `opt${i}`).join(",");
         expect(isValidGlobPattern(`{${manyOptions}}`, apiLimits)).toBe(false);
         expect(isValidGlobPattern("*".repeat(20), apiLimits)).toBe(false);

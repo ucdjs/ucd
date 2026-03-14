@@ -109,16 +109,14 @@ export function hashArtifact(value: unknown): string {
   }
 
   if (value instanceof Map) {
-    const entries = Array.from(value.entries())
-      .sort(([a], [b]) => String(a).localeCompare(String(b)))
+    const entries = value.entries().toSorted(([a], [b]) => String(a).localeCompare(String(b)))
       .map(([k, v]) => `${String(k)}=${String(v)}`)
       .join(";");
     return defaultHashFn(entries);
   }
 
   if (value instanceof Set) {
-    const entries = Array.from(value)
-      .map(String)
+    const entries = Array.from(value, String)
       .sort()
       .join(";");
     return defaultHashFn(entries);

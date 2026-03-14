@@ -63,7 +63,7 @@ export class PipelineGraphBuilder {
 
   build(): PipelineGraph {
     return {
-      nodes: Array.from(this.#nodes.values()),
+      nodes: [...this.#nodes.values()],
       edges: [...this.#edges],
     };
   }

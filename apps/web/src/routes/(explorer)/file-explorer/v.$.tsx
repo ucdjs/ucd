@@ -26,7 +26,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
 
     // Extract file info for early checks
     const pathSegments = path.split("/").filter(Boolean);
-    const fileName = pathSegments[pathSegments.length - 1] || "file";
+    const fileName = pathSegments.at(-1) || "file";
     const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
 
     return {

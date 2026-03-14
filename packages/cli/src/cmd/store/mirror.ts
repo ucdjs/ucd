@@ -123,7 +123,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     const jsonOutput: Record<string, unknown> = {
       success: true,
       storeDir,
-      versions: versions.length > 0 ? versions : Array.from(mirrorResult.versions.keys()),
+      versions: versions.length > 0 ? versions : [...mirrorResult.versions.keys()],
     };
 
     if (mirrorResult.summary) {
@@ -141,7 +141,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
 
     // Add per-version details
     if (mirrorResult.versions.size > 0) {
-      jsonOutput.versionDetails = Array.from(mirrorResult.versions.entries()).map(([version, report]) => ({
+      jsonOutput.versionDetails = Array.from(mirrorResult.versions.entries(), ([version, report]) => ({
         version,
         downloaded: report.counts.success,
         skipped: report.counts.skipped,

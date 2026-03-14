@@ -80,7 +80,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     const analyzeDataObj = {
       ...analyzeData,
       versions: Object.fromEntries(
-        Array.from(analyzeData.versions.entries()).map(([version, report]) => [
+        Array.from(analyzeData.versions.entries(), ([version, report]) => [
           version,
           {
             ...report,

@@ -38,7 +38,7 @@ export function useClipboard(
 
   const handleCopyResult = (value: boolean) => {
     window.clearTimeout(copyTimeout!);
-    setCopyTimeout(window.setTimeout(() => setCopied(false), options.timeout));
+    setCopyTimeout(window.setTimeout(setCopied, options.timeout, false));
     setCopied(value);
   };
 

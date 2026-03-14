@@ -36,7 +36,7 @@ export function fileIdFromPath(
 
   if (segments.length === 0) return "";
 
-  const lastSegment = segments[segments.length - 1] ?? "";
+  const lastSegment = segments.at(-1) ?? "";
   const strippedLast = stripSuffixes(lastSegment, suffixes) || lastSegment;
 
   const idSegments = [
@@ -55,7 +55,7 @@ export function fileLabelFromPath(
 
   if (segments.length === 0) return "";
 
-  const lastSegment = segments[segments.length - 1] ?? "";
+  const lastSegment = segments.at(-1) ?? "";
   const strippedLast = stripSuffixes(lastSegment, suffixes) || lastSegment;
   const labelSegments = [...segments.slice(0, -1), strippedLast].filter(Boolean);
 

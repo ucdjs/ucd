@@ -3,7 +3,7 @@
   "compilerOptions": {
     /* Base Options: */
     "skipLibCheck": true,
-    "target": "es2022",
+    "target": "ES2024",
     "allowJs": true,
     "resolveJsonModule": true,
     "moduleDetection": "force",
@@ -20,7 +20,7 @@
     "checkJs": true,
 
     /* Bundled projects */
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": ["dom", "dom.iterable", "ES2024"],
     "noEmit": true,
     "module": "Preserve",
     "jsx": "react-jsx",

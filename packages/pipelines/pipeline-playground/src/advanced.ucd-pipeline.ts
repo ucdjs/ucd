@@ -156,7 +156,7 @@ const propListRoute = definePipelineRoute({
       });
     }
 
-    return Array.from(propertyGroups.entries()).map(([property, entries]) => ({
+    return Array.from(propertyGroups.entries(), ([property, entries]) => ({
       version: ctx.version,
       property,
       file: "PropList.txt",

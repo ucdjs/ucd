@@ -55,7 +55,7 @@ export function SourceIssuesDialog({
       }
     }
 
-    return Array.from(nextGroups.entries());
+    return [...nextGroups.entries()];
   }, [filter, issues]);
 
   function toggleGroup(path: string) {

@@ -265,7 +265,7 @@ export async function handleVersionConflict(
 
   switch (strategy) {
     case "merge": {
-      const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
+      const mergedVersions = [...new Set([...lockfileVersions, ...providedVersions])];
       const existing = await readLockfileOrUndefined(fs, lockfilePath);
       const { writeLockfile } = await import("@ucdjs/lockfile");
       const { extractFilterPatterns } = await import("./context");

@@ -25,7 +25,7 @@ function formatDirectoryListing(entries: FileEntryList): string {
   }
 
   // Sort: directories first, then files, both alphabetically
-  const sorted = [...entries].sort((a, b) => {
+  const sorted = entries.toSorted((a, b) => {
     if (a.type !== b.type) {
       return a.type === "directory" ? -1 : 1;
     }

@@ -162,7 +162,7 @@ function positionLayers(
   }
 
   const positionedNodes = new Map<string, PipelineFlowNode>();
-  const sortedLayers = Array.from(layerGroups.entries()).sort((a, b) => a[0] - b[0]);
+  const sortedLayers = layerGroups.entries().toSorted((a, b) => a[0] - b[0]);
 
   for (const [layerIndex, layerNodes] of sortedLayers) {
     const x = layerIndex * (NODE_WIDTH + HORIZONTAL_GAP);

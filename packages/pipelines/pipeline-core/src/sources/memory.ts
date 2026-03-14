@@ -15,7 +15,7 @@ export interface MemoryBackendOptions {
 function getFileContext(version: string, file: MemoryFile): FileContext {
   const path = file.path;
   const parts = path.split("/");
-  const name = parts[parts.length - 1];
+  const name = parts.at(-1);
   if (!name) {
     throw new Error(`Invalid file path: ${file.path}`);
   }

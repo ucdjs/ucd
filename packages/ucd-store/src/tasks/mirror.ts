@@ -261,7 +261,7 @@ async function _mirror(
 
     let totalDownloadedSize = 0;
 
-    await Promise.all([...directoriesToCreate].map(async (dir) => {
+    await Promise.all(Array.from(directoriesToCreate, async (dir) => {
       if (!await this.fs.exists(dir)) {
         // We have verified that `mkdir` capability exists
         // at the top of the function

@@ -116,8 +116,8 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
     }
 
     const combinedOptions: PathFilterOptions = {
-      include: Array.from(new Set([...(currentConfig.include || []), ...(extraOptions.include || [])])),
-      exclude: Array.from(new Set([...(currentConfig.exclude || []), ...(extraOptions.exclude || [])])),
+      include: [...new Set([...(currentConfig.include || []), ...(extraOptions.include || [])])],
+      exclude: [...new Set([...(currentConfig.exclude || []), ...(extraOptions.exclude || [])])],
       disableDefaultExclusions: currentConfig.disableDefaultExclusions,
     };
     const combinedFilter = internal__createFilterFunction(combinedOptions);

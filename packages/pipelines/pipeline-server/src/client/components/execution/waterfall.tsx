@@ -48,7 +48,7 @@ export function ExecutionWaterfall({
     [spans, visibleActivePhases],
   );
   const sortedSpans = useMemo(
-    () => [...filteredSpans].sort((a, b) => a.start - b.start),
+    () => filteredSpans.toSorted((a, b) => a.start - b.start),
     [filteredSpans],
   );
   const ticks = buildTicks(duration, 5);
