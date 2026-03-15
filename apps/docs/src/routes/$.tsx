@@ -14,6 +14,7 @@ import {
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import * as icons from "lucide-react";
 import { Suspense } from "react";
+import { Mermaid } from "@/components/mermaid";
 import { DocsNotFound } from "@/components/not-found";
 import { baseOptions } from "@/lib/docs-layout";
 import { source } from "@/lib/docs-loader";
@@ -48,6 +49,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
               ...(icons as unknown as MDXComponents),
               ...defaultMdxComponents,
               ...TabsComponents,
+              Mermaid,
             }}
           />
         </DocsBody>

@@ -22,6 +22,7 @@
     "fumadocs-mdx": "catalog:docs",
     "fumadocs-ui": "catalog:docs",
     "lucide-react": "catalog:frontend",
+    "mermaid": "catalog:docs",
     "nitro": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
