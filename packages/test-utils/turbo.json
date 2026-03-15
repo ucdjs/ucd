@@ -14,7 +14,7 @@
       ]
     },
     "dev": {
-      "persistent": false
+      "persistent": true
     },
     "typecheck": {
       "outputs": [

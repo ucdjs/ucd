@@ -44,14 +44,6 @@
         "^topo",
         "^build"
       ]
-    },
-
-    "//#test": {
-      "dependsOn": []
-    },
-    "test": {
-      "cache": false,
-      "dependsOn": []
     }
   }
 }
