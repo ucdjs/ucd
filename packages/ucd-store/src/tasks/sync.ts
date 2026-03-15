@@ -1,4 +1,4 @@
-import type { OperationResult } from "@ucdjs/utils";
+import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type {
   BaseOperationReport,
@@ -8,7 +8,11 @@ import type {
 } from "../types";
 import type { MirrorReport } from "./mirror";
 import { prependLeadingSlash } from "@luxass/utils";
-import { createDebugger } from "@ucdjs-internal/shared";
+import {
+  createConcurrencyLimiter,
+  createDebugger,
+  wrapTry,
+} from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
   readLockfileOrUndefined,
@@ -16,7 +20,6 @@ import {
   writeLockfile,
 } from "@ucdjs/lockfile";
 import { patheBasename } from "@ucdjs/path-utils";
-import { createConcurrencyLimiter, wrapTry } from "@ucdjs/utils";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { listFiles } from "../files/list";

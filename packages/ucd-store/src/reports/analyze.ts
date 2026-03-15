@@ -1,5 +1,5 @@
+import type { OperationResult } from "@ucdjs-internal/shared";
 import type { ExpectedFile } from "@ucdjs/schemas";
-import type { OperationResult } from "@ucdjs/utils";
 import type { StoreError } from "../errors";
 import type {
   BaseOperationReport,
@@ -12,8 +12,7 @@ import type {
   SharedOperationOptions,
 } from "../types";
 import { prependLeadingSlash } from "@luxass/utils";
-import { createDebugger } from "@ucdjs-internal/shared";
-import { wrapTry } from "@ucdjs/utils";
+import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
 import {
