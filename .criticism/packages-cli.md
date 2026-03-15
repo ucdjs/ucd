@@ -4,7 +4,6 @@
 
 - `pnpm --dir packages/cli run typecheck` -> passed
 - `pnpm --dir packages/cli run build` -> passed
-- package-local `test` script -> none
 
 ## Findings
 

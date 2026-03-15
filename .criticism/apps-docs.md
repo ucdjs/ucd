@@ -4,7 +4,6 @@
 
 - `pnpm --dir apps/docs run typecheck` -> passed
 - `pnpm --dir apps/docs run build` -> passed
-- package-local `test` script -> none
 
 ## Findings
 
