@@ -9,9 +9,6 @@
         "generate:client"
       ]
     },
-    "dev": {
-      "persistent": true
-    },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"],
       "dependsOn": [
