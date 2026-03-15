@@ -1,13 +1,11 @@
 ---
 title: Utils
-description: General utility functions
+description: Curated stable utility functions
 ---
-
-import { Callout } from 'fumadocs-ui/components/callout';
 
 # Utils
 
-The `@ucdjs/utils` package provides general utility functions for the UCD.js ecosystem.
+The `@ucdjs/utils` package provides a curated stable utility facade for UCD.js consumers.
 
 ## Installation
 
@@ -17,21 +15,28 @@ The `@ucdjs/utils` package provides general utility functions for the UCD.js eco
 
 ## Overview
 
-This package re-exports shared utilities and provides general-purpose functions used across the monorepo.
+This package exposes the stable subset of utility helpers that are safe to share with external consumers. More volatile implementation helpers remain in `@ucdjs-internal/shared`.
 
 ## Path Filtering
 
-The package provides utilities for filtering file paths and tree structures, which is particularly useful when working with the Unicode file tree.
+The package provides utilities for filtering file paths and tree structures, which is useful when working with the Unicode file tree.
 
 ```typescript title="filter.ts"
 import { createPathFilter, filterTreeStructure, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 
-// Create a filter for specific files
 const filter = createPathFilter({
-  include: ["*.txt"],
-  exclude: ["Unihan/*"]
+  include: ["**/*.txt"],
+  exclude: [...PRECONFIGURED_FILTERS.README_FILES],
 });
 
-// Use preconfigured filters
-const dataFilesFilter = PRECONFIGURED_FILTERS.dataFiles;
+const filteredTree = filterTreeStructure(tree, filter);
 ```
+
+## Other utilities
+
+`@ucdjs/utils` also includes:
+
+- Glob matching helpers such as `createGlobMatcher` and `isValidGlobPattern`
+- File tree helpers such as `flattenFilePaths` and `findFileByPath`
+- Async result helpers such as `wrapTry`, `tryOr`, and `createConcurrencyLimiter`
+- Safe API and Unicode version helpers such as `isApiError` and `isValidUnicodeVersion`
