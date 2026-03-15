@@ -1,6 +1,6 @@
 import type { JsonBodyType } from "msw";
 import type { MockStoreConfig, MockStoreFiles, MockStoreNodeWithPath } from "./types";
-import { createDebugger, findFileByPath, isApiError } from "@ucdjs-internal/shared";
+import { createDebugger, findFileByPath } from "@ucdjs-internal/shared";
 import {
   UCD_STAT_CHILDREN_DIRS_HEADER,
   UCD_STAT_CHILDREN_FILES_HEADER,
@@ -8,6 +8,7 @@ import {
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
+import { isApiError } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
 import { addPathsToFileNodes } from "./add-paths";

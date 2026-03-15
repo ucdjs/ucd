@@ -1,13 +1,11 @@
 ---
 title: Utils
-description: General utility functions
+description: Curated stable utility functions
 ---
-
-import { Callout } from 'fumadocs-ui/components/callout';
 
 # Utils
 
-The `@ucdjs/utils` package provides general utility functions for the UCD.js ecosystem.
+The `@ucdjs/utils` package provides a curated stable utility facade for UCD.js consumers.
 
 ## Installation
 
@@ -17,21 +15,45 @@ The `@ucdjs/utils` package provides general utility functions for the UCD.js eco
 
 ## Overview
 
-This package re-exports shared utilities and provides general-purpose functions used across the monorepo.
+This package exposes the stable subset of utility helpers that are safe to share with external consumers. More volatile implementation helpers remain in `@ucdjs-internal/shared`.
 
-## Path Filtering
+> [!IMPORTANT]
+> `@ucdjs/utils` is intentionally small. It only exposes helpers that are likely to be useful to external consumers.
 
-The package provides utilities for filtering file paths and tree structures, which is particularly useful when working with the Unicode file tree.
+## Unicode Version Helpers
 
-```typescript title="filter.ts"
-import { createPathFilter, filterTreeStructure, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+```typescript title="version.ts"
+import {
+  getLatestStableUnicodeVersion,
+  isStableUnicodeVersion,
+  isValidUnicodeVersion,
+} from "@ucdjs/utils";
 
-// Create a filter for specific files
-const filter = createPathFilter({
-  include: ["*.txt"],
-  exclude: ["Unihan/*"]
-});
+isValidUnicodeVersion("16.0.0");
+isStableUnicodeVersion("16.0.0");
+getLatestStableUnicodeVersion();
+```
 
-// Use preconfigured filters
-const dataFilesFilter = PRECONFIGURED_FILTERS.dataFiles;
+## API Error Guards
+
+```typescript title="guards.ts"
+import { isApiError } from "@ucdjs/utils";
+
+const result: unknown = await fetch("/api").then((r) => r.json());
+
+if (isApiError(result)) {
+  console.error(result.message);
+}
+```
+
+## Package Relationship
+
+```text
+consumer code
+  -> @ucdjs/utils
+    -> curated public helpers
+
+internal workspace code
+  -> @ucdjs-internal/shared
+    -> volatile/internal helper families
 ```
