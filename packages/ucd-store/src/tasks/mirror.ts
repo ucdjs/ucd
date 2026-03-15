@@ -1,4 +1,4 @@
-import type { OperationResult } from "@ucdjs-internal/shared";
+import type { OperationResult } from "@ucdjs/utils";
 import type { StoreError } from "../errors";
 import type {
   BaseOperationReport,
@@ -9,14 +9,7 @@ import type {
   SharedOperationOptions,
 } from "../types";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
-import {
-  createConcurrencyLimiter,
-  createDebugger,
-  filterTreeStructure,
-  flattenFilePaths,
-  normalizeTreeForFiltering,
-  wrapTry,
-} from "@ucdjs-internal/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
   computeFileHash,
@@ -26,6 +19,13 @@ import {
   writeSnapshot,
 } from "@ucdjs/lockfile";
 import { patheDirname, patheJoin } from "@ucdjs/path-utils";
+import {
+  createConcurrencyLimiter,
+  filterTreeStructure,
+  flattenFilePaths,
+  normalizeTreeForFiltering,
+  wrapTry,
+} from "@ucdjs/utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";

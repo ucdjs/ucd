@@ -1,6 +1,7 @@
 import type { InternalUCDStoreContext } from "../types";
-import { createDebugger, tryOr } from "@ucdjs-internal/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { readLockfile } from "@ucdjs/lockfile";
+import { tryOr } from "@ucdjs/utils";
 import { UCDStoreGenericError } from "../errors";
 import { validateVersions } from "./validate";
 

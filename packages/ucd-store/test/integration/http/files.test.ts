@@ -1,6 +1,6 @@
 import { mockStoreApi, mockStoreSubdomain } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
-import { findFileByPath } from "@ucdjs-internal/shared";
+import { findFileByPath } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { createHTTPUCDStore } from "../../../src/factory";
 

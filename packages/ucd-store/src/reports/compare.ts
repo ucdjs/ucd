@@ -1,13 +1,10 @@
-import type { OperationResult } from "@ucdjs-internal/shared";
+import type { OperationResult } from "@ucdjs/utils";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { trimLeadingSlash } from "@luxass/utils";
-import {
-  createConcurrencyLimiter,
-  createDebugger,
-  wrapTry,
-} from "@ucdjs-internal/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { computeFileHashWithoutUCDHeader } from "@ucdjs/lockfile";
+import { createConcurrencyLimiter, wrapTry } from "@ucdjs/utils";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { getFile } from "../files/get";

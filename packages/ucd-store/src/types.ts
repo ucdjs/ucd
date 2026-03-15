@@ -1,7 +1,7 @@
-import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge, FileSystemBridgeArgs, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
 import type { ExpectedFile, UCDWellKnownConfig, UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs/utils";
 import type z from "zod";
 import type { StoreError } from "./errors";
 import type { GetFileOptions } from "./files/get";
