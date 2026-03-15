@@ -2,9 +2,6 @@
   "$schema": "https://turborepo.dev/schema.json",
   "extends": ["//"],
   "tasks": {
-    "build": {
-      "outputs": ["dist/**"]
-    },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
     }

@@ -1,10 +1,16 @@
-import type { UCDClient } from "@ucdjs/client";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createUCDClient } from "@ucdjs/client";
 
-export function getMonorepoRoot(): string {
+/**
+ * @typedef {import("@ucdjs/client").UCDClient} UCDClient
+ */
+
+/**
+ * @returns {string}
+ */
+export function getMonorepoRoot() {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   let currentDir = __dirname;
 
@@ -18,7 +24,11 @@ export function getMonorepoRoot(): string {
   throw new Error("Could not find monorepo root (pnpm-workspace.yaml not found)");
 }
 
-export function parseVersions(versions: string | undefined): string[] | undefined {
+/**
+ * @param {string | undefined} versions
+ * @returns {string[] | undefined}
+ */
+export function parseVersions(versions) {
   if (!versions) {
     return undefined;
   }
@@ -26,10 +36,16 @@ export function parseVersions(versions: string | undefined): string[] | undefine
   return parsed.length > 0 ? parsed : undefined;
 }
 
-let cachedBaseUrl: string | undefined;
-let cachedClient: UCDClient | null = null;
+/** @type {string | undefined} */
+let cachedBaseUrl;
+/** @type {UCDClient | null} */
+let cachedClient = null;
 
-export async function getClient(baseUrl: string) {
+/**
+ * @param {string} baseUrl
+ * @returns {Promise<UCDClient>}
+ */
+export async function getClient(baseUrl) {
   if (cachedClient && cachedBaseUrl === baseUrl) {
     return cachedClient;
   }

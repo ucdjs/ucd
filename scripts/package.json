@@ -14,42 +14,37 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/ucdjs-scripts"
+    "directory": "scripts"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "imports": {
-    "#lib/*": "./src/lib/*.ts"
+    "#lib/*": "./src/lib/*.js"
   },
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./src/index.js",
     "./package.json": "./package.json"
   },
-  "types": "./dist/index.d.mts",
   "bin": {
-    "ucdjs-scripts": "./dist/index.mjs"
+    "ucdjs-scripts": "./bin/ucdjs-scripts.js"
   },
-  "files": [
-    "dist"
-  ],
   "engines": {
     "node": ">=24.13"
   },
   "scripts": {
-    "build": "tsdown --tsconfig=./tsconfig.build.json",
-    "dev": "tsdown --watch",
-    "clean": "git clean -xdf dist node_modules",
+    "clean": "git clean -xdf dist node_modules .cache .turbo",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+    "typecheck": "tsc --noEmit -p jsconfig.json"
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
+    "@ucdjs/moonbeam": "workspace:*",
+    "@ucdjs/release-scripts": "catalog:build",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "apache-autoindex-parse": "catalog:runtime",
-    "cac": "catalog:runtime",
     "nanotar": "catalog:build",
     "wrangler": "catalog:backend"
   },
@@ -57,9 +52,7 @@
     "@luxass/eslint-config": "catalog:lint",
     "@types/node": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
-    "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
-    "tsdown": "catalog:build",
     "typescript": "catalog:build"
   }
 }

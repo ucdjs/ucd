@@ -110,6 +110,9 @@ jobs:
       - name: check packages for common errors
         run: pnpm turbo run build lint typecheck --filter "./packages/**"
 
+      - name: check scripts package
+        run: pnpm turbo run lint typecheck --filter "./scripts"
+
       - name: create release
         run: pnpm release:publish
         env:

@@ -18,6 +18,7 @@ minimumReleaseAgeExclude:
 packages:
   - "packages/**"
   - "apps/*"
+  - "scripts"
   - "tooling/*"
   - "vscode"
 

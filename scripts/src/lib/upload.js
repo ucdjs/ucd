@@ -1,16 +1,24 @@
-import type { TaskUploadQueuedResult, TaskUploadStatusResult, UploadOptions } from "../types";
-import { logger } from "./logger";
+import { logger } from "./logger.js";
 
-export async function uploadManifest(
-  tar: Uint8Array,
-  version: string,
-  options: UploadOptions,
-): Promise<TaskUploadQueuedResult> {
+/**
+ * @typedef {import("../types.js").TaskUploadQueuedResult} TaskUploadQueuedResult
+ * @typedef {import("../types.js").TaskUploadStatusResult} TaskUploadStatusResult
+ * @typedef {import("../types.js").UploadOptions} UploadOptions
+ */
+
+/**
+ * @param {Uint8Array} tar
+ * @param {string} version
+ * @param {UploadOptions} options
+ * @returns {Promise<TaskUploadQueuedResult>}
+ */
+export async function uploadManifest(tar, version, options) {
   const { baseUrl, taskKey } = options;
   const url = new URL("/_tasks/upload-manifest", baseUrl);
   url.searchParams.set("version", version);
 
-  const headers: Record<string, string> = {
+  /** @type {Record<string, string>} */
+  const headers = {
     "Content-Type": "application/x-tar",
   };
 
@@ -23,7 +31,7 @@ export async function uploadManifest(
   const response = await fetch(url.toString(), {
     method: "POST",
     headers,
-    body: tar as unknown as BodyInit,
+    body: Uint8Array.from(tar).buffer,
   });
 
   if (!response.ok) {
@@ -31,18 +39,20 @@ export async function uploadManifest(
     throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
   }
 
-  const result = (await response.json()) as TaskUploadQueuedResult;
-  return result;
+  return /** @type {TaskUploadQueuedResult} */ (await response.json());
 }
 
-export async function getUploadStatus(
-  workflowId: string,
-  options: UploadOptions,
-): Promise<TaskUploadStatusResult> {
+/**
+ * @param {string} workflowId
+ * @param {UploadOptions} options
+ * @returns {Promise<TaskUploadStatusResult>}
+ */
+export async function getUploadStatus(workflowId, options) {
   const { baseUrl, taskKey } = options;
   const url = new URL(`/_tasks/upload-status/${workflowId}`, baseUrl);
 
-  const headers: Record<string, string> = {};
+  /** @type {Record<string, string>} */
+  const headers = {};
   if (taskKey) {
     headers["X-UCDJS-Task-Key"] = taskKey;
   }
@@ -57,18 +67,25 @@ export async function getUploadStatus(
     throw new Error(`Status check failed: ${response.status} ${response.statusText}\n${errorText}`);
   }
 
-  return (await response.json()) as TaskUploadStatusResult;
+  return /** @type {TaskUploadStatusResult} */ (await response.json());
 }
 
 const TERMINAL_SUCCESS = new Set(["complete", "completed", "success", "succeeded"]);
 const TERMINAL_FAILURE = new Set(["failed", "error", "errored", "terminated", "canceled", "cancelled"]);
 
+/**
+ * @param {string} workflowId
+ * @param {UploadOptions} options
+ * @param {number=} pollIntervalMs
+ * @param {number=} timeoutMs
+ * @returns {Promise<TaskUploadStatusResult>}
+ */
 export async function waitForUploadCompletion(
-  workflowId: string,
-  options: UploadOptions,
+  workflowId,
+  options,
   pollIntervalMs = 1000,
   timeoutMs = 120_000,
-): Promise<TaskUploadStatusResult> {
+) {
   const startedAt = Date.now();
 
   while (Date.now() - startedAt < timeoutMs) {
@@ -89,7 +106,12 @@ export async function waitForUploadCompletion(
   throw new Error(`Timed out waiting for workflow ${workflowId} after ${timeoutMs}ms`);
 }
 
-export async function getRemoteManifestEtag(version: string, options: UploadOptions): Promise<string | null> {
+/**
+ * @param {string} version
+ * @param {UploadOptions} options
+ * @returns {Promise<string | null>}
+ */
+export async function getRemoteManifestEtag(version, options) {
   const url = new URL(`/.well-known/ucd-store/${version}.json`, options.baseUrl);
 
   const headResponse = await fetch(url.toString(), {

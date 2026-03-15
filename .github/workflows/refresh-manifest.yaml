@@ -42,12 +42,6 @@ jobs:
       - name: install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: build ucdjs-scripts
-        run: pnpm turbo run build --filter "./packages/ucdjs-scripts"
-
-      - name: install to symlink
-        run: pnpm install --frozen-lockfile
-
       - name: refresh manifests
         env:
           UCDJS_TASK_KEY: ${{ secrets.TASK_API_KEY }}
