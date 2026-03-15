@@ -7,7 +7,6 @@ import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 import { h3DevServerPlugin } from "./build-plugins/h3-dev-server";
-import "@ucdjs/moonbeam/register";
 
 export default defineConfig((config) => {
   return {
