@@ -1,80 +1,16 @@
-import type { ApiError, UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { ApiError } from "@ucdjs/schemas";
 import { describe, expect, it } from "vitest";
 import {
-  createConcurrencyLimiter,
-  createGlobMatcher,
-  createPathFilter,
-  findFileByPath,
-  flattenFilePaths,
+  getLatestDraftUnicodeVersion,
   getLatestStableUnicodeVersion,
   isApiError,
-  isValidGlobPattern,
+  isDraftUnicodeVersion,
+  isStableUnicodeVersion,
   isValidUnicodeVersion,
-  normalizePathForFiltering,
-  tryOr,
-  wrapTry,
 } from "../src/index";
 
 describe("@ucdjs/utils", () => {
-  it("re-exports path filtering helpers", () => {
-    const filter = createPathFilter({
-      include: ["**/*.txt"],
-      exclude: ["**/ReadMe.txt"],
-    });
-
-    expect(filter("Blocks.txt")).toBe(true);
-    expect(filter("ReadMe.txt")).toBe(false);
-  });
-
-  it("re-exports glob helpers", () => {
-    const matcher = createGlobMatcher("auxiliary/**/*.txt");
-
-    expect(matcher("auxiliary/GraphemeBreakProperty.txt")).toBe(true);
-    expect(matcher("emoji/emoji-data.txt")).toBe(false);
-    expect(isValidGlobPattern("auxiliary/**/*.txt")).toBe(true);
-  });
-
-  it("re-exports file tree helpers", () => {
-    const tree: UnicodeFileTreeNode[] = [
-      {
-        type: "directory",
-        name: "auxiliary",
-        path: "/16.0.0/ucd/auxiliary/",
-        lastModified: null,
-        children: [
-          {
-            type: "file",
-            name: "GraphemeBreakProperty.txt",
-            path: "/16.0.0/ucd/auxiliary/GraphemeBreakProperty.txt",
-            lastModified: null,
-          },
-        ],
-      },
-    ];
-
-    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/Blocks.txt")).toBe("Blocks.txt");
-    expect(findFileByPath(tree, "/16.0.0/ucd/auxiliary/GraphemeBreakProperty.txt")?.name).toBe("GraphemeBreakProperty.txt");
-    expect(flattenFilePaths(tree)).toEqual(["/16.0.0/ucd/auxiliary/GraphemeBreakProperty.txt"]);
-  });
-
-  it("re-exports async helpers", async () => {
-    const limiter = createConcurrencyLimiter(1);
-    const limited = await limiter(async (value: number) => value * 2, 5);
-    expect(limited).toBe(10);
-
-    expect(wrapTry(() => "ok")).toEqual(["ok", null]);
-
-    const recovered = await tryOr({
-      try: async () => {
-        throw new Error("broken");
-      },
-      err: () => "fallback",
-    });
-
-    expect(recovered).toBe("fallback");
-  });
-
-  it("re-exports safe domain helpers", () => {
+  it("re-exports API guard helpers", () => {
     const apiError = {
       message: "Bad Request",
       status: 400,
@@ -82,7 +18,15 @@ describe("@ucdjs/utils", () => {
     } satisfies ApiError;
 
     expect(isApiError(apiError)).toBe(true);
+    expect(isApiError(new Error("oops"))).toBe(false);
+  });
+
+  it("re-exports Unicode version helpers", () => {
     expect(isValidUnicodeVersion("16.0.0")).toBe(true);
+    expect(isValidUnicodeVersion("latest")).toBe(false);
+    expect(isDraftUnicodeVersion("17.0.0")).toBeTypeOf("boolean");
+    expect(isStableUnicodeVersion("16.0.0")).toBeTypeOf("boolean");
     expect(getLatestStableUnicodeVersion()).toBeTypeOf("string");
+    expect(getLatestDraftUnicodeVersion()).toBeTypeOf("string");
   });
 });

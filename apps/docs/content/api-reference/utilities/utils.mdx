@@ -17,26 +17,43 @@ The `@ucdjs/utils` package provides a curated stable utility facade for UCD.js c
 
 This package exposes the stable subset of utility helpers that are safe to share with external consumers. More volatile implementation helpers remain in `@ucdjs-internal/shared`.
 
-## Path Filtering
+> [!IMPORTANT]
+> `@ucdjs/utils` is intentionally small. It only exposes helpers that are likely to be useful to external consumers.
 
-The package provides utilities for filtering file paths and tree structures, which is useful when working with the Unicode file tree.
+## Unicode Version Helpers
 
-```typescript title="filter.ts"
-import { createPathFilter, filterTreeStructure, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+```typescript title="version.ts"
+import {
+  getLatestStableUnicodeVersion,
+  isStableUnicodeVersion,
+  isValidUnicodeVersion,
+} from "@ucdjs/utils";
 
-const filter = createPathFilter({
-  include: ["**/*.txt"],
-  exclude: [...PRECONFIGURED_FILTERS.README_FILES],
-});
-
-const filteredTree = filterTreeStructure(tree, filter);
+isValidUnicodeVersion("16.0.0");
+isStableUnicodeVersion("16.0.0");
+getLatestStableUnicodeVersion();
 ```
 
-## Other utilities
+## API Error Guards
 
-`@ucdjs/utils` also includes:
+```typescript title="guards.ts"
+import { isApiError } from "@ucdjs/utils";
 
-- Glob matching helpers such as `createGlobMatcher` and `isValidGlobPattern`
-- File tree helpers such as `flattenFilePaths` and `findFileByPath`
-- Async result helpers such as `wrapTry`, `tryOr`, and `createConcurrencyLimiter`
-- Safe API and Unicode version helpers such as `isApiError` and `isValidUnicodeVersion`
+const result: unknown = await fetch("/api").then((r) => r.json());
+
+if (isApiError(result)) {
+  console.error(result.message);
+}
+```
+
+## Package Relationship
+
+```text
+consumer code
+  -> @ucdjs/utils
+    -> curated public helpers
+
+internal workspace code
+  -> @ucdjs-internal/shared
+    -> volatile/internal helper families
+```
