@@ -5,10 +5,8 @@
     "build": {
       "outputs": ["dist/**"]
     },
-    "dev": {
-      "persistent": true
-    },
     "lint": {
+      "outputs": []
     },
     "typecheck": {
       "outputs": [

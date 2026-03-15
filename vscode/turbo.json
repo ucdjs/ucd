@@ -17,9 +17,6 @@
         "src/generated/meta.ts"
       ]
     },
-    "dev": {
-      "persistent": true
-    },
     "typecheck": {
       "dependsOn": [
         "$TURBO_EXTENDS$",
