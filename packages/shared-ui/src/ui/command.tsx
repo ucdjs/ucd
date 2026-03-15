@@ -316,7 +316,10 @@ export {
   CommandLoading,
   CommandSeparator,
   CommandShortcut,
+  // eslint-disable-next-line react-refresh/only-export-components
   createCommandPalette,
+  // eslint-disable-next-line react-refresh/only-export-components
   useCommandActions,
+  // eslint-disable-next-line react-refresh/only-export-components
   useCommandShortcutDefault,
 };
