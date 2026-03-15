@@ -4,7 +4,9 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-A collection of utility functions and filesystem bridge implementations for the UCD project.
+Curated stable utilities for UCD.js consumers.
+
+This package exposes a small, consumer-safe facade over selected helpers used across the UCD.js ecosystem. More volatile implementation details remain in `@ucdjs-internal/shared`.
 
 ## Installation
 
@@ -12,58 +14,61 @@ A collection of utility functions and filesystem bridge implementations for the 
 npm install @ucdjs/utils
 ```
 
+## Included utility groups
+
+- Path filtering and tree filtering
+- Glob matching helpers
+- File tree helpers
+- Async result helpers
+- Safe API and Unicode version helpers
+
 ## Usage
 
-### Path Filtering
+### Path filtering
 
-Creates a filter function that checks if a file path should be included or excluded based on glob patterns.
-
-```typescript
-import { createPathFilter } from "@ucdjs/utils";
-
-const filter = createPathFilter(["*.txt", "!*Test*"]);
-filter("Data.txt"); // true
-filter("DataTest.txt"); // false
-```
-
-#### PathFilter Methods
-
-The `PathFilter` object provides additional methods:
-
-```typescript
-const filter = createPathFilter(["*.js"]);
-
-// Extend with additional patterns
-filter.extend(["*.ts", "!*.test.*"]);
-
-// Get current patterns
-const patterns = filter.patterns(); // ['*.js', '*.ts', '!*.test.*']
-
-// Use with extra filters temporarily
-filter("app.js", ["!src/**"]); // Apply extra exclusions
-```
-
-### Preconfigured Filters
-
-Pre-defined filter patterns for common exclusions:
-
-```typescript
+```ts
 import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 
-const filter = createPathFilter([
-  "*.txt",
-  PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
-  PRECONFIGURED_FILTERS.EXCLUDE_README_FILES,
-  PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES
-]);
+const filter = createPathFilter({
+  include: ["**/*.txt"],
+  exclude: [...PRECONFIGURED_FILTERS.README_FILES],
+});
+
+filter("Blocks.txt"); // true
+filter("ReadMe.txt"); // false
 ```
 
-Available filters:
-- `EXCLUDE_TEST_FILES`: Excludes files containing "Test" in their name
-- `EXCLUDE_README_FILES`: Excludes ReadMe.txt files
-- `EXCLUDE_HTML_FILES`: Excludes all HTML files
+### Glob helpers
 
-## 📄 License
+```ts
+import { createGlobMatcher, isValidGlobPattern } from "@ucdjs/utils";
+
+const matcher = createGlobMatcher("auxiliary/**/*.txt");
+
+matcher("auxiliary/GraphemeBreakProperty.txt"); // true
+isValidGlobPattern("auxiliary/**/*.txt"); // true
+```
+
+### File tree helpers
+
+```ts
+import { flattenFilePaths, normalizePathForFiltering } from "@ucdjs/utils";
+
+normalizePathForFiltering("16.0.0", "/16.0.0/ucd/Blocks.txt");
+// "Blocks.txt"
+
+flattenFilePaths([
+  {
+    type: "file",
+    name: "Blocks.txt",
+    path: "/16.0.0/ucd/Blocks.txt",
+    lastModified: null,
+  },
+]);
+// ["/16.0.0/ucd/Blocks.txt"]
+```
+
+## License
 
 Published under [MIT License](./LICENSE).
 
