@@ -40,10 +40,8 @@
   "dependencies": {
     "@luxass/msw-utils": "catalog:runtime",
     "@luxass/utils": "catalog:runtime",
-    "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
-    "defu": "catalog:runtime",
     "obug": "catalog:runtime",
     "picomatch": "catalog:runtime",
     "zod": "catalog:runtime"
@@ -53,6 +51,7 @@
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "eslint": "catalog:lint",
     "pathe": "catalog:runtime",
     "publint": "catalog:build",
