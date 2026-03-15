@@ -1,5 +1,12 @@
 # @ucdjs-internal/shared-ui
 
+## [0.1.7](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.6...@ucdjs-internal/shared-ui@0.1.7) (2026-03-15)
+
+
+### 🚀 Features
+* add UcdLogo component and update imports ([a4b7f661](https://github.com/ucdjs/ucd/commit/a4b7f66140e699ab10d95528eaca460b8211ebd1)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.6](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.5...@ucdjs-internal/shared-ui@0.1.6) (2026-02-27)
 
 

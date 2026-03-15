@@ -1,5 +1,12 @@
 # @ucdjs/pipelines-artifacts
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-artifacts@0.0.1-beta.7...@ucdjs/pipelines-artifacts@0.0.1-beta.8) (2026-03-15)
+
+
+### 🚀 Features
+* add context-aware logger to runtime contexts ([dd578d3b](https://github.com/ucdjs/ucd/commit/dd578d3bb02b489b3f63dfeb14e9d4d60262c9c4)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-artifacts@0.0.1-beta.6...@ucdjs/pipelines-artifacts@0.0.1-beta.7) (2026-02-27)
 
 

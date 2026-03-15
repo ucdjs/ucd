@@ -1,5 +1,12 @@
 # @ucdjs/fs-bridge
 
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.1-beta.7...@ucdjs/fs-bridge@0.1.1-beta.8) (2026-03-15)
+
+
+### 🚀 Features
+* migrate to tsdown v0.21 ([fc1276a9](https://github.com/ucdjs/ucd/commit/fc1276a9ed75073efe4fafc320ea6ed70801675a)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.1-beta.6...@ucdjs/fs-bridge@0.1.1-beta.7) (2026-02-27)
 
 

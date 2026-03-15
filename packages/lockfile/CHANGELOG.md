@@ -1,5 +1,20 @@
 # @ucdjs/lockfile
 
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.7...@ucdjs/lockfile@0.1.1-beta.8) (2026-03-15)
+
+
+### 🚀 Features
+* migrate to tsdown v0.21 ([fc1276a9](https://github.com/ucdjs/ucd/commit/fc1276a9ed75073efe4fafc320ea6ed70801675a)) (by [@luxass](https://github.com/luxass))
+* add inlineOnly configuration for hookable ([eae61f29](https://github.com/ucdjs/ucd/commit/eae61f29ce3512494dea611e618ed31bae03b184)) (by [@luxass](https://github.com/luxass))
+* make @ucdjs/fs-bridge an optional peer dependency ([192bac0f](https://github.com/ucdjs/ucd/commit/192bac0faf8c1e6054b47e7c38b7d4ccecd7b00e)) (by luxass)
+* add parse utilities that don&#39;t require a FS Bridge ([3d792f3a](https://github.com/ucdjs/ucd/commit/3d792f3a3658fa39951d150e511dc1e4491c4f7e)) (by luxass)
+
+### 🐞 Bug Fixes
+* move @ucdjs/fs-bridge to devDependencies only and reinstall ([a329758a](https://github.com/ucdjs/ucd/commit/a329758ac74cbc2743b2bd45c69e16d9148a55df)) (by luxass)
+* address review comments - remove runtime fs-bridge import, extract parse helpers, fix null check, fix README signatures ([7323be7f](https://github.com/ucdjs/ucd/commit/7323be7f0d1e3e2dc19a80bdffdf125f448ecc9d)) (by luxass)
+* replace example.com with ucdjs.dev and update lockfile after pnpm install ([beefecc8](https://github.com/ucdjs/ucd/commit/beefecc8a6bce2d4e6d3804112d6bb53801ce94d)) (by luxass)
+
+
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.6...@ucdjs/lockfile@0.1.1-beta.7) (2026-02-27)
 
 

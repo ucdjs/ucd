@@ -1,5 +1,43 @@
 # @ucdjs/pipelines-server
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.7...@ucdjs/pipelines-server@0.0.1-beta.8) (2026-03-15)
+
+
+### 🚀 Features
+* migrate to vite 8 changes ([bbe9708b](https://github.com/ucdjs/ucd/commit/bbe9708b1e21a9229c7ba9fe928d7bc1997d41b5)) (by [@luxass](https://github.com/luxass))
+* refactor execution span handling and styles ([fb0f8107](https://github.com/ucdjs/ucd/commit/fb0f810796fd4419bd446f3a8efc571cf1c588a4)) (by [@luxass](https://github.com/luxass))
+* add new components for pipeline management ([3b974bba](https://github.com/ucdjs/ucd/commit/3b974bbac1676d994a3b495b5f3526cbe7cbcb83)) (by [@luxass](https://github.com/luxass))
+* add new components for activity and source management ([912ef109](https://github.com/ucdjs/ucd/commit/912ef10953f27c5055bc2548e59214a5064f67a0)) (by [@luxass](https://github.com/luxass))
+* add new components for execution activity and status overview ([93ac99c0](https://github.com/ucdjs/ucd/commit/93ac99c05e62dfeef29a6408a6aaec1622634555)) (by [@luxass](https://github.com/luxass))
+* add PipelineHeader, PipelineTabs, and VersionSelector components ([6ca46c7f](https://github.com/ucdjs/ucd/commit/6ca46c7fb8427afbe3b4cd5aa4736981ef7ba9ec)) (by [@luxass](https://github.com/luxass))
+* add navigable and collapsible source groups in sidebar ([01b5deed](https://github.com/ucdjs/ucd/commit/01b5deed0e49a2328a3fb33d68551fdb6ef9ff6c)) (by [@luxass](https://github.com/luxass))
+* add graph node actions ([1fd6df47](https://github.com/ucdjs/ucd/commit/1fd6df47b4a2584352077060bc85793155d95c0b)) (by [@luxass](https://github.com/luxass))
+* normalize execution summary structure ([525bdb84](https://github.com/ucdjs/ucd/commit/525bdb842174b16f49bf72e9b25e5f4ec41746e6)) (by [@luxass](https://github.com/luxass))
+* add graph details and filters components ([bdcc9403](https://github.com/ucdjs/ucd/commit/bdcc9403160608d83922466eca3b306987bbae89)) (by [@luxass](https://github.com/luxass))
+* refine source issue dialog controls ([6bdd85b9](https://github.com/ucdjs/ucd/commit/6bdd85b9a5684637ba4e7ded3101c8675ac135f9)) (by [@luxass](https://github.com/luxass))
+* add source issue dialogs and trim source routes ([20274790](https://github.com/ucdjs/ucd/commit/202747901a8653dd31524cab31b4aa952a1434ca)) (by [@luxass](https://github.com/luxass))
+* enhance execution queries with source and file filtering ([37852f74](https://github.com/ucdjs/ucd/commit/37852f744a6f8c6daea279fbbdd5eabb16938ce8)) (by [@luxass](https://github.com/luxass))
+* align homepage recent executions with pipeline view ([0457e8b9](https://github.com/ucdjs/ucd/commit/0457e8b94a850ec7de84f47dc1d66df9d385aa15)) (by [@luxass](https://github.com/luxass))
+* smooth homepage execution activity ([643f0eb7](https://github.com/ucdjs/ucd/commit/643f0eb7372aec196fd4eb702327c06bd502be4a)) (by [@luxass](https://github.com/luxass))
+* add import failure and type error pipelines ([60456401](https://github.com/ucdjs/ucd/commit/60456401f18c2d112af59f80bc9818e6f9df2d58)) (by [@luxass](https://github.com/luxass))
+* add PipelineHeader and PipelineTabs components ([e9991f62](https://github.com/ucdjs/ucd/commit/e9991f620eb29dc235547eaba416c8c2e7ff7394)) (by [@luxass](https://github.com/luxass))
+* add PipelineHeader and PipelineTabs components ([928386da](https://github.com/ucdjs/ucd/commit/928386da50e0dadf43ea8de40f9e940cb5c90e7f)) (by [@luxass](https://github.com/luxass))
+* redesign source overview cards ([fdf3b3c2](https://github.com/ucdjs/ucd/commit/fdf3b3c24b214ecfae8595e251843df2b629170a)) (by [@luxass](https://github.com/luxass))
+* add overview homepage ([538f99cf](https://github.com/ucdjs/ucd/commit/538f99cf0246b14bf53940d0f66764cf458a2fbd)) (by [@luxass](https://github.com/luxass))
+* improve execution graph layout and theming ([3c5557d4](https://github.com/ucdjs/ucd/commit/3c5557d4238a44d559600d99a9ab541c59b967b9)) (by [@luxass](https://github.com/luxass))
+* add source-aware execution pages ([ffbbed3e](https://github.com/ucdjs/ucd/commit/ffbbed3ee49af4ac1170c3145e51a9ba9c0d3820)) (by [@luxass](https://github.com/luxass))
+* adopt source-aware tanstack routes ([a4928dd0](https://github.com/ucdjs/ucd/commit/a4928dd0e3195324e963fdc9a72d8d28c250f67e)) (by [@luxass](https://github.com/luxass))
+* switch API routes from pipelines to sources ([3761c240](https://github.com/ucdjs/ucd/commit/3761c24099e177accb66a6bc7fd2a13fb9197d54)) (by [@luxass](https://github.com/luxass))
+* add new routes for source and file handling ([dade9cd6](https://github.com/ucdjs/ucd/commit/dade9cd688dda12e87cdd38ab1d2cdeb8e01708f)) (by [@luxass](https://github.com/luxass))
+* update title and restructure main component ([b004c3a5](https://github.com/ucdjs/ucd/commit/b004c3a5b090ca2507da387dcfb36d1a327b157d)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* allow graph node dragging ([469da696](https://github.com/ucdjs/ucd/commit/469da696ecc11eee4bb1aa055bdf235b6945b066)) (by [@luxass](https://github.com/luxass))
+* refresh execution views and summaries ([c62717a4](https://github.com/ucdjs/ucd/commit/c62717a4503193b309b346f4cad92f60d1be9dc3)) (by [@luxass](https://github.com/luxass))
+* fill pipeline overview sidebar ([3781d015](https://github.com/ucdjs/ucd/commit/3781d01579eb779c673822d52d21374e704a7178)) (by [@luxass](https://github.com/luxass))
+* show source labels in navigation ([36d9b08b](https://github.com/ucdjs/ucd/commit/36d9b08bdcfc317e8089bd17dcfde542b3c4b968)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.6...@ucdjs/pipelines-server@0.0.1-beta.7) (2026-02-27)
 
 
