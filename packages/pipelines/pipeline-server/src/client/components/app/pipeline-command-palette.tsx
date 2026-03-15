@@ -6,17 +6,12 @@ import { useQueries, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandShortcut,
+  useCommandActions,
 } from "@ucdjs-internal/shared-ui/ui/command";
 import { FileCode, Loader2, Play, Search, Terminal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+const PIPELINE_PALETTE = "pipeline-server.main";
 const STORAGE_KEY_PREFIX = "ucd-versions-";
 
 function getSelectedVersionsFromStorage(storageKey: string, allVersions: string[]): string[] {
@@ -40,6 +35,89 @@ function getSelectedVersionsFromStorage(storageKey: string, allVersions: string[
   return allVersions;
 }
 
+interface PipelinePaletteEntry {
+  id: string;
+  name?: string | null;
+  versions: string[];
+  sourceId: string;
+  sourceLabel: string;
+  fileId: string;
+  fileLabel: string;
+}
+
+interface CurrentPipelineActionsProps {
+  currentPipeline: PipelinePaletteEntry | undefined;
+  executing: boolean;
+  onExecuteCurrent: () => void;
+  onNavigate: (to: string) => void;
+}
+
+function CurrentPipelineActions({
+  currentPipeline,
+  executing,
+  onExecuteCurrent,
+  onNavigate,
+}: CurrentPipelineActionsProps) {
+  const actions = useMemo(() => {
+    if (!currentPipeline) {
+      return [];
+    }
+
+    return [
+      {
+        id: "pipeline.current.execute",
+        value: "Execute current pipeline",
+        keywords: [
+          currentPipeline.name || currentPipeline.id,
+          currentPipeline.id,
+          currentPipeline.sourceLabel,
+          currentPipeline.fileLabel,
+          "run",
+          "execute",
+        ],
+        onSelect: onExecuteCurrent,
+        icon: executing
+          ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          : <Play className="mr-2 h-4 w-4" />,
+        shortcut: "⌘E",
+        disabled: executing,
+      },
+      {
+        id: "pipeline.current.open",
+        value: "Open current pipeline",
+        keywords: [
+          currentPipeline.name || currentPipeline.id,
+          currentPipeline.id,
+          currentPipeline.sourceLabel,
+          currentPipeline.fileLabel,
+          "view",
+          "open",
+        ],
+        onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}`),
+        icon: <Search className="mr-2 h-4 w-4" />,
+      },
+      {
+        id: "pipeline.current.inspect",
+        value: "Inspect current pipeline",
+        keywords: [
+          currentPipeline.name || currentPipeline.id,
+          currentPipeline.id,
+          currentPipeline.sourceLabel,
+          currentPipeline.fileLabel,
+          "debug",
+          "inspect",
+        ],
+        onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}/inspect`),
+        icon: <FileCode className="mr-2 h-4 w-4" />,
+      },
+    ];
+  }, [currentPipeline, executing, onExecuteCurrent, onNavigate]);
+
+  useCommandActions(PIPELINE_PALETTE, actions);
+
+  return null;
+}
+
 export function PipelineCommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -55,7 +133,7 @@ export function PipelineCommandPalette() {
     sourceId: currentSourceId,
   } = useParams({ strict: false });
 
-  const pipelines = useMemo(() => {
+  const pipelines = useMemo<PipelinePaletteEntry[]>(() => {
     return sourceQueries.flatMap((query) => {
       const source = query.data;
       if (!source) {
@@ -131,68 +209,69 @@ export function PipelineCommandPalette() {
   );
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
-      <Command>
-        <CommandInput
-          placeholder="Type a command or search..."
-          value={search}
-          onValueChange={setSearch}
-        />
-        <CommandList>
-          <CommandEmpty>No results found.</CommandEmpty>
+    <Command.Dialog
+      palette={PIPELINE_PALETTE}
+      open={open}
+      onOpenChange={setOpen}
+      value={search}
+      onValueChange={setSearch}
+    >
+      <CurrentPipelineActions
+        currentPipeline={currentPipeline}
+        executing={executing}
+        onExecuteCurrent={() => {
+          void handleExecuteCurrent();
+        }}
+        onNavigate={handleNavigate}
+      />
 
-          {currentPipeline && (
-            <CommandGroup heading="Current Pipeline">
-              <CommandItem
-                onSelect={handleExecuteCurrent}
-                disabled={executing}
-              >
-                {executing
-                  ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  : <Play className="mr-2 h-4 w-4" />}
-                Execute Current Pipeline
-                <CommandShortcut>⌘E</CommandShortcut>
-              </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}`)}>
-                <Search className="mr-2 h-4 w-4" />
-                Open Current Pipeline
-              </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}/inspect`)}>
-                <FileCode className="mr-2 h-4 w-4" />
-                Inspect Current Pipeline
-              </CommandItem>
-            </CommandGroup>
-          )}
+      <Command.Input placeholder="Type a command or search..." />
 
-          <CommandGroup heading="All Pipelines">
-            {pipelines.map((pipeline) => (
-              <CommandItem
-                key={`${pipeline.sourceId}-${pipeline.fileId}-${pipeline.id}`}
-                onSelect={() => handleExecutePipeline(pipeline.sourceId, pipeline.fileId, pipeline.id, pipeline.versions)}
-                value={`${pipeline.sourceId}-${pipeline.fileId}-${pipeline.id}`}
-                disabled={executing}
-              >
-                {executing
-                  ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  : <Terminal className="mr-2 h-4 w-4" />}
-                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                  <span className="truncate">{pipeline.name || pipeline.id}</span>
-                  <span className="text-[10px] text-muted-foreground truncate">
-                    {pipeline.sourceLabel}
-                    {" / "}
-                    {pipeline.fileLabel}
-                  </span>
-                </div>
-                <span className="ml-2 text-xs text-muted-foreground">
-                  {pipeline.versions.length}
-                  {" "}
-                  versions
+      <Command.List>
+        <Command.Empty>No results found.</Command.Empty>
+
+        {currentPipeline && (
+          <Command.Group heading="Current Pipeline">
+            <Command.Actions />
+          </Command.Group>
+        )}
+
+        <Command.Group heading="All Pipelines">
+          {pipelines.map((pipeline) => (
+            <Command.Item
+              key={`${pipeline.sourceId}-${pipeline.fileId}-${pipeline.id}`}
+              onSelect={() => handleExecutePipeline(pipeline.sourceId, pipeline.fileId, pipeline.id, pipeline.versions)}
+              value={pipeline.name || pipeline.id}
+              keywords={[
+                pipeline.id,
+                pipeline.sourceLabel,
+                pipeline.fileLabel,
+                pipeline.sourceId,
+                pipeline.fileId,
+                ...pipeline.versions,
+              ]}
+              disabled={executing}
+            >
+              {executing
+                ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                : <Terminal className="mr-2 h-4 w-4" />}
+              <div className="min-w-0 flex-1 flex flex-col gap-0.5">
+                <span className="truncate">{pipeline.name || pipeline.id}</span>
+                <span className="text-muted-foreground truncate text-[10px]">
+                  {pipeline.sourceLabel}
+                  {" / "}
+                  {pipeline.fileLabel}
                 </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </CommandList>
-      </Command>
-    </CommandDialog>
+              </div>
+              <span className="text-muted-foreground ml-2 text-xs">
+                {pipeline.versions.length}
+                {" "}
+                versions
+              </span>
+            </Command.Item>
+          ))}
+        </Command.Group>
+      </Command.List>
+    </Command.Dialog>
   );
 }

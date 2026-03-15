@@ -22,8 +22,7 @@
     "#components/*": "./src/components/*.tsx",
     "#ui/*": "./src/ui/*.tsx",
     "#lib/*": "./src/lib/*.ts",
-    "#hooks/*": "./src/hooks/*.ts",
-    "#vendor/cmdk": "./src/vendor/cmdk/index.tsx"
+    "#hooks/*": "./src/hooks/*.ts"
   },
   "exports": {
     ".": "./dist/index.mjs",
@@ -77,6 +76,7 @@
   "dependencies": {
     "@base-ui/react": "catalog:frontend",
     "@base-ui/utils": "catalog:frontend",
+    "@cmdi/base-ui": "catalog:frontend",
     "@fontsource-variable/inter": "catalog:frontend",
     "class-variance-authority": "catalog:frontend",
     "clsx": "catalog:frontend",
