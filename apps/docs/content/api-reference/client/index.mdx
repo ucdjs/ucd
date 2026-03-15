@@ -1,6 +1,6 @@
 ---
 title: Client
-description: OpenAPI-based API client for the UCD API
+description: Resource-based client for the UCD API with well-known discovery or explicit config
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
@@ -9,7 +9,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Client
 
-The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It offers a clean, resource-based interface for accessing Unicode Character Database files, version information, and configuration data.
+The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It exposes resource-based helpers for Unicode data files, versions, manifests, and published server configuration.
 
 ## Getting Started
 
@@ -29,12 +29,11 @@ Install the client using your preferred package manager.
 
 ### Initialization
 
-Create a client instance using `createUCDClient()`. The client is built on top of the OpenAPI specification, ensuring full type safety and accurate TypeScript inference.
+Create a client instance using `createUCDClient()`. This fetches `/.well-known/ucd-config.json` from the provided origin, validates it, and uses the discovered endpoint paths to build the resource wrappers.
 
 ```typescript title="client.ts"
 import { createUCDClient } from "@ucdjs/client";
 
-// Initialize the client
 const client = await createUCDClient("https://api.ucdjs.dev");
 ```
 
@@ -43,7 +42,7 @@ const client = await createUCDClient("https://api.ucdjs.dev");
 
 ### Usage
 
-The client uses a safe error handling pattern that never throws exceptions. You always receive an object containing either `data` or `error`.
+The client uses a safe error handling pattern for resource calls. You receive an object containing `data` and `error`, and discovery happens only during `createUCDClient()`.
 
 ```typescript title="client.ts"
 // Fetch available Unicode versions
@@ -58,6 +57,57 @@ if (error) {
 
 </Step>
 </Steps>
+
+## Discovery vs explicit config
+
+There are two ways to configure the client:
+
+- `createUCDClient(baseUrl)` loads `/.well-known/ucd-config.json` from the server
+- `createUCDClientWithConfig(baseUrl, config)` skips the discovery request and accepts the same config object directly
+
+Both approaches use the same `UCDWellKnownConfig` shape. The difference is only where that data comes from.
+
+This matters when an installation serves the API from a non-default path. For example, a server can publish:
+
+- `/.well-known/ucd-config.json` on the main origin
+- `/edge/api/files` for files
+- `/edge/api/versions` for versions
+
+The client types stay the same because the config points the resource wrappers at the correct paths.
+
+`client.config.get()` and `client.manifest.get(version)` still read the published well-known documents from the origin. The explicit config is about supplying the endpoint map up front, not changing those helper URLs.
+
+```typescript title="client.ts"
+import { createUCDClientWithConfig } from "@ucdjs/client";
+
+const client = createUCDClientWithConfig("https://example.com", {
+  version: "0.1",
+  endpoints: {
+    files: "/edge/api/files",
+    manifest: "/.well-known/ucd-store/{version}.json",
+    versions: "/edge/api/versions",
+  },
+});
+```
+
+## Client flow
+
+<Mermaid
+  chart={`
+flowchart TD
+  A["createUCDClient(baseUrl)"] --> B["GET /.well-known/ucd-config.json"]
+  B --> C["Validate UCDWellKnownConfig"]
+  C --> D["Create files + versions resources from config.endpoints"]
+
+  E["createUCDClientWithConfig(baseUrl, config)"] --> D
+
+  D --> F["client.files.get(path)"]
+  D --> G["client.versions.list() / getFileTree(version)"]
+
+  H["client.config.get()"] --> I["GET /.well-known/ucd-config.json"]
+  J["client.manifest.get(version)"] --> K["GET /.well-known/ucd-store/{version}.json"]
+`}
+/>
 
 ## Resources
 
@@ -74,11 +124,11 @@ The client provides four primary resource namespaces. You access them as propert
       type: 'VersionsResource',
     },
     config: {
-      description: "Access the API's well-known configuration",
+      description: "Read the published well-known config from /.well-known/ucd-config.json",
       type: 'ConfigResource',
     },
     manifest: {
-      description: 'Get version-specific manifests listing expected files',
+      description: 'Read version manifests from /.well-known/ucd-store/{version}.json',
       type: 'ManifestResource',
     },
   }}

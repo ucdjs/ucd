@@ -1,6 +1,6 @@
 {
   "title": "Client",
-  "description": "OpenAPI-based API client for the UCD API",
+  "description": "Resource-based client for the UCD API",
   "pages": [
     "index"
   ]

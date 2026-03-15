@@ -4,7 +4,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-A TypeScript-first HTTP client for interacting with the UCD.js API, providing type-safe methods for fetching Unicode character data.
+A TypeScript-first client for the UCD.js API with resource-based helpers for files, versions, manifests, and published server configuration.
 
 ## Installation
 
@@ -12,70 +12,142 @@ A TypeScript-first HTTP client for interacting with the UCD.js API, providing ty
 npm install @ucdjs/client
 ```
 
+## Exports
+
+The package exports:
+
+- `createUCDClient(baseUrl)` for well-known discovery
+- `createUCDClientWithConfig(baseUrl, config)` for explicit endpoint configuration
+- `discoverEndpointsFromConfig(baseUrl)` if you want to fetch the well-known config yourself
+- `getDefaultUCDEndpointConfig()` for the library's built-in fallback config
+
 ## Usage
 
-### Basic Usage
+### Automatic discovery with `createUCDClient`
+
+`createUCDClient()` fetches `/.well-known/ucd-config.json` from the provided origin, validates it, and then creates resource wrappers from the discovered endpoint paths.
 
 ```typescript
-import { client } from "@ucdjs/client";
+import { createUCDClient } from "@ucdjs/client";
 
-// Get Unicode versions
-const { data: versions, error } = await client.GET("/api/v1/unicode-versions");
+const client = await createUCDClient("https://api.ucdjs.dev");
+
+const { data: versions, error } = await client.versions.list();
+
 if (error) {
-  console.error("Error:", error.message);
+  console.error("Failed to fetch versions:", error.message);
 } else {
   console.log("Available versions:", versions);
 }
-
-// Access Unicode data files via proxy
-const { data: fileInfo } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
-  params: {
-    path: { wildcard: "latest/ucd.all.json" }
-  }
-});
-console.log("File info:", fileInfo);
 ```
 
-### Custom Client Configuration
+### Explicit configuration with `createUCDClientWithConfig`
+
+`createUCDClientWithConfig()` skips the discovery request. You pass the same `UCDWellKnownConfig` shape that the well-known endpoint would return.
+
+This is useful when:
+
+- you already have the config available at build time
+- you want to avoid an extra startup request
+- your API is hosted on a different path, but still serves the same response types
 
 ```typescript
-import { createClient } from "@ucdjs/client";
+import { createUCDClientWithConfig } from "@ucdjs/client";
 
-// Create client with custom UCD.js API instance
-const customClient = createClient("https://preview.api.ucdjs.dev");
+const client = createUCDClientWithConfig("https://example.com", {
+  version: "0.1",
+  endpoints: {
+    files: "/custom/api/files",
+    manifest: "/.well-known/ucd-store/{version}.json",
+    versions: "/custom/api/versions",
+  },
+});
 
-// Use the custom client
-const { data, error } = await customClient.GET("/api/v1/unicode-versions");
-if (data) {
-  console.log("Unicode versions from preview API:", data);
+const { data: fileTree, error } = await client.versions.getFileTree("16.0.0");
+
+if (error) {
+  console.error("Failed to fetch file tree:", error.message);
+} else {
+  console.log("File tree:", fileTree);
 }
 ```
 
-### Working with Binary Data
+## Config vs. well-known discovery
+
+The client supports two ways to arrive at the same endpoint shape:
+
+- `createUCDClient(baseUrl)` reads `https://<origin>/.well-known/ucd-config.json`
+- `createUCDClientWithConfig(baseUrl, config)` accepts that config object directly
+
+In other words, the difference is the source of truth:
+
+- well-known discovery loads the config from the server at runtime
+- explicit config provides the same data in code
+
+This makes it possible to host the API under a different path without changing the client-facing types. For example, a deployment may expose:
+
+- `/.well-known/ucd-config.json` on the main origin
+- `/edge/api/files` for files
+- `/edge/api/versions` for version endpoints
+
+As long as the config points to those paths, the same `client.files.*` and `client.versions.*` methods continue to work.
+
+The `client.config.get()` and `client.manifest.get(version)` helpers still read the published well-known documents from the origin:
+
+- `/.well-known/ucd-config.json`
+- `/.well-known/ucd-store/<version>.json`
+
+## Resources
+
+The returned client exposes four resource namespaces:
+
+- `client.files.get(path)` to fetch a Unicode file or directory listing
+- `client.versions.list()` to list available Unicode versions
+- `client.versions.getFileTree(version)` to fetch a version's file tree
+- `client.config.get()` to read `/.well-known/ucd-config.json`
+- `client.manifest.get(version)` to read `/.well-known/ucd-store/<version>.json`
+
+### Fetch a file
 
 ```typescript
-import { client } from "@ucdjs/client";
+const { data: fileContent, error } = await client.files.get("16.0.0/ucd/UnicodeData.txt");
 
-// Fetch binary Unicode data file
-const { data: binaryData } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
-  params: {
-    path: { wildcard: "latest/UnicodeData.txt" }
-  },
-  parseAs: "arrayBuffer"
-});
+if (error) {
+  console.error("Failed to fetch file:", error.message);
+} else {
+  console.log("File content:", fileContent);
+}
+```
 
-if (binaryData) {
-  // eslint-disable-next-line node/prefer-global/buffer
-  const text = Buffer.from(binaryData).toString("utf-8");
-  console.log("Unicode data:", `${text.substring(0, 100)}...`);
+### Read the published config
+
+```typescript
+const { data: config, error } = await client.config.get();
+
+if (error) {
+  console.error("Failed to fetch config:", error.message);
+} else {
+  console.log("Published config:", config);
+}
+```
+
+### Read a version manifest
+
+```typescript
+const { data: manifest, error } = await client.manifest.get("16.0.0");
+
+if (error) {
+  console.error("Failed to fetch manifest:", error.message);
+} else {
+  console.log("Expected files:", manifest.files);
 }
 ```
 
 ## Documentation
 
-For comprehensive documentation, examples, and API reference, visit the [Client Documentation](https://docs.ucdjs.dev/core/client).
+For more examples and API reference, visit the [Client Documentation](https://docs.ucdjs.dev/api-reference/client).
 
-## 📄 License
+## License
 
 Published under [MIT License](./LICENSE).
 
