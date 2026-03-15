@@ -51,7 +51,6 @@
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/utils": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "defu": "catalog:runtime",
     "zod": "catalog:runtime"

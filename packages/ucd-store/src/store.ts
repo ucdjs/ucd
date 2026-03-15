@@ -1,6 +1,6 @@
+import type { PathFilter } from "@ucdjs-internal/shared";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
-import type { PathFilter } from "@ucdjs/utils";
 import type z from "zod";
 import type {
   UCDStore,
@@ -8,7 +8,10 @@ import type {
   UCDStoreOptions,
   VersionConflictStrategy,
 } from "./types";
-import { createDebugger } from "@ucdjs-internal/shared";
+import {
+  createDebugger,
+  createPathFilter,
+} from "@ucdjs-internal/shared";
 import {
   createUCDClientWithConfig,
   discoverEndpointsFromConfig,
@@ -16,7 +19,6 @@ import {
 } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
-import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./context";
 import { UCDStoreGenericError } from "./errors";

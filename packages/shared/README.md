@@ -12,7 +12,7 @@ Volatility-marked shared helpers used across the UCD.js workspace.
 > [!WARNING]
 > This package is published so workspace consumers can depend on it directly, but the `internal` name is intentional: breaking changes can ship in patch releases.
 >
-> Stable, consumer-safe helpers should be promoted into `@ucdjs/utils` instead of being treated as part of this package's public contract.
+> Small external-consumer helpers such as Unicode version helpers and API guards are exposed through `@ucdjs/utils`. This package remains the volatile implementation layer.
 
 ## Installation
 
@@ -37,6 +37,18 @@ npm install @ucdjs-internal/shared
 > Keep infrastructure-heavy helpers here for now, especially `customFetch`, `createDebugger`, and config-path utilities.
 >
 > Do not treat this package as a broad public API contract.
+
+## Relationship
+
+```text
+consumer code
+  -> @ucdjs/utils
+    -> small public helpers
+
+internal workspace code
+  -> @ucdjs-internal/shared
+    -> volatile/internal helper families
+```
 
 ## Usage
 
