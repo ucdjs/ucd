@@ -46,7 +46,7 @@
   "scripts": {
     "build": "vite build && pnpm build:dts",
     "build:dts": "tsc --project tsconfig.dts.json",
-    "dev": "vite dev --port 3031",
+    "dev": "NODE_OPTIONS='--import @ucdjs/moonbeam/register' vite dev --port 3031",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
