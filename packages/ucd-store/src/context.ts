@@ -1,7 +1,7 @@
-import type { PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { ExpectedFile } from "@ucdjs/schemas";
+import type { PathFilter, PathFilterOptions } from "@ucdjs/utils";
 import type {
   InternalUCDStoreContext,
   UCDStoreContext,

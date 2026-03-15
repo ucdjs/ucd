@@ -1,14 +1,10 @@
-import type { OperationResult } from "@ucdjs-internal/shared";
 import type { FSEntry } from "@ucdjs/fs-bridge";
 import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { OperationResult } from "@ucdjs/utils";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import {
-  createDebugger,
-  filterTreeStructure,
-  normalizeTreeForFiltering,
-  wrapTry,
-} from "@ucdjs-internal/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
+import { filterTreeStructure, normalizeTreeForFiltering, wrapTry } from "@ucdjs/utils";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 

@@ -1459,9 +1459,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:runtime
         version: 2.7.3
-      '@ucdjs-internal/shared':
+      '@ucdjs/utils':
         specifier: workspace:*
-        version: link:../shared
+        version: link:../utils
       ai:
         specifier: catalog:runtime
         version: 6.0.116(zod@4.3.6)
@@ -1776,6 +1776,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
+      '@ucdjs/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.23
