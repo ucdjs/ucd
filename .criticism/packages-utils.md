@@ -44,6 +44,7 @@ Recommendation:
 - Decide whether `@ucdjs/utils` is:
 - the real public utility package with owned implementations, or
 - a temporary compatibility shim that should be deprecated clearly.
+- If it is the real public utility package, it should immediately expand into a curated facade over the safest exports from `@ucdjs-internal/shared`.
 
 ### 2. The package exports a placeholder/internal joke function in a public package
 
@@ -87,7 +88,40 @@ Recommendation:
 - Make docs part of the release contract for public packages.
 - Either update the package to match the docs or rewrite the docs to match reality.
 
-### 4. The package has almost no real consumer footprint inside the repo
+### 4. There is already a sensible first batch of exports that can move into `utils` now
+
+Severity: medium
+
+Evidence:
+
+- `@ucdjs/utils` already re-exports path filtering helpers from [packages/utils/src/index.ts](/Users/luxass/dev/ucdjs/ucd/packages/utils/src/index.ts).
+- `@ucdjs-internal/shared` contains several generic, consumer-safe utilities in:
+- [packages/shared/src/filter.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/filter.ts)
+- [packages/shared/src/glob.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/glob.ts)
+- [packages/shared/src/files.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/files.ts)
+- [packages/shared/src/json.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/json.ts)
+- [packages/shared/src/async/try-catch.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/async/try-catch.ts)
+- [packages/shared/src/async/promise-concurrency.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/async/promise-concurrency.ts)
+- [packages/shared/src/guards.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/guards.ts)
+- [packages/shared/src/version.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/version.ts)
+
+Why this is valid criticism:
+
+- The package does not need to remain tiny and fictional.
+- There is already a clear subset of helpers that are generic enough to become the stable facade.
+- The main missing piece is curation, not implementation.
+
+Recommendation:
+
+- Expand `@ucdjs/utils` with a first stable export batch such as:
+- path filtering: `createPathFilter`, `filterTreeStructure`, `PRECONFIGURED_FILTERS`, `DEFAULT_EXCLUDED_EXTENSIONS`
+- glob helpers: `createGlobMatcher`, `matchGlob`, `isValidGlobPattern`
+- file tree helpers: `findFileByPath`, `flattenFilePaths`, `normalizePathForFiltering`, `normalizeTreeForFiltering`
+- small generic utilities: `safeJsonParse`, `createConcurrencyLimiter`, `wrapTry`, `tryOr`
+- safe domain helpers: `isApiError`, `isValidUnicodeVersion`, `isDraftUnicodeVersion`, `isStableUnicodeVersion`, `getLatestStableUnicodeVersion`, `getLatestDraftUnicodeVersion`
+- Do not move `customFetch`, `createDebugger`, or config-path helpers yet; those still look more internal/infrastructure-oriented.
+
+### 5. The package has almost no real consumer footprint inside the repo
 
 Severity: medium
 
@@ -107,7 +141,7 @@ Recommendation:
 - Either dogfood `@ucdjs/utils` from actual consumers, or demote/deprecate it.
 - Do not keep public packages alive only through README claims.
 
-### 5. The current testing strategy gives almost zero confidence in the public contract
+### 6. The current testing strategy gives almost zero confidence in the public contract
 
 Severity: medium
 
@@ -127,7 +161,7 @@ Recommendation:
 - Add contract tests for every public re-export that `utils` intends to stand behind.
 - If `utils` is just a forwarding package, test the forwarding behavior explicitly and minimally.
 
-### 6. The package has no ownership story relative to `shared`
+### 7. The package has no ownership story relative to `shared`
 
 Severity: medium
 
@@ -147,8 +181,12 @@ Recommendation:
 - what must live in `utils`
 - what must never leak from `shared`
 - when a public re-export is acceptable
+- A practical first rule would be:
+- `utils`: stable, consumer-safe, generic helpers
+- `shared`: volatile implementation helpers and infrastructure primitives
+- public promotion happens intentionally, not by copying all exports blindly
 
-### 7. The package is missing diagrams that explain its relationship to the internal utility layer
+### 8. The package is missing diagrams that explain its relationship to the internal utility layer
 
 Severity: medium
 
@@ -178,7 +216,8 @@ Recommendation:
 ## Suggested next moves
 
 1. Remove the placeholder export and its test.
-2. Decide whether `@ucdjs/utils` is a real public package or a temporary shim.
-3. Fix the README and docs site immediately, because they are currently advertising the wrong API.
-4. Add a small package relationship diagram for `utils` vs `shared`.
-5. Either dogfood the package in real repo code or deprecate it.
+2. Promote a first curated batch of stable exports from `shared` into `utils`.
+3. Decide whether `@ucdjs/utils` is a real public package or a temporary shim.
+4. Fix the README and docs site immediately, because they are currently advertising the wrong API.
+5. Add a small package relationship diagram for `utils` vs `shared`.
+6. Either dogfood the package in real repo code or deprecate it.

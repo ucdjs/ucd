@@ -67,6 +67,7 @@ Recommendation:
 - Split by concern: fetch/http, unicode-version helpers, path filtering, config paths.
 - Either make `@ucdjs/utils` the real public surface and move logic there, or remove it and create focused packages.
 - Reduce the number of cross-workspace consumers that need this package directly.
+- A practical first move would be to promote the safest generic exports into `@ucdjs/utils` instead of keeping them all trapped in `shared`.
 
 ### 3. Monorepo path aliases are masking packaging reality
 
@@ -129,7 +130,40 @@ Recommendation:
 - Treat README examples as tested API contracts.
 - Add doc-snippet validation or at minimum update the README whenever exported signatures change.
 
-### 6. Dependency hygiene is weak for such a central package
+### 6. `shared` is holding consumer-safe exports that should probably live in `utils`
+
+Severity: medium
+
+Evidence:
+
+- Several exports in `shared` are generic and stable-looking enough to serve as public utilities:
+- filtering in [packages/shared/src/filter.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/filter.ts)
+- glob helpers in [packages/shared/src/glob.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/glob.ts)
+- file-tree helpers in [packages/shared/src/files.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/files.ts)
+- small generic helpers in [packages/shared/src/json.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/json.ts), [packages/shared/src/async/try-catch.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/async/try-catch.ts), and [packages/shared/src/async/promise-concurrency.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/async/promise-concurrency.ts)
+- guard/version helpers in [packages/shared/src/guards.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/guards.ts) and [packages/shared/src/version.ts](/Users/luxass/dev/ucdjs/ucd/packages/shared/src/version.ts)
+
+Why this is valid criticism:
+
+- If `utils` is meant to be the public stable facade, then `shared` currently owns too much of the obviously public-safe surface.
+- That keeps `utils` weak and makes `shared` even more of a dependency magnet.
+
+Recommendation:
+
+- Move or re-export a curated first batch into `@ucdjs/utils`:
+- path filtering helpers
+- glob helpers
+- file-tree helpers
+- `safeJsonParse`
+- `createConcurrencyLimiter`
+- `wrapTry` / `tryOr`
+- safe version and API guard helpers
+- Keep infrastructure-heavy pieces in `shared` for now, especially:
+- `customFetch`
+- `createDebugger`
+- config path helpers
+
+### 7. Dependency hygiene is weak for such a central package
 
 Severity: medium
 
@@ -150,7 +184,7 @@ Recommendation:
 - Remove unused runtime dependencies.
 - Re-check whether this package should carry `zod` as a runtime dependency or whether the type exposure should be isolated behind a narrower surface.
 
-### 7. The fetch abstraction works, but its typing is still loose and cast-heavy
+### 8. The fetch abstraction works, but its typing is still loose and cast-heavy
 
 Severity: medium
 
@@ -172,7 +206,7 @@ Recommendation:
 - Replace `any` defaults with `unknown` where possible.
 - Tighten the internal error/result model before more packages adopt this helper.
 
-### 8. The package is missing diagrams where diagrams would materially reduce confusion
+### 9. The package is missing diagrams where diagrams would materially reduce confusion
 
 Severity: medium
 
@@ -204,7 +238,8 @@ Recommendation:
 ## Suggested next moves
 
 1. Keep the intentional `@ucdjs-internal/*` contract, but define stricter dependency guardrails around it.
-2. Fix the README so the package at least tells the truth today.
-3. Remove unused and test-only runtime dependencies.
-4. Break `shared` into smaller, intention-revealing modules before the dependency fan-out gets worse.
-5. Add one strict consumer test path that validates built exports instead of source aliases.
+2. Promote the safest generic exports into `@ucdjs/utils` so `shared` stops being the only place generic helpers live.
+3. Fix the README so the package at least tells the truth today.
+4. Remove unused and test-only runtime dependencies.
+5. Break `shared` into smaller, intention-revealing modules before the dependency fan-out gets worse.
+6. Add one strict consumer test path that validates built exports instead of source aliases.
