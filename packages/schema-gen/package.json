@@ -40,7 +40,7 @@
     "@ai-sdk/openai": "catalog:runtime",
     "@luxass/unicode-utils-old": "catalog:runtime",
     "@luxass/utils": "catalog:runtime",
-    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/utils": "workspace:*",
     "ai": "catalog:runtime",
     "knitwork": "catalog:runtime",
     "zod": "catalog:runtime"
