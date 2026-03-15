@@ -17,7 +17,7 @@
     "build:app": "turbo run build --filter \"./apps/${APP_NAME}\"",
     "build:vscode": "turbo run build --filter ./vscode",
     "clean": "turbo run clean && git clean -xdf node_modules",
-    "dev": "turbo watch dev --filter \"./packages/**\"",
+    "dev": "turbo watch dev --filter \"./packages/**\" --concurrency=30 --ui=tui",
     "dev:apps": "turbo run dev --filter \"./apps/*\"",
     "dev:vscode": "turbo run dev --filter ./vscode",
     "lint": "turbo run lint --continue",

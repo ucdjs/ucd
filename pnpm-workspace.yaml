@@ -3,7 +3,7 @@ saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 strictPeerDependencies: false
 engineStrict: true
-# minimumReleaseAge: 1440 # 1 day
+minimumReleaseAge: 1440 # 1 day
 trustPolicy: "no-downgrade"
 
 minimumReleaseAgeExclude:
@@ -139,6 +139,7 @@ catalogs:
     "@xyflow/react": 12.10.1
     "@tanstack/react-hotkeys": 0.4.1
     "@tanstack/react-hotkeys-devtools": 0.4.1
+    "@cmdi/base-ui": 0.0.1
 
   vscode:
     vscode-ext-gen: 1.6.0

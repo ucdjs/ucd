@@ -6,7 +6,7 @@
       "outputs": ["dist/**"]
     },
     "dev": {
-      "persistent": false,
+      "persistent": true,
       "dependsOn": [
         "$TURBO_EXTENDS$",
         "dev:setup"
