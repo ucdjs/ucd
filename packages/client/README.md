@@ -72,7 +72,7 @@ if (error) {
 }
 ```
 
-## Config vs. well-known discovery
+## Well-known discovery vs. explicit config
 
 The client supports two ways to arrive at the same endpoint shape:
 
@@ -92,7 +92,7 @@ This makes it possible to host the API under a different path without changing t
 
 As long as the config points to those paths, the same `client.files.*` and `client.versions.*` methods continue to work.
 
-The `client.config.get()` and `client.manifest.get(version)` helpers still read the published well-known documents from the origin:
+Regardless of whether you created the client with `createUCDClient()` or `createUCDClientWithConfig()`, the `client.config.get()` and `client.manifest.get(version)` helpers always read the published well-known documents from the origin:
 
 - `/.well-known/ucd-config.json`
 - `/.well-known/ucd-store/<version>.json`

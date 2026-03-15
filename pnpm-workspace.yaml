@@ -170,5 +170,3 @@ overrides:
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.3": patches/@asteasolutions__zod-to-openapi@8.4.3.patch
-catalog:
-  mermaid: 11.13.0
