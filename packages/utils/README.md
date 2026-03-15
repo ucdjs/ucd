@@ -16,56 +16,47 @@ npm install @ucdjs/utils
 
 ## Included utility groups
 
-- Path filtering and tree filtering
-- Glob matching helpers
-- File tree helpers
-- Async result helpers
-- Safe API and Unicode version helpers
+- Unicode version helpers
+- API error guards
 
 ## Usage
 
-### Path filtering
+### Unicode version helpers
 
 ```ts
-import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+import {
+  getLatestStableUnicodeVersion,
+  isStableUnicodeVersion,
+  isValidUnicodeVersion,
+} from "@ucdjs/utils";
 
-const filter = createPathFilter({
-  include: ["**/*.txt"],
-  exclude: [...PRECONFIGURED_FILTERS.README_FILES],
-});
-
-filter("Blocks.txt"); // true
-filter("ReadMe.txt"); // false
+isValidUnicodeVersion("16.0.0"); // true
+isStableUnicodeVersion("16.0.0"); // true
+getLatestStableUnicodeVersion(); // e.g. "16.0.0"
 ```
 
-### Glob helpers
+### API error guard
 
 ```ts
-import { createGlobMatcher, isValidGlobPattern } from "@ucdjs/utils";
+import { isApiError } from "@ucdjs/utils";
 
-const matcher = createGlobMatcher("auxiliary/**/*.txt");
+const result: unknown = await fetch("/api").then((r) => r.json());
 
-matcher("auxiliary/GraphemeBreakProperty.txt"); // true
-isValidGlobPattern("auxiliary/**/*.txt"); // true
+if (isApiError(result)) {
+  console.error(result.message);
+}
 ```
 
-### File tree helpers
+## Relationship
 
-```ts
-import { flattenFilePaths, normalizePathForFiltering } from "@ucdjs/utils";
+```text
+consumer code
+  -> @ucdjs/utils
+    -> curated public helpers
 
-normalizePathForFiltering("16.0.0", "/16.0.0/ucd/Blocks.txt");
-// "Blocks.txt"
-
-flattenFilePaths([
-  {
-    type: "file",
-    name: "Blocks.txt",
-    path: "/16.0.0/ucd/Blocks.txt",
-    lastModified: null,
-  },
-]);
-// ["/16.0.0/ucd/Blocks.txt"]
+internal workspace code
+  -> @ucdjs-internal/shared
+    -> volatile/internal helper families
 ```
 
 ## License
