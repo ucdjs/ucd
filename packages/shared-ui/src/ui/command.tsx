@@ -1,3 +1,4 @@
+import type { CommandAction } from "@cmdi/base-ui";
 import { cn } from "#lib/utils";
 import {
   Dialog,
@@ -10,54 +11,148 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "#ui/input-group";
-import { Command as CommandPrimitive } from "#vendor/cmdk";
-import { CheckIcon, SearchIcon } from "lucide-react";
+import {
+  Command as CommandPrimitive,
+  createCommandPalette,
+  useCommandActions,
+  useCommandShortcutDefault,
+} from "@cmdi/base-ui";
+import { SearchIcon } from "lucide-react";
 import * as React from "react";
 
-function Command({
+const commandRootClassName = "bg-popover text-popover-foreground rounded-xl! p-1 flex size-full flex-col overflow-hidden";
+const commandDialogOverlayClassName = "data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 bg-black/10 duration-100 supports-backdrop-filter:backdrop-blur-xs fixed inset-0 isolate z-50";
+const commandDialogContentClassName = "bg-background data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 ring-foreground/10 fixed top-1/3 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 translate-y-0 gap-4 overflow-hidden rounded-xl p-0 text-sm ring-1 duration-100 outline-none sm:max-w-sm";
+const commandItemClassName = "data-selected:bg-muted data-selected:text-foreground data-selected:**:[svg]:text-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none group/command-item data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0";
+const commandActionsClassName = [
+  "**:[[cmd-item]]:data-selected:bg-muted",
+  "**:[[cmd-item]]:data-selected:text-foreground",
+  "**:[[cmd-item]]:relative",
+  "**:[[cmd-item]]:flex",
+  "**:[[cmd-item]]:cursor-default",
+  "**:[[cmd-item]]:items-center",
+  "**:[[cmd-item]]:gap-2",
+  "**:[[cmd-item]]:rounded-sm",
+  "**:[[cmd-item]]:px-2",
+  "**:[[cmd-item]]:py-1.5",
+  "**:[[cmd-item]]:text-sm",
+  "**:[[cmd-item]]:outline-hidden",
+  "**:[[cmd-item]]:select-none",
+  "**:[[cmd-item]]:data-[disabled=true]:pointer-events-none",
+  "**:[[cmd-item]]:data-[disabled=true]:opacity-50",
+  "**:[[cmd-item]]:[&_svg:not([class*='size-'])]:size-4",
+  "**:[[cmd-item]]:[&_svg]:pointer-events-none",
+  "**:[[cmd-item]]:[&_svg]:shrink-0",
+  "**:[[cmd-item]>[data-slot='shortcut']]:text-muted-foreground",
+  "**:[[cmd-item]>[data-slot='shortcut']]:ml-auto",
+  "**:[[cmd-item]>[data-slot='shortcut']]:text-xs",
+  "**:[[cmd-item]>[data-slot='shortcut']]:tracking-widest",
+].join(" ");
+
+function usePaletteId(palette?: string) {
+  const fallbackPalette = React.useId().replaceAll(":", "");
+  return palette ?? `command-${fallbackPalette}`;
+}
+
+function CommandRoot({
   className,
   ...props
 }: React.ComponentProps<typeof CommandPrimitive>) {
   return (
     <CommandPrimitive
       data-slot="command"
-      className={cn(
-        "bg-popover text-popover-foreground rounded-xl! p-1 flex size-full flex-col overflow-hidden",
-        className,
-      )}
+      className={cn(commandRootClassName, className)}
       {...props}
     />
   );
 }
 
+function CommandDialogRoot({
+  children,
+  open,
+  onOpenChange,
+  defaultOpen,
+  className,
+  overlayClassName,
+  contentClassName,
+  palette,
+  value,
+  defaultValue,
+  filter,
+  shouldFilter,
+  loop,
+  onValueChange,
+  label,
+}: React.ComponentProps<typeof CommandPrimitive.Dialog>) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange} defaultOpen={defaultOpen}>
+      <DialogContent
+        overlayClassName={cn(commandDialogOverlayClassName, overlayClassName)}
+        className={cn(commandDialogContentClassName, contentClassName)}
+        showCloseButton={false}
+      >
+        <CommandPrimitive
+          data-slot="command-dialog"
+          palette={usePaletteId(palette)}
+          value={value}
+          defaultValue={defaultValue}
+          filter={filter}
+          shouldFilter={shouldFilter}
+          loop={loop}
+          onValueChange={onValueChange}
+          label={label}
+          className={cn(commandRootClassName, className)}
+        >
+          {children}
+        </CommandPrimitive>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function CommandDialog({
   title = "Command Palette",
-  description = "Search for a command to run...",
+  description: _description = "Search for a command to run...",
   children,
   className,
+  overlayClassName,
+  contentClassName,
+  palette,
   showCloseButton = false,
   ...props
-}: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
+}: Omit<React.ComponentProps<typeof CommandPrimitive.Dialog>, "children" | "label"> & {
   title?: string;
   description?: string;
   className?: string;
+  palette?: string;
   showCloseButton?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <Dialog {...props}>
+    <Dialog open={props.open} onOpenChange={props.onOpenChange} defaultOpen={props.defaultOpen}>
       <DialogHeader className="sr-only">
         <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogDescription>{_description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn(
-          "rounded-xl! top-1/3 translate-y-0 overflow-hidden p-0",
-          className,
-        )}
+        overlayClassName={cn(commandDialogOverlayClassName, overlayClassName)}
+        className={cn(commandDialogContentClassName, contentClassName, className)}
         showCloseButton={showCloseButton}
       >
-        {children}
+        <CommandPrimitive
+          data-slot="command-dialog"
+          palette={usePaletteId(palette)}
+          value={props.value}
+          defaultValue={props.defaultValue}
+          filter={props.filter}
+          shouldFilter={props.shouldFilter}
+          loop={props.loop}
+          onValueChange={props.onValueChange}
+          label={title}
+          className={commandRootClassName}
+        >
+          {children}
+        </CommandPrimitive>
       </DialogContent>
     </Dialog>
   );
@@ -94,7 +189,7 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "no-scrollbar max-h-72 scroll-py-1 outline-none overflow-x-hidden overflow-y-auto",
+        "no-scrollbar max-h-72 scroll-py-1 overflow-x-hidden overflow-y-auto outline-none",
         className,
       )}
       {...props}
@@ -122,7 +217,7 @@ function CommandGroup({
   return (
     <CommandPrimitive.Group
       data-slot="command-group"
-      className={cn("text-foreground **:[[cmdk-group-heading]]:text-muted-foreground overflow-hidden p-1 **:[[cmdk-group-heading]]:px-2 **:[[cmdk-group-heading]]:py-1.5 **:[[cmdk-group-heading]]:text-xs **:[[cmdk-group-heading]]:font-medium", className)}
+      className={cn("text-foreground **:[[cmd-group-heading]]:text-muted-foreground overflow-hidden p-1 **:[[cmd-group-heading]]:px-2 **:[[cmd-group-heading]]:py-1.5 **:[[cmd-group-heading]]:text-xs **:[[cmd-group-heading]]:font-medium", className)}
       {...props}
     />
   );
@@ -149,15 +244,37 @@ function CommandItem({
   return (
     <CommandPrimitive.Item
       data-slot="command-item"
-      className={cn(
-        "data-selected:bg-muted data-selected:text-foreground data-selected:**:[svg]:text-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none in-data-[slot=dialog-content]:rounded-lg! [&_svg:not([class*='size-'])]:size-4 group/command-item data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-        className,
-      )}
+      className={cn(commandItemClassName, className)}
       {...props}
     >
       {children}
-      <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
+  );
+}
+
+function CommandLoading({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Loading>) {
+  return (
+    <CommandPrimitive.Loading
+      data-slot="command-loading"
+      className={cn("py-6 text-center text-sm", className)}
+      {...props}
+    />
+  );
+}
+
+function CommandActions({
+  className,
+  ...props
+}: React.ComponentProps<typeof CommandPrimitive.Actions>) {
+  return (
+    <CommandPrimitive.Actions
+      data-slot="command-actions"
+      className={cn(commandActionsClassName, className)}
+      {...props}
+    />
   );
 }
 
@@ -174,14 +291,32 @@ function CommandShortcut({
   );
 }
 
+const Command = Object.assign(CommandRoot, {
+  Dialog: CommandDialogRoot,
+  Input: CommandInput,
+  List: CommandList,
+  Empty: CommandEmpty,
+  Group: CommandGroup,
+  Separator: CommandSeparator,
+  Item: CommandItem,
+  Loading: CommandLoading,
+  Actions: CommandActions,
+});
+
 export {
   Command,
+  type CommandAction,
+  CommandActions,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
+  CommandLoading,
   CommandSeparator,
   CommandShortcut,
+  createCommandPalette,
+  useCommandActions,
+  useCommandShortcutDefault,
 };
