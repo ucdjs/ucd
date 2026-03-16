@@ -15,9 +15,13 @@ Zod schemas that define the shared data contracts across the UCD.js monorepo —
 @ucdjs/schemas
 ```
 
+## Overview
+
+The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files, API responses, and internal configurations with full type safety. All schemas are exported from the package root.
+
 ## Schema Families
 
-All schemas are exported from the package root. The source is split into five files, each covering a logical contract area.
+The source is split into five files, each covering a logical contract area.
 
 ### API Schemas
 
@@ -54,22 +58,6 @@ Shapes for Unicode version metadata and file-tree responses.
 - `UnicodeVersionSchema` / `UnicodeVersionListSchema` — A Unicode version with its URL, documentation URL, date, type (`draft` / `stable` / `unsupported`), and optional `mappedUcdVersion`.
 - `UnicodeVersionDetailsSchema` — Extends `UnicodeVersionSchema` with character, block, and script statistics.
 - `UnicodeFileTreeNodeSchema` / `UnicodeFileTreeSchema` — Recursive file-tree structure for a Unicode version directory.
-
-## Consumer Map
-
-| Schema family | Primary consumers |
-|---|---|
-| API schemas | `@ucdjs/client`, `apps/api` |
-| File system schemas | `apps/store`, `@ucdjs-internal/shared` |
-| Lockfile & snapshot schemas | `apps/store`, `@ucdjs/ucd-store`, `packages/pipelines/*` |
-| Version manifest schemas | `apps/api`, `apps/store`, `packages/pipelines/*` |
-| Unicode schemas | `@ucdjs/client`, `apps/web`, `vscode/` |
-
-## Design Notes
-
-### Recursive schema limitation
-
-`UnicodeFileTreeNodeSchema` uses a manually unrolled recursive definition rather than `z.lazy`. Zod's `z.lazy` is not compatible with the OpenAPI/Hono tooling used to generate the API specification. The tree depth is expressed through explicit TypeScript interface types while keeping the Zod schema flat enough for OpenAPI generation. This is an intentional tradeoff, not a bug.
 
 ## Usage
 
