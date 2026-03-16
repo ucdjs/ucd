@@ -31,10 +31,10 @@ The project uses:
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 
 Mermaid diagrams are rendered at build time through the MDX pipeline. On a new machine, install the
-Playwright Chromium browser once before building docs:
+required Chromium browser once before building docs:
 
 ```sh
-pnpm --filter @ucdjs/docs exec playwright install chromium
+pnpm dlx playwright install chromium
 ```
 
 ## 📄 License
