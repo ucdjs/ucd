@@ -12,9 +12,25 @@ Zod schemas that define the shared data contracts across the UCD.js monorepo —
 npm install @ucdjs/schemas
 ```
 
-## Schema Families
+## Usage
 
-All schemas are exported from the package root.
+> [!NOTE]
+> All schemas are exported from the package root.
+
+```typescript
+import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
+
+// Parse a Unicode version object
+const version = UnicodeVersionSchema.parse(rawVersion);
+
+// Safely parse a lockfile
+const result = LockfileSchema.safeParse(rawLockfile);
+if (result.success) {
+  console.log(result.data.versions);
+}
+```
+
+## Schema Families
 
 ### API Schemas (`src/api.ts`)
 
@@ -51,34 +67,6 @@ Shapes for Unicode version metadata and file-tree responses.
 - `UnicodeVersionSchema` / `UnicodeVersionListSchema` — A Unicode version with its URL, date, type (`draft` / `stable` / `unsupported`), and optional `mappedUcdVersion`.
 - `UnicodeVersionDetailsSchema` — Extends `UnicodeVersionSchema` with character, block, and script statistics.
 - `UnicodeFileTreeNodeSchema` / `UnicodeFileTreeSchema` — Recursive file-tree structure for a Unicode version directory.
-
-> [!NOTE]
-> `UnicodeFileTreeNodeSchema` uses a manually unrolled recursive definition rather than `z.lazy`. Zod's `z.lazy` is not compatible with the OpenAPI/Hono tooling used to generate the API specification, so the tree depth is expressed through explicit interface types in TypeScript while keeping the Zod schema flat enough for OpenAPI generation.
-
-## Consumer Map
-
-| Schema family | Primary consumers |
-|---|---|
-| API schemas | `@ucdjs/client`, `apps/api` |
-| File system schemas | `apps/store`, `@ucdjs-internal/shared` |
-| Lockfile & snapshot schemas | `apps/store`, `@ucdjs/ucd-store`, `packages/pipelines/*` |
-| Version manifest schemas | `apps/api`, `apps/store`, `packages/pipelines/*` |
-| Unicode schemas | `@ucdjs/client`, `apps/web`, `vscode/` |
-
-## Usage
-
-```typescript
-import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
-
-// Parse a Unicode version object
-const version = UnicodeVersionSchema.parse(rawVersion);
-
-// Safely parse a lockfile
-const result = LockfileSchema.safeParse(rawLockfile);
-if (result.success) {
-  console.log(result.data.versions);
-}
-```
 
 ## 📄 License
 
