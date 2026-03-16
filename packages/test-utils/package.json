@@ -56,6 +56,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
+    "@ucdjs/utils": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "msw": "catalog:test",
     "zod": "catalog:runtime"

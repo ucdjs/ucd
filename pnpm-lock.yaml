@@ -406,9 +406,6 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
-      '@ucdjs/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.23
@@ -588,9 +585,6 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
-      '@ucdjs/utils':
-        specifier: workspace:*
-        version: link:../../packages/utils
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.23
@@ -1548,18 +1542,12 @@ importers:
       '@luxass/utils':
         specifier: catalog:runtime
         version: 2.7.3
-      '@ucdjs/env':
-        specifier: workspace:*
-        version: link:../env
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.23
-      defu:
-        specifier: catalog:runtime
-        version: 6.1.4
       obug:
         specifier: catalog:runtime
         version: 2.1.1
@@ -1582,6 +1570,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
       eslint:
         specifier: catalog:lint
         version: 10.0.3(jiti@2.6.1)
@@ -1718,6 +1709,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
+      '@ucdjs/utils':
+        specifier: workspace:*
+        version: link:../utils
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.23

@@ -3,11 +3,9 @@ title: Schemas
 description: Zod schemas for Unicode data files
 ---
 
-import { Callout } from 'fumadocs-ui/components/callout';
-
 # Schemas
 
-Zod schemas for Unicode data files with full type safety.
+Zod schemas that define the shared data contracts across the UCD.js monorepo — API responses, store manifests, lockfiles, and Unicode metadata.
 
 ## Installation
 
@@ -17,40 +15,30 @@ Zod schemas for Unicode data files with full type safety.
 
 ## Overview
 
-The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files, API responses, and internal configurations with full type safety.
+The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files, API responses, and internal configurations with full type safety. All schemas are exported from the package root.
+
+## Usage
+
+```typescript
+import { LockfileSchema, UnicodeVersionSchema } from "@ucdjs/schemas";
+
+// Parse a Unicode version object
+const version = UnicodeVersionSchema.parse(rawVersion);
+
+// Safely parse a lockfile
+const result = LockfileSchema.safeParse(rawLockfile);
+if (result.success) {
+  console.log(result.data.versions);
+}
+```
 
 ## Available Schemas
 
-### API Schemas
-- `ApiErrorSchema`: Validates API error responses.
-- `UCDWellKnownConfigSchema`: Validates the `.well-known` configuration.
+| Schema Family | Key Exports | Description |
+|---|---|---|
+| API | `ApiErrorSchema`, `UCDWellKnownConfigSchema` | Contracts for HTTP API responses and service discovery. |
+| File System | `FileEntrySchema`, `FileEntryListSchema`, `UCDStoreManifestSchema` | Shapes for file entries and the top-level store manifest. |
+| Lockfile & Snapshot | `LockfileSchema`, `SnapshotSchema` | State shapes used by the `ucd` CLI and the `ucd-store` app. |
+| Version Manifest | `ExpectedFileSchema`, `UCDStoreVersionManifestSchema` | Per-version metadata served from `/.well-known/ucd-store/{version}.json`. |
+| Unicode | `UnicodeVersionSchema`, `UnicodeVersionDetailsSchema`, `UnicodeFileTreeNodeSchema`, `UnicodeFileTreeSchema` | Shapes for Unicode version metadata and file-tree responses. |
 
-### File System Schemas
-- `FileEntrySchema` / `FileEntryListSchema`: Validates file entries and lists.
-- `UCDStoreManifestSchema`: Validates the store manifest.
-
-### Lockfile Schemas
-- `LockfileSchema`: Validates the `ucd.lock` file.
-- `SnapshotSchema`: Validates a lockfile snapshot.
-
-### Unicode Data Schemas
-- `UnicodeVersionSchema`: Validates a Unicode version string.
-- `UnicodeVersionListSchema`: Validates a list of Unicode versions.
-- `UnicodeFileTreeSchema`: Validates the file tree structure of a Unicode version.
-
-## Usage Example
-
-```typescript title="example.ts"
-import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
-
-// Validate a Unicode version
-const version = UnicodeVersionSchema.parse("15.1.0");
-
-// Safely parse a lockfile
-const result = LockfileSchema.safeParse(myLockfileData);
-if (result.success) {
-  console.log("Valid lockfile for version:", result.data.version);
-} else {
-  console.error("Invalid lockfile:", result.error);
-}
-```

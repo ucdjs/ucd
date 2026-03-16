@@ -22,7 +22,6 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/utils": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "apache-autoindex-parse": "catalog:runtime",
     "hono": "catalog:backend",
