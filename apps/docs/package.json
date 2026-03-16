@@ -22,7 +22,6 @@
     "fumadocs-mdx": "catalog:docs",
     "fumadocs-ui": "catalog:docs",
     "lucide-react": "catalog:frontend",
-    "mermaid": "catalog:docs",
     "nitro": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
@@ -42,6 +41,8 @@
     "eslint": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",
     "pathe": "catalog:runtime",
+    "playwright": "catalog:docs",
+    "rehype-mermaid": "catalog:docs",
     "typescript": "catalog:build",
     "vite": "catalog:build",
     "wrangler": "catalog:backend"
