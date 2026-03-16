@@ -7,7 +7,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Schemas
 
-Zod schemas for Unicode data files with full type safety.
+Zod schemas that define the shared data contracts across the UCD.js monorepo — API responses, store manifests, lockfiles, and Unicode metadata.
 
 ## Installation
 
@@ -15,42 +15,74 @@ Zod schemas for Unicode data files with full type safety.
 @ucdjs/schemas
 ```
 
-## Overview
+## Schema Families
 
-The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files, API responses, and internal configurations with full type safety.
-
-## Available Schemas
+All schemas are exported from the package root. The source is split into five files, each covering a logical contract area.
 
 ### API Schemas
-- `ApiErrorSchema`: Validates API error responses.
-- `UCDWellKnownConfigSchema`: Validates the `.well-known` configuration.
+
+Contracts for HTTP API responses and service discovery.
+
+- `ApiErrorSchema` — Standard error response used by all API endpoints.
+- `UCDWellKnownConfigSchema` — Shape of the `.well-known/ucd-config.json` endpoint used by clients to discover API paths.
 
 ### File System Schemas
-- `FileEntrySchema` / `FileEntryListSchema`: Validates file entries and lists.
-- `UCDStoreManifestSchema`: Validates the store manifest.
 
-### Lockfile Schemas
-- `LockfileSchema`: Validates the `ucd.lock` file.
-- `SnapshotSchema`: Validates a lockfile snapshot.
+Shapes for file entries and the top-level store manifest.
 
-### Unicode Data Schemas
-- `UnicodeVersionSchema`: Validates a Unicode version string.
-- `UnicodeVersionListSchema`: Validates a list of Unicode versions.
-- `UnicodeFileTreeSchema`: Validates the file tree structure of a Unicode version.
+- `FileEntrySchema` / `FileEntryListSchema` — A file or directory entry returned by the files API, with `name`, `path`, and `lastModified`.
+- `UCDStoreManifestSchema` — Store-wide manifest keyed by Unicode version string, listing expected files per version.
 
-## Usage Example
+### Lockfile & Snapshot Schemas
 
-```typescript title="example.ts"
+State shapes used by the `ucd` CLI and the `ucd-store` app.
+
+- `LockfileSchema` — The `ucd.lock` file, including per-version snapshot references, timestamps, and optional path filters.
+- `SnapshotSchema` — Per-version snapshot containing file paths, SHA-256 hashes (with and without Unicode header), and sizes.
+
+### Version Manifest Schemas
+
+Per-version metadata served from `/.well-known/ucd-store/{version}.json`.
+
+- `ExpectedFileSchema` — A single expected file with `name`, API `path`, and `storePath` (without `/ucd/` prefix).
+- `UCDStoreVersionManifestSchema` — Full per-version manifest listing all expected files for a Unicode version.
+
+### Unicode Schemas
+
+Shapes for Unicode version metadata and file-tree responses.
+
+- `UnicodeVersionSchema` / `UnicodeVersionListSchema` — A Unicode version with its URL, documentation URL, date, type (`draft` / `stable` / `unsupported`), and optional `mappedUcdVersion`.
+- `UnicodeVersionDetailsSchema` — Extends `UnicodeVersionSchema` with character, block, and script statistics.
+- `UnicodeFileTreeNodeSchema` / `UnicodeFileTreeSchema` — Recursive file-tree structure for a Unicode version directory.
+
+## Consumer Map
+
+| Schema family | Primary consumers |
+|---|---|
+| API schemas | `@ucdjs/client`, `apps/api` |
+| File system schemas | `apps/store`, `@ucdjs-internal/shared` |
+| Lockfile & snapshot schemas | `apps/store`, `@ucdjs/ucd-store`, `packages/pipelines/*` |
+| Version manifest schemas | `apps/api`, `apps/store`, `packages/pipelines/*` |
+| Unicode schemas | `@ucdjs/client`, `apps/web`, `vscode/` |
+
+## Design Notes
+
+### Recursive schema limitation
+
+`UnicodeFileTreeNodeSchema` uses a manually unrolled recursive definition rather than `z.lazy`. Zod's `z.lazy` is not compatible with the OpenAPI/Hono tooling used to generate the API specification. The tree depth is expressed through explicit TypeScript interface types while keeping the Zod schema flat enough for OpenAPI generation. This is an intentional tradeoff, not a bug.
+
+## Usage
+
+```typescript
 import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
 
-// Validate a Unicode version
-const version = UnicodeVersionSchema.parse("15.1.0");
+// Parse a Unicode version object
+const version = UnicodeVersionSchema.parse(rawVersion);
 
 // Safely parse a lockfile
-const result = LockfileSchema.safeParse(myLockfileData);
+const result = LockfileSchema.safeParse(rawLockfile);
 if (result.success) {
-  console.log("Valid lockfile for version:", result.data.version);
-} else {
-  console.error("Invalid lockfile:", result.error);
+  console.log(result.data.versions);
 }
 ```
+
