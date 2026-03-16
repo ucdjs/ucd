@@ -92,8 +92,7 @@ const client = createUCDClientWithConfig("https://example.com", {
 
 ## Client flow
 
-<Mermaid
-  chart={`
+```mermaid
 flowchart TD
   A["createUCDClient(baseUrl)"] --> B["GET /.well-known/ucd-config.json"]
   B --> C["Validate UCDWellKnownConfig"]
@@ -106,8 +105,7 @@ flowchart TD
 
   H["client.config.get()"] --> I["GET /.well-known/ucd-config.json"]
   J["client.manifest.get(version)"] --> K["GET /.well-known/ucd-store/{version}.json"]
-`}
-/>
+```
 
 ## Resources
 
