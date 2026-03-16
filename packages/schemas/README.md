@@ -4,13 +4,35 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-This package provides schemas for different UCDJS components, including Api Responses, Environment Variables, and more.
+Zod schemas that define the shared data contracts across the UCD.js monorepo — API responses, store manifests, lockfiles, and Unicode metadata.
 
 ## Installation
 
 ```bash
 npm install @ucdjs/schemas
 ```
+
+## Usage
+
+> [!NOTE]
+> All schemas are exported from the package root.
+
+```typescript
+import { LockfileSchema, UnicodeVersionSchema } from "@ucdjs/schemas";
+
+// Parse a Unicode version object
+const version = UnicodeVersionSchema.parse(rawVersion);
+
+// Safely parse a lockfile
+const result = LockfileSchema.safeParse(rawLockfile);
+if (result.success) {
+  console.log(result.data.versions);
+}
+```
+
+## Schema Families
+
+For a full list of available schemas and their exports, see the [Schemas documentation](https://docs.ucdjs.dev/api-reference/schemas/schemas).
 
 ## 📄 License
 

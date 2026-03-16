@@ -4,7 +4,9 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-A collection of utility functions and filesystem bridge implementations for the UCD project.
+Curated stable utilities for UCD.js consumers.
+
+This package exposes a small, consumer-safe facade over selected helpers used across the UCD.js ecosystem. More volatile implementation details remain in `@ucdjs-internal/shared`.
 
 ## Installation
 
@@ -12,58 +14,52 @@ A collection of utility functions and filesystem bridge implementations for the 
 npm install @ucdjs/utils
 ```
 
+## Included utility groups
+
+- Unicode version helpers
+- API error guards
+
 ## Usage
 
-### Path Filtering
+### Unicode version helpers
 
-Creates a filter function that checks if a file path should be included or excluded based on glob patterns.
+```ts
+import {
+  getLatestStableUnicodeVersion,
+  isStableUnicodeVersion,
+  isValidUnicodeVersion,
+} from "@ucdjs/utils";
 
-```typescript
-import { createPathFilter } from "@ucdjs/utils";
-
-const filter = createPathFilter(["*.txt", "!*Test*"]);
-filter("Data.txt"); // true
-filter("DataTest.txt"); // false
+isValidUnicodeVersion("16.0.0"); // true
+isStableUnicodeVersion("16.0.0"); // true
+getLatestStableUnicodeVersion(); // e.g. "16.0.0"
 ```
 
-#### PathFilter Methods
+### API error guard
 
-The `PathFilter` object provides additional methods:
+```ts
+import { isApiError } from "@ucdjs/utils";
 
-```typescript
-const filter = createPathFilter(["*.js"]);
+const result: unknown = await fetch("/api").then((r) => r.json());
 
-// Extend with additional patterns
-filter.extend(["*.ts", "!*.test.*"]);
-
-// Get current patterns
-const patterns = filter.patterns(); // ['*.js', '*.ts', '!*.test.*']
-
-// Use with extra filters temporarily
-filter("app.js", ["!src/**"]); // Apply extra exclusions
+if (isApiError(result)) {
+  console.error(result.message);
+}
 ```
 
-### Preconfigured Filters
+## Relationship
 
-Pre-defined filter patterns for common exclusions:
+```text
+consumer code
+  -> @ucdjs/utils
+    -> curated public helpers
 
-```typescript
-import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
-
-const filter = createPathFilter([
-  "*.txt",
-  PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
-  PRECONFIGURED_FILTERS.EXCLUDE_README_FILES,
-  PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES
-]);
+internal workspace code
+  -> @ucdjs-internal/shared
+    -> volatile/internal helper families
 ```
 
-Available filters:
-- `EXCLUDE_TEST_FILES`: Excludes files containing "Test" in their name
-- `EXCLUDE_README_FILES`: Excludes ReadMe.txt files
-- `EXCLUDE_HTML_FILES`: Excludes all HTML files
-
-## 📄 License
+## License
 
 Published under [MIT License](./LICENSE).
 
