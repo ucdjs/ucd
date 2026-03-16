@@ -92,20 +92,10 @@ const client = createUCDClientWithConfig("https://example.com", {
 
 ## Client flow
 
-```mermaid
-flowchart TD
-  A["createUCDClient(baseUrl)"] --> B["GET /.well-known/ucd-config.json"]
-  B --> C["Validate UCDWellKnownConfig"]
-  C --> D["Create files + versions resources from config.endpoints"]
-
-  E["createUCDClientWithConfig(baseUrl, config)"] --> D
-
-  D --> F["client.files.get(path)"]
-  D --> G["client.versions.list() / getFileTree(version)"]
-
-  H["client.config.get()"] --> I["GET /.well-known/ucd-config.json"]
-  J["client.manifest.get(version)"] --> K["GET /.well-known/ucd-store/{version}.json"]
-```
+<img
+  alt="Diagram showing discovery and explicit config flows for the UCD client and the well-known config and manifest requests."
+  src="/client-flow.svg"
+/>
 
 ## Resources
 
