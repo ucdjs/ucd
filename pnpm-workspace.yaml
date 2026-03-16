@@ -151,7 +151,6 @@ catalogs:
     fumadocs-mdx: 14.2.10
     fumadocs-core: 16.6.17
     fumadocs-ui: 16.6.17
-    rehype-mermaid: 3.0.0
 
 onlyBuiltDependencies:
   - esbuild

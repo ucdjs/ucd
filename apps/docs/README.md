@@ -30,13 +30,6 @@ The project uses:
 - [Fumadocs](https://fumadocs.vercel.app/) for documentation
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 
-Mermaid diagrams are rendered at build time through the MDX pipeline. On a new machine, install the
-required Chromium browser once before building docs:
-
-```sh
-pnpm dlx playwright install chromium
-```
-
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
