@@ -18,7 +18,7 @@ npm install @ucdjs/schemas
 > All schemas are exported from the package root.
 
 ```typescript
-import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
+import { LockfileSchema, UnicodeVersionSchema } from "@ucdjs/schemas";
 
 // Parse a Unicode version object
 const version = UnicodeVersionSchema.parse(rawVersion);
