@@ -35,7 +35,7 @@ Chromium browser in Node.js. On a new machine, install the Playwright Chromium b
 building docs:
 
 ```sh
-pnpm --filter @ucdjs/docs exec playwright install chromium
+pnpm --dir apps/docs exec playwright install chromium
 ```
 
 ## 📄 License
