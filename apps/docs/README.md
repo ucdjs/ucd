@@ -30,8 +30,9 @@ The project uses:
 - [Fumadocs](https://fumadocs.vercel.app/) for documentation
 - [Tailwind CSS](https://tailwindcss.com/) for styling
 
-Mermaid diagrams are rendered at build time through the MDX pipeline. On a new machine, install the
-Playwright Chromium browser once before building docs:
+Mermaid diagrams are rendered to SVG at build time through `rehype-mermaid`, which uses Playwright's
+Chromium browser in Node.js. On a new machine, install the Playwright Chromium browser once before
+building docs:
 
 ```sh
 pnpm --filter @ucdjs/docs exec playwright install chromium
