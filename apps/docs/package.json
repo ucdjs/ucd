@@ -40,7 +40,6 @@
     "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",
-    "pathe": "catalog:runtime",
     "playwright": "catalog:docs",
     "rehype-mermaid": "catalog:docs",
     "typescript": "catalog:build",

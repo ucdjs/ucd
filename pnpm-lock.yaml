@@ -546,9 +546,6 @@ importers:
       eslint-plugin-format:
         specifier: catalog:lint
         version: 2.0.1(eslint@10.0.3(jiti@2.6.1))
-      pathe:
-        specifier: catalog:runtime
-        version: 2.0.3
       playwright:
         specifier: catalog:docs
         version: 1.58.2
