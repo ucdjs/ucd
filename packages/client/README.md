@@ -26,6 +26,7 @@ The package exports:
 ### Automatic discovery with `createUCDClient`
 
 `createUCDClient()` fetches `/.well-known/ucd-config.json` from the provided origin, validates it, and then creates resource wrappers from the discovered endpoint paths.
+This function is async and will throw if discovery fails or the well-known config is invalid.
 
 ```typescript
 import { createUCDClient } from "@ucdjs/client";
@@ -99,7 +100,7 @@ Regardless of whether you created the client with `createUCDClient()` or `create
 
 ## Resources
 
-The returned client exposes four resource namespaces:
+The returned client exposes resource helpers:
 
 - `client.files.get(path)` to fetch a Unicode file or directory listing
 - `client.versions.list()` to list available Unicode versions
