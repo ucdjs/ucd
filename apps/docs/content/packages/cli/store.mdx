@@ -1,0 +1,200 @@
+---
+title: store
+description: Manage local UCD stores
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# ucd store
+
+Manage local UCD stores — initialize, mirror, sync, verify, analyze, and check status.
+
+```bash
+ucd store <subcommand> [...flags]
+```
+
+---
+
+## init
+
+Initialize a new UCD store. Creates a lockfile and downloads the specified Unicode versions.
+
+```bash
+ucd store init [...versions] [...flags]
+```
+
+If no versions are provided, the command prompts you to select from available versions interactively.
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` (required) | Directory where UCD files will be stored |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--force` | Overwrite existing store |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+# Initialize a store with Unicode 16.0.0
+ucd store init 16.0.0 --store-dir ./ucd-data
+
+# Initialize with multiple versions
+ucd store init 15.0.0 16.0.0 --store-dir ./ucd-data
+
+# Include only specific files
+ucd store init 16.0.0 --store-dir ./ucd-data --include "ucd/UnicodeData.txt"
+```
+
+---
+
+## mirror
+
+Download Unicode data files into a local store. Unlike `sync`, mirror does not use an existing lockfile — it downloads all matched files for the specified versions.
+
+```bash
+ucd store mirror [...versions] [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` (required) | Directory where UCD files will be stored |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--concurrency` | Maximum concurrent downloads (default: `5`) |
+| `--force` | Re-download existing files |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+ucd store mirror 16.0.0 --store-dir ./ucd-data
+ucd store mirror 16.0.0 --store-dir ./ucd-data --concurrency 10
+```
+
+---
+
+## sync
+
+Sync a store to match its lockfile state. Downloads missing files and optionally removes orphaned ones.
+
+```bash
+ucd store sync [...versions] [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` (required) | Directory where UCD files are stored |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--concurrency` | Maximum concurrent downloads (default: `5`) |
+| `--clean` | Remove files present on disk but not in the lockfile |
+| `--remove-unavailable` | Remove versions from the lockfile that are no longer available in the API |
+| `--force` | Force re-download of all files |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+# Sync the store to match the lockfile
+ucd store sync --store-dir ./ucd-data
+
+# Sync and remove orphaned files
+ucd store sync --store-dir ./ucd-data --clean
+```
+
+---
+
+## verify
+
+Verify store integrity by comparing local files against the API.
+
+```bash
+ucd store verify [...versions] [...flags]
+```
+
+Supports both a local store (`--store-dir`) and a remote read-only store (`--remote`).
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` | Directory where UCD files are stored |
+| `--remote` | Use a remote UCD store (read-only) |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+ucd store verify --store-dir ./ucd-data
+ucd store verify 16.0.0 --store-dir ./ucd-data --json
+```
+
+---
+
+## analyze
+
+Analyze the contents and file status of a store.
+
+```bash
+ucd store analyze [...versions] [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` | Directory where UCD files are stored |
+| `--remote` | Use a remote UCD store (read-only) |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--check-orphaned` | Include orphaned files in the analysis |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+ucd store analyze --store-dir ./ucd-data
+ucd store analyze --store-dir ./ucd-data --check-orphaned
+```
+
+---
+
+## status
+
+Show version and file status for a store.
+
+```bash
+ucd store status [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` | Directory where UCD files are stored |
+| `--remote` | Use a remote UCD store (read-only) |
+| `--include` | Glob patterns to include specific files |
+| `--exclude` | Glob patterns to exclude specific files |
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--json` | Output results as JSON |
+
+### Examples
+
+```bash
+ucd store status --store-dir ./ucd-data
+ucd store status --remote --json
+```

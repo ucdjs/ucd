@@ -1,0 +1,86 @@
+---
+title: lockfile
+description: Inspect and validate UCD store lockfiles
+---
+
+# ucd lockfile
+
+Inspect, validate, and hash UCD store lockfiles (`ucd.lock`).
+
+```bash
+ucd lockfile <subcommand> [...flags]
+```
+
+---
+
+## info
+
+Display a summary of the lockfile in the current store.
+
+```bash
+ucd lockfile info [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` | Directory where the UCD store is located (default: current directory) |
+| `--json` | Output lockfile information as JSON |
+
+### Examples
+
+```bash
+ucd lockfile info
+ucd lockfile info --store-dir ./ucd-data --json
+```
+
+---
+
+## validate
+
+Validate the lockfile against the expected schema.
+
+```bash
+ucd lockfile validate [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--store-dir` | Directory where the UCD store is located (default: current directory) |
+| `--json` | Output validation results as JSON |
+
+### Examples
+
+```bash
+ucd lockfile validate
+ucd lockfile validate --store-dir ./ucd-data
+```
+
+---
+
+## hash
+
+Compute the content hash of a UCD file. Useful for debugging integrity issues.
+
+```bash
+ucd lockfile hash <file-path> [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--strip-header` | Strip the Unicode file header before hashing (default: `false`) |
+| `--compare` | Compare the computed hash against a provided hash |
+| `--json` | Output hash information as JSON |
+
+### Examples
+
+```bash
+ucd lockfile hash ./ucd-data/16.0.0/ucd/UnicodeData.txt
+ucd lockfile hash ./ucd-data/16.0.0/ucd/UnicodeData.txt --strip-header
+ucd lockfile hash ./ucd-data/16.0.0/ucd/UnicodeData.txt --compare abc123
+```

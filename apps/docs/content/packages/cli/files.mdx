@@ -1,0 +1,98 @@
+---
+title: files
+description: Browse and download files from the UCD API
+---
+
+# ucd files
+
+Browse and download files from the remote UCD API.
+
+```bash
+ucd files <subcommand> [...flags]
+```
+
+---
+
+## list
+
+List files and directories available at a given path in the UCD API.
+
+```bash
+ucd files list [path] [...flags]
+```
+
+`path` is optional — omitting it lists the root.
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--json` | Output the directory listing as raw JSON |
+
+### Examples
+
+```bash
+# List root
+ucd files list
+
+# List files for a specific Unicode version
+ucd files list 16.0.0
+
+# List a subdirectory
+ucd files list 16.0.0/ucd
+
+# Output as JSON
+ucd files list 16.0.0 --json
+```
+
+---
+
+## get
+
+Download and print (or save) a specific file from the UCD API.
+
+```bash
+ucd files get <path> [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--output`, `-o` | Write file content to this path instead of stdout |
+
+### Examples
+
+```bash
+# Print file to stdout
+ucd files get 16.0.0/ucd/UnicodeData.txt
+
+# Save to disk
+ucd files get 16.0.0/ucd/UnicodeData.txt -o ./UnicodeData.txt
+```
+
+---
+
+## info
+
+Get metadata about a file or directory without downloading its contents.
+
+```bash
+ucd files info <path> [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--base-url` | Base URL for the UCD API (default: `api.ucdjs.dev`) |
+| `--json` | Output metadata as raw JSON |
+
+### Examples
+
+```bash
+ucd files info 16.0.0/ucd/UnicodeData.txt
+ucd files info 16.0.0 --json
+```

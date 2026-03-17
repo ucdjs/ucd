@@ -1,0 +1,45 @@
+---
+title: Overview
+description: Command-line interface for UCD.js
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# CLI
+
+The `@ucdjs/cli` package provides a command-line interface for working with the Unicode Character Database. Use it to manage local UCD stores, browse remote files, run pipelines, and generate code.
+
+## Installation
+
+```package-install
+-g @ucdjs/cli
+```
+
+Run any command with `--help` to see available options:
+
+```bash
+ucd --help
+ucd store --help
+```
+
+## Commands
+
+<Cards>
+  <Card title="store" href="/packages/cli/store" description="Initialize, mirror, sync, verify, and analyze local UCD stores." />
+  <Card title="files" href="/packages/cli/files" description="Browse and download files from the remote UCD API." />
+  <Card title="lockfile" href="/packages/cli/lockfile" description="Inspect, validate, and hash UCD store lockfiles." />
+  <Card title="pipelines" href="/packages/cli/pipelines" description="Run pipelines locally or from remote repositories, manage the pipeline cache." />
+  <Card title="codegen" href="/packages/cli/codegen" description="Generate TypeScript field definitions from UCD data files." />
+</Cards>
+
+## Global Flags
+
+These flags are available on all commands:
+
+| Flag | Description |
+|---|---|
+| `--help`, `-h` | Show help for the current command |
+| `--version` | Print the CLI version and exit |
+| `--json` | Output results as JSON (supported per-command) |
+| `--force` | Force the operation (behavior varies per command) |
