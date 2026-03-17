@@ -17,7 +17,7 @@ import { NodeFileSystemBridge } from "@ucdjs/fs-bridge";
 import { getLockfilePath, readLockfile, writeLockfile } from "@ucdjs/lockfile";
 
 const fs = NodeFileSystemBridge({ basePath: "./store" });
-const lockfilePath = getLockfilePath("./store");
+const lockfilePath = getLockfilePath();
 
 // Read lockfile
 const lockfile = await readLockfile(fs, lockfilePath);
@@ -59,14 +59,13 @@ if (lockfileOrUndefined) {
 ```typescript
 import { getSnapshotPath, parseSnapshot, parseSnapshotOrUndefined, readSnapshot, writeSnapshot } from "@ucdjs/lockfile";
 
-const basePath = "./store";
 const version = "16.0.0";
 
 // Read snapshot
-const snapshot = await readSnapshot(fs, basePath, version);
+const snapshot = await readSnapshot(fs, version);
 
 // Write snapshot
-await writeSnapshot(fs, basePath, version, {
+await writeSnapshot(fs, version, {
   unicodeVersion: "16.0.0",
   files: {
     "UnicodeData.txt": {
@@ -94,6 +93,15 @@ const content = "file content";
 const hash = await computeFileHash(content);
 // Returns: "sha256:..."
 ```
+
+## Overview
+
+`@ucdjs/lockfile` manages the canonical persisted state for mirrored local UCD stores. Two artifacts define what's in a local store:
+
+- **Lockfile** (`.ucd-store.lock`) — index of all mirrored Unicode versions, with their snapshot paths, file counts, and total sizes.
+- **Snapshots** (`{version}/snapshot.json`) — per-version manifest listing every file, its hash, and size.
+
+Together these are the source of truth for a local store. The `parseLockfile()` and `parseSnapshot()` utilities also accept content from remote sources (HTTP, KV stores) with the same shape, but those are read-only compatibility uses — not local store management.
 
 ## API Reference
 
@@ -123,11 +131,13 @@ const hash = await computeFileHash(content);
 ### Hash Utilities
 
 - `computeFileHash(content: string | Uint8Array): Promise<string>` - Compute SHA-256 hash
+- `computeFileHashWithoutUCDHeader(content: string): Promise<string>` - Compute SHA-256 hash after stripping the Unicode file header (useful for comparing content across versions)
+- `stripUnicodeHeader(content: string): string` - Strip the Unicode file header (filename, date, copyright lines) from content
 
 ### Error Types
 
+- `LockfileBaseError` - Base error class for all lockfile errors
 - `LockfileInvalidError` - Thrown when a lockfile or snapshot is invalid
-- `LockfileBridgeUnsupportedOperation` - Thrown when a filesystem bridge operation is not supported
 
 ## Test Utilities
 
