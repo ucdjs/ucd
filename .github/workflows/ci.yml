@@ -91,6 +91,9 @@ jobs:
       - name: install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: install Playwright Chromium
+        run: pnpm --dir apps/docs exec playwright install chromium
+
       - name: build apps
         run: pnpm build:apps
 
@@ -116,6 +119,9 @@ jobs:
 
       - name: install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: install Playwright Chromium
+        run: pnpm --dir apps/docs exec playwright install chromium
 
       - name: build
         run: pnpm build && pnpm build:apps && pnpm build:vscode
@@ -145,6 +151,9 @@ jobs:
 
       - name: install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: install Playwright Chromium
+        run: pnpm --dir apps/docs exec playwright install chromium
 
       - name: build
         run: pnpm build && pnpm build:apps && pnpm build:vscode

@@ -41,6 +41,8 @@
     "eslint": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",
     "pathe": "catalog:runtime",
+    "playwright": "catalog:docs",
+    "rehype-mermaid": "catalog:docs",
     "typescript": "catalog:build",
     "vite": "catalog:build",
     "wrangler": "catalog:backend"
