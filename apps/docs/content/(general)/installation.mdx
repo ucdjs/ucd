@@ -12,38 +12,11 @@ import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
   This documentation is for a pre-release version of UCD.js. The API and features may change before the stable release.
 </Callout>
 
-UCD.js is a modular project, meaning you can install only the specific packages you need. The most common packages to install are the **Client** and the **CLI**.
-
-## Package Installation
-
-Install the UCD.js packages you need using your preferred package manager. For example, to install the client and file system bridge:
-
-```package-install
-@ucdjs/client @ucdjs/fs-bridge
-```
-
-### Basic Usage
-
-Start using UCD.js in your project:
-
-```typescript title="example.ts"
-import { createClient } from '@ucdjs/client';
-
-// Initialize the client
-const client = createClient();
-
-// Fetch Unicode data (example)
-const data = await client.getCharacter('A');
-console.log(data);
-```
-
-<Callout type="info">
-  Check out the [Client API Reference](/packages/client) to learn more about interacting with the UCD.js client.
-</Callout>
+UCD.js is a modular project, meaning you can install only the specific packages you need. The most common starting point is the **CLI**.
 
 ## CLI Installation
 
-The UCD.js CLI provides powerful command-line utilities for Unicode exploration and analysis.
+The UCD.js CLI provides command-line utilities for Unicode exploration, store management, and code generation.
 
 ### Install the CLI globally
 
@@ -69,3 +42,30 @@ Access help and documentation for CLI commands:
 ucd --help
 ucd char --help
 ```
+
+<Callout type="info">
+  See the [CLI reference](/packages/cli) for the full list of commands and flags.
+</Callout>
+
+## Package Installation
+
+If you're building on top of UCD.js programmatically, install the packages you need:
+
+```package-install
+@ucdjs/client
+```
+
+### Basic Usage
+
+```typescript title="example.ts"
+import { createClient } from '@ucdjs/client';
+
+const client = createClient();
+
+const data = await client.getCharacter('A');
+console.log(data);
+```
+
+<Callout type="info">
+  Check out the [Client API Reference](/packages/client) to learn more about interacting with the UCD.js client.
+</Callout>

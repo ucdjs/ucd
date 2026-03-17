@@ -5,12 +5,12 @@
   "icon": "Package",
   "pages": [
     "index",
+    "cli",
     "client",
     "ucd-store",
     "schemas",
     "schema-gen",
     "fs-bridge",
-    "cli",
     "---Utilities---",
     "path-utils",
     "env",

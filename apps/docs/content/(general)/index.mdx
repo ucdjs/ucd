@@ -13,23 +13,28 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
 
 <Cards>
   <Card title="Getting Started" href="/installation" description="Learn how to install and integrate UCD.js packages." />
-  <Card title="Architecture" href="/architecture" description="Understand the core packages and data flow." />
-  <Card title="Packages" href="/packages" description="Explore Schemas, Utilities, FS-Bridge, and Client APIs." />
+  <Card title="CLI" href="/packages/cli" description="Explore Unicode data, manage stores, and run pipelines from the terminal." />
+  <Card title="Packages" href="/packages" description="Explore the Client, UCD Store, Schemas, and utility APIs." />
   <Card title="Pipelines" href="/pipelines" description="Data processing pipelines for UCD files." />
 </Cards>
 
 ## Core Features
 
-- **Modular Design** - Use only what you need with our modular package structure (`@ucdjs/client`, `@ucdjs/fs-bridge`, etc.).
+- **Modular Design** - Use only what you need with our modular package structure (`@ucdjs/client`, `@ucdjs/utils`, etc.).
 - **Type-Safe** - Built with TypeScript for excellent developer experience.
-- **CLI Tools** - Command-line utilities for Unicode data exploration and analysis.
+- **CLI Tools** - Command-line utilities for Unicode data exploration, store management, and code generation.
 - **Modern JavaScript** - ES modules with support for Node.js and browsers.
-- **File System Abstraction** - Work with local files, HTTP, or memory using the `fs-bridge`.
 
 ## Quick Start
 
-You can easily add UCD.js packages to your project using your favorite package manager.
+Install the CLI globally to start exploring Unicode data immediately:
 
 ```package-install
-@ucdjs/client @ucdjs/fs-bridge
+npm install -g @ucdjs/cli
+```
+
+Or add the packages you need to your project:
+
+```package-install
+@ucdjs/client @ucdjs/utils
 ```
