@@ -67,8 +67,12 @@ export const ExecutionLogPayloadSchema = z.object({
   message: z.string(),
   stream: z.enum(["stdout", "stderr"]),
   args: z.array(z.unknown()).optional(),
+  level: z.enum(["debug", "info", "warn", "error"]),
+  source: z.enum(["logger", "console", "stdio"]),
+  meta: z.record(z.string(), z.unknown()).optional(),
   truncated: z.boolean().optional(),
   originalSize: z.number().optional(),
+  isBanner: z.boolean().optional(),
   event: z.custom<PipelineEvent>(() => true).optional(),
 }).nullable();
 

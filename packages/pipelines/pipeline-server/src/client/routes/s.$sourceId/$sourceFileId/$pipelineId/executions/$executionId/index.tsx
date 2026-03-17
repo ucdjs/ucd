@@ -1,6 +1,6 @@
 import type { ExecutionSpan } from "#lib/execution-utils";
 import { StatusBadge, StatusIcon } from "#components/execution/execution-status";
-import { ExecutionLogTable } from "#components/execution/log-table";
+import { ExecutionLogTable } from "#components/execution/logs/log-table";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";
@@ -61,7 +61,6 @@ function ExecutionDetailPage() {
   }));
 
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
-  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [activeSpan, setActiveSpan] = useState<ExecutionSpan | null>(null);
 
   const events = executionData.events
@@ -70,24 +69,17 @@ function ExecutionDetailPage() {
   const spans = useMemo(() => buildExecutionSpans(events), [events]);
 
   const filteredLogs = useMemo(() => {
-    if (!selectedSpanId) {
-      return logsData.logs;
-    }
-
-    return logsData.logs.filter((log) => log.spanId === selectedSpanId);
+    const logs = logsData.logs.filter((log) => !log.payload?.isBanner);
+    if (!selectedSpanId) return logs;
+    return logs.filter((log) => log.spanId === selectedSpanId);
   }, [logsData.logs, selectedSpanId]);
 
   function handleSpanSelect(spanId: string | null) {
     setSelectedSpanId(spanId);
-    setExpandedLogId(null);
   }
 
   function handleSpanClick(span: ExecutionSpan) {
     setActiveSpan(span);
-  }
-
-  function handleLogToggle(logId: string) {
-    setExpandedLogId((current) => current === logId ? null : logId);
   }
 
   return (
@@ -153,18 +145,6 @@ function ExecutionDetailPage() {
       </div>
 
       <div className="p-6 space-y-6">
-        {logsData.truncated && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-            Logs truncated. Captured
-            {" "}
-            {formatBytes(logsData.capturedSize)}
-            {" "}
-            of
-            {" "}
-            {formatBytes(logsData.originalSize)}
-            .
-          </div>
-        )}
 
         <section className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -196,11 +176,23 @@ function ExecutionDetailPage() {
                 : "Showing all captured logs for this execution."}
             </p>
           </div>
-          <ExecutionLogTable
-            logs={filteredLogs}
-            expandedLogId={expandedLogId}
-            onToggle={handleLogToggle}
-          />
+          {logsData.truncated && (
+            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-300">
+              <span className="shrink-0 font-semibold">Logs truncated</span>
+              <span className="text-amber-700 dark:text-amber-400">
+                Captured
+                {" "}
+                {formatBytes(logsData.capturedSize)}
+                {" "}
+                of
+                {" "}
+                {formatBytes(logsData.originalSize)}
+                {" "}
+                — some log entries were dropped.
+              </span>
+            </div>
+          )}
+          <ExecutionLogTable logs={filteredLogs} />
         </section>
       </div>
 

@@ -8,11 +8,12 @@ export interface ExecutionLogPayload {
   message: string;
   stream: ExecutionLogStream;
   args?: unknown[];
-  level?: PipelineLogLevel;
-  source?: PipelineLogSource;
+  level: PipelineLogLevel;
+  source: PipelineLogSource;
   meta?: Record<string, unknown>;
   truncated?: boolean;
   originalSize?: number;
+  isBanner?: boolean;
   event?: PipelineEvent;
 }
 

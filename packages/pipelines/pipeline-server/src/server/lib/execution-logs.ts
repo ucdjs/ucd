@@ -150,12 +150,17 @@ export function createExecutionLogState(): ExecutionLogState {
 export function buildTruncationBanner(
   state: ExecutionLogState,
   stream: ExecutionLogStream,
+  level: ExecutionLogPayload["level"],
+  source: ExecutionLogPayload["source"],
 ): ExecutionLogPayload {
   const total = state.originalBytes > 0 ? state.originalBytes : state.capturedBytes;
   return {
     message: "Execution logs truncated due to size limits.",
     stream,
+    level,
+    source,
     truncated: true,
+    isBanner: true,
     originalSize: total,
   };
 }
@@ -206,7 +211,7 @@ export function createExecutionLogStore(db: Database) {
 
     if ((result.truncated || executionState.limitReached) && !executionState.truncatedLogged) {
       executionState.truncatedLogged = true;
-      const bannerPayload = buildTruncationBanner(executionState.state, entry.stream);
+      const bannerPayload = buildTruncationBanner(executionState.state, entry.stream, entry.level, entry.source);
       await storeExecutionLog(db, executionState.state, {
         executionId: entry.executionId,
         workspaceId: entry.workspaceId,
