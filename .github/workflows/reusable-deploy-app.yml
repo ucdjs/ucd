@@ -144,6 +144,10 @@ jobs:
       - name: install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: install Playwright Chromium
+        if: matrix.app == 'docs'
+        run: pnpm --dir apps/docs exec playwright install chromium
+
       - name: build
         if: ${{ inputs.extra-build-step }}
         run: pnpm build
@@ -162,10 +166,6 @@ jobs:
       - name: validate openapi
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
-
-      - name: install Playwright Chromium
-        if: matrix.app == 'docs'
-        run: pnpm --dir apps/docs exec playwright install chromium
 
       - name: test
         if: matrix.app == 'api'
