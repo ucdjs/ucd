@@ -135,7 +135,7 @@ jobs:
       changed-apps: ${{ github.event_name == 'push' && needs.detect-changes.outputs.changed-apps || '[]' }}
       include-pr-comment: false
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
-      extra-build-step: false
+      extra-build-step: ${{ github.event.inputs.app == 'api' || github.event.inputs.app == 'all' }}
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
