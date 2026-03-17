@@ -136,8 +136,8 @@ describe.runIf(isUnix)("security - unix", () => {
       });
     });
 
-    // TODO: figure out if we wanna handle this
-    // It seems very problematic that the case sensitivity of paths is not consistent across different filesystems.
+    // Case sensitivity follows OS-level detection (isCaseSensitive).
+    // Per-filesystem inconsistency (e.g. case-insensitive ext4 mounts) is a known limitation.
     describe("case sensitivity", () => {
       // linux
       it.runIf(isCaseSensitive)("should be case-sensitive on case-sensitive filesystems", () => {
