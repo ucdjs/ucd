@@ -163,6 +163,10 @@ jobs:
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
 
+      - name: install Playwright Chromium
+        if: matrix.app == 'docs'
+        run: pnpm --dir apps/docs exec playwright install chromium
+
       - name: test
         if: matrix.app == 'api'
         run: pnpm run test
