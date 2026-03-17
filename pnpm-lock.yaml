@@ -266,9 +266,6 @@ catalogs:
     shiki:
       specifier: 4.0.2
       version: 4.0.2
-    std-env:
-      specifier: 4.0.0
-      version: 4.0.0
     yargs-parser:
       specifier: 22.0.0
       version: 22.0.0
@@ -911,6 +908,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.0.3(jiti@2.6.1)
+      pathe:
+        specifier: catalog:runtime
+        version: 2.0.3
       publint:
         specifier: catalog:build
         version: 0.3.18
@@ -1200,6 +1200,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../../shared
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../../env
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
@@ -1326,6 +1329,9 @@ importers:
       '@ucdjs-internal/shared-ui':
         specifier: workspace:*
         version: link:../../shared-ui
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../../env
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
@@ -1567,24 +1573,15 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
-      '@ucdjs/env':
-        specifier: workspace:*
-        version: link:../env
       eslint:
         specifier: catalog:lint
         version: 10.0.3(jiti@2.6.1)
-      pathe:
-        specifier: catalog:runtime
-        version: 2.0.3
       publint:
         specifier: catalog:build
         version: 0.3.18
       rolldown:
         specifier: 1.0.0-rc.9
         version: 1.0.0-rc.9
-      std-env:
-        specifier: catalog:runtime
-        version: 4.0.0
       tsdown:
         specifier: catalog:build
         version: 0.21.2(@vitejs/devtools@0.1.0)(publint@0.3.18)(synckit@0.11.12)(typescript@5.9.3)
@@ -8985,9 +8982,6 @@ packages:
   statuses@2.0.2:
     resolution: {integrity: sha512-DvEy55V3DB7uknRo+4iOGT5fP1slR8wQohVdknigZPMpMstaKJQWhwiYBACJE3Ul2pTnATihhBYnRhZQHGBiRw==}
     engines: {node: '>= 0.8'}
-
-  std-env@4.0.0:
-    resolution: {integrity: sha512-zUMPtQ/HBY3/50VbpkupYHbRroTRZJPRLvreamgErJVys0ceuzMkD44J/QjqhHjOzK42GQ3QZIeFG1OYfOtKqQ==}
 
   std-env@4.0.0-rc.1:
     resolution: {integrity: sha512-2gE+MEGsqvDEjl7LqbrCEB3Lo6+Pmt8ULCIsutKTesFBzSuNIkiWPSy65sa7WrlLebc9LcfnS5eyj69mutUp1A==}
@@ -18216,8 +18210,6 @@ snapshots:
       get-source: 2.0.12
 
   statuses@2.0.2: {}
-
-  std-env@4.0.0: {}
 
   std-env@4.0.0-rc.1: {}
 

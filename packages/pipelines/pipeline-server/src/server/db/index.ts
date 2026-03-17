@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@libsql/client";
-import { getUcdConfigPath } from "@ucdjs-internal/shared/config";
+import { getUcdConfigPath } from "@ucdjs/env";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import * as schema from "./schema";

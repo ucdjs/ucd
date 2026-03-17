@@ -4,15 +4,15 @@ import { testdir } from "vitest-testdirs";
 import { resolveGitLabRef } from "../src/adapters/gitlab";
 import { materializePipelineLocator } from "../src/materialize";
 
-vi.mock("@ucdjs-internal/shared/config", async () => {
-  const actual = await vi.importActual("@ucdjs-internal/shared/config");
+vi.mock("@ucdjs/env", async () => {
+  const actual = await vi.importActual("@ucdjs/env");
   return {
     ...actual,
     getUcdConfigPath: vi.fn(),
   };
 });
 
-const getUcdConfigPathMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getUcdConfigPath;
+const getUcdConfigPathMock = vi.mocked(await import("@ucdjs/env")).getUcdConfigPath;
 
 describe("gitlab locator", () => {
   afterEach(() => {
