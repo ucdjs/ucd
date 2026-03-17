@@ -5,6 +5,7 @@
   "icon": "Component",
   "pages": [
     "index",
-    "ucd-store"
+    "data-flow",
+    "package-layers"
   ]
 }

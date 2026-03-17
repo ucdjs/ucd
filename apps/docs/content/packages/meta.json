@@ -1,11 +1,12 @@
 {
-  "title": "API Reference",
-  "description": "API Reference for UCD.js packages",
+  "title": "Packages",
+  "description": "Package reference for UCD.js",
   "root": true,
-  "icon": "Code2",
+  "icon": "Package",
   "pages": [
     "index",
     "client",
+    "ucd-store",
     "schemas",
     "utilities",
     "fs-bridge",
