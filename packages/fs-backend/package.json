@@ -1,0 +1,72 @@
+{
+  "name": "@ucdjs/fs-backend",
+  "version": "0.0.0",
+  "type": "module",
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.32.1",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/fs-backend"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "imports": {
+    "#internal:backend/node": "./src/backends/node.ts",
+    "#internal:backend/http": "./src/backends/http.ts"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./backends/http": "./dist/backends/http.mjs",
+    "./backends/node": "./dist/backends/node.mjs",
+    "./errors": "./dist/errors.mjs",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24.13"
+  },
+  "scripts": {
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@luxass/utils": "catalog:runtime",
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "hookable": "catalog:runtime",
+    "zod": "catalog:runtime"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:lint",
+    "@luxass/msw-utils": "catalog:runtime",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "eslint": "catalog:lint",
+    "publint": "catalog:build",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build",
+    "vitest-testdirs": "catalog:test"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "inlinedDependencies": {
+    "@luxass/msw-utils": "0.6.0"
+  }
+}

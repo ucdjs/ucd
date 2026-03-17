@@ -1,7 +1,11 @@
 import type { ExecutionSpan } from "#lib/execution-utils";
 import { StatusBadge, StatusIcon } from "#components/execution/execution-status";
+<<<<<<< HEAD
 import { LogsErrorBoundary } from "#components/execution/logs/logs-error-boundary";
 import { ExecutionLogsViewer } from "#components/execution/logs/logs-wrapper";
+=======
+import { ExecutionLogTable } from "#components/execution/logs/log-table";
+>>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";
@@ -152,6 +156,7 @@ function ExecutionDetailPage() {
                 : "Showing all captured logs for this execution."}
             </p>
           </div>
+<<<<<<< HEAD
           <LogsErrorBoundary>
             <Suspense fallback={<div className="text-sm text-muted-foreground">Loading logs…</div>}>
               <ExecutionLogsViewer
@@ -163,6 +168,9 @@ function ExecutionDetailPage() {
               />
             </Suspense>
           </LogsErrorBoundary>
+=======
+          <ExecutionLogTable logs={filteredLogs} />
+>>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
         </section>
       </div>
 

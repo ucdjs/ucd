@@ -67,8 +67,13 @@ export const ExecutionLogPayloadSchema = z.object({
   message: z.string(),
   stream: z.enum(["stdout", "stderr"]),
   args: z.array(z.unknown()).optional(),
+<<<<<<< HEAD
   level: z.enum(["debug", "info", "warn", "error"]),
   source: z.enum(["logger", "console", "stdio"]),
+=======
+  level: z.enum(["debug", "info", "warn", "error"]).optional(),
+  source: z.enum(["logger", "console", "stdio"]).optional(),
+>>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
   meta: z.record(z.string(), z.unknown()).optional(),
   truncated: z.boolean().optional(),
   originalSize: z.number().optional(),
