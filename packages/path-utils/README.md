@@ -4,13 +4,17 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-A collection of path utility functions for the UCD project.
+Security-focused path utilities for cross-platform path handling, with built-in protection against path traversal attacks and malicious inputs.
 
 ## Installation
 
 ```bash
 npm install @ucdjs/path-utils
 ```
+
+## Documentation
+
+Full documentation — security model, API reference, error classes, and examples — is available at [docs.ucdjs.dev/packages/utilities/path-utils](https://docs.ucdjs.dev/packages/utilities/path-utils).
 
 ## 📄 License
 
