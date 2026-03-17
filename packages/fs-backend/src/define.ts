@@ -56,7 +56,7 @@ export function defineBackend<
     };
 
     if (backendDefinition.symbol) {
-      (backend as Record<symbol, boolean>)[backendDefinition.symbol] = true;
+      (backend as unknown as Record<symbol, boolean>)[backendDefinition.symbol] = true;
     }
 
     return backend;
