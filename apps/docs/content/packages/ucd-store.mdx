@@ -1,36 +1,56 @@
 ---
 title: UCD Store
-description: Store for managing Unicode Character Database files
+description: Manage and mirror Unicode Character Database files locally
 ---
+
+import { Callout } from 'fumadocs-ui/components/callout';
 
 # UCD Store
 
-Store for managing Unicode Character Database files. Supports multiple file system bridges (Node.js, HTTP, in-memory).
+The `@ucdjs/ucd-store` package manages a local cache of Unicode Character Database files. It tracks what has been downloaded via a lockfile, supports mirroring specific versions, and can verify the integrity of local files against the remote API.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs/ucd-store
-```
-
-```bash pnpm
-pnpm add @ucdjs/ucd-store
-```
-
-```bash yarn
-yarn add @ucdjs/ucd-store
+```package-install
+@ucdjs/ucd-store
 ```
 
 ## Overview
 
-The `@ucdjs/ucd-store` package provides a store for managing Unicode Character Database files with support for multiple file system bridges.
+A store is a directory on disk containing UCD files organized by version. The store is described by a `ucd.lock` lockfile that records which versions and files are present, along with their hashes. This lets other tools (`@ucdjs/cli`, pipelines) work against a stable, reproducible local snapshot of the UCD.
 
-## Features
+## Core Operations
 
-- Multiple file system bridges (Node.js, HTTP, in-memory)
-- Core operations: mirror, analyze, and clean
-- Efficient data structures for Unicode data access
+| Operation | Description |
+|---|---|
+| **mirror** | Download UCD files for one or more versions |
+| **sync** | Bring the store on disk in line with the lockfile |
+| **verify** | Check local files against the remote API |
+| **analyze** | Report on the contents and status of the store |
+| **status** | Show which versions are present and their state |
+
+<Callout type="info">
+  All of these operations are available through the [`ucd store`](/packages/cli/store) CLI commands without writing any code.
+</Callout>
+
+## File System Bridges
+
+The store can operate over different file system backends via `@ucdjs/fs-bridge`:
+
+- **Node.js** — reads and writes to the local file system using `node:fs`
+- **HTTP** — read-only access to a remote UCD store over HTTP
+- **In-memory** — ephemeral store for testing and pipeline workloads
+
+## Lockfile
+
+The `ucd.lock` file is the source of truth for a store. It records:
+
+- Which Unicode versions are tracked
+- Which files belong to each version
+- A content hash per file for integrity verification
+
+The lockfile is written on `init` and `mirror`, and read by `sync` and `verify` to determine what should be on disk.
 
 ## API Reference
 
-Documentation for specific APIs will be added as the package stabilizes.
+Documentation for the programmatic API will be added as the package stabilizes.

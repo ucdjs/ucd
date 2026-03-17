@@ -1,0 +1,148 @@
+---
+title: pipelines
+description: Run and manage UCD data processing pipelines
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# ucd pipelines
+
+Run and manage UCD data processing pipelines. Pipelines can be loaded from local files or directly from remote GitHub/GitLab repositories.
+
+```bash
+ucd pipelines <subcommand> [...flags]
+```
+
+---
+
+## run
+
+Run one or more pipelines.
+
+```bash
+ucd pipelines run [...pipelines] [...flags]
+```
+
+Provide pipeline selectors as positional arguments to run specific pipelines. Omit them to run all discovered pipelines.
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--cwd` | Directory to search for pipeline files (default: current directory) |
+| `--github <owner/repo>` | Load pipelines from a GitHub repository |
+| `--gitlab <owner/repo>` | Load pipelines from a GitLab repository |
+| `--ref` | Git ref (branch, tag, or SHA) for remote sources |
+| `--path` | Subdirectory path within the repository |
+| `--ui` | Launch the pipeline UI alongside the run |
+| `--port` | Port for the UI server (default: `3030`) |
+
+### Examples
+
+```bash
+# Run all local pipelines
+ucd pipelines run
+
+# Run a specific pipeline
+ucd pipelines run my-pipeline
+
+# Run pipelines from a GitHub repository
+ucd pipelines run --github ucdjs/pipelines --ref main
+
+# Run with the UI
+ucd pipelines run --ui --port 4000
+```
+
+---
+
+## list
+
+List all available pipelines.
+
+```bash
+ucd pipelines list [...flags]
+```
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--cwd` | Directory to search for pipeline files (default: current directory) |
+| `--github <owner/repo>` | Load pipelines from a GitHub repository |
+| `--gitlab <owner/repo>` | Load pipelines from a GitLab repository |
+| `--ref` | Git ref (branch, tag, or SHA) for remote sources |
+| `--path` | Subdirectory path within the repository or local directory |
+
+### Examples
+
+```bash
+ucd pipelines list
+ucd pipelines list --github ucdjs/pipelines --ref main
+```
+
+---
+
+## cache
+
+Manage the local cache of remote pipeline sources.
+
+```bash
+ucd pipelines cache <subcommand> [...flags]
+```
+
+### cache status
+
+Show cache status for remote pipeline sources.
+
+```bash
+ucd pipelines cache status [...flags]
+```
+
+| Flag | Description |
+|---|---|
+| `--github <owner/repo>` | Show cache status for a GitHub repository |
+| `--gitlab <owner/repo>` | Show cache status for a GitLab repository |
+| `--ref` | Git ref (branch, tag, or SHA) |
+
+### cache clear
+
+Remove cached remote pipeline sources.
+
+```bash
+ucd pipelines cache clear [...flags]
+```
+
+| Flag | Description |
+|---|---|
+| `--github <owner/repo>` | Clear cache for a GitHub repository |
+| `--gitlab <owner/repo>` | Clear cache for a GitLab repository |
+| `--ref` | Git ref (default: `HEAD`) |
+| `--all` | Clear all cached sources |
+
+### cache refresh
+
+Sync a remote pipeline source into the local cache.
+
+```bash
+ucd pipelines cache refresh [...flags]
+```
+
+| Flag | Description |
+|---|---|
+| `--github <owner/repo>` | Sync a GitHub repository to the local cache |
+| `--gitlab <owner/repo>` | Sync a GitLab repository to the local cache |
+| `--ref` | Git ref (default: `HEAD`) |
+| `--force` | Re-download even if already up to date |
+
+### Examples
+
+```bash
+# Check cache status
+ucd pipelines cache status --github ucdjs/pipelines
+
+# Clear all cached sources
+ucd pipelines cache clear --all
+
+# Refresh a specific repo
+ucd pipelines cache refresh --github ucdjs/pipelines --ref main
+```

@@ -1,0 +1,12 @@
+{
+  "title": "CLI",
+  "description": "Command-line interface for UCD.js",
+  "pages": [
+    "index",
+    "store",
+    "files",
+    "lockfile",
+    "pipelines",
+    "codegen"
+  ]
+}

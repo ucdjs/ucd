@@ -1,0 +1,51 @@
+---
+title: codegen
+description: Generate TypeScript code from UCD data files
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# ucd codegen
+
+Generate TypeScript definitions from UCD data files.
+
+```bash
+ucd codegen <subcommand> [...flags]
+```
+
+---
+
+## fields
+
+Generate TypeScript field definitions for Unicode data files. Takes a UCD file or directory as input and produces typed field maps for each version.
+
+```bash
+ucd codegen fields <input> [...flags]
+```
+
+`input` is required — provide a path to a UCD file or a directory of UCD files.
+
+<Callout type="info">
+  This command uses OpenAI to infer field types from raw UCD data. Provide an API key via `--openai-key` or the `OPENAI_API_KEY` environment variable.
+</Callout>
+
+### Flags
+
+| Flag | Description |
+|---|---|
+| `--openai-key`, `-k` | OpenAI API key (or set `OPENAI_API_KEY` env var) |
+| `--output-dir` | Output directory for generated files (default: `.codegen`) |
+| `--bundle <filename>` | Combine all generated files into a single file per version. Use `{version}` as a placeholder in the filename |
+
+### Examples
+
+```bash
+# Generate fields from a single file
+ucd codegen fields ./ucd-data/16.0.0/ucd/UnicodeData.txt
+
+# Generate from a directory
+ucd codegen fields ./ucd-data --output-dir ./src/generated
+
+# Bundle all versions into one file each
+ucd codegen fields ./ucd-data --bundle "{version}.ts"
+```
