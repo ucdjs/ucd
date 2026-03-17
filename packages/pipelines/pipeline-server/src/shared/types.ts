@@ -1,5 +1,5 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus, PipelineLogLevel, PipelineLogSource } from "@ucdjs/pipelines-executor";
 
 export interface PipelineInfo {
   id: string;
@@ -60,6 +60,9 @@ export interface ExecutionLogPayload {
   message: string;
   stream: ExecutionLogStream;
   args?: unknown[];
+  level?: PipelineLogLevel;
+  source?: PipelineLogSource;
+  meta?: Record<string, unknown>;
   truncated?: boolean;
   originalSize?: number;
   event?: PipelineEvent;

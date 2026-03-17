@@ -58,14 +58,14 @@ export function createApp(options: AppOptions = {}): H3 {
         kind: "local",
         id: "local",
         path: path.join(import.meta.dirname, "../../../pipeline-playground"),
-      }, {
+      }, /* {
         kind: "remote",
         id: "github-remote",
         provider: "github",
         owner: "ucdjs",
         repo: "ucd-pipelines",
         ref: "main",
-      }];
+      } */];
     } else {
       resolvedSources = [{
         kind: "local",
