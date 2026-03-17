@@ -19,6 +19,7 @@ import { PathUtilsBaseError } from "@ucdjs/path-utils";
 import { BackendError, BackendUnsupportedOperation } from "./errors";
 
 const debug = createDebugger("ucdjs:fs-backend:utils");
+type BackendOperationMap = FileSystemBackendOperations & FileSystemBackendMutableOperations;
 
 export function inferFeaturesFromOperations(
   ops: FileSystemBackendMutableOperations,
@@ -159,20 +160,28 @@ export function getPayloadForHook(
 
 export interface OperationWrapperOptions {
   hooks: HookableCore<BackendHooks>;
-  operations: FileSystemBackendOperations & FileSystemBackendMutableOperations;
+  operations: BackendOperationMap;
 }
 
-export function createOperationWrapper<T extends keyof (FileSystemBackendOperations & FileSystemBackendMutableOperations)>(
+async function callBackendHook(
+  hooks: HookableCore<BackendHooks>,
+  name: HookKey,
+  payload: HookPayload,
+): Promise<void> {
+  await (hooks.callHook as (name: HookKey, payload: HookPayload) => Promise<void>)(name, payload);
+}
+
+export function createOperationWrapper<T extends keyof BackendOperationMap>(
   operationName: T,
   {
     hooks,
     operations,
   }: OperationWrapperOptions,
-) {
+): NonNullable<BackendOperationMap[T]> {
   const operation = operations[operationName];
 
   if (operation == null || typeof operation !== "function") {
-    return async (...args: unknown[]) => {
+    const unsupportedOperation = async (...args: unknown[]) => {
       const error = new BackendUnsupportedOperation(operationName as FileSystemBackendFeature);
 
       await hooks.callHook("error", {
@@ -183,27 +192,31 @@ export function createOperationWrapper<T extends keyof (FileSystemBackendOperati
 
       throw error;
     };
+
+    return unsupportedOperation as NonNullable<BackendOperationMap[T]>;
   }
 
-  return async (...args: unknown[]) => {
+  const wrappedOperation = async (...args: unknown[]) => {
     try {
       const beforePayload = getPayloadForHook(operationName, "before", args);
-      await hooks.callHook(`${operationName}:before` as HookKey, beforePayload);
+      await callBackendHook(hooks, `${operationName}:before` as HookKey, beforePayload);
 
       const result = await (operation as (...callArgs: unknown[]) => Promise<unknown>).apply(operations, args);
 
       const afterPayload = getPayloadForHook(operationName, "after", args, result);
-      await hooks.callHook(`${operationName}:after` as HookKey, afterPayload);
+      await callBackendHook(hooks, `${operationName}:after` as HookKey, afterPayload);
 
       return result;
     } catch (error) {
       return handleError(operationName, args, error, hooks);
     }
   };
+
+  return wrappedOperation as NonNullable<BackendOperationMap[T]>;
 }
 
 async function handleError(
-  operation: keyof (FileSystemBackendOperations & FileSystemBackendMutableOperations),
+  operation: keyof BackendOperationMap,
   args: unknown[],
   error: unknown,
   hooks: HookableCore<BackendHooks>,

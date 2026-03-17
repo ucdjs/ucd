@@ -912,6 +912,58 @@ importers:
         specifier: catalog:build
         version: 5.9.3
 
+  packages/fs-backend:
+    dependencies:
+      '@luxass/utils':
+        specifier: catalog:runtime
+        version: 2.7.3
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
+      '@ucdjs/path-utils':
+        specifier: workspace:*
+        version: link:../path-utils
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      hookable:
+        specifier: catalog:runtime
+        version: 6.0.1
+      zod:
+        specifier: catalog:runtime
+        version: 4.3.6
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.3.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/rule-tester@8.56.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.57.0(typescript@5.9.3))(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.30)(eslint-plugin-format@2.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0)
+      '@luxass/msw-utils':
+        specifier: catalog:runtime
+        version: 0.6.0(msw@2.12.10(@types/node@25.5.0)(typescript@5.9.3))
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:lint
+        version: 10.0.3(jiti@2.6.1)
+      publint:
+        specifier: catalog:build
+        version: 0.3.18
+      tsdown:
+        specifier: catalog:build
+        version: 0.21.2(@vitejs/devtools@0.1.0)(publint@0.3.18)(synckit@0.11.12)(typescript@5.9.3)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+      vitest-testdirs:
+        specifier: catalog:test
+        version: 4.4.3(vitest@4.1.0)
+
   packages/fs-bridge:
     dependencies:
       '@luxass/utils':
@@ -13799,7 +13851,7 @@ snapshots:
       eslint: 10.0.3(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(msw@2.12.10(@types/node@25.5.0)(typescript@5.9.3))(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+      vitest: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@22.19.15)(@vitest/ui@4.1.0)(msw@2.12.10(@types/node@22.19.15)(typescript@5.9.3))(vite@8.0.0)
     transitivePeerDependencies:
       - supports-color
 
