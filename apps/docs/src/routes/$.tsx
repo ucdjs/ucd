@@ -15,7 +15,7 @@ import defaultMdxComponents from "fumadocs-ui/mdx";
 import * as icons from "lucide-react";
 import { Suspense } from "react";
 import { DocsNotFound } from "@/components/not-found";
-import { baseOptions } from "@/lib/docs-layout";
+import { baseOptions, getSection } from "@/lib/docs-layout";
 import { source } from "@/lib/docs-loader";
 
 const serverLoader = createServerFn({
@@ -66,20 +66,6 @@ export const Route = createFileRoute("/$")({
   },
   notFoundComponent: DocsNotFoundBoundary,
 });
-
-function getSection(path: string | undefined) {
-  if (!path) return "general";
-  const [dir] = path.split("/", 1);
-  if (!dir) return "general";
-  return (
-    {
-      "pipelines": "pipelines",
-      "api-reference": "api-reference",
-      "architecture": "architecture",
-      "contributing": "contributing",
-    }[dir] ?? "general"
-  );
-}
 
 function Page() {
   const data = useFumadocsLoader(Route.useLoaderData());

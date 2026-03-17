@@ -28,8 +28,8 @@ export function baseOptions(): BaseLayoutProps & {
           url: "/architecture",
         },
         {
-          title: "API Reference",
-          url: "/api-reference",
+          title: "Packages",
+          url: "/packages",
         },
         {
           title: "Contributing",
@@ -38,4 +38,18 @@ export function baseOptions(): BaseLayoutProps & {
       ],
     },
   };
+}
+
+export function getSection(path: string | undefined) {
+  if (!path) return "general";
+  const [dir] = path.split("/", 1);
+  if (!dir) return "general";
+  return (
+    {
+      pipelines: "pipelines",
+      packages: "packages",
+      architecture: "architecture",
+      contributing: "contributing",
+    }[dir] ?? "general"
+  );
 }

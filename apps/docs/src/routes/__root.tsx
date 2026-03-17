@@ -3,6 +3,7 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
+  useParams,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
@@ -12,7 +13,6 @@ import GLOBAL_CSS_URL from "../globals.css?url";
 export interface AppRouterContext {}
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
-  // notFoundComponent: AppNotFound,
   head: () => ({
     meta: [
       {
@@ -50,12 +50,14 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { _splat } = useParams({ from: "/$" });
+  const dir = _splat?.split("/")[0];
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className={dir}>
         <RootProvider>{children}</RootProvider>
         <TanStackDevtools
           config={{

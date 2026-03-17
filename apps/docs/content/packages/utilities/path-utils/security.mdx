@@ -28,11 +28,11 @@ function resolveSafePath(basePath: string, inputPath: string): string
 
 ### Throws
 
-- [`PathTraversalError`](/api-reference/utilities/path-utils/errors#pathtraversalerror) - If the resolved path would escape the base directory
-- [`WindowsDriveMismatchError`](/api-reference/utilities/path-utils/errors#windowsdrivemismatcherror) - If attempting to access a different drive letter on Windows
-- [`UNCPathNotSupportedError`](/api-reference/utilities/path-utils/errors#uncpathnotsupportederror) - If a UNC path is provided
-- [`IllegalCharacterInPathError`](/api-reference/utilities/path-utils/errors#illegalcharacterinpatherror) - If the path contains null bytes or control characters
-- [`FailedToDecodePathError`](/api-reference/utilities/path-utils/errors#failedtodecodepatherror) - If the path cannot be safely decoded
+- [`PathTraversalError`](/packages/utilities/path-utils/errors#pathtraversalerror) - If the resolved path would escape the base directory
+- [`WindowsDriveMismatchError`](/packages/utilities/path-utils/errors#windowsdrivemismatcherror) - If attempting to access a different drive letter on Windows
+- [`UNCPathNotSupportedError`](/packages/utilities/path-utils/errors#uncpathnotsupportederror) - If a UNC path is provided
+- [`IllegalCharacterInPathError`](/packages/utilities/path-utils/errors#illegalcharacterinpatherror) - If the path contains null bytes or control characters
+- [`FailedToDecodePathError`](/packages/utilities/path-utils/errors#failedtodecodepatherror) - If the path cannot be safely decoded
 
 ### Behavior
 
@@ -147,7 +147,7 @@ function decodePathSafely(encodedPath: string): string
 
 ### Throws
 
-- [`MaximumDecodingIterationsExceededError`](/api-reference/utilities/path-utils/errors#maximumdecodingiterationsexceedederror) - If decoding exceeds 10 iterations (malicious input protection)
+- [`MaximumDecodingIterationsExceededError`](/packages/utilities/path-utils/errors#maximumdecodingiterationsexceedederror) - If decoding exceeds 10 iterations (malicious input protection)
 - `TypeError` - If the input is not a string
 
 ### Behavior

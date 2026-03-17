@@ -1,0 +1,125 @@
+---
+title: Data Flow
+description: End-to-end flow from raw UCD files to client consumption
+---
+
+# Data Flow
+
+This page traces how Unicode data moves through the UCD.js system — from raw files on Unicode.org all the way to a consumer application using the API client.
+
+## Overview
+
+```mermaid
+flowchart TD
+  U["Unicode.org\n(raw UCD files)"]
+
+  subgraph Pipelines["Pipeline Layer"]
+    PS["pipelines-loader\n(discover & load)"]
+    PE["pipelines-executor\n(run routes in DAG order)"]
+    PA["Artifacts\n(processed output)"]
+    PS --> PE --> PA
+  end
+
+  subgraph Storage["Storage Layer"]
+    FB["fs-bridge\n(Node.js / HTTP)"]
+    LF["lockfile\n(.ucd-store.lock + snapshots)"]
+    ST["ucd-store\n(mirror, sync, analyze)"]
+    FB --> LF --> ST
+  end
+
+  subgraph Serving["Serving Layer"]
+    WK[".well-known/ucd-config.json\n(endpoint discovery)"]
+    API["UCD API\n(/files, /versions)"]
+    WK --> API
+  end
+
+  subgraph Consumption["Consumption Layer"]
+    CL["@ucdjs/client\n(auto-discovery)"]
+    APP["Consumer Application"]
+    CL --> APP
+  end
+
+  U --> Pipelines
+  Pipelines --> Storage
+  Storage --> Serving
+  API --> CL
+```
+
+## Step-by-step
+
+### 1. Ingestion
+
+Raw UCD files are fetched from `unicode.org` (or a configured mirror). A pipeline definition specifies a **source** pointing at the remote files and a set of **routes** describing how they should be processed.
+
+```mermaid
+flowchart LR
+  U["Unicode.org"] -->|"HTTP fetch"| SRC["Pipeline Source"]
+  SRC --> R1["Route: filter .txt files"]
+  SRC --> R2["Route: filter PropertyAliases"]
+  R1 --> A1["Artifact: processed data"]
+  R2 --> A2["Artifact: property map"]
+```
+
+Routes form a **directed acyclic graph (DAG)**. The executor resolves the dependency order and runs routes concurrently where possible.
+
+### 2. Storage
+
+Processed artifacts are persisted via `@ucdjs/ucd-store`, which delegates all I/O to an `fs-bridge` implementation. Two bridges exist out of the box:
+
+| Bridge | Usage |
+|---|---|
+| `NodeFSBridge` | Read/write local disk (server-side) |
+| `HTTPFSBridge` | Read-only access over HTTP |
+
+State is tracked in two lockfile artifacts written by `@ucdjs/lockfile`:
+
+- `.ucd-store.lock` — version index listing all mirrored versions
+- `{version}/snapshot.json` — per-version manifest with file hashes
+
+### 3. Serving
+
+The store is served over HTTP. A `.well-known/ucd-config.json` document is published at the API origin to advertise endpoint paths:
+
+```json
+{
+  "version": "0.1",
+  "endpoints": {
+    "files": "/files",
+    "versions": "/versions",
+    "manifest": "/.well-known/ucd-store/{version}.json"
+  }
+}
+```
+
+This allows the server to route API paths however it wants (e.g. behind an edge proxy) without breaking clients.
+
+### 4. Consumption
+
+`@ucdjs/client` fetches `.well-known/ucd-config.json` during initialization and constructs typed resource wrappers from the discovered endpoints.
+
+```mermaid
+flowchart LR
+  A["createUCDClient(origin)"] --> B["GET /.well-known/ucd-config.json"]
+  B --> C["Validate UCDWellKnownConfig"]
+  C --> D["Build resource wrappers"]
+  D --> E["client.files.get(path)"]
+  D --> F["client.versions.list()"]
+  D --> G["client.manifest.get(version)"]
+```
+
+Alternatively, `createUCDClientWithConfig()` skips the discovery request and accepts the config object directly — useful when the endpoint map is known ahead of time or when the `.well-known` endpoint is unavailable.
+
+## Error handling
+
+Resource methods (`client.files.get()`, etc.) always return `{ data, error }` rather than throwing. Only `createUCDClient()` itself can throw — if the `.well-known` document is missing or invalid, there is no safe way to continue.
+
+```typescript
+const { data, error } = await client.versions.list();
+
+if (error) {
+  // error is typed as UCDApiError
+  console.error(error.message);
+} else {
+  console.log(data);
+}
+```
