@@ -7,12 +7,38 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 
 # Packages
 
-The UCD.js monorepo is divided into several packages, each responsible for a specific part of the Unicode data processing and retrieval workflow.
+UCD.js is split into focused packages. Install only what you need.
+
+## Core Packages
 
 <Cards>
-  <Card title="CLI" href="/packages/cli" description="Command-line interface for exploring Unicode data, managing stores, and running pipelines." />
-  <Card title="Client" href="/packages/client" description="A high-level client for fetching and querying Unicode properties." />
-  <Card title="UCD Store" href="/packages/ucd-store" description="Store for managing and mirroring Unicode Character Database files." />
-  <Card title="Schemas" href="/packages/schemas" description="Zod schemas for validating UCD data." />
-  <Card title="FS Bridge" href="/packages/fs-bridge" description="Low-level file system abstraction for local, HTTP, and memory access." />
+  <Card title="CLI" href="/packages/cli" description="Explore Unicode data, manage stores, and run pipelines from the terminal." />
+  <Card title="Client" href="/packages/client" description="Type-safe API client for fetching Unicode data files, versions, and manifests." />
+  <Card title="UCD Store" href="/packages/ucd-store" description="Manage and mirror Unicode Character Database files locally." />
+  <Card title="Schemas" href="/packages/schemas" description="Zod schemas for validating UCD configuration and data shapes." />
 </Cards>
+
+## Utilities
+
+<Cards>
+  <Card title="Utils" href="/packages/utils" description="Curated stable helpers — Unicode version validation, API error guards." />
+  <Card title="Path Utils" href="/packages/path-utils" description="Security-focused path resolution with traversal protection and cross-platform support." />
+  <Card title="Environment" href="/packages/env" description="Shared runtime constants and required-binding validation for UCD.js packages." />
+</Cards>
+
+## Advanced
+
+<Cards>
+  <Card title="FS Bridge" href="/packages/fs-bridge" description="Low-level file system abstraction used internally to support local, HTTP, and in-memory access." />
+</Cards>
+
+## Choosing the right package
+
+| Goal | Package |
+|---|---|
+| Explore Unicode from the terminal | `@ucdjs/cli` |
+| Query Unicode data programmatically | `@ucdjs/client` |
+| Cache and mirror UCD files locally | `@ucdjs/ucd-store` |
+| Validate Unicode versions or API errors | `@ucdjs/utils` |
+| Resolve user-supplied file paths safely | `@ucdjs/path-utils` |
+| Validate UCD data with Zod | `@ucdjs/schemas` |
