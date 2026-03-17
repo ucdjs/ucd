@@ -32,11 +32,6 @@ const config = defineConfig({
       presets: [reactCompilerPreset()],
     }),
   ],
-  resolve: {
-    alias: {
-      "node:path": "pathe",
-    },
-  },
 });
 
 export default config;

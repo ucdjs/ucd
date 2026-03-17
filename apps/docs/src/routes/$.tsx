@@ -25,9 +25,20 @@ const serverLoader = createServerFn({
     const page = source.getPage(slugs);
     if (!page) throw notFound();
 
+    const pageTree = source.getPageTree();
+    const nodeColors: Record<string, string> = {};
+    for (const node of pageTree.children) {
+      if (node.type !== "folder" || !node.$id) continue;
+      const meta = source.getNodeMeta(node);
+      if (meta) {
+        nodeColors[node.$id] = getSection(meta.path);
+      }
+    }
+
     return {
       path: page.path,
-      pageTree: await source.serializePageTree(source.getPageTree()),
+      pageTree: await source.serializePageTree(pageTree),
+      nodeColors,
     };
   });
 
@@ -68,7 +79,8 @@ export const Route = createFileRoute("/$")({
 });
 
 function Page() {
-  const data = useFumadocsLoader(Route.useLoaderData());
+  const loaderData = Route.useLoaderData();
+  const data = useFumadocsLoader(loaderData);
 
   return (
     <DocsLayout
@@ -77,9 +89,10 @@ function Page() {
       sidebar={{
         tabs: {
           transform(option, node) {
-            const meta = source.getNodeMeta(node);
-            if (!meta || !node.icon) return option;
-            const color = `var(--${getSection(meta.path)}-color, var(--color-fd-foreground))`;
+            if (!node.icon) return option;
+            const section = node.$id ? loaderData.nodeColors[node.$id] : undefined;
+            if (!section) return option;
+            const color = `var(--${section}-color, var(--color-fd-foreground))`;
 
             return {
               ...option,
