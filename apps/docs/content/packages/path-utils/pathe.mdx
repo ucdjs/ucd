@@ -1,0 +1,46 @@
+---
+title: Pathe Re-exports
+description: Convenience re-exports of pathe functions
+---
+
+# Pathe Re-exports
+
+`@ucdjs/path-utils` re-exports a subset of [`pathe`](https://github.com/unjs/pathe) functions under namespaced names. These are thin wrappers — no additional logic — provided so callers who already depend on `@ucdjs/path-utils` can avoid adding `pathe` as a separate dependency.
+
+## Exports
+
+| Export | Equivalent | Description |
+|--------|-----------|-------------|
+| `patheBasename` | `pathe.basename` | Returns the last portion of a path |
+| `patheDirname` | `pathe.dirname` | Returns the directory portion of a path |
+| `patheExtname` | `pathe.extname` | Returns the extension of a path |
+| `patheJoin` | `pathe.join` | Joins path segments |
+| `patheNormalize` | `pathe.normalize` | Normalizes a path, resolving `.` and `..` segments |
+| `patheRelative` | `pathe.relative` | Returns the relative path from one path to another |
+| `patheResolve` | `pathe.resolve` | Resolves a sequence of paths into an absolute path |
+
+## Usage
+
+```ts
+import {
+  patheBasename,
+  patheDirname,
+  patheExtname,
+  patheJoin,
+  patheNormalize,
+  patheRelative,
+  patheResolve,
+} from '@ucdjs/path-utils';
+
+patheBasename('/home/user/file.txt');       // 'file.txt'
+patheDirname('/home/user/file.txt');        // '/home/user'
+patheExtname('/home/user/file.txt');        // '.txt'
+patheJoin('/home/user', 'docs/file.txt');   // '/home/user/docs/file.txt'
+patheNormalize('/home/user/../user/docs');  // '/home/user/docs'
+patheRelative('/home/user', '/home/user/docs/file.txt'); // 'docs/file.txt'
+patheResolve('/home/user', 'docs/file.txt'); // '/home/user/docs/file.txt'
+```
+
+:::info
+These functions do **not** perform any security checks. For user-supplied paths, always use [`resolveSafePath`](/packages/path-utils/security#resolvesafepath) instead.
+:::

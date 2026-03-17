@@ -1,0 +1,56 @@
+---
+title: Path Utils
+description: Security-focused path utilities for cross-platform path handling
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+# Path Utils
+
+Security-focused utilities for working with file paths across platforms, with built-in protection against path traversal attacks and malicious inputs.
+
+## Installation
+
+```package-install
+@ucdjs/path-utils
+```
+
+## Security model
+
+All user-supplied paths are treated as untrusted. `resolveSafePath` applies the following pipeline before returning a resolved path:
+
+```
+User input
+    │
+    ▼
+[decodePathSafely]  ← iterative URL decode, max 10 rounds
+    │                  throws: FailedToDecodePathError
+    │                          MaximumDecodingIterationsExceededError
+    ▼
+[illegal-char check]  ← null bytes, Unicode control characters
+    │                   throws: IllegalCharacterInPathError
+    ▼
+[normalize + resolve] ← patheNormalize, virtual-root boundary model
+    │                   absolute paths outside base → treated as relative
+    ▼
+[isWithinBase]  ← containment check (case-sensitive on Linux,
+    │              case-insensitive on Windows/macOS)
+    │              throws: PathTraversalError
+    ▼
+Safe resolved path (platform-native string)
+```
+
+## API Reference
+
+<Cards>
+  <Card title="Security Functions" href="/packages/path-utils/security" description="resolveSafePath, decodePathSafely, isWithinBase" />
+  <Card title="Platform Utilities" href="/packages/path-utils/platform" description="Windows/Unix path utilities and platform detection" />
+  <Card title="Error Classes" href="/packages/path-utils/errors" description="Detailed error types and error handling" />
+  <Card title="Pathe Re-exports" href="/packages/path-utils/pathe" description="Convenience re-exports of pathe functions" />
+  <Card title="Examples" href="/packages/path-utils/examples" description="Real-world usage examples and patterns" />
+</Cards>
+
+## Known limitations
+
+- **Case sensitivity**: Containment checks use OS-level detection (`isCaseSensitive = true` on Linux, `false` on Windows/macOS). This does not account for per-filesystem configuration (e.g. a case-insensitive ext4 mount on Linux, or a case-sensitive APFS volume on macOS). This is a known, accepted limitation.
+- **Spaced traversal sequences**: `.. /etc/passwd` (a space between `..` and `/`) is not detected as a traversal attempt, as it does not normalize to a directory traversal sequence.

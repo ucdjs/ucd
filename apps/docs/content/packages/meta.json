@@ -8,8 +8,12 @@
     "client",
     "ucd-store",
     "schemas",
-    "utilities",
+    "schema-gen",
     "fs-bridge",
-    "cli"
+    "cli",
+    "---Utilities---",
+    "path-utils",
+    "env",
+    "utils"
   ]
 }

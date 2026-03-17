@@ -75,7 +75,7 @@ import { resolveSafePath, PathTraversalError } from '@ucdjs/path-utils';
 try {
   resolveSafePath('/var/www/html', '../../etc/passwd');
 } catch (err) {
-  if (error instanceof PathTraversalError) {
+  if (err instanceof PathTraversalError) {
     console.error(`Traversal attempt detected!`);
     console.error(`Base: ${err.basePath}`);
     console.error(`Attempted: ${err.accessedPath}`);
