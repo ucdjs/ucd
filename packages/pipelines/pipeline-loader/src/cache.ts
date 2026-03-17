@@ -1,6 +1,6 @@
 import { readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { getUcdConfigPath } from "@ucdjs-internal/shared/config";
+import { getUcdConfigPath } from "@ucdjs/env";
 
 type RemoteProvider = "github" | "gitlab";
 

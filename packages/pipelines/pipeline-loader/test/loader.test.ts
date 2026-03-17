@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { loadPipelineFile, loadPipelinesFromPaths } from "../src/loader";
 
-vi.mock("@ucdjs-internal/shared/config", async () => {
-  const actual = await vi.importActual("@ucdjs-internal/shared/config");
+vi.mock("@ucdjs/env", async () => {
+  const actual = await vi.importActual("@ucdjs/env");
   return {
     ...actual,
     getUcdConfigPath: vi.fn(),

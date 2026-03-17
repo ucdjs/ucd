@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "nanotar": "catalog:build",
     "rolldown": "catalog:build",

@@ -44,6 +44,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
+    "pathe": "catalog:runtime",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build"

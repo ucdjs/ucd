@@ -1,5 +1,7 @@
 import { join } from "pathe";
-import { env } from "std-env";
+
+// eslint-disable-next-line node/prefer-global/process
+const env = typeof process === "undefined" ? {} : process.env;
 
 function homedir(): string {
   const home = env.HOME;

@@ -20,7 +20,6 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./config": "./dist/config.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -51,21 +50,14 @@
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "@ucdjs/env": "workspace:*",
     "eslint": "catalog:lint",
-    "pathe": "catalog:runtime",
     "publint": "catalog:build",
     "rolldown": "catalog:build",
-    "std-env": "catalog:runtime",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "inlinedDependencies": {
-    "pathe": "2.0.3",
-    "std-env": "4.0.0"
   }
 }

@@ -65,6 +65,7 @@
     "@tanstack/react-router-devtools": "catalog:frontend",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/shared-ui": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
     "@ucdjs/pipelines-loader": "workspace:*",

@@ -1,7 +1,7 @@
 import type { Plugin } from "vite";
 import type { Database } from "../src/server/db";
 import fs from "node:fs/promises";
-import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
+import { getUcdConfigDir } from "@ucdjs/env";
 import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";

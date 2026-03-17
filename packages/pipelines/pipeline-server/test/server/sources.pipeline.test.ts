@@ -3,15 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createTestRoutesApp } from "./helpers";
 
-vi.mock("@ucdjs-internal/shared/config", async () => {
-  const actual = await vi.importActual("@ucdjs-internal/shared/config");
+vi.mock("@ucdjs/env", async () => {
+  const actual = await vi.importActual("@ucdjs/env");
   return {
     ...actual,
     getUcdConfigPath: vi.fn(),
   };
 });
 
-const getUcdConfigPathMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getUcdConfigPath;
+const getUcdConfigPathMock = vi.mocked(await import("@ucdjs/env")).getUcdConfigPath;
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => {

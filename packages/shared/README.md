@@ -27,14 +27,14 @@ npm install @ucdjs-internal/shared
 - File tree helpers
 - Path filtering and glob helpers
 - API guards and Unicode version helpers
-- Config-path helpers under `@ucdjs-internal/shared/config`
 
 ## Package boundary
 
 > [!IMPORTANT]
 > Use `@ucdjs/utils` for stable consumer-facing helpers.
+> Use `@ucdjs/env` for config-path utilities (`getUcdConfigDir`, `getUcdConfigPath`).
 >
-> Keep infrastructure-heavy helpers here for now, especially `customFetch`, `createDebugger`, and config-path utilities.
+> Keep infrastructure-heavy helpers here for now, especially `customFetch` and `createDebugger`.
 >
 > Do not treat this package as a broad public API contract.
 

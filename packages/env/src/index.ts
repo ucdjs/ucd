@@ -1,4 +1,10 @@
 export {
+  getUcdConfigDir,
+  getUcdConfigPath,
+  getXdgConfigDir,
+} from "./config";
+
+export {
   UCD_STAT_CHILDREN_DIRS_HEADER,
   UCD_STAT_CHILDREN_FILES_HEADER,
   UCD_STAT_CHILDREN_HEADER,
