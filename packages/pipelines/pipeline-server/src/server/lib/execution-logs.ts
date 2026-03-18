@@ -110,6 +110,12 @@ export async function storeExecutionLog(
   const overflowed = messageBytes > remaining && !options.force;
   const truncated = line.truncated || overflowed;
 
+  // Keep payload.message in sync with the truncated DB message column.
+  // options.payload.message is the original (untruncated) string; storing it
+  // in the JSON payload would bypass the per-line / per-execution size limits
+  // and can result in multi-hundred-MB payload blobs.
+  payload.message = finalMessage;
+
   state.originalBytes += line.originalBytes;
   state.capturedBytes += finalBytes;
   state.truncated = state.truncated || truncated || state.capturedBytes >= MAX_TOTAL_BYTES;
