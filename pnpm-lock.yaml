@@ -239,9 +239,6 @@ catalogs:
     apache-autoindex-parse:
       specifier: 5.0.2
       version: 5.0.2
-    cac:
-      specifier: 7.0.0
-      version: 7.0.0
     defu:
       specifier: 6.1.4
       version: 6.1.4
@@ -357,7 +354,7 @@ importers:
         version: 0.1.0-beta.61
       '@ucdjs/ucdjs-scripts':
         specifier: workspace:*
-        version: link:packages/ucdjs-scripts
+        version: link:scripts
       '@vitest/coverage-istanbul':
         specifier: catalog:test
         version: 4.1.0(vitest@4.1.0)
@@ -1817,55 +1814,6 @@ importers:
         specifier: catalog:test
         version: 4.4.3(vitest@4.1.0)
 
-  packages/ucdjs-scripts:
-    dependencies:
-      '@ucdjs-internal/shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@ucdjs/client':
-        specifier: workspace:*
-        version: link:../client
-      '@ucdjs/schemas':
-        specifier: workspace:*
-        version: link:../schemas
-      '@unicode-utils/core':
-        specifier: catalog:runtime
-        version: 0.12.0-beta.23
-      apache-autoindex-parse:
-        specifier: catalog:runtime
-        version: 5.0.2
-      cac:
-        specifier: catalog:runtime
-        version: 7.0.0
-      nanotar:
-        specifier: catalog:build
-        version: 0.3.0
-      wrangler:
-        specifier: 4.73.0
-        version: 4.73.0(@cloudflare/workers-types@4.20260313.1)
-    devDependencies:
-      '@luxass/eslint-config':
-        specifier: catalog:lint
-        version: 7.3.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/rule-tester@8.56.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.57.0(typescript@5.9.3))(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.30)(eslint-plugin-format@2.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0)
-      '@types/node':
-        specifier: catalog:types
-        version: 22.19.15
-      '@ucdjs-tooling/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@ucdjs-tooling/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
-      eslint:
-        specifier: catalog:lint
-        version: 10.0.3(jiti@2.6.1)
-      tsdown:
-        specifier: catalog:build
-        version: 0.21.2(@vitejs/devtools@0.1.0)(publint@0.3.18)(synckit@0.11.12)(typescript@5.9.3)
-      typescript:
-        specifier: catalog:build
-        version: 5.9.3
-
   packages/utils:
     dependencies:
       '@ucdjs-internal/shared':
@@ -1939,6 +1887,52 @@ importers:
       zod:
         specifier: catalog:runtime
         version: 4.3.6
+
+  scripts:
+    dependencies:
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
+      '@ucdjs/client':
+        specifier: workspace:*
+        version: link:../packages/client
+      '@ucdjs/moonbeam':
+        specifier: workspace:*
+        version: link:../tooling/moonbeam
+      '@ucdjs/release-scripts':
+        specifier: catalog:build
+        version: 0.1.0-beta.60
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../packages/schemas
+      '@unicode-utils/core':
+        specifier: catalog:runtime
+        version: 0.12.0-beta.23
+      apache-autoindex-parse:
+        specifier: catalog:runtime
+        version: 5.0.2
+      nanotar:
+        specifier: catalog:build
+        version: 0.3.0
+      wrangler:
+        specifier: 4.73.0
+        version: 4.73.0(@cloudflare/workers-types@4.20260313.1)
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.3.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/rule-tester@8.56.1(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@typescript-eslint/typescript-estree@8.57.0(typescript@5.9.3))(@typescript-eslint/utils@8.57.0(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.30)(eslint-plugin-format@2.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.3(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.0.3(jiti@2.6.1)))(eslint@10.0.3(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0)
+      '@types/node':
+        specifier: catalog:types
+        version: 22.19.15
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../tooling/tsconfig
+      eslint:
+        specifier: catalog:lint
+        version: 10.0.3(jiti@2.6.1)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
 
   tooling/eslint-plugin:
     devDependencies:
@@ -13100,7 +13094,7 @@ snapshots:
 
   '@types/ws@8.18.1':
     dependencies:
-      '@types/node': 22.19.15
+      '@types/node': 25.5.0
 
   '@types/yargs-parser@21.0.3': {}
 

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@ucdjs-tooling/tsconfig/base.build",
+  "compilerOptions": {
+    "rootDir": ".",
+    "maxNodeModuleJsDepth": 0
+  },
+  "include": [
+    "./src/**/*.js"
+  ],
+  "exclude": [
+    "./node_modules/",
+    "./dist/",
+    "./eslint.config.js"
+  ]
+}
