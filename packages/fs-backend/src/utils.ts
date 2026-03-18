@@ -1,8 +1,8 @@
 import type { HookableCore } from "hookable";
 import type {
   BackendEntry,
-  BackendStat,
   BackendHooks,
+  BackendStat,
   CopyOptions,
   FileSystemBackendFeature,
   FileSystemBackendMutableOperations,
@@ -181,7 +181,7 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
   const operation = operations[operationName];
 
   if (operation == null || typeof operation !== "function") {
-    const unsupportedOperation = async (...args: unknown[]) => {
+    const unsupportedOperation = async (...args: unknown[]): Promise<never> => {
       const error = new BackendUnsupportedOperation(operationName as FileSystemBackendFeature);
 
       await hooks.callHook("error", {
@@ -196,7 +196,7 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
     return unsupportedOperation as NonNullable<BackendOperationMap[T]>;
   }
 
-  const wrappedOperation = async (...args: unknown[]) => {
+  const wrappedOperation = async (...args: unknown[]): Promise<unknown> => {
     try {
       const beforePayload = getPayloadForHook(operationName, "before", args);
       await callBackendHook(hooks, `${operationName}:before` as HookKey, beforePayload);
