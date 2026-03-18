@@ -51,5 +51,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "inlinedDependencies": {
+    "pathe": "2.0.3"
   }
 }
