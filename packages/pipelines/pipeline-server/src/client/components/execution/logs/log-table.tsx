@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import type { ExecutionLogItem } from "#shared/schemas/execution";
-=======
-import type { ExecutionLogItem } from "#shared/types";
->>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
 import { formatTimestamp } from "#lib/format";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/ui/table";
@@ -90,21 +86,13 @@ export function ExecutionLogTable({ logs }: ExecutionLogTableProps) {
                   <TableRow
                     className={cn(
                       "cursor-pointer",
-<<<<<<< HEAD
                       log.payload ? LOG_LEVEL_ROW[log.payload.level] : log.stream === "stderr" && "bg-red-500/5",
-=======
-                      log.payload?.level ? LOG_LEVEL_ROW[log.payload.level] : log.stream === "stderr" && "bg-red-500/5",
->>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
                       isExpanded && "bg-muted",
                     )}
                     onClick={() => handleToggle(log.id)}
                   >
                     <TableCell>
-<<<<<<< HEAD
                       <span className={cn("block h-6 w-1 rounded-full", log.payload ? LOG_LEVEL_BAR[log.payload.level] : log.stream === "stderr" ? "bg-red-500" : "bg-sky-500")} />
-=======
-                      <span className={cn("block h-6 w-1 rounded-full", log.payload?.level ? LOG_LEVEL_BAR[log.payload.level] : log.stream === "stderr" ? "bg-red-500" : "bg-sky-500")} />
->>>>>>> 2cb96a13 (Bootstrap fs-backend package and execution log UI)
                     </TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">
                       {formatTimestamp(log.timestamp)}
