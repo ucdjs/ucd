@@ -1,37 +1,28 @@
 import type { ExecutionSpan } from "#lib/execution-utils";
 import { StatusBadge, StatusIcon } from "#components/execution/execution-status";
-import { ExecutionLogTable } from "#components/execution/logs/log-table";
+import { LogsErrorBoundary } from "#components/execution/logs/logs-error-boundary";
+import { ExecutionLogsViewer } from "#components/execution/logs/logs-wrapper";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";
-import { formatBytes } from "#lib/format";
-import { executionEventsQueryOptions, executionLogsQueryOptions } from "#queries/execution";
+import { executionEventsQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/")({
   loader: async ({ context, params }) => {
     try {
-      await Promise.all([
-        context.queryClient.ensureQueryData(executionEventsQueryOptions({
-          sourceId: params.sourceId,
-          fileId: params.sourceFileId,
-          pipelineId: params.pipelineId,
-          executionId: params.executionId,
-          limit: 500,
-        })),
-        context.queryClient.ensureQueryData(executionLogsQueryOptions({
-          sourceId: params.sourceId,
-          fileId: params.sourceFileId,
-          pipelineId: params.pipelineId,
-          executionId: params.executionId,
-          limit: 500,
-        })),
-      ]);
+      await context.queryClient.ensureQueryData(executionEventsQueryOptions({
+        sourceId: params.sourceId,
+        fileId: params.sourceFileId,
+        pipelineId: params.pipelineId,
+        executionId: params.executionId,
+        limit: 500,
+      }));
     } catch (error) {
       if (isNotFoundError(error)) {
         throw notFound();
@@ -52,13 +43,6 @@ function ExecutionDetailPage() {
     executionId,
     limit: 500,
   }));
-  const { data: logsData } = useSuspenseQuery(executionLogsQueryOptions({
-    sourceId,
-    fileId: sourceFileId,
-    pipelineId,
-    executionId,
-    limit: 500,
-  }));
 
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
   const [activeSpan, setActiveSpan] = useState<ExecutionSpan | null>(null);
@@ -67,12 +51,6 @@ function ExecutionDetailPage() {
     .map((event) => event.data)
     .filter((event) => event != null);
   const spans = useMemo(() => buildExecutionSpans(events), [events]);
-
-  const filteredLogs = useMemo(() => {
-    const logs = logsData.logs.filter((log) => !log.payload?.isBanner);
-    if (!selectedSpanId) return logs;
-    return logs.filter((log) => log.spanId === selectedSpanId);
-  }, [logsData.logs, selectedSpanId]);
 
   function handleSpanSelect(spanId: string | null) {
     setSelectedSpanId(spanId);
@@ -130,7 +108,6 @@ function ExecutionDetailPage() {
                   <Link
                     to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
                     params={{ sourceId, sourceFileId, pipelineId, executionId }}
-
                     {...props}
                   >
                   </Link>
@@ -145,7 +122,6 @@ function ExecutionDetailPage() {
       </div>
 
       <div className="p-6 space-y-6">
-
         <section className="space-y-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
@@ -176,23 +152,17 @@ function ExecutionDetailPage() {
                 : "Showing all captured logs for this execution."}
             </p>
           </div>
-          {logsData.truncated && (
-            <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-300">
-              <span className="shrink-0 font-semibold">Logs truncated</span>
-              <span className="text-amber-700 dark:text-amber-400">
-                Captured
-                {" "}
-                {formatBytes(logsData.capturedSize)}
-                {" "}
-                of
-                {" "}
-                {formatBytes(logsData.originalSize)}
-                {" "}
-                — some log entries were dropped.
-              </span>
-            </div>
-          )}
-          <ExecutionLogTable logs={filteredLogs} />
+          <LogsErrorBoundary>
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading logs…</div>}>
+              <ExecutionLogsViewer
+                sourceId={sourceId}
+                sourceFileId={sourceFileId}
+                pipelineId={pipelineId}
+                executionId={executionId}
+                selectedSpanId={selectedSpanId}
+              />
+            </Suspense>
+          </LogsErrorBoundary>
         </section>
       </div>
 

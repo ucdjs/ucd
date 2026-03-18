@@ -82,8 +82,11 @@ sourcesLogsRouter.get(
 
     const sampleCount = Number(sampleRows[0]?.sampleCount ?? 0);
     const samplePayloadSize = Number(sampleRows[0]?.samplePayloadSize ?? 0);
-    const avgPayloadSize = sampleCount > 0 ? samplePayloadSize / sampleCount : 0;
-    const estimatedPagePayloadSize = Math.ceil(avgPayloadSize * limit);
+    // If we got fewer rows than PAYLOAD_SAMPLE_SIZE, we've seen every row —
+    // use the actual total directly instead of extrapolating to `limit`.
+    const estimatedPagePayloadSize = sampleCount < PAYLOAD_SAMPLE_SIZE
+      ? samplePayloadSize
+      : Math.ceil((samplePayloadSize / sampleCount) * limit);
 
     if (estimatedPagePayloadSize > MAX_PAGE_PAYLOAD_BYTES) {
       throw HTTPError.status(
