@@ -2,8 +2,8 @@ import type { BackendEntry, BackendStat } from "../types";
 import { joinURL } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
-import { FileEntrySchema } from "@ucdjs/schemas";
 import { resolveSafePath } from "@ucdjs/path-utils";
+import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineBackend } from "../define";
 

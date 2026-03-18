@@ -6,7 +6,7 @@ describe("node backend", () => {
   it("lists files with canonical paths", async () => {
     const dir = await testdir({
       "foo.txt": "hello",
-      nested: {
+      "nested": {
         "bar.txt": "world",
       },
     });
