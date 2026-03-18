@@ -23,6 +23,7 @@ packages/fs-backend/test/
 ├── define.test.ts        — factory: options validation, feature inference, hook wiring, setup errors
 ├── node.test.ts          — node backend: all 6 ops against real FS (vitest-testdirs)
 ├── http.test.ts          — http backend: read/list/exists against MSW mocks
+├── parity.test.ts        — shared read-only contract asserted against node + http
 ├── guards.test.ts        — hasFeature, isHttpBackend, assertFeature
 └── security.test.ts      — path traversal, encoded paths, boundary enforcement (node backend)
 ```
@@ -66,19 +67,30 @@ const backend = NodeBackend({ basePath: dir });
 ### http.test.ts (uses MSW via `mockFetch`)
 
 ```ts
-const backend = HttpBackend({ baseUrl: new URL("https://test.example.com") });
+const backend = HttpBackend({ baseUrl: new URL("https://ucdjs.dev") });
 ```
 
 - `read("/file.txt")` — GET returns 200 text → content returned
 - `read("/file.txt")` — GET returns 404 → throws `BackendFileNotFound`
 - `read("/file.txt")` — GET returns 500 → throws `BackendError`
 - `list("/")` — GET returns valid JSON `BackendEntry[]` → entries returned
-- `list("/")` — GET returns 404/403 → returns `[]`
+- `list("/")` — GET returns 404 → throws `BackendFileNotFound`
+- `list("/")` — GET returns 403 → throws backend error
 - `exists("/file.txt")` — HEAD returns 200 → `true`
 - `exists("/missing.txt")` — HEAD returns 404 → `false`
+- `stat("/file.txt")` — HEAD infers type from `X-UCD-Stat-Type`
 - `features` set is empty (no write/mkdir/remove)
 - `isHttpBackend(backend)` → `true`
 - `isHttpBackend(NodeBackend({ basePath: "/" }))` → `false`
+
+### parity.test.ts
+
+- Run the same read-only expectations against node and http backends
+- Lock down shared semantics for:
+  - `read`, `readBytes`, `list`, `exists`, `stat`
+  - missing-path behavior
+  - directory read behavior
+  - recursive listing shape and ordering
 
 ### guards.test.ts
 

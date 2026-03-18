@@ -1,5 +1,6 @@
 import type { BackendEntry } from "../src";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import HTTPFileSystemBackend from "../src/backends/http";
 import NodeFileSystemBackend from "../src/backends/node";
@@ -50,11 +51,11 @@ describe("http backend", () => {
 
   it("lists valid BackendEntry responses", async () => {
     const entries = [
-      { type: "file", name: "foo.txt", path: "/foo.txt", lastModified: Date.now() },
-      { type: "directory", name: "nested", path: "/nested/", lastModified: Date.now() },
+      { type: "directory", name: "nested", path: "/nested/" },
+      { type: "file", name: "foo.txt", path: "/foo.txt" },
     ] satisfies Array<
-      | { type: "file"; name: string; path: string; lastModified: number }
-      | { type: "directory"; name: string; path: string; lastModified: number }
+      | { type: "file"; name: string; path: string }
+      | { type: "directory"; name: string; path: string }
     >;
 
     mockFetch([
@@ -71,11 +72,11 @@ describe("http backend", () => {
   it("lists recursively by following directory entries", async () => {
     mockFetch([
       ["GET", "https://ucdjs.dev/dir", () => HttpResponse.json([
-        { type: "file", name: "foo.txt", path: "/dir/foo.txt", lastModified: Date.now() },
-        { type: "directory", name: "nested", path: "/dir/nested/", lastModified: Date.now() },
+        { type: "directory", name: "nested", path: "/dir/nested/" },
+        { type: "file", name: "foo.txt", path: "/dir/foo.txt" },
       ])],
       ["GET", "https://ucdjs.dev/dir/nested", () => HttpResponse.json([
-        { type: "file", name: "bar.txt", path: "/dir/nested/bar.txt", lastModified: Date.now() },
+        { type: "file", name: "bar.txt", path: "/dir/nested/bar.txt" },
       ])],
     ]);
 
@@ -93,15 +94,22 @@ describe("http backend", () => {
     ]);
   });
 
-  it("returns an empty array for 404 and 403 list responses", async () => {
+  it("throws BackendFileNotFound for missing list responses", async () => {
     mockFetch([
       ["GET", "https://ucdjs.dev/missing", () => new HttpResponse(null, { status: 404 })],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    await expect(backend.list("/missing")).rejects.toThrow(BackendFileNotFound);
+  });
+
+  it("throws for forbidden list responses", async () => {
+    mockFetch([
       ["GET", "https://ucdjs.dev/forbidden", () => new HttpResponse(null, { status: 403 })],
     ]);
 
     const backend = HTTPFileSystemBackend({ baseUrl });
-    await expect(backend.list("/missing")).resolves.toEqual([]);
-    await expect(backend.list("/forbidden")).resolves.toEqual([]);
+    await expect(backend.list("/forbidden")).rejects.toThrow("Failed to list directory");
   });
 
   it("checks existence via HEAD", async () => {
@@ -125,7 +133,8 @@ describe("http backend", () => {
         new HttpResponse(null, {
           status: 200,
           headers: {
-            "content-length": "3",
+            [UCD_STAT_SIZE_HEADER]: "3",
+            [UCD_STAT_TYPE_HEADER]: "file",
             "last-modified": "Tue, 17 Mar 2026 10:00:00 GMT",
           },
         })],
@@ -136,6 +145,24 @@ describe("http backend", () => {
     await expect(backend.stat("/file.bin")).resolves.toMatchObject({
       type: "file",
       size: 3,
+    });
+  });
+
+  it("infers directory stat type from the metadata header", async () => {
+    mockFetch([
+      ["HEAD", "https://ucdjs.dev/dir", () =>
+        new HttpResponse(null, {
+          status: 200,
+          headers: {
+            [UCD_STAT_TYPE_HEADER]: "directory",
+          },
+        })],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    await expect(backend.stat("/dir")).resolves.toMatchObject({
+      type: "directory",
+      size: 0,
     });
   });
 

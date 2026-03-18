@@ -11,13 +11,15 @@ Replaces `@ucdjs/fs-bridge` as the single filesystem abstraction for the entire 
 
 ## Operations
 
-Three required, three optional:
+Five required, four optional:
 
 ```ts
 interface FileSystemBackendOperations {
   read(path: string): Promise<string>;
+  readBytes(path: string): Promise<Uint8Array>;
   list(path: string, options?: ListOptions): Promise<BackendEntry[]>;
   exists(path: string): Promise<boolean>;
+  stat(path: string): Promise<BackendStat>;
 }
 
 interface ListOptions {
@@ -28,6 +30,7 @@ interface FileSystemBackendMutableOperations {
   write?(path: string, data: string | Uint8Array): Promise<void>;
   mkdir?(path: string): Promise<void>;
   remove?(path: string, options?: RemoveOptions): Promise<void>;
+  copy?(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
 }
 
 interface RemoveOptions {
@@ -36,10 +39,12 @@ interface RemoveOptions {
 }
 ```
 
-**Naming rationale:**
+**Notes:**
 - `list` not `listdir` — generic listing, not a POSIX syscall name
 - `remove` not `rm` — readable English, no UNIX shorthand
 - `write(path, data)` — no `encoding` param; convert before calling if needed
+- `exists(path)` is intentionally lossy. Backends may return `false` both for "missing"
+  and for "could not determine existence". Use `stat()` when callers need error detail.
 
 ## Entry Type
 
@@ -151,10 +156,11 @@ function assertFeature(backend: FileSystemBackend, feature: BackendFeature): ass
 
 ### HTTP (`src/backends/http.ts`)
 - Options: `{ baseUrl: URL }`
-- Read-only: `read`, `list`, `exists` only
+- Read-only: `read`, `readBytes`, `list`, `exists`, `stat`
 - Identity via `kHttpBackendSymbol`
 - `list()` expects JSON `BackendEntry[]` response
 - `exists()` uses HEAD request with fallback
+- `stat()` infers type from `X-UCD-Stat-Type` when available
 
 ## Package Structure
 

@@ -27,6 +27,18 @@ function normalizeReadError(path: string, error: unknown): never {
   throw error;
 }
 
+function normalizeListError(path: string, error: unknown): never {
+  if (isNodeErrorWithCode(error, "ENOENT")) {
+    throw new BackendFileNotFound(path);
+  }
+
+  if (isNodeErrorWithCode(error, "ENOTDIR")) {
+    throw new BackendEntryIsDirectory(path);
+  }
+
+  throw error;
+}
+
 async function safeExists(path: string): Promise<boolean> {
   try {
     await fsp.stat(path);
@@ -75,7 +87,8 @@ const NodeFileSystemBackend = defineBackend({
         const targetPath = resolveSafePath(basePath, path);
 
         if (!recursive) {
-          const entries = await fsp.readdir(targetPath, { withFileTypes: true });
+          const entries = await fsp.readdir(targetPath, { withFileTypes: true })
+            .catch((error: unknown) => normalizeListError(path, error));
           return sortEntries(entries.map((entry) => {
             const absEntryPath = nodePath.join(targetPath, entry.name);
             const relToBase = nodePath.relative(basePath, absEntryPath);
@@ -83,7 +96,8 @@ const NodeFileSystemBackend = defineBackend({
           }));
         }
 
-        const allEntries = await fsp.readdir(targetPath, { withFileTypes: true, recursive: true });
+        const allEntries = await fsp.readdir(targetPath, { withFileTypes: true, recursive: true })
+          .catch((error: unknown) => normalizeListError(path, error));
 
         const entryMap = new Map<string, BackendEntry>();
         const rootEntries: BackendEntry[] = [];

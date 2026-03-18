@@ -1,17 +1,38 @@
 import type { BackendEntry, BackendStat } from "../types";
 import { joinURL } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
+import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER, UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { resolveSafePath } from "@ucdjs/path-utils";
 import { BackendEntryListSchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineBackend } from "../define";
 import { BackendFileNotFound } from "../errors";
-import { assertFilePath } from "../utils";
+import { assertFilePath, sortEntries } from "../utils";
 
 const debug = createDebugger("ucdjs:fs-backend:http");
 
 export const kHttpBackendSymbol = Symbol.for("@ucdjs/fs-backend:http");
+
+function getBackendStatType(headers: Headers, fallbackPath: string): BackendStat["type"] {
+  const typeHeader = headers.get(UCD_STAT_TYPE_HEADER);
+
+  if (typeHeader === "file" || typeHeader === "directory") {
+    return typeHeader;
+  }
+
+  return fallbackPath.endsWith("/") ? "directory" : "file";
+}
+
+function getBackendStatSize(headers: Headers): number {
+  const sizeHeader = headers.get(UCD_STAT_SIZE_HEADER) ?? headers.get("content-length");
+
+  if (sizeHeader == null) {
+    return 0;
+  }
+
+  const parsed = Number.parseInt(sizeHeader, 10);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
 
 const API_BASE_URL_SCHEMA = z.union([
   z.url({
@@ -92,8 +113,8 @@ const HTTPFileSystemBackend = defineBackend({
         });
 
         if (!response.ok) {
-          if (response.status === 404 || response.status === 403) {
-            return [];
+          if (response.status === 404) {
+            throw new BackendFileNotFound(path);
           }
 
           throw new Error(`Failed to list directory: ${response.statusText} (${response.status})`);
@@ -109,7 +130,7 @@ const HTTPFileSystemBackend = defineBackend({
         const data = result.data;
 
         if (!recursive) {
-          return data.map((entry) =>
+          return sortEntries(data.map((entry) =>
             entry.type === "directory"
               ? {
                   type: "directory" as const,
@@ -121,7 +142,7 @@ const HTTPFileSystemBackend = defineBackend({
                   type: "file" as const,
                   name: entry.name,
                   path: entry.path,
-                });
+                }));
         }
 
         const entries: BackendEntry[] = [];
@@ -145,7 +166,7 @@ const HTTPFileSystemBackend = defineBackend({
           });
         }
 
-        return entries;
+        return sortEntries(entries);
       },
       async exists(path) {
         const url = joinURL(
@@ -183,12 +204,11 @@ const HTTPFileSystemBackend = defineBackend({
           throw new Error(`Failed to stat remote path: ${response.statusText} (${response.status})`);
         }
 
-        const contentLength = response.headers.get("content-length");
         const lastModified = response.headers.get("last-modified");
 
         const stat: BackendStat = {
-          type: path.endsWith("/") ? "directory" : "file",
-          size: contentLength ? Number.parseInt(contentLength, 10) : 0,
+          type: getBackendStatType(response.headers, path),
+          size: getBackendStatSize(response.headers),
           mtime: lastModified ? new Date(lastModified) : undefined,
         };
 

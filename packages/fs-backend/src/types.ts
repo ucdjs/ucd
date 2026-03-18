@@ -28,6 +28,13 @@ export interface FileSystemBackendOperations {
   read: (path: string) => Promise<string>;
   readBytes: (path: string) => Promise<Uint8Array>;
   list: (path: string, options?: ListOptions) => Promise<BackendEntry[]>;
+  /**
+   * Best-effort existence check.
+   *
+   * Backends may collapse "missing" and "could not determine existence" into
+   * `false`, especially for remote transports. Use `stat()` when you need
+   * error details instead of a lossy boolean.
+   */
   exists: (path: string) => Promise<boolean>;
   stat: (path: string) => Promise<BackendStat>;
 }
