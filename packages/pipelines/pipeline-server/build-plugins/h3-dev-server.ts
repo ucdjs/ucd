@@ -89,8 +89,7 @@ export function h3DevServerPlugin(): Plugin {
 
           if (response.body) {
             Readable.fromWeb(response.body as Parameters<typeof Readable.fromWeb>[0]).pipe(res);
-          }
-          else {
+          } else {
             res.end();
           }
         } catch (err) {
