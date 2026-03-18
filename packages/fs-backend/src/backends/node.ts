@@ -2,17 +2,29 @@ import type { Dirent } from "node:fs";
 import type { BackendEntry, BackendStat } from "../types";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
-import { appendTrailingSlash, prependLeadingSlash } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertNotUNCPath, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import { defineBackend } from "../define";
+import { BackendEntryIsDirectory, BackendFileNotFound } from "../errors";
+import { assertFilePath, normalizeEntryPath, normalizePathSeparators, sortEntries } from "../utils";
 
 const debug = createDebugger("ucdjs:fs-backend:node");
-const BACKSLASH_RE = /\\/g;
 
-function normalizePathSeparators(path: string): string {
-  return path.replace(BACKSLASH_RE, "/");
+function isNodeErrorWithCode(error: unknown, code: string): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error && error.code === code;
+}
+
+function normalizeReadError(path: string, error: unknown): never {
+  if (isNodeErrorWithCode(error, "ENOENT")) {
+    throw new BackendFileNotFound(path);
+  }
+
+  if (isNodeErrorWithCode(error, "EISDIR")) {
+    throw new BackendEntryIsDirectory(path);
+  }
+
+  throw error;
 }
 
 async function safeExists(path: string): Promise<boolean> {
@@ -38,35 +50,25 @@ const NodeFileSystemBackend = defineBackend({
 
     const basePath = nodePath.resolve(options.basePath);
 
-    function formatEntryPath(relativeToRoot: string, isDirectory: boolean): string {
-      const withLeadingSlash = prependLeadingSlash(relativeToRoot);
-      return isDirectory ? appendTrailingSlash(withLeadingSlash) : withLeadingSlash;
-    }
-
     function createBackendEntry(entry: Dirent, relativeToRoot: string): BackendEntry {
-      const formattedPath = formatEntryPath(relativeToRoot, entry.isDirectory());
-
       return entry.isDirectory()
-        ? { type: "directory", name: entry.name, path: formattedPath, children: [] }
-        : { type: "file", name: entry.name, path: formattedPath };
+        ? { type: "directory", name: entry.name, path: normalizeEntryPath(relativeToRoot, "directory"), children: [] }
+        : { type: "file", name: entry.name, path: normalizeEntryPath(relativeToRoot, "file") };
     }
 
     return {
       async read(path) {
-        const trimmedPath = path.trim();
-        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
-          throw new Error("Cannot read file: path ends with '/'");
-        }
+        assertFilePath(path);
 
-        return fsp.readFile(resolveSafePath(basePath, path), "utf-8");
+        return fsp.readFile(resolveSafePath(basePath, path), "utf-8")
+          .catch((error: unknown) => normalizeReadError(path, error));
       },
       async readBytes(path) {
-        const trimmedPath = path.trim();
-        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
-          throw new Error("Cannot read file: path ends with '/'");
-        }
+        assertFilePath(path);
 
-        return fsp.readFile(resolveSafePath(basePath, path));
+        return fsp.readFile(resolveSafePath(basePath, path))
+          .then((data) => new Uint8Array(data))
+          .catch((error: unknown) => normalizeReadError(path, error));
       },
       async list(path, options) {
         const recursive = options?.recursive ?? false;
@@ -74,11 +76,11 @@ const NodeFileSystemBackend = defineBackend({
 
         if (!recursive) {
           const entries = await fsp.readdir(targetPath, { withFileTypes: true });
-          return entries.map((entry) => {
+          return sortEntries(entries.map((entry) => {
             const absEntryPath = nodePath.join(targetPath, entry.name);
             const relToBase = nodePath.relative(basePath, absEntryPath);
             return createBackendEntry(entry, normalizePathSeparators(relToBase));
-          });
+          }));
         }
 
         const allEntries = await fsp.readdir(targetPath, { withFileTypes: true, recursive: true });
@@ -112,13 +114,20 @@ const NodeFileSystemBackend = defineBackend({
           }
         }
 
-        return rootEntries;
+        return sortEntries(rootEntries);
       },
       async exists(path) {
         return safeExists(resolveSafePath(basePath, path));
       },
       async stat(path) {
-        const stats = await fsp.stat(resolveSafePath(basePath, path));
+        const stats = await fsp.stat(resolveSafePath(basePath, path))
+          .catch((error: unknown) => {
+            if (isNodeErrorWithCode(error, "ENOENT")) {
+              throw new BackendFileNotFound(path);
+            }
+
+            throw error;
+          });
 
         const stat: BackendStat = {
           type: stats.isDirectory() ? "directory" : "file",
@@ -129,10 +138,7 @@ const NodeFileSystemBackend = defineBackend({
         return stat;
       },
       async write(path, data) {
-        const trimmedPath = path.trim();
-        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
-          throw new Error("Cannot write file: path ends with '/'");
-        }
+        assertFilePath(path);
 
         const resolvedPath = resolveSafePath(basePath, path);
         const parentDir = nodePath.dirname(resolvedPath);

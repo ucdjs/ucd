@@ -3,22 +3,24 @@ import { joinURL } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { resolveSafePath } from "@ucdjs/path-utils";
-import { FileEntrySchema } from "@ucdjs/schemas";
+import { BackendEntryListSchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineBackend } from "../define";
+import { BackendFileNotFound } from "../errors";
+import { assertFilePath } from "../utils";
 
 const debug = createDebugger("ucdjs:fs-backend:http");
 
 export const kHttpBackendSymbol = Symbol.for("@ucdjs/fs-backend:http");
 
-const API_BASE_URL_SCHEMA = z.codec(z.url({
-  protocol: /^https?$/,
-  hostname: z.regexes.hostname,
-  normalize: true,
-}), z.instanceof(URL), {
-  decode: (urlString) => new URL(urlString),
-  encode: (url) => url.href,
-}).default(new URL("/", UCDJS_STORE_BASE_URL));
+const API_BASE_URL_SCHEMA = z.union([
+  z.url({
+    protocol: /^https?$/,
+    hostname: z.regexes.hostname,
+    normalize: true,
+  }),
+  z.instanceof(URL),
+]).transform((value) => value instanceof URL ? value : new URL(value));
 
 const HTTPFileSystemBackend = defineBackend({
   meta: {
@@ -36,10 +38,7 @@ const HTTPFileSystemBackend = defineBackend({
 
     return {
       async read(path) {
-        const trimmedPath = path.trim();
-        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
-          throw new Error("Cannot read file: path ends with '/'");
-        }
+        assertFilePath(path);
 
         const url = joinURL(
           baseUrl.origin,
@@ -47,6 +46,10 @@ const HTTPFileSystemBackend = defineBackend({
         );
 
         const response = await fetch(url);
+
+        if (response.status === 404) {
+          throw new BackendFileNotFound(path);
+        }
 
         if (!response.ok) {
           throw new Error(`Failed to read remote file: ${response.statusText}`);
@@ -55,10 +58,7 @@ const HTTPFileSystemBackend = defineBackend({
         return response.text();
       },
       async readBytes(path) {
-        const trimmedPath = path.trim();
-        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
-          throw new Error("Cannot read file: path ends with '/'");
-        }
+        assertFilePath(path);
 
         const url = joinURL(
           baseUrl.origin,
@@ -66,6 +66,10 @@ const HTTPFileSystemBackend = defineBackend({
         );
 
         const response = await fetch(url);
+
+        if (response.status === 404) {
+          throw new BackendFileNotFound(path);
+        }
 
         if (!response.ok) {
           throw new Error(`Failed to read remote file: ${response.statusText}`);
@@ -96,13 +100,13 @@ const HTTPFileSystemBackend = defineBackend({
         }
 
         const json = await response.json();
-        const result = z.array(FileEntrySchema).safeParse(json);
+        const result = BackendEntryListSchema.safeParse(json);
 
         if (!result.success) {
           throw new Error(`Invalid response schema: ${result.error.message}`);
         }
 
-        const data = result.data as BackendEntry[];
+        const data = result.data;
 
         if (!recursive) {
           return data.map((entry) =>
@@ -170,6 +174,10 @@ const HTTPFileSystemBackend = defineBackend({
         );
 
         const response = await fetch(url, { method: "HEAD" });
+
+        if (response.status === 404) {
+          throw new BackendFileNotFound(path);
+        }
 
         if (!response.ok) {
           throw new Error(`Failed to stat remote path: ${response.statusText} (${response.status})`);

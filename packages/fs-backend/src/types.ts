@@ -1,3 +1,4 @@
+import type { BackendEntry as SchemasBackendEntry } from "@ucdjs/schemas";
 import type { HookableCore } from "hookable";
 import type { z } from "zod";
 
@@ -15,16 +16,7 @@ export interface CopyOptions {
   overwrite?: boolean;
 }
 
-export type BackendEntry = {
-  type: "file";
-  name: string;
-  path: string;
-} | {
-  type: "directory";
-  name: string;
-  path: string;
-  children: BackendEntry[];
-};
+export type BackendEntry = SchemasBackendEntry;
 
 export interface BackendStat {
   type: BackendEntry["type"];

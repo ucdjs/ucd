@@ -6,6 +6,7 @@ export default createTsdownConfig({
     "./src/backends/node.ts",
     "./src/backends/http.ts",
     "./src/errors.ts",
+    "./src/utils.ts",
   ],
   deps: {
     alwaysBundle: [
