@@ -1,8 +1,9 @@
 import type { Plugin } from "vite";
 import type { Database } from "../src/server/db";
 import fs from "node:fs/promises";
+import { Readable } from "node:stream";
 import { getUcdConfigDir } from "@ucdjs/env";
-import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
+import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";
 const dbModuleId = "/src/server/db/index.ts";
@@ -23,6 +24,7 @@ export function h3DevServerPlugin(): Plugin {
         await runMigrations(db);
         const workspace = resolveWorkspace();
         await ensureWorkspace(db, workspace.workspaceId, workspace.rootPath);
+        await recoverStaleExecutions(db, workspace.workspaceId);
         // eslint-disable-next-line no-console
         console.log("[h3-dev-server] Database migrations completed successfully");
       } catch (err) {
@@ -85,8 +87,12 @@ export function h3DevServerPlugin(): Plugin {
             res.setHeader(key, value);
           });
 
-          const responseBody = await response.text();
-          res.end(responseBody);
+          if (response.body) {
+            Readable.fromWeb(response.body as Parameters<typeof Readable.fromWeb>[0]).pipe(res);
+          }
+          else {
+            res.end();
+          }
         } catch (err) {
           next(err);
         }

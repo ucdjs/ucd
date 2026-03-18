@@ -1,5 +1,5 @@
+import type { PipelineDetails, PipelineInfo } from "#shared/schemas/pipeline";
 import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipelines-core";
-import type { PipelineDetails, PipelineInfo } from "../types";
 import { parseDependency } from "@ucdjs/pipelines-core";
 
 export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {

@@ -1,7 +1,6 @@
 import type { ExecutionLogsResponse } from "#shared/schemas/execution";
-import { Buffer } from "node:buffer";
 import { schema } from "#server/db";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 
 export const sourcesLogsRouter: H3 = new H3();
@@ -52,23 +51,30 @@ sourcesLogsRouter.get(
           eq(schema.executionLogs.executionId, executionId),
         );
 
-    const [logs, allLogs] = await Promise.all([
+    const [logs, aggregates] = await Promise.all([
       db.query.executionLogs.findMany({
         where,
         orderBy: asc(schema.executionLogs.timestamp),
         limit,
         offset,
       }),
-      db.query.executionLogs.findMany({
-        where,
-        columns: { message: true, payload: true },
-      }),
+      db
+        .select({
+          total: sql<number>`count(*)`,
+          // length() returns character count (approx bytes for ASCII-dominant log output)
+          capturedSize: sql<number>`coalesce(sum(length(${schema.executionLogs.message})), 0)`,
+          hasTruncated: sql<number>`max(coalesce(cast(json_extract(${schema.executionLogs.payload}, '$.truncated') as integer), 0))`,
+          maxOriginalSize: sql<number>`max(cast(json_extract(${schema.executionLogs.payload}, '$.originalSize') as integer))`,
+        })
+        .from(schema.executionLogs)
+        .where(where),
     ]);
 
-    const total = allLogs.length;
-    const capturedSize = allLogs.reduce((sum, log) => sum + Buffer.byteLength(log.message, "utf-8"), 0);
-    const truncated = allLogs.some((log) => Boolean(log.payload?.truncated));
-    const originalSize = allLogs.reduce((max, log) => Math.max(max, log.payload?.originalSize ?? 0), 0);
+    const agg = aggregates[0];
+    const total = Number(agg?.total ?? 0);
+    const capturedSize = Number(agg?.capturedSize ?? 0);
+    const truncated = (Number(agg?.hasTruncated) ?? 0) > 0;
+    const originalSize = Number(agg?.maxOriginalSize ?? 0);
 
     return {
       executionId,

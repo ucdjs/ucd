@@ -14,7 +14,7 @@ import {
   sourcesPipelineRouter,
   sourcesSourceRouter,
 } from "#server/routes";
-import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
+import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs/env";
 import { H3, serve, serveStatic } from "h3";
 import { version } from "../../package.json" with { type: "json" };
@@ -127,6 +127,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     : resolveWorkspace({ sources, rootPath: workspaceRoot });
 
   await ensureWorkspace(db, resolvedWorkspace.workspaceId, resolvedWorkspace.rootPath);
+  await recoverStaleExecutions(db, resolvedWorkspace.workspaceId);
 
   const app = createApp({
     sources,

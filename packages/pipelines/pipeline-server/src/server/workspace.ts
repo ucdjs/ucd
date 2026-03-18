@@ -5,6 +5,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { schema } from "#server/db";
+import { and, eq } from "drizzle-orm";
 
 export interface ResolveWorkspaceOptions {
   rootPath?: string;
@@ -54,6 +55,25 @@ export function resolveWorkspace(options: ResolveWorkspaceOptions = {}) {
     rootPath: normalizedRoot,
     source: workspaceId ? "config" : "path",
   };
+}
+
+export async function recoverStaleExecutions(
+  db: Database,
+  workspaceId: string,
+): Promise<void> {
+  await db
+    .update(schema.executions)
+    .set({
+      status: "failed",
+      completedAt: new Date(),
+      error: "Server restarted during execution",
+    })
+    .where(
+      and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.status, "running"),
+      ),
+    );
 }
 
 export async function ensureWorkspace(db: Database, workspaceId: string, rootPath: string): Promise<void> {
