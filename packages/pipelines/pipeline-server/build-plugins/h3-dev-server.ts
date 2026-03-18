@@ -94,7 +94,14 @@ export function h3DevServerPlugin(): Plugin {
             res.end();
           }
         } catch (err) {
-          next(err);
+          if (!res.headersSent) {
+            res.statusCode = 500;
+            res.setHeader("content-type", "application/json");
+            res.end(JSON.stringify({
+              statusCode: 500,
+              message: err instanceof Error ? err.message : String(err),
+            }));
+          }
         }
       });
     },
