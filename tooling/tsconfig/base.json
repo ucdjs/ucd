@@ -38,6 +38,7 @@
       "@ucdjs/fs-backend": ["./packages/fs-backend/src/index.ts"],
       "@ucdjs/fs-backend/backends/http": ["./packages/fs-backend/src/backends/http.ts"],
       "@ucdjs/fs-backend/backends/node": ["./packages/fs-backend/src/backends/node.ts"],
+      "@ucdjs/fs-backend/utils": ["./packages/fs-backend/src/utils.ts"],
 
       // pipeline packages
       "@ucdjs/pipelines-core": ["./packages/pipelines/pipeline-core/src/index.ts"],

@@ -8,7 +8,7 @@ import { createDebugger } from "@ucdjs-internal/shared";
 import { HookableCore } from "hookable";
 import { z } from "zod";
 import { BackendSetupError } from "./errors";
-import { createOperationWrapper, inferFeaturesFromOperations } from "./utils";
+import { createOperationWrapper, inferFeaturesFromOperations } from "./internal-utils";
 
 const debug = createDebugger("ucdjs:fs-backend:define");
 

@@ -8,7 +8,6 @@ export {
   BackendUnsupportedOperation,
 } from "./errors";
 export { hasFeature, isHttpBackend } from "./guards";
-
 export type {
   BackendArgs,
   BackendDefinition,
@@ -25,3 +24,9 @@ export type {
   ListOptions,
   RemoveOptions,
 } from "./types";
+export {
+  BackendDirectoryEntrySchema,
+  BackendEntryListSchema,
+  BackendEntrySchema,
+  BackendFileEntrySchema,
+} from "@ucdjs/schemas";

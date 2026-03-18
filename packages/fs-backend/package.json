@@ -27,6 +27,7 @@
     "./backends/http": "./dist/backends/http.mjs",
     "./backends/node": "./dist/backends/node.mjs",
     "./errors": "./dist/errors.mjs",
+    "./utils": "./dist/utils.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
