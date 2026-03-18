@@ -104,7 +104,11 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       return;
     }
 
-    void runtime.onLog({
+    const onLog = runtime.onLog;
+
+    // Run onLog with no handler in context so any console.log/stdout writes
+    // inside the handler are not re-captured as pipeline log entries.
+    void this.#logHandlerStorage.run({ onLog: undefined }, () => onLog({
       executionId: context.executionId,
       workspaceId: context.workspaceId,
       spanId: context.spanId,
@@ -116,7 +120,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       timestamp: entry.timestamp ?? Date.now(),
       args: entry.args,
       meta: entry.meta,
-    });
+    }));
   }
 
   startOutputCapture(): () => void {
