@@ -81,6 +81,20 @@ describe("node backend", () => {
     ]);
   });
 
+  it("throws BackendFileNotFound when listing a missing path", async () => {
+    const dir = await testdir();
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.list("/missing/")).rejects.toThrow(BackendFileNotFound);
+  });
+
+  it("throws BackendEntryIsDirectory when listing a file path", async () => {
+    const dir = await testdir({ "hello.txt": "world" });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.list("/hello.txt")).rejects.toThrow(BackendEntryIsDirectory);
+  });
+
   it("reports existence correctly", async () => {
     const dir = await testdir({ "hello.txt": "world" });
     const backend = NodeFileSystemBackend({ basePath: dir });
