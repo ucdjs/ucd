@@ -1,4 +1,4 @@
-import { byName, definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
+import { definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
 import { sharedSource } from "./shared";
 
