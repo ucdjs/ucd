@@ -38,7 +38,7 @@ overviewRouter.get("/", async (event) => {
     db.query.executions.findMany({
       where: eq(schema.executions.workspaceId, workspaceId),
       orderBy: desc(schema.executions.startedAt),
-      limit: 5,
+      limit: 20,
     }),
   ]);
 

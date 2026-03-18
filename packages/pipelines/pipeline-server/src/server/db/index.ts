@@ -16,7 +16,7 @@ interface CreateDatabaseOptions {
 }
 
 export function createDatabase(options: CreateDatabaseOptions = {}): Database {
-  const defaultUrl = `file:${getUcdConfigPath("pipeline.db")}`;
+  const defaultUrl = `file:${getUcdConfigPath("ucd-pipelines.db")}`;
   const url = options.url ?? process.env.DB_URL ?? defaultUrl;
   const authToken = options.authToken ?? process.env.DB_AUTH_TOKEN;
 
