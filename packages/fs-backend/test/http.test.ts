@@ -7,11 +7,11 @@ import { BackendFileNotFound } from "../src/errors";
 import { isHttpBackend } from "../src/guards";
 
 describe("http backend", () => {
-  const baseUrl = new URL("https://test.example.com/");
+  const baseUrl = new URL("https://ucdjs.dev/");
 
   it("reads file content successfully", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/file.txt", () =>
+      ["GET", "https://ucdjs.dev/file.txt", () =>
         new HttpResponse("hello", {
           status: 200,
           headers: { "Content-Type": "text/plain" },
@@ -24,7 +24,7 @@ describe("http backend", () => {
 
   it("throws BackendFileNotFound for missing reads", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/file.txt", () =>
+      ["GET", "https://ucdjs.dev/file.txt", () =>
         new HttpResponse("missing", {
           status: 404,
           statusText: "Not Found",
@@ -37,7 +37,7 @@ describe("http backend", () => {
 
   it("throws for server read failures", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/file.txt", () =>
+      ["GET", "https://ucdjs.dev/file.txt", () =>
         new HttpResponse("error", {
           status: 500,
           statusText: "Internal Server Error",
@@ -58,7 +58,7 @@ describe("http backend", () => {
     >;
 
     mockFetch([
-      ["GET", "https://test.example.com/", () => HttpResponse.json(entries)],
+      ["GET", "https://ucdjs.dev/", () => HttpResponse.json(entries)],
     ]);
 
     const backend = HTTPFileSystemBackend({ baseUrl });
@@ -70,11 +70,11 @@ describe("http backend", () => {
 
   it("lists recursively by following directory entries", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/dir", () => HttpResponse.json([
+      ["GET", "https://ucdjs.dev/dir", () => HttpResponse.json([
         { type: "file", name: "foo.txt", path: "/dir/foo.txt", lastModified: Date.now() },
         { type: "directory", name: "nested", path: "/dir/nested/", lastModified: Date.now() },
       ])],
-      ["GET", "https://test.example.com/dir/nested", () => HttpResponse.json([
+      ["GET", "https://ucdjs.dev/dir/nested", () => HttpResponse.json([
         { type: "file", name: "bar.txt", path: "/dir/nested/bar.txt", lastModified: Date.now() },
       ])],
     ]);
@@ -95,8 +95,8 @@ describe("http backend", () => {
 
   it("returns an empty array for 404 and 403 list responses", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/missing", () => new HttpResponse(null, { status: 404 })],
-      ["GET", "https://test.example.com/forbidden", () => new HttpResponse(null, { status: 403 })],
+      ["GET", "https://ucdjs.dev/missing", () => new HttpResponse(null, { status: 404 })],
+      ["GET", "https://ucdjs.dev/forbidden", () => new HttpResponse(null, { status: 403 })],
     ]);
 
     const backend = HTTPFileSystemBackend({ baseUrl });
@@ -106,8 +106,8 @@ describe("http backend", () => {
 
   it("checks existence via HEAD", async () => {
     mockFetch([
-      ["HEAD", "https://test.example.com/file.txt", () => new HttpResponse(null, { status: 200 })],
-      ["HEAD", "https://test.example.com/missing.txt", () => new HttpResponse(null, { status: 404 })],
+      ["HEAD", "https://ucdjs.dev/file.txt", () => new HttpResponse(null, { status: 200 })],
+      ["HEAD", "https://ucdjs.dev/missing.txt", () => new HttpResponse(null, { status: 404 })],
     ]);
 
     const backend = HTTPFileSystemBackend({ baseUrl });
@@ -117,11 +117,11 @@ describe("http backend", () => {
 
   it("supports readBytes and stat", async () => {
     mockFetch([
-      ["GET", "https://test.example.com/file.bin", () =>
+      ["GET", "https://ucdjs.dev/file.bin", () =>
         new HttpResponse(new Uint8Array([1, 2, 3]), {
           status: 200,
         })],
-      ["HEAD", "https://test.example.com/file.bin", () =>
+      ["HEAD", "https://ucdjs.dev/file.bin", () =>
         new HttpResponse(null, {
           status: 200,
           headers: {
