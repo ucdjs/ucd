@@ -18,7 +18,6 @@ if (!__UCD_ENDPOINT_DEFAULT_CONFIG__) {
 export default createTsdownConfig({
   entry: [
     "./src/index.ts",
-    "./src/config.ts",
   ],
   plugins: [
     replacePlugin({
