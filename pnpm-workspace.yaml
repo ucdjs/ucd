@@ -44,7 +44,7 @@ catalogs:
     "@tanstack/devtools-vite": 0.5.5
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
-    drizzle-kit: 0.31.9
+    drizzle-kit: 1.0.0-beta.18-7eb39f0
     oxc-transform: 0.119.0
     tinyglobby: 0.2.15
     "@ucdjs/textmate-grammars": 0.0.0
@@ -101,8 +101,7 @@ catalogs:
     "@cloudflare/workers-types": 4.20260313.1
     h3: 2.0.1-rc.16
     crossws: 0.4.4
-    drizzle-orm: 0.45.1
-    "@libsql/client": 0.17.0
+    drizzle-orm: 1.0.0-beta.18-7eb39f0
 
   types:
     "@types/picomatch": 4.0.2
