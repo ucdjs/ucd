@@ -13,11 +13,11 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ExternalLink, Hash, Tag } from "lucide-react";
+import { BookOpen, ChevronRight, ExternalLink, Hash, Tag } from "lucide-react";
 import * as React from "react";
 import { SourceFileList } from "./pipeline-sidebar-source-file-list";
-import { SourceGroup } from "./pipeline-sidebar-source-group";
 import { SourceSwitcher } from "./source-switcher";
 
 export interface PipelineSidebarProps {
@@ -42,30 +42,25 @@ export function PipelineSidebar({
     ? params.pipelineId
     : undefined;
 
-  const [openSources, setOpenSources] = React.useState<Record<string, boolean>>({});
-  const [openFiles, setOpenFiles] = React.useState<Record<string, boolean>>({});
+  const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
 
-  const toggleSource = (sourceId: string) => {
-    setOpenSources((prev) => ({ ...prev, [sourceId]: !prev[sourceId] }));
-  };
-
-  const toggleFile = (key: string) => {
-    setOpenFiles((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
+  const toggle = React.useCallback((key: string, isOpen: boolean) => {
+    setExpanded(prev => ({ ...prev, [key]: !isOpen }));
+  }, []);
 
   const sources = sourcesData ?? [];
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4">
+      <SidebarHeader className="p-3">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <Link
               to="/"
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
             >
-              <div className="rounded-lg p-1 transition-colors">
-                <UcdLogo className="size-10 shrink-0" />
+              <div className="rounded-lg transition-colors">
+                <UcdLogo className="size-9 shrink-0" />
               </div>
               <div className="grid text-left leading-tight">
                 <h2 className="font-semibold text-base">UCD.js</h2>
@@ -99,39 +94,67 @@ export function PipelineSidebar({
         </div>
       </SidebarHeader>
 
-      <div className="px-4 pb-2">
+      <div className="px-3 pb-1.5">
         <SourceSwitcher />
       </div>
 
       <SidebarContent>
         {currentSourceId
           ? (
-              <SidebarGroup className="px-3 py-2">
+              <SidebarGroup className="px-2 py-1">
                 <SourceFileList
                   sourceId={currentSourceId}
                   currentFileId={currentFileId}
                   currentPipelineId={currentPipelineId}
-                  openFiles={openFiles}
-                  toggleFile={toggleFile}
+                  expanded={expanded}
+                  toggle={toggle}
                 />
               </SidebarGroup>
             )
           : (
-              sources.map((source) => (
-                <SidebarGroup key={source.id} className="px-3 py-2">
-                  <SourceGroup
-                    sourceId={source.id}
-                    sourceLabel={source.label}
-                    currentSourceId={currentSourceId}
-                    currentFileId={currentFileId}
-                    currentPipelineId={currentPipelineId}
-                    isOpen={openSources[source.id] ?? source.id === currentSourceId}
-                    toggleSource={toggleSource}
-                    openFiles={openFiles}
-                    toggleFile={toggleFile}
-                  />
-                </SidebarGroup>
-              ))
+              sources.map((source) => {
+                const sourceKey = `source:${source.id}`;
+                const isOpen = expanded[sourceKey] ?? false;
+                const isActive = currentSourceId === source.id;
+
+                return (
+                  <SidebarGroup key={source.id} className="px-2 py-1">
+                    <SidebarMenu>
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          className="h-9 gap-2 px-2.5"
+                          onClick={() => toggle(sourceKey, isOpen)}
+                        >
+                          <ChevronRight className={`size-3.5 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
+                          <SidebarGroupLabel className="h-auto min-w-0 flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
+                            <Link
+                              to="/s/$sourceId"
+                              params={{ sourceId: source.id }}
+                              className={isActive
+                                ? "block truncate text-sidebar-foreground"
+                                : "block truncate hover:text-sidebar-foreground"}
+                              onClick={e => e.stopPropagation()}
+                            >
+                              {source.label}
+                            </Link>
+                          </SidebarGroupLabel>
+                        </SidebarMenuButton>
+                        {isOpen && (
+                          <SidebarMenuSub>
+                            <SourceFileList
+                              sourceId={source.id}
+                              currentFileId={currentFileId}
+                              currentPipelineId={currentPipelineId}
+                              expanded={expanded}
+                              toggle={toggle}
+                            />
+                          </SidebarMenuSub>
+                        )}
+                      </SidebarMenuItem>
+                    </SidebarMenu>
+                  </SidebarGroup>
+                );
+              })
             )}
       </SidebarContent>
 

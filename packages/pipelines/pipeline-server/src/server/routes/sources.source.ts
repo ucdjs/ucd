@@ -23,12 +23,14 @@ sourcesSourceRouter.get("/:sourceId", async (event) => {
     id: source.id,
     type: source.kind === "remote" ? source.provider : "local",
     label: sourceLabel(source),
-    files: files.map((file) => ({
-      id: file.id,
-      path: file.relativePath,
-      label: file.label,
-      pipelines: file.pipelines.map((pipeline) => toPipelineInfo(pipeline)),
-    })),
+    files: files
+      .map((file) => ({
+        id: file.id,
+        path: file.relativePath,
+        label: file.label,
+        pipelines: file.pipelines.map((pipeline) => toPipelineInfo(pipeline)),
+      }))
+      .sort((a, b) => a.path.localeCompare(b.path)),
     errors: issues.map(({ cause: _cause, ...issue }) => issue),
   } satisfies SourceResponse;
 });
