@@ -399,7 +399,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                       outputIndex,
                       outputId: definition.id,
                       property,
-                      sink: definition.sink.type,
+                      sink: definition.sink?.type ?? "memory",
                       format: definition.format,
                       locator: destination.displayLocator,
                     });
@@ -420,7 +420,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                         outputIndex,
                         outputId: definition.id,
                         property,
-                        sink: definition.sink.type,
+                        sink: definition.sink?.type ?? "memory",
                         locator: destination.displayLocator,
                         status: "written",
                       });
@@ -433,7 +433,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                         outputIndex,
                         outputId: definition.id,
                         property,
-                        sink: definition.sink.type,
+                        sink: definition.sink?.type ?? "memory",
                         locator: destination.displayLocator,
                         status: "failed",
                         error: error instanceof Error ? error.message : String(error),

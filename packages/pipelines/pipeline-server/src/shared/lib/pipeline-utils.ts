@@ -35,7 +35,7 @@ export function toRouteDetails(
 
   const outputs = normalizeRouteOutputs(route).map((output) => ({
     id: output.id,
-    sink: output.sink.type,
+    sink: output.sink?.type ?? "runtime",
     format: output.format,
     path: typeof output.path === "string" ? output.path : undefined,
     dynamicPath: typeof output.path === "function",

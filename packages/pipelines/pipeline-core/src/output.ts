@@ -1,16 +1,12 @@
 import type { PipelineRouteDefinition } from "./route";
 import type { FileContext, PropertyJson } from "./types";
 
-export interface MemoryOutputSinkDefinition {
-  type: "memory";
-}
-
 export interface FilesystemOutputSinkDefinition {
   type: "filesystem";
   baseDir?: string;
 }
 
-export type OutputSinkDefinition = MemoryOutputSinkDefinition | FilesystemOutputSinkDefinition;
+export type OutputSinkDefinition = FilesystemOutputSinkDefinition;
 
 export interface RouteOutputPathContext {
   version: string;
@@ -31,7 +27,7 @@ export interface RouteOutputDefinition {
 
   /**
    * Destination sink to use when the output should be persisted.
-   * @default memory sink
+   * When omitted, the output remains available for the run only.
    */
   sink?: OutputSinkDefinition;
 
@@ -57,10 +53,6 @@ export interface RouteOutputDefinition {
   fileName?: string | ((pj: PropertyJson) => string);
 }
 
-export function memorySink(): MemoryOutputSinkDefinition {
-  return { type: "memory" };
-}
-
 export function filesystemSink(options: Omit<FilesystemOutputSinkDefinition, "type"> = {}): FilesystemOutputSinkDefinition {
   return {
     type: "filesystem",
@@ -70,7 +62,7 @@ export function filesystemSink(options: Omit<FilesystemOutputSinkDefinition, "ty
 
 export interface NormalizedRouteOutputDefinition {
   id: string;
-  sink: OutputSinkDefinition;
+  sink?: OutputSinkDefinition;
   format: "json" | "text";
   path?: RouteOutputDefinition["path"];
   dir?: string;
@@ -82,14 +74,12 @@ export function normalizeRouteOutputs(route: PipelineRouteDefinition): Normalize
     ? route.outputs
     : route.out
       ? [route.out]
-      : [{ id: "default", sink: memorySink() }];
+      : [{ id: "default" }];
 
   return rawOutputs.map((output, index) => {
-    const sink = output.sink ?? memorySink();
-
     return {
       id: output.id ?? `output-${index + 1}`,
-      sink,
+      sink: output.sink,
       format: output.format ?? "json",
       path: output.path,
       dir: output.dir,

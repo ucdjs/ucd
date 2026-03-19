@@ -55,8 +55,8 @@ export function resolveOutputDestination(
   return createDestination(definition.sink, defaultRelative);
 }
 
-function createDestination(sink: OutputSinkDefinition, relativeLocator: string): ResolvedOutputDestination {
-  if (sink.type === "filesystem") {
+function createDestination(sink: OutputSinkDefinition | undefined, relativeLocator: string): ResolvedOutputDestination {
+  if (sink?.type === "filesystem") {
     const resolved = sink.baseDir
       ? path.resolve(sink.baseDir, relativeLocator)
       : path.resolve(relativeLocator);
@@ -99,12 +99,12 @@ function isPropertyJson(value: unknown): value is PropertyJson {
 }
 
 export async function writeOutputToSink(
-  sink: OutputSinkDefinition,
+  sink: OutputSinkDefinition | undefined,
   locator: string,
   value: unknown,
   format: "json" | "text",
 ): Promise<void> {
-  if (sink.type === "memory") {
+  if (!sink) {
     return;
   }
 
