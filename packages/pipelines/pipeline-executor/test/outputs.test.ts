@@ -9,8 +9,8 @@ import {
   resolveOutputDestination,
   serializeOutputValue,
   writeOutputToSink,
-} from "../src/outputs";
-import { buildOutputManifestFromTraces } from "../src/traces";
+} from "../src/internal/outputs";
+import { buildOutputManifestFromTraces } from "../src/internal/traces";
 import { createMockFile } from "./helpers";
 
 const tempDirs: string[] = [];
