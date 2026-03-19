@@ -1,6 +1,6 @@
 import type { PipelineDetails, PipelineInfo } from "#shared/schemas/pipeline";
 import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipelines-core";
-import { parseDependency } from "@ucdjs/pipelines-core";
+import { getFilterDescription, parseDependency } from "@ucdjs/pipelines-core";
 
 export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
   return {
@@ -18,6 +18,7 @@ export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
 export function toPipelineDetails(pipeline: PipelineDefinition): PipelineDetails {
   return {
     ...toPipelineInfo(pipeline),
+    include: pipeline.include ? getFilterDescription(pipeline.include) : undefined,
     routes: pipeline.routes.map((route) => toRouteDetails(route)),
     sources: pipeline.inputs.map((source) => ({ id: source.id })),
   };
@@ -47,6 +48,7 @@ export function toRouteDetails(
     cache: route.cache !== false,
     depends,
     emits,
+    filter: route.filter ? getFilterDescription(route.filter) : undefined,
     outputs,
     transforms,
   };

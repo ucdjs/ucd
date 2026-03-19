@@ -38,6 +38,7 @@ const PipelineRouteSchema = z.object({
   cache: z.boolean(),
   depends: z.array(PipelineRouteDependencySchema),
   emits: z.array(PipelineRouteEmitSchema),
+  filter: z.string().optional(),
   outputs: z.array(PipelineRouteOutputSchema),
   transforms: z.array(z.string()),
 });
@@ -46,6 +47,7 @@ export const PipelineDetailsSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
+  include: z.string().optional(),
   versions: z.array(z.string()),
   routeCount: z.number(),
   sourceCount: z.number(),
