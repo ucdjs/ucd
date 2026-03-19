@@ -1,5 +1,5 @@
 import type { PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
-import { and, byDir, byExt, byName, definePipelineRoute, or } from "@ucdjs/pipelines-core";
+import { and, byDir, byExt, byName, definePipelineRoute } from "@ucdjs/pipelines-core";
 import {
   createDeduplicateTransform,
   createExpandRangesTransform,

@@ -74,7 +74,10 @@ function RouteComponent() {
                       <CardTitle className="truncate text-lg">
                         {selectedOutput.routeId}
                         {" "}
-                        <span className="text-muted-foreground">output {selectedOutput.outputIndex + 1}</span>
+                        <span className="text-muted-foreground">
+                          output
+                          {selectedOutput.outputIndex + 1}
+                        </span>
                       </CardTitle>
                     </div>
                     <CardDescription className="mt-0.5">
@@ -106,7 +109,7 @@ function RouteComponent() {
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Pipeline outputs</h3>
                   </div>
                   <div className="rounded-lg border border-border/60">
-                    {Array.from(outputsByRoute.entries()).map(([routeId, routeOutputs], groupIndex) => {
+                    {Array.from(outputsByRoute.entries(), ([routeId, routeOutputs], groupIndex) => {
                       const expanded = expandedRoutes.has(routeId);
                       return (
                         <div key={routeId} className={groupIndex > 0 ? "border-t border-border/60" : ""}>
