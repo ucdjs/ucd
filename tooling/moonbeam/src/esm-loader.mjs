@@ -90,6 +90,7 @@ export async function resolve(specifier, context, nextResolve) {
       };
     }
 
+    console.log(`⚠️  Warning: No src/index.ts found for package "${specifier}". Attempting to fallback to dist/index.js...`);
     // fallback to dist
     const distPath = path.join(workspaceRoot, packagePath, "dist", "index.js");
     if (existsSync(distPath)) {
