@@ -3,7 +3,7 @@ import type {
   PipelineTraceInput,
   PipelineTraceRecord,
   PipelineTraceRecordByKind,
-} from "./traces";
+} from "../run/traces";
 
 export interface TraceEmitter {
   emit: <TTrace extends PipelineTraceInput>(
