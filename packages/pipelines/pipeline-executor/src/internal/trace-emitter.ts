@@ -1,4 +1,4 @@
-import type { PipelineExecutionRuntime } from "./runtime";
+import type { PipelineExecutionRuntime } from "../runtime";
 import type {
   PipelineTraceInput,
   PipelineTraceRecord,

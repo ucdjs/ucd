@@ -1,8 +1,8 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
+import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./internal/traces";
 import type { PipelineExecutionRuntime } from "./runtime";
-import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./traces";
 
 export interface PipelineSummary {
   versions: string[];

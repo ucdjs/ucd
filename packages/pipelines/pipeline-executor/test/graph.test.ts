@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildExecutionGraphFromTraces } from "../src/graph";
-import type { PipelineTraceRecord } from "../src/traces";
+import type { PipelineTraceRecord } from "../src/internal/traces";
+import { buildExecutionGraphFromTraces } from "../src/internal/graph";
 
 describe("buildExecutionGraphFromTraces", () => {
   it("creates distinct output nodes for traced output destinations", () => {
