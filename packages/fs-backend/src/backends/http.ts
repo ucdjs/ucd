@@ -160,7 +160,7 @@ const HTTPFileSystemBackend = defineBackend({
 
         for (const entry of data) {
           if (entry.type === "directory") {
-            const children = await this.list!(entry.path, { recursive: true });
+            const children = await this.list(entry.path, { recursive: true });
             entries.push({
               type: "directory",
               name: entry.name,

@@ -48,3 +48,13 @@ export class BackendEntryIsDirectory extends BackendError {
     this.path = path;
   }
 }
+
+export class CopyDestinationAlreadyExistsError extends BackendError {
+  public readonly path: string;
+
+  constructor(path: string) {
+    super(`Copy destination already exists: ${path}`);
+    this.name = "CopyDestinationAlreadyExistsError";
+    this.path = path;
+  }
+}
