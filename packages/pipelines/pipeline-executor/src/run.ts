@@ -11,7 +11,7 @@ import type {
 import type { CacheStore } from "./cache";
 import type { EventEmitter } from "./events";
 import type { PipelineExecutionRuntime } from "./runtime";
-import type { SourceAdapter } from "./source-files";
+import type { SourceAdapter } from "./run/source-files";
 import type {
   PipelineOutputManifestEntry,
   PipelineTraceEmitInput,
@@ -25,15 +25,15 @@ import type {
   PipelineSummary,
 } from "./types";
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
-import { runGlobalArtifacts, traceRouteArtifacts } from "./artifacts";
-import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache-helpers";
+import { runGlobalArtifacts, traceRouteArtifacts } from "./run/artifacts";
+import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
 import { emitRuntimeEvent } from "./events";
 import { buildExecutionGraphFromTraces } from "./graph";
 import { createPipelineLogger } from "./logger";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./outputs";
-import { createProcessingQueue } from "./processing-queue";
-import { processFallback, processRoute, recordEmittedArtifacts } from "./route-runtime";
-import { createSourceAdapter } from "./source-files";
+import { createProcessingQueue } from "./run/processing-queue";
+import { processFallback, processRoute, recordEmittedArtifacts } from "./run/route-runtime";
+import { createSourceAdapter } from "./run/source-files";
 import { buildOutputManifestFromTraces } from "./traces";
 import type { TraceEmitter } from "./trace-emitter";
 

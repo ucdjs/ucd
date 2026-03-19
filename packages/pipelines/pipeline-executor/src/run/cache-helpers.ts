@@ -1,5 +1,5 @@
-import type { CacheEntry, CacheKey, CacheStore } from "./cache";
-import { defaultHashFn, hashArtifact } from "./cache";
+import type { CacheEntry, CacheKey, CacheStore } from "../cache";
+import { defaultHashFn, hashArtifact } from "../cache";
 
 export interface CacheHitResult {
   result: {
