@@ -56,7 +56,6 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@libsql/client": "catalog:backend",
     "@tanstack/react-devtools": "catalog:frontend",
     "@tanstack/react-hotkeys": "catalog:frontend",
     "@tanstack/react-hotkeys-devtools": "catalog:frontend",
