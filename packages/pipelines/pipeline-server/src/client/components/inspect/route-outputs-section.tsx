@@ -1,44 +1,36 @@
+import { useInspectData } from "#hooks/use-inspect-data";
 import { getRouteApi } from "@tanstack/react-router";
+import { ArrowRight, FolderOutput } from "lucide-react";
 
-const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
-const InspectIndexRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect/");
 
 export function RouteOutputsSection() {
-  const params = InspectIndexRoute.useParams();
-  const navigate = InspectIndexRoute.useNavigate();
-  const search = InspectRoute.useSearch();
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const selectedRoute = pipelineResponse.pipeline.routes.find((route) => route.id === search.route)
-    ?? pipelineResponse.pipeline.routes[0]
-    ?? null;
+  const { selectedRoute } = useInspectData();
+  const navigate = InspectRoute.useNavigate();
+
+  if (!selectedRoute) return null;
+
+  const routeId = selectedRoute.id;
 
   function openOutput(outputIndex: number) {
-    if (!selectedRoute) {
-      return;
-    }
-
     navigate({
-      to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
-      params,
       search: (current) => ({
-        q: current.q,
-        route: selectedRoute.id,
+        ...current,
+        route: routeId,
         transform: undefined,
-        output: `${selectedRoute.id}:${outputIndex}`,
+        output: `${routeId}:${outputIndex}`,
+        view: "outputs" as const,
       }),
     });
   }
 
   return (
     <section className="space-y-3">
-      <div>
+      <div className="flex items-center gap-2">
+        <FolderOutput className="h-4 w-4 text-muted-foreground" />
         <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Outputs</h3>
-        <p className="text-sm text-muted-foreground">
-          Output definitions describe where this route writes artifacts, not the runtime files it produced.
-        </p>
       </div>
-      {selectedRoute?.outputs.length
+      {selectedRoute.outputs.length
         ? (
             <div className="grid gap-3 md:grid-cols-2">
               {selectedRoute.outputs.map((output, index) => (
@@ -51,9 +43,10 @@ export function RouteOutputsSection() {
                     <button
                       type="button"
                       onClick={() => openOutput(index)}
-                      className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                     >
                       Open output
+                      <ArrowRight className="h-3 w-3" />
                     </button>
                   </div>
                   <div className="mt-3 grid gap-3">

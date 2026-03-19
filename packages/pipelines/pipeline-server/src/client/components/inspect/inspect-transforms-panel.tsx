@@ -1,17 +1,14 @@
 import { useInspectData } from "#hooks/use-inspect-data";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, RouteIcon, Shuffle } from "lucide-react";
 import { useMemo } from "react";
 
-export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms")({
-  component: RouteComponent,
-});
+const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
 
-function RouteComponent() {
-  const params = Route.useParams();
-  const navigate = Route.useNavigate();
+export function InspectTransformsPanel() {
+  const navigate = InspectRoute.useNavigate();
   const { pipeline, search } = useInspectData();
 
   const transforms = useMemo(() => {
@@ -91,10 +88,8 @@ function RouteComponent() {
                           onClick={() => {
                             navigate({
                               search: (current) => ({
-                                q: current.q,
-                                route: current.route,
+                                ...current,
                                 transform: transform.name,
-                                output: current.output,
                               }),
                             });
                           }}
@@ -114,17 +109,20 @@ function RouteComponent() {
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     {selectedTransform.routes.map((routeId) => (
-                      <Link
+                      <button
                         key={routeId}
-                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
-                        params={params}
-                        search={(current) => ({
-                          q: current.q,
-                          route: routeId,
-                          transform: selectedTransform.name,
-                          output: undefined,
-                        })}
-                        className="rounded-lg border border-border/60 bg-muted/10 p-4 transition-colors hover:bg-muted/20"
+                        type="button"
+                        onClick={() => {
+                          navigate({
+                            search: (current) => ({
+                              ...current,
+                              route: routeId,
+                              view: undefined,
+                              transform: selectedTransform.name,
+                            }),
+                          });
+                        }}
+                        className="rounded-lg border border-border/60 bg-muted/10 p-4 text-left transition-colors hover:bg-muted/20"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div>
@@ -133,7 +131,7 @@ function RouteComponent() {
                           </div>
                           <ArrowRight className="h-4 w-4 text-muted-foreground" />
                         </div>
-                      </Link>
+                      </button>
                     ))}
                   </div>
                 </section>

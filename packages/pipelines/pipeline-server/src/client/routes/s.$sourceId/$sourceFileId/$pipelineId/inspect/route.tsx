@@ -1,10 +1,12 @@
-import { createFileRoute, getRouteApi, Link, Outlet } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi, Outlet } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
+
+const views = ["routes", "transforms", "outputs"] as const;
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect")({
   validateSearch: (search): {
@@ -12,21 +14,24 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/ins
     route?: string;
     transform?: string;
     output?: string;
+    view?: "routes" | "transforms" | "outputs";
   } => ({
     q: typeof search.q === "string" ? search.q : undefined,
     route: typeof search.route === "string" ? search.route : undefined,
     transform: typeof search.transform === "string" ? search.transform : undefined,
     output: typeof search.output === "string" ? search.output : undefined,
+    view: views.includes(search.view as typeof views[number]) ? search.view as typeof views[number] : undefined,
   }),
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const params = Route.useParams();
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
   const { pipelineResponse } = PipelineRoute.useLoaderData();
   const pipeline = pipelineResponse.pipeline;
+
+  const activeView = search.view ?? "routes";
 
   const filteredRoutes = useMemo(() => {
     const value = search.q?.trim().toLowerCase() ?? "";
@@ -46,34 +51,6 @@ function RouteComponent() {
     });
   }, [pipeline.routes, search.q]);
 
-  const activeRouteId = useMemo(() => {
-    if (search.route && filteredRoutes.some((route) => route.id === search.route)) {
-      return search.route;
-    }
-
-    if (search.route && pipeline.routes.some((route) => route.id === search.route)) {
-      return search.route;
-    }
-
-    return filteredRoutes[0]?.id ?? pipeline.routes[0]?.id ?? null;
-  }, [filteredRoutes, pipeline.routes, search.route]);
-
-  useEffect(() => {
-    if (!activeRouteId || search.route === activeRouteId) {
-      return;
-    }
-
-    navigate({
-      replace: true,
-      search: (current) => ({
-        q: current.q,
-        route: activeRouteId,
-        transform: current.transform,
-        output: current.output,
-      }),
-    });
-  }, [activeRouteId, navigate, search.route]);
-
   return (
     <div className="p-6 grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
       <Card>
@@ -83,49 +60,23 @@ function RouteComponent() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <Link
-              to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
-              params={params}
-              search={(current) => ({
-                q: current.q,
-                route: current.route,
-                transform: undefined,
-                output: undefined,
-              })}
-              activeProps={{ className: "border-primary/40 bg-primary/5" }}
-              activeOptions={{ exact: true }}
-              className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Routes
-            </Link>
-            <Link
-              to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms"
-              params={params}
-              search={(current) => ({
-                q: current.q,
-                route: current.route,
-                transform: current.transform,
-                output: undefined,
-              })}
-              activeProps={{ className: "border-primary/40 bg-primary/5" }}
-              className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Transforms
-            </Link>
-            <Link
-              to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs"
-              params={params}
-              search={(current) => ({
-                q: current.q,
-                route: current.route,
-                transform: undefined,
-                output: current.output,
-              })}
-              activeProps={{ className: "border-primary/40 bg-primary/5" }}
-              className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Outputs
-            </Link>
+            {views.map((view) => (
+              <button
+                key={view}
+                type="button"
+                onClick={() => {
+                  navigate({
+                    search: (current) => ({
+                      ...current,
+                      view: view === "routes" ? undefined : view,
+                    }),
+                  });
+                }}
+                className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium capitalize transition-colors ${activeView === view ? "border-primary/40 bg-primary/5" : "border-border text-foreground hover:bg-muted"}`}
+              >
+                {view}
+              </button>
+            ))}
           </div>
 
           <Input
@@ -135,10 +86,8 @@ function RouteComponent() {
               navigate({
                 replace: true,
                 search: (current) => ({
+                  ...current,
                   q: value || undefined,
-                  route: current.route,
-                  transform: current.transform,
-                  output: current.output,
                 }),
               });
             }}
@@ -153,17 +102,18 @@ function RouteComponent() {
               </div>
             )}
             {filteredRoutes.map((route) => (
-              <Link
+              <button
                 key={route.id}
-                to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
-                params={params}
-                search={(current) => ({
-                  q: current.q,
-                  route: route.id,
-                  transform: undefined,
-                  output: undefined,
-                })}
-                className={`block rounded-md border px-3 py-2 text-left text-sm ${route.id === activeRouteId ? "border-primary/40 bg-primary/5" : "border-border hover:bg-muted/40"}`}
+                type="button"
+                onClick={() => {
+                  navigate({
+                    search: (current) => ({
+                      ...current,
+                      route: route.id,
+                    }),
+                  });
+                }}
+                className={`block w-full rounded-md border px-3 py-2 text-left text-sm ${route.id === search.route ? "border-primary/40 bg-primary/5" : "border-border hover:bg-muted/40"}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{route.id}</span>
@@ -188,7 +138,7 @@ function RouteComponent() {
                     outputs
                   </span>
                 </div>
-              </Link>
+              </button>
             ))}
           </div>
         </CardContent>

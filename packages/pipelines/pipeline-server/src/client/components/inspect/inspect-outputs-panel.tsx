@@ -1,16 +1,13 @@
 import { useInspectData } from "#hooks/use-inspect-data";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, ChevronDown, ChevronRight, FileOutput, FolderOutput, RouteIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs")({
-  component: RouteComponent,
-});
+const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
 
-function RouteComponent() {
-  const params = Route.useParams();
-  const navigate = Route.useNavigate();
+export function InspectOutputsPanel() {
+  const navigate = InspectRoute.useNavigate();
   const { pipeline, search } = useInspectData();
 
   const outputs = useMemo(() => {
@@ -74,7 +71,10 @@ function RouteComponent() {
                       <CardTitle className="truncate text-lg">
                         {selectedOutput.routeId}
                         {" "}
-                        <span className="text-muted-foreground">output {selectedOutput.outputIndex + 1}</span>
+                        <span className="text-muted-foreground">
+                          output
+                          {selectedOutput.outputIndex + 1}
+                        </span>
                       </CardTitle>
                     </div>
                     <CardDescription className="mt-0.5">
@@ -106,7 +106,7 @@ function RouteComponent() {
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Pipeline outputs</h3>
                   </div>
                   <div className="rounded-lg border border-border/60">
-                    {Array.from(outputsByRoute.entries()).map(([routeId, routeOutputs], groupIndex) => {
+                    {Array.from(outputsByRoute.entries(), ([routeId, routeOutputs], groupIndex) => {
                       const expanded = expandedRoutes.has(routeId);
                       return (
                         <div key={routeId} className={groupIndex > 0 ? "border-t border-border/60" : ""}>
@@ -137,9 +137,8 @@ function RouteComponent() {
                                     onClick={() => {
                                       navigate({
                                         search: (current) => ({
-                                          q: current.q,
+                                          ...current,
                                           route: output.routeId,
-                                          transform: undefined,
                                           output: output.key,
                                         }),
                                       });
@@ -192,22 +191,25 @@ function RouteComponent() {
                     <RouteIcon className="h-4 w-4 text-muted-foreground" />
                     <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Owning route</h3>
                   </div>
-                  <Link
-                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
-                    params={params}
-                    search={(current) => ({
-                      q: current.q,
-                      route: selectedOutput.routeId,
-                      transform: undefined,
-                      output: undefined,
-                    })}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigate({
+                        search: (current) => ({
+                          ...current,
+                          route: selectedOutput.routeId,
+                          view: undefined,
+                          output: undefined,
+                        }),
+                      });
+                    }}
                     className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
                   >
                     Open
                     {" "}
                     {selectedOutput.routeId}
                     <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
+                  </button>
                 </section>
               </CardContent>
             </>

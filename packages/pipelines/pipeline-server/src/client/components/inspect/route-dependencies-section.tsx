@@ -1,27 +1,28 @@
+import { useInspectData } from "#hooks/use-inspect-data";
 import { getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Link2, Package } from "lucide-react";
+import { useMemo } from "react";
 
-const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
-const InspectIndexRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect/");
 
 export function RouteDependenciesSection() {
-  const navigate = InspectIndexRoute.useNavigate();
-  const search = InspectRoute.useSearch();
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const selectedRoute = pipelineResponse.pipeline.routes.find((route) => route.id === search.route)
-    ?? pipelineResponse.pipeline.routes[0]
-    ?? null;
+  const { selectedRoute } = useInspectData();
+  const navigate = InspectRoute.useNavigate();
 
-  const artifactDependencies = selectedRoute?.depends.filter((dependency) => dependency.type === "artifact") ?? [];
+  const artifactDependencies = useMemo(() => {
+    if (!selectedRoute) return [];
+    return selectedRoute.depends.filter((dependency) => dependency.type === "artifact");
+  }, [selectedRoute]);
+
+  if (!selectedRoute) return null;
 
   function selectRoute(routeId: string) {
     navigate({
       search: (current) => ({
-        q: current.q,
+        ...current,
         route: routeId,
         transform: undefined,
-        output: current.output,
       }),
     });
   }
@@ -29,19 +30,17 @@ export function RouteDependenciesSection() {
   return (
     <>
       <section className="space-y-3">
-        <div>
+        <div className="flex items-center gap-2">
+          <Link2 className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Dependencies</h3>
-          <p className="text-sm text-muted-foreground">
-            Route dependencies are clickable. Artifact dependencies stay visible as definition references.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {selectedRoute?.depends.length
-            ? selectedRoute.depends.map((dependency, index) => (
+          {selectedRoute.depends.length
+            ? selectedRoute.depends.map((dependency) => (
                 dependency.type === "route"
                   ? (
                       <button
-                        key={`${dependency.type}-${dependency.routeId}-${index}`}
+                        key={`${dependency.type}-${dependency.routeId}`}
                         type="button"
                         onClick={() => selectRoute(dependency.routeId)}
                         className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
@@ -52,7 +51,7 @@ export function RouteDependenciesSection() {
                       </button>
                     )
                   : (
-                      <Badge key={`${dependency.type}-${index}`} variant="outline">
+                      <Badge key={`${dependency.type}-${dependency.routeId}-${dependency.artifactName}`} variant="outline">
                         artifact:
                         {" "}
                         {dependency.routeId}
@@ -76,14 +75,12 @@ export function RouteDependenciesSection() {
       </section>
 
       <section className="space-y-3">
-        <div>
+        <div className="flex items-center gap-2">
+          <Package className="h-4 w-4 text-muted-foreground" />
           <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Emits</h3>
-          <p className="text-sm text-muted-foreground">
-            Artifacts emitted by this route and their scope.
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          {selectedRoute?.emits.length
+          {selectedRoute.emits.length
             ? selectedRoute.emits.map((emit) => (
                 <Badge key={emit.id} variant="secondary">
                   {emit.id}
