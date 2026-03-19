@@ -6,8 +6,14 @@ import { createDebugger } from "@ucdjs-internal/shared";
 import { assertNotUNCPath, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import { defineBackend } from "../define";
-import { BackendEntryIsDirectory, BackendFileNotFound } from "../errors";
-import { assertFilePath, normalizeEntryPath, normalizePathSeparators, sortEntries } from "../utils";
+import { BackendEntryIsDirectory, BackendError, BackendFileNotFound } from "../errors";
+import {
+  assertFilePath,
+  isDirectoryPath,
+  normalizeEntryPath,
+  normalizePathSeparators,
+  sortEntries,
+} from "../utils";
 
 const debug = createDebugger("ucdjs:fs-backend:node");
 
@@ -37,6 +43,25 @@ function normalizeListError(path: string, error: unknown): never {
   }
 
   throw error;
+}
+
+class CopyDestinationAlreadyExistsError extends BackendError {
+  constructor(path: string) {
+    super(`Copy destination already exists: ${path}`);
+    this.name = "CopyDestinationAlreadyExistsError";
+  }
+}
+
+async function safeStat(path: string): Promise<Awaited<ReturnType<typeof fsp.stat>> | null> {
+  try {
+    return await fsp.stat(path);
+  } catch (error) {
+    if (isNodeErrorWithCode(error, "ENOENT")) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 async function safeExists(path: string): Promise<boolean> {
@@ -175,14 +200,41 @@ const NodeFileSystemBackend = defineBackend({
       async copy(sourcePath, destinationPath, options) {
         const resolvedSourcePath = resolveSafePath(basePath, sourcePath);
         const resolvedDestinationPath = resolveSafePath(basePath, destinationPath);
-        const destinationParentDir = nodePath.dirname(resolvedDestinationPath);
+        const sourceStats = await safeStat(resolvedSourcePath);
+
+        if (sourceStats == null) {
+          throw new BackendFileNotFound(sourcePath);
+        }
+
+        const destinationStats = await safeStat(resolvedDestinationPath);
+        const destinationActsAsDirectory = isDirectoryPath(destinationPath)
+          || destinationStats?.isDirectory() === true;
+
+        if (sourceStats.isDirectory() && options?.recursive !== true) {
+          throw new BackendEntryIsDirectory(sourcePath);
+        }
+
+        const resolvedCopyDestinationPath = !sourceStats.isDirectory() && destinationActsAsDirectory
+          ? nodePath.join(resolvedDestinationPath, nodePath.basename(resolvedSourcePath))
+          : resolvedDestinationPath;
+        const copyDestinationPath = normalizeEntryPath(
+          normalizePathSeparators(nodePath.relative(basePath, resolvedCopyDestinationPath)),
+          "file",
+        );
+        const copyDestinationStats = await safeStat(resolvedCopyDestinationPath);
+
+        if (options?.overwrite === false && copyDestinationStats != null) {
+          throw new CopyDestinationAlreadyExistsError(copyDestinationPath);
+        }
+
+        const destinationParentDir = nodePath.dirname(resolvedCopyDestinationPath);
 
         if (!(await safeExists(destinationParentDir))) {
           await fsp.mkdir(destinationParentDir, { recursive: true });
         }
 
-        await fsp.cp(resolvedSourcePath, resolvedDestinationPath, {
-          recursive: options?.recursive ?? false,
+        await fsp.cp(resolvedSourcePath, resolvedCopyDestinationPath, {
+          recursive: sourceStats.isDirectory(),
           force: options?.overwrite ?? true,
           errorOnExist: options?.overwrite === false,
         });

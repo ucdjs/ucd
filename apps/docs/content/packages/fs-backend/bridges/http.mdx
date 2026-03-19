@@ -1,0 +1,94 @@
+---
+title: HTTP Backend
+description: Read-only HTTP backend for backend-compatible file APIs
+---
+
+# HTTP File System Backend
+
+The HTTP backend provides read-only access to file content, directory listings, and metadata served over HTTP.
+
+It is intended for APIs that expose files and directories using the `fs-backend` compatibility contract.
+
+## Import
+
+```typescript
+import HTTPFileSystemBackend from "@ucdjs/fs-backend/backends/http";
+```
+
+## Configuration
+
+```typescript
+const backend = HTTPFileSystemBackend({
+  baseUrl: new URL("https://api.ucdjs.dev/api/v1/files"),
+});
+```
+
+### Options
+
+- `baseUrl` (`URL` or string, optional): base endpoint for all file operations
+
+If omitted, the backend defaults to the UCD.js file API base URL.
+
+## Supported Operations
+
+| Operation | Supported | Notes |
+|---|---|---|
+| `read` | Yes | Fetches text with `GET` |
+| `readBytes` | Yes | Fetches binary data with `GET` |
+| `list` | Yes | Expects JSON directory listing |
+| `exists` | Yes | Uses `HEAD` |
+| `stat` | Yes | Uses metadata headers from `HEAD` |
+| `write` | No | Read-only backend |
+| `mkdir` | No | Read-only backend |
+| `remove` | No | Read-only backend |
+| `copy` | No | Read-only backend |
+
+## How It Works
+
+### File Reads
+
+`read()` and `readBytes()` make a `GET` request to the resolved file URL.
+
+- `404` becomes `BackendFileNotFound`
+- other non-2xx responses become backend errors
+
+### Directory Listings
+
+`list()` also uses `GET`, but expects a JSON array of backend-compatible entries.
+
+The HTTP backend:
+
+- accepts flat directory responses
+- normalizes directory entries to include `children: []` in non-recursive mode
+- performs recursive walking itself by following nested directory entries
+- sorts results deterministically
+
+### Metadata
+
+`stat()` uses `HEAD` and reads metadata from headers:
+
+- `X-UCD-Stat-Type` for `file` vs `directory`
+- `X-UCD-Stat-Size` for size
+- `Last-Modified` for modification time, when available
+
+### Existence
+
+`exists()` is intentionally lightweight and lossy:
+
+- `200` becomes `true`
+- `404` becomes `false`
+- if you need a typed error or metadata, use `stat()`
+
+## Compatibility Contract
+
+The HTTP backend is only as reliable as the server it talks to.
+
+If you are building an HTTP application that should work with this backend, follow the [HTTP compatibility guide](/packages/fs-backend/http-compat).
+
+That guide standardizes:
+
+- path shape
+- `GET` behavior for files and directories
+- `HEAD` metadata headers
+- error status handling
+- recursive listing expectations

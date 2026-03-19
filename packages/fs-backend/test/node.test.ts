@@ -152,6 +152,88 @@ describe("node backend", () => {
     await expect(backend.read("/copied.txt")).resolves.toBe("hello");
   });
 
+  it("copies files and creates missing parent directories", async () => {
+    const dir = await testdir({
+      "foo.txt": "hello",
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await backend.copy?.("/foo.txt", "/deep/copied.txt");
+
+    await expect(backend.read("/deep/copied.txt")).resolves.toBe("hello");
+  });
+
+  it("throws BackendFileNotFound when copying a missing source", async () => {
+    const dir = await testdir();
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.copy?.("/missing.txt", "/copied.txt")).rejects.toThrow(BackendFileNotFound);
+  });
+
+  it("copies a file into a directory-like destination path", async () => {
+    const dir = await testdir({
+      "foo.txt": "hello",
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await backend.copy?.("/foo.txt", "/target-dir/");
+
+    await expect(backend.read("/target-dir/foo.txt")).resolves.toBe("hello");
+  });
+
+  it("copies a file into an existing directory destination", async () => {
+    const dir = await testdir({
+      "foo.txt": "hello",
+      "target-dir": {},
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await backend.copy?.("/foo.txt", "/target-dir");
+
+    await expect(backend.read("/target-dir/foo.txt")).resolves.toBe("hello");
+  });
+
+  it("copies directories recursively to the exact target path", async () => {
+    const dir = await testdir({
+      source: {
+        "child.txt": "hello",
+        "nested": {
+          "deep.txt": "world",
+        },
+      },
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await backend.copy?.("/source/", "/copied/", { recursive: true });
+
+    await expect(backend.read("/copied/child.txt")).resolves.toBe("hello");
+    await expect(backend.read("/copied/nested/deep.txt")).resolves.toBe("world");
+  });
+
+  it("throws BackendEntryIsDirectory when copying a directory without recursive mode", async () => {
+    const dir = await testdir({
+      source: {
+        "child.txt": "hello",
+      },
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.copy?.("/source/", "/copied/")).rejects.toThrow(BackendEntryIsDirectory);
+  });
+
+  it("rejects overwrite false and preserves the destination", async () => {
+    const dir = await testdir({
+      "foo.txt": "hello",
+      "copied.txt": "existing",
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.copy?.("/foo.txt", "/copied.txt", { overwrite: false }))
+      .rejects
+      .toThrow("Copy destination already exists: /copied.txt");
+    await expect(backend.read("/copied.txt")).resolves.toBe("existing");
+  });
+
   it("returns stat information for files", async () => {
     const dir = await testdir({
       "foo.txt": "hello",

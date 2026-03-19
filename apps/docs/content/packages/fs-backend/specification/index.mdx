@@ -1,0 +1,126 @@
+---
+title: Overview
+description: Complete specification for the FileSystemBackend interface
+---
+
+# FileSystemBackend Specification
+
+This page describes the public contract behind `@ucdjs/fs-backend`.
+
+The goal of the package is to make filesystem-like operations portable across different storage implementations without hiding the important semantics.
+
+## FileSystemBackend Interface
+
+```typescript
+interface FileSystemBackend
+  extends FileSystemBackendOperations, FileSystemBackendMutableOperations {
+  readonly features: ReadonlySet<FileSystemBackendFeature>;
+  readonly meta: FileSystemBackendMeta;
+  hook: HookableCore<BackendHooks>["hook"];
+}
+```
+
+## Required Operations
+
+Every backend must implement:
+
+```typescript
+interface FileSystemBackendOperations {
+  read(path: string): Promise<string>;
+  readBytes(path: string): Promise<Uint8Array>;
+  list(path: string, options?: ListOptions): Promise<BackendEntry[]>;
+  exists(path: string): Promise<boolean>;
+  stat(path: string): Promise<BackendStat>;
+}
+```
+
+### `read(path)`
+
+Reads a file as text.
+
+Use this for UTF-8 and text-oriented content. For binary data, use `readBytes()`.
+
+### `readBytes(path)`
+
+Reads a file as raw bytes.
+
+This is the binary-safe path and should be the default choice for archives, compressed assets, or unknown content types.
+
+### `list(path, options?)`
+
+Lists a directory and returns backend entries.
+
+```typescript
+interface ListOptions {
+  recursive?: boolean;
+}
+```
+
+- non-recursive listings return the immediate children
+- recursive listings return a nested tree using `children`
+- directory entries use canonical directory paths
+
+### `exists(path)`
+
+Best-effort existence check.
+
+This intentionally returns only a boolean. It may flatten “missing” and “could not determine existence” into `false`, especially for remote transports.
+
+### `stat(path)`
+
+Returns metadata:
+
+```typescript
+interface BackendStat {
+  type: "file" | "directory";
+  size: number;
+  mtime?: Date;
+}
+```
+
+Use `stat()` when you need a typed failure mode or authoritative metadata.
+
+## Optional Mutable Operations
+
+```typescript
+interface FileSystemBackendMutableOperations {
+  write?(path: string, data: string | Uint8Array): Promise<void>;
+  mkdir?(path: string): Promise<void>;
+  remove?(path: string, options?: RemoveOptions): Promise<void>;
+  copy?(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
+}
+```
+
+## Path Contract
+
+Backends should expose canonical paths:
+
+- all paths start with `/`
+- directories end with `/`
+- files do not end with `/`
+
+Examples:
+
+- `/15.1.0/ucd/`
+- `/15.1.0/ucd/UnicodeData.txt`
+
+This is one of the biggest differences from the older `fs-bridge` layer: consumers should not need to guess whether a path is canonical.
+
+## Metadata and Identity
+
+Every backend also exposes:
+
+- `meta`: backend name and description
+- `features`: runtime support for optional operations
+- `hook()`: lifecycle hooks for observability
+
+## Custom Backends
+
+Use `defineBackend()` to implement your own backend. That gives you:
+
+- option validation
+- feature inference
+- hook wrapping
+- consistent unsupported-operation behavior
+
+For HTTP-style services, follow the [HTTP compatibility guide](/packages/fs-backend/http-compat).

@@ -37,14 +37,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@luxass/utils": "catalog:runtime"
+    "@luxass/utils": "catalog:runtime",
+    "pathe": "catalog:runtime"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
-    "pathe": "catalog:runtime",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build"

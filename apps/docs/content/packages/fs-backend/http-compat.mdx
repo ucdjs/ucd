@@ -1,0 +1,161 @@
+---
+title: HTTP Compatibility Guide
+description: Build an HTTP application that is compatible with @ucdjs/fs-backend
+---
+
+# HTTP Compatibility Guide
+
+This guide defines the standard for an HTTP application that should work with `@ucdjs/fs-backend`'s built-in HTTP backend.
+
+The goal is simple: if your service follows this contract, consumers can point `HTTPFileSystemBackend` at it and use the standard backend API without custom adapters.
+
+## Base Shape
+
+The backend assumes a single `baseUrl` and issues requests relative to it:
+
+- `GET {baseUrl}/{path}` for files and directory listings
+- `HEAD {baseUrl}/{path}` for metadata and existence checks
+
+Example:
+
+```typescript
+import HTTPFileSystemBackend from "@ucdjs/fs-backend/backends/http";
+
+const backend = HTTPFileSystemBackend({
+  baseUrl: new URL("https://api.example.com/files"),
+});
+```
+
+## Path Rules
+
+Your HTTP application should expose canonical backend paths:
+
+- all paths start with `/`
+- directories end with `/`
+- files do not end with `/`
+
+Examples:
+
+- `/16.0.0/ucd/`
+- `/16.0.0/ucd/UnicodeData.txt`
+
+## `GET` Contract
+
+### File Reads
+
+When a file path is requested with `GET`, return the raw file content.
+
+- `200 OK` with the file body for existing files
+- `404 Not Found` for missing files
+- other non-2xx responses are treated as backend errors
+
+`read()` expects text and `readBytes()` expects binary-safe responses, so your application should return the real file bytes and an appropriate content type.
+
+### Directory Listings
+
+When a directory path is requested with `GET`, return JSON.
+
+Expected response shape:
+
+```json
+[
+  { "type": "file", "name": "UnicodeData.txt", "path": "/16.0.0/ucd/UnicodeData.txt" },
+  { "type": "directory", "name": "emoji", "path": "/16.0.0/ucd/emoji/" }
+]
+```
+
+Rules:
+
+- listings should be non-recursive
+- directory entries may omit `children`
+- extra fields like `lastModified` are tolerated
+- `404` means the directory does not exist
+- `403` should remain an error, not an empty directory
+
+The HTTP backend handles recursive walking by following directory entries itself.
+
+## `HEAD` Contract
+
+`HEAD` is the authoritative metadata endpoint for HTTP-compatible backends.
+
+### Required Header
+
+- `X-UCD-Stat-Type`: `file` or `directory`
+
+### Recommended Headers
+
+- `X-UCD-Stat-Size`: byte size for files
+- `Last-Modified`: modification timestamp, when available
+- `Content-Type`: content type for files
+
+Example:
+
+```http
+HTTP/1.1 200 OK
+X-UCD-Stat-Type: file
+X-UCD-Stat-Size: 12345
+Last-Modified: Tue, 17 Mar 2026 10:00:00 GMT
+Content-Type: text/plain; charset=utf-8
+```
+
+For directories:
+
+```http
+HTTP/1.1 200 OK
+X-UCD-Stat-Type: directory
+```
+
+## Semantics Consumers Will See
+
+### `exists()`
+
+`exists()` uses `HEAD` and is intentionally lossy:
+
+- `200` becomes `true`
+- `404` becomes `false`
+- callers should use `stat()` when they need more than a boolean
+
+### `stat()`
+
+`stat()` uses `HEAD` and expects your server to provide `X-UCD-Stat-Type`.
+
+- `404` becomes `BackendFileNotFound`
+- `type` comes from `X-UCD-Stat-Type`
+- `size` prefers `X-UCD-Stat-Size`
+
+## Minimal Compatibility Checklist
+
+Your HTTP application is compatible if it does all of the following:
+
+1. Serves files from `GET`.
+2. Serves non-recursive directory JSON from `GET`.
+3. Uses canonical backend paths in directory responses.
+4. Returns `X-UCD-Stat-Type` from `HEAD`.
+5. Returns `404` for missing paths.
+6. Does not turn authorization failures into fake empty directory listings.
+
+## Example Server Shape
+
+```typescript
+app.get("/files/*", async (req, res) => {
+  if (isDirectory(req.path)) {
+    return res.json(await listDirectory(req.path));
+  }
+
+  return res.send(await readFile(req.path));
+});
+
+app.head("/files/*", async (req, res) => {
+  const stat = await getStat(req.path);
+
+  res.setHeader("X-UCD-Stat-Type", stat.type);
+  if (stat.type === "file") {
+    res.setHeader("X-UCD-Stat-Size", String(stat.size));
+  }
+  if (stat.mtime) {
+    res.setHeader("Last-Modified", stat.mtime.toUTCString());
+  }
+
+  res.status(200).end();
+});
+```

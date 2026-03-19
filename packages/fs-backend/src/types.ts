@@ -43,6 +43,13 @@ export interface FileSystemBackendMutableOperations {
   write?: (path: string, data: string | Uint8Array) => Promise<void>;
   mkdir?: (path: string) => Promise<void>;
   remove?: (path: string, options?: RemoveOptions) => Promise<void>;
+  /**
+   * Copy a file or directory to the exact destination path within the same backend.
+   *
+   * File copies use `destinationPath` as an exact target path by default, but
+   * will copy into a destination directory when the destination ends with `/`
+   * or already exists as a directory. Directory copies require `recursive: true`.
+   */
   copy?: (sourcePath: string, destinationPath: string, options?: CopyOptions) => Promise<void>;
 }
 
