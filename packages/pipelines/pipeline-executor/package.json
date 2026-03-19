@@ -22,6 +22,7 @@
     ".": "./dist/index.mjs",
     "./node": "./dist/node.mjs",
     "./shared": "./dist/shared.mjs",
+    "./traces": "./dist/traces.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
