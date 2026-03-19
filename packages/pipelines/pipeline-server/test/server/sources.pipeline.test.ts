@@ -96,6 +96,46 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
     expect(["completed", "failed"]).toContain(execution?.status);
   });
 
+  it("recreates a missing workspace row before starting an execution", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, "test"));
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versions: ["16.0.0"] }),
+    }));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data).toEqual(expect.objectContaining({
+      success: true,
+      executionId: expect.any(String),
+    }));
+  });
+
+  it("still executes when the trace table is unavailable", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+
+    db.$client.exec("drop table execution_traces");
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versions: ["16.0.0"] }),
+    }));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data).toEqual(expect.objectContaining({
+      success: true,
+      executionId: expect.any(String),
+    }));
+  });
+
   it("starts an execution for a cached remote source", async () => {
     const tmpBaseDir = await testdir({
       github: {

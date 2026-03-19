@@ -47,3 +47,4 @@ ucd-generated
 .vite-inspect
 .wrangler
 .dev.vars
+**/.tmp

@@ -21,6 +21,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./node": "./dist/node.mjs",
+    "./shared": "./dist/shared.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

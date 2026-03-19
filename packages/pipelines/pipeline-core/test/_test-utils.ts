@@ -5,7 +5,7 @@ import type {
   PipelineDependency,
   PipelineFilter,
   PipelineRouteDefinition,
-  RouteOutput,
+  RouteOutputDefinition,
   SourceBackend,
 } from "../src";
 import type { AnyPipelineTransformDefinition } from "../src/transform";
@@ -44,7 +44,7 @@ export interface MockRouteOptions<
   depends?: TDepends;
   emits?: TEmits;
   transforms?: TTransforms;
-  out?: RouteOutput;
+  out?: RouteOutputDefinition;
   cache?: boolean;
   filter?: PipelineFilter;
   parser?: ParserFn;

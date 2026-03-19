@@ -125,7 +125,9 @@ const graphNodeDetailSchema = {
   output: [
     { label: "Node ID", key: "id", type: "text" },
     { label: "Output Index", key: "outputIndex", type: "text" },
+    { label: "Output ID", key: "outputId", type: "text", hideIfEmpty: true },
     { label: "Property", key: "property", type: "text", hideIfEmpty: true },
+    { label: "Locator", key: "locator", type: "content", hideIfEmpty: true },
   ],
 } as const satisfies Record<PipelineGraphNodeType, readonly GraphDetailFieldSchema[]>;
 
@@ -248,10 +250,25 @@ function getNodeLabel(node: PipelineGraphNode): string {
     case "artifact":
       return node.artifactId;
     case "output":
+      if (node.outputId && node.outputId !== "default") {
+        if (node.locator) {
+          return `${node.outputId} -> ${getLocatorName(node.locator)}`;
+        }
+        return node.outputId;
+      }
+      if (node.locator) {
+        return getLocatorName(node.locator);
+      }
       return node.property
         ? `Output[${node.outputIndex}].${node.property}`
         : `Output[${node.outputIndex}]`;
   }
+}
+
+function getLocatorName(locator: string): string {
+  const normalized = locator.replace(/^memory:\/\//, "");
+  const parts = normalized.split("/").filter(Boolean);
+  return parts.at(-1) ?? locator;
 }
 
 function getValueByKeyPath(value: unknown, keyPath: string): unknown {

@@ -13,6 +13,7 @@ import {
   sourcesOverviewRouter,
   sourcesPipelineRouter,
   sourcesSourceRouter,
+  sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs/env";
@@ -100,6 +101,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/sources", sourcesEventsRouter);
   app.mount("/api/sources", sourcesLogsRouter);
   app.mount("/api/sources", sourcesGraphRouter);
+  app.mount("/api/sources", sourcesTracesRouter);
 
   return app;
 }

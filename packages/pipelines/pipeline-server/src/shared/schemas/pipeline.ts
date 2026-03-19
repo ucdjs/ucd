@@ -29,6 +29,12 @@ const PipelineRouteEmitSchema = z.object({
 });
 
 const PipelineRouteOutputSchema = z.object({
+  id: z.string(),
+  sink: z.string(),
+  format: z.enum(["json", "text"]),
+  path: z.string().optional(),
+  dynamicPath: z.boolean().default(false),
+  pathSource: z.string().optional(),
   dir: z.string().optional(),
   fileName: z.string().optional(),
 });

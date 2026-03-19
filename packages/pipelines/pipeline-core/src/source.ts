@@ -24,6 +24,13 @@ export interface PipelineSourceDefinition<TId extends string = string> {
   backend: SourceBackend;
   includes?: PipelineFilter;
   excludes?: PipelineFilter;
+  kind?: "standard" | "pipeline-output";
+}
+
+export interface PipelineOutputSourceDefinition<TId extends string = string> extends PipelineSourceDefinition<TId> {
+  kind: "pipeline-output";
+  pipelineId: string;
+  outputId?: string;
 }
 
 export interface SourceFileContext extends FileContext {
@@ -42,11 +49,46 @@ export function definePipelineSource<const TId extends string>(
   return definition;
 }
 
+const unsupportedPipelineOutputBackend: SourceBackend = {
+  listFiles: async () => {
+    throw new Error("Pipeline output sources are resolved by the executor and cannot be listed directly.");
+  },
+  readFile: async () => {
+    throw new Error("Pipeline output sources are resolved by the executor and cannot be read directly.");
+  },
+};
+
+export function pipelineOutputSource<const TId extends string = string>(
+  options: {
+    id?: TId;
+    pipelineId: string;
+    outputId?: string;
+  },
+): PipelineOutputSourceDefinition<TId> {
+  return {
+    id: (options.id ?? `pipeline:${options.pipelineId}${options.outputId ? `:${options.outputId}` : ""}`) as TId,
+    kind: "pipeline-output",
+    pipelineId: options.pipelineId,
+    outputId: options.outputId,
+    backend: unsupportedPipelineOutputBackend,
+  };
+}
+
+export function isPipelineOutputSource(
+  source: PipelineSourceDefinition,
+): source is PipelineOutputSourceDefinition {
+  return source.kind === "pipeline-output";
+}
+
 export async function resolveSourceFiles(
   source: PipelineSourceDefinition,
   version: string,
   { logger }: ResolveSourceContext,
 ): Promise<SourceFileContext[]> {
+  if (isPipelineOutputSource(source)) {
+    return [];
+  }
+
   const allFiles = await source.backend.listFiles(version);
 
   const filteredFiles = allFiles.filter((file) => {

@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
 import type { PipelineLogger } from "./logger";
+import type { RouteOutputDefinition } from "./output";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
   FileContext,
@@ -9,7 +10,6 @@ import type {
   PipelineFilter,
   PropertyJson,
   ResolvedEntry,
-  RouteOutput,
 } from "./types";
 
 export interface ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> {
@@ -61,7 +61,8 @@ export interface PipelineRouteDefinition<
   parser: ParserFn;
   transforms?: TTransforms;
   resolver: PipelineRouteResolver<TDepends, TEmits, TTransforms, TOutput>;
-  out?: RouteOutput;
+  out?: RouteOutputDefinition;
+  outputs?: RouteOutputDefinition[];
   cache?: boolean;
 }
 

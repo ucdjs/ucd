@@ -2,6 +2,7 @@ import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { PipelineExecutionRuntime } from "./runtime";
+import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./traces";
 
 export interface PipelineSummary {
   versions: string[];
@@ -28,6 +29,8 @@ export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
 export interface PipelineExecutionResult {
   id: string;
   data: unknown[];
+  outputManifest: PipelineOutputManifestEntry[];
+  traces: PipelineTraceRecord[];
   graph: PipelineGraph;
   errors: PipelineError[];
   summary: PipelineSummary;
@@ -59,6 +62,7 @@ export interface PipelineExecutorOptions {
   cacheStore?: CacheStore;
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
+  onTrace?: (trace: PipelineTraceRecord) => void | Promise<void>;
   runtime?: PipelineExecutionRuntime;
 }
 

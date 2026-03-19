@@ -88,6 +88,22 @@ export {
 export type { PipelineLogger } from "./logger";
 
 export type {
+  FilesystemOutputSinkDefinition,
+  MemoryOutputSinkDefinition,
+  NormalizedRouteOutputDefinition,
+  OutputSinkDefinition,
+  RouteOutputDefinition,
+  RouteOutputPathContext,
+  RouteOutputPathResolver,
+} from "./output";
+
+export {
+  filesystemSink,
+  memorySink,
+  normalizeRouteOutputs,
+} from "./output";
+
+export type {
   AnyPipelineDefinition,
   FallbackRouteDefinition,
   InferPipelineOutput,
@@ -122,6 +138,7 @@ export type {
   FileMetadata,
   InferSourceId,
   InferSourceIds,
+  PipelineOutputSourceDefinition,
   PipelineSourceDefinition,
   ResolveSourceContext,
   SourceBackend,
@@ -131,6 +148,8 @@ export type {
 
 export {
   definePipelineSource,
+  isPipelineOutputSource,
+  pipelineOutputSource,
   resolveMultipleSourceFiles,
   resolveSourceFiles,
 } from "./source";
@@ -160,7 +179,6 @@ export type {
   ResolveContext,
   ResolvedEntry,
   ResolverFn,
-  RouteOutput,
   RowContext,
 } from "./types";
 
