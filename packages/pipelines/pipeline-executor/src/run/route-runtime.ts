@@ -9,11 +9,11 @@ import type {
   ResolvedEntry,
   RouteResolveContext,
 } from "@ucdjs/pipelines-core";
-import type { PipelineExecutionRuntime } from "./runtime";
+import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
 import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
 import { applyTransforms } from "@ucdjs/pipelines-core";
-import { createPipelineLogger } from "./logger";
+import { createPipelineLogger } from "../logger";
 import { createParseContext } from "./source-files";
 
 export interface ProcessRouteResult {
