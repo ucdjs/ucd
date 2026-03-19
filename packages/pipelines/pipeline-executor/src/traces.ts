@@ -123,7 +123,7 @@ export function buildOutputManifestFromTraces(
 
   for (const trace of traces) {
     if (trace.kind === "output.resolved") {
-      const key = `${trace.routeId}:${trace.outputIndex}:${trace.outputId}:${trace.locator}`;
+      const key = getOutputManifestKey(trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
       manifest.set(key, {
         outputIndex: trace.outputIndex,
         outputId: trace.outputId,
@@ -140,19 +140,14 @@ export function buildOutputManifestFromTraces(
     }
 
     if (trace.kind === "output.written") {
-      for (const [key, entry] of manifest.entries()) {
-        if (
-          entry.routeId === trace.routeId
-          && entry.outputIndex === trace.outputIndex
-          && entry.outputId === trace.outputId
-          && entry.locator === trace.locator
-        ) {
-          manifest.set(key, {
-            ...entry,
-            status: trace.status,
-            error: trace.error,
-          });
-        }
+      const key = getOutputManifestKey(trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
+      const entry = manifest.get(key);
+      if (entry) {
+        manifest.set(key, {
+          ...entry,
+          status: trace.status,
+          error: trace.error,
+        });
       }
     }
   }
@@ -163,4 +158,13 @@ export function buildOutputManifestFromTraces(
       || left.outputId.localeCompare(right.outputId)
       || left.locator.localeCompare(right.locator);
   });
+}
+
+function getOutputManifestKey(
+  routeId: string,
+  outputIndex: number,
+  outputId: string,
+  locator: string,
+): string {
+  return `${routeId}:${outputIndex}:${outputId}:${locator}`;
 }
