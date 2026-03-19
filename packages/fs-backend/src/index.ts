@@ -19,6 +19,7 @@ export type {
   FileSystemBackend,
   FileSystemBackendFeature,
   FileSystemBackendMeta,
+  FileSystemBackendMutableMethods,
   FileSystemBackendMutableOperations,
   FileSystemBackendOperations,
   ListOptions,

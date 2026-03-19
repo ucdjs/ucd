@@ -11,7 +11,7 @@ Replaces `@ucdjs/fs-bridge` as the single filesystem abstraction for the entire 
 
 ## Operations
 
-Five required, four optional:
+Five required operations, four optional backend capabilities:
 
 ```ts
 interface FileSystemBackendOperations {
@@ -26,11 +26,11 @@ interface ListOptions {
   recursive?: boolean;
 }
 
-interface FileSystemBackendMutableOperations {
-  write?(path: string, data: string | Uint8Array): Promise<void>;
-  mkdir?(path: string): Promise<void>;
-  remove?(path: string, options?: RemoveOptions): Promise<void>;
-  copy?(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
+interface FileSystemBackendMutableMethods {
+  write(path: string, data: string | Uint8Array): Promise<void>;
+  mkdir(path: string): Promise<void>;
+  remove(path: string, options?: RemoveOptions): Promise<void>;
+  copy(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
 }
 
 interface RemoveOptions {
@@ -43,6 +43,10 @@ interface CopyOptions {
   overwrite?: boolean;
 }
 ```
+
+Backend instances always expose `write`, `mkdir`, `remove`, and `copy`.
+Unsupported mutable operations throw `BackendUnsupportedOperation` and should be
+guarded with `features.has(...)` when the current code path depends on them.
 
 **Notes:**
 - `list` not `listdir` — generic listing, not a POSIX syscall name
@@ -86,7 +90,7 @@ backend.features.has("write")  // true on node backend, false on http backend
 ```ts
 interface FileSystemBackend
   extends FileSystemBackendOperations,
-    FileSystemBackendMutableOperations {
+    FileSystemBackendMutableMethods {
   readonly features: ReadonlySet<BackendFeature>;
   readonly meta: { name: string; description?: string };
   hook: HookableCore<BackendHooks>["hook"];

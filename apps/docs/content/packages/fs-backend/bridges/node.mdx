@@ -69,7 +69,7 @@ That means a recursive `list()` result can be used directly by consumers without
 `write()` automatically creates missing parent directories:
 
 ```typescript
-await backend.write?.("/deep/nested/file.txt", "hello");
+await backend.write("/deep/nested/file.txt", "hello");
 ```
 
 ### `copy()`
@@ -81,20 +81,20 @@ await backend.write?.("/deep/nested/file.txt", "hello");
 - exact target path:
 
 ```typescript
-await backend.copy?.("/foo.txt", "/copied.txt");
+await backend.copy("/foo.txt", "/copied.txt");
 ```
 
 - copy into a directory-like destination:
 
 ```typescript
-await backend.copy?.("/foo.txt", "/target-dir/");
+await backend.copy("/foo.txt", "/target-dir/");
 // creates /target-dir/foo.txt
 ```
 
 - existing directory destination:
 
 ```typescript
-await backend.copy?.("/foo.txt", "/target-dir");
+await backend.copy("/foo.txt", "/target-dir");
 // if /target-dir already exists as a directory, creates /target-dir/foo.txt
 ```
 
@@ -103,7 +103,7 @@ await backend.copy?.("/foo.txt", "/target-dir");
 Directory copies require `recursive: true`:
 
 ```typescript
-await backend.copy?.("/source/", "/copied/", { recursive: true });
+await backend.copy("/source/", "/copied/", { recursive: true });
 ```
 
 Without `recursive: true`, the backend throws `BackendEntryIsDirectory`.

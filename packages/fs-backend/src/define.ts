@@ -18,6 +18,8 @@ export function defineBackend<
   backendDefinition: BackendDefinition<TOptionsSchema>,
 ): BackendFactory<TOptionsSchema> {
   return (...args) => {
+    // When no optionsSchema is provided, z.never().optional() accepts undefined
+    // for no-arg factories while still rejecting any unexpected options value.
     const parsedOptions = (backendDefinition.optionsSchema ?? z.never().optional()).safeParse(args[0]);
 
     if (!parsedOptions.success) {
@@ -39,21 +41,21 @@ export function defineBackend<
 
     const hooks = new HookableCore<BackendHooks>();
     const features = inferFeaturesFromOperations(operations);
-
-    const backend: FileSystemBackend = {
+    const backend = {
       meta: backendDefinition.meta,
       features,
       hook: hooks.hook.bind(hooks),
-      read: createOperationWrapper("read", { hooks, operations }),
-      readBytes: createOperationWrapper("readBytes", { hooks, operations }),
-      list: createOperationWrapper("list", { hooks, operations }),
-      exists: createOperationWrapper("exists", { hooks, operations }),
-      stat: createOperationWrapper("stat", { hooks, operations }),
-      write: createOperationWrapper("write", { hooks, operations }),
-      mkdir: createOperationWrapper("mkdir", { hooks, operations }),
-      remove: createOperationWrapper("remove", { hooks, operations }),
-      copy: createOperationWrapper("copy", { hooks, operations }),
-    };
+    } as FileSystemBackend;
+
+    backend.read = createOperationWrapper("read", { hooks, operations, executionContext: backend });
+    backend.readBytes = createOperationWrapper("readBytes", { hooks, operations, executionContext: backend });
+    backend.list = createOperationWrapper("list", { hooks, operations, executionContext: backend });
+    backend.exists = createOperationWrapper("exists", { hooks, operations, executionContext: backend });
+    backend.stat = createOperationWrapper("stat", { hooks, operations, executionContext: backend });
+    backend.write = createOperationWrapper("write", { hooks, operations, executionContext: backend });
+    backend.mkdir = createOperationWrapper("mkdir", { hooks, operations, executionContext: backend });
+    backend.remove = createOperationWrapper("remove", { hooks, operations, executionContext: backend });
+    backend.copy = createOperationWrapper("copy", { hooks, operations, executionContext: backend });
 
     if (backendDefinition.symbol) {
       (backend as unknown as Record<symbol, boolean>)[backendDefinition.symbol] = true;

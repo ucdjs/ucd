@@ -13,7 +13,7 @@ The goal of the package is to make filesystem-like operations portable across di
 
 ```typescript
 interface FileSystemBackend
-  extends FileSystemBackendOperations, FileSystemBackendMutableOperations {
+  extends FileSystemBackendOperations, FileSystemBackendMutableMethods {
   readonly features: ReadonlySet<FileSystemBackendFeature>;
   readonly meta: FileSystemBackendMeta;
   hook: HookableCore<BackendHooks>["hook"];
@@ -80,20 +80,24 @@ interface BackendStat {
 
 Use `stat()` when you need a typed failure mode or authoritative metadata.
 
-## Optional Mutable Operations
+## Mutable Operations
 
 ```typescript
-interface FileSystemBackendMutableOperations {
-  write?(path: string, data: string | Uint8Array): Promise<void>;
-  mkdir?(path: string): Promise<void>;
-  remove?(path: string, options?: RemoveOptions): Promise<void>;
-  copy?(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
+interface FileSystemBackendMutableMethods {
+  write(path: string, data: string | Uint8Array): Promise<void>;
+  mkdir(path: string): Promise<void>;
+  remove(path: string, options?: RemoveOptions): Promise<void>;
+  copy(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
 }
 ```
 
+These methods are always present on a `FileSystemBackend`.
+
+Use `backend.features` or `assertFeature()` to check whether a backend actually supports a mutable operation before relying on it. Unsupported operations throw `BackendUnsupportedOperation`.
+
 ## Path Contract
 
-Backends should expose canonical paths:
+Backends must return canonical paths:
 
 - all paths start with `/`
 - directories end with `/`
@@ -105,6 +109,8 @@ Examples:
 - `/15.1.0/ucd/UnicodeData.txt`
 
 This is one of the biggest differences from the older `fs-bridge` layer: consumers should not need to guess whether a path is canonical.
+
+Input paths may be normalized by individual backends, but consumers should still prefer canonical paths when calling backend operations.
 
 ## Metadata and Identity
 

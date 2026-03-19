@@ -107,7 +107,7 @@ describe("node backend", () => {
     const dir = await testdir();
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.write?.("/deep/nested/new.txt", "data");
+    await backend.write("/deep/nested/new.txt", "data");
 
     await expect(backend.read("/deep/nested/new.txt")).resolves.toBe("data");
     await expect(backend.exists("/deep/nested/")).resolves.toBe(true);
@@ -117,7 +117,7 @@ describe("node backend", () => {
     const dir = await testdir();
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.mkdir?.("/subdir/");
+    await backend.mkdir("/subdir/");
 
     await expect(backend.exists("/subdir/")).resolves.toBe(true);
     await expect(backend.stat("/subdir/")).resolves.toMatchObject({
@@ -134,10 +134,10 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.remove?.("/hello.txt");
+    await backend.remove("/hello.txt");
     await expect(backend.exists("/hello.txt")).resolves.toBe(false);
 
-    await backend.remove?.("/subdir/", { recursive: true });
+    await backend.remove("/subdir/", { recursive: true });
     await expect(backend.exists("/subdir/")).resolves.toBe(false);
   });
 
@@ -147,7 +147,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.copy?.("/foo.txt", "/copied.txt");
+    await backend.copy("/foo.txt", "/copied.txt");
 
     await expect(backend.read("/copied.txt")).resolves.toBe("hello");
   });
@@ -158,7 +158,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.copy?.("/foo.txt", "/deep/copied.txt");
+    await backend.copy("/foo.txt", "/deep/copied.txt");
 
     await expect(backend.read("/deep/copied.txt")).resolves.toBe("hello");
   });
@@ -167,7 +167,7 @@ describe("node backend", () => {
     const dir = await testdir();
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await expect(backend.copy?.("/missing.txt", "/copied.txt")).rejects.toThrow(BackendFileNotFound);
+    await expect(backend.copy("/missing.txt", "/copied.txt")).rejects.toThrow(BackendFileNotFound);
   });
 
   it("copies a file into a directory-like destination path", async () => {
@@ -176,7 +176,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.copy?.("/foo.txt", "/target-dir/");
+    await backend.copy("/foo.txt", "/target-dir/");
 
     await expect(backend.read("/target-dir/foo.txt")).resolves.toBe("hello");
   });
@@ -188,7 +188,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.copy?.("/foo.txt", "/target-dir");
+    await backend.copy("/foo.txt", "/target-dir");
 
     await expect(backend.read("/target-dir/foo.txt")).resolves.toBe("hello");
   });
@@ -204,7 +204,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await backend.copy?.("/source/", "/copied/", { recursive: true });
+    await backend.copy("/source/", "/copied/", { recursive: true });
 
     await expect(backend.read("/copied/child.txt")).resolves.toBe("hello");
     await expect(backend.read("/copied/nested/deep.txt")).resolves.toBe("world");
@@ -218,7 +218,7 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await expect(backend.copy?.("/source/", "/copied/")).rejects.toThrow(BackendEntryIsDirectory);
+    await expect(backend.copy("/source/", "/copied/")).rejects.toThrow(BackendEntryIsDirectory);
   });
 
   it("rejects overwrite false and preserves the destination", async () => {
@@ -228,10 +228,24 @@ describe("node backend", () => {
     });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await expect(backend.copy?.("/foo.txt", "/copied.txt", { overwrite: false }))
+    await expect(backend.copy("/foo.txt", "/copied.txt", { overwrite: false }))
       .rejects
       .toThrow("Copy destination already exists: /copied.txt");
     await expect(backend.read("/copied.txt")).resolves.toBe("existing");
+  });
+
+  it("allows remove with force true for missing paths", async () => {
+    const dir = await testdir();
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.remove("/missing.txt", { force: true })).resolves.toBeUndefined();
+  });
+
+  it("throws when removing missing paths without force", async () => {
+    const dir = await testdir();
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.remove("/missing.txt")).rejects.toThrow(BackendFileNotFound);
   });
 
   it("returns stat information for files", async () => {

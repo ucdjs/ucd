@@ -138,6 +138,11 @@ Your HTTP application is compatible if it does all of the following:
 
 ```typescript
 app.get("/files/*", async (req, res) => {
+  const stat = await getStat(req.path).catch(() => null);
+  if (!stat) {
+    return res.status(404).end();
+  }
+
   if (isDirectory(req.path)) {
     return res.json(await listDirectory(req.path));
   }
@@ -146,7 +151,10 @@ app.get("/files/*", async (req, res) => {
 });
 
 app.head("/files/*", async (req, res) => {
-  const stat = await getStat(req.path);
+  const stat = await getStat(req.path).catch(() => null);
+  if (!stat) {
+    return res.status(404).end();
+  }
 
   res.setHeader("X-UCD-Stat-Type", stat.type);
   if (stat.type === "file") {

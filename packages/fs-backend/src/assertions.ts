@@ -7,7 +7,7 @@ const debug = createDebugger("ucdjs:fs-backend:assertions");
 export function assertFeature<T extends FileSystemBackendFeature = never>(
   backend: FileSystemBackend,
   featureOrFeatures: T | T[],
-): asserts backend is FileSystemBackend & Required<Pick<FileSystemBackend, T>> {
+): void {
   const features = Array.isArray(featureOrFeatures)
     ? featureOrFeatures
     : [featureOrFeatures];
