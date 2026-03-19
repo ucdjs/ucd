@@ -89,7 +89,6 @@ export type { PipelineLogger } from "./logger";
 
 export type {
   FilesystemOutputSinkDefinition,
-  MemoryOutputSinkDefinition,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
   RouteOutputDefinition,
@@ -99,7 +98,6 @@ export type {
 
 export {
   filesystemSink,
-  memorySink,
   normalizeRouteOutputs,
 } from "./output";
 
