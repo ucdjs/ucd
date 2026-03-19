@@ -3,16 +3,16 @@ import type {
   PipelineError,
   PipelineRouteDefinition,
 } from "@ucdjs/pipelines-core";
-import type { PipelineTraceEmitInput, PipelineTraceRecord, PipelineTraceRecordByKind } from "../traces";
-import type { RunPipelineOptions } from "./run-pipeline-types";
+import type { PipelineTraceEmitInput, PipelineTraceRecord, PipelineTraceRecordByKind } from "./traces";
+import type { RunPipelineOptions } from "./run-types";
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
-import { createPipelineLogger } from "../logger";
+import { createPipelineLogger } from "./logger";
 import { emitWithSpan } from "./events";
 import {
   finalizePipelineResult,
   runVersion,
 } from "./pipeline-run-phases";
-import { createSourceAdapter } from "./source-adapter";
+import { createSourceAdapter } from "./source-files";
 
 export async function runPipeline(options: RunPipelineOptions) {
   const { pipeline, runOptions = {}, cacheStore, artifacts, events, traces, priorResults = [], runtime } = options;

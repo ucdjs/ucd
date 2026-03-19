@@ -6,19 +6,19 @@ import type {
   PipelineLogger,
   PipelineRouteDefinition,
 } from "@ucdjs/pipelines-core";
-import type { CacheStore } from "../cache";
-import type { PipelineExecutionRuntime } from "../runtime";
+import type { CacheStore } from "./cache";
+import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   PipelineTraceEmitInput,
   PipelineTraceRecord,
   PipelineTraceRecordByKind,
-} from "../traces";
+} from "./traces";
 import type {
   PipelineExecutionResult,
   PipelineExecutorRunOptions,
-} from "../types";
+} from "./types";
 import type { EventEmitter } from "./events";
-import type { SourceAdapter } from "./source-adapter";
+import type { SourceAdapter } from "./source-files";
 import type { TraceEmitter } from "./trace-emitter";
 
 export interface PipelineRunCounters {
