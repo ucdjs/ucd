@@ -11,7 +11,7 @@ import type { PipelineExecutionRuntime } from "../runtime";
 import type { PipelineExecutionResult } from "../types";
 import path from "node:path";
 import { isPipelineOutputSource, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
-import { createPipelineLogger } from "./logger";
+import { createPipelineLogger } from "../internal/logger";
 import { serializeOutputValue } from "./outputs";
 
 const LINE_SPLIT_RE = /\r?\n/;
