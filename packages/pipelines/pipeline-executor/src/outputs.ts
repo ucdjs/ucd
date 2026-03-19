@@ -14,6 +14,11 @@ export interface ResolvedOutputDestination {
   displayLocator: string;
 }
 
+export const DEFAULT_FALLBACK_OUTPUTS: readonly NormalizedRouteOutputDefinition[] = [{
+  id: "fallback-output",
+  format: "json",
+}];
+
 const UNDERSCORE_RE = /_/g;
 const NON_WORD_RE = /[^a-z0-9]+/g;
 

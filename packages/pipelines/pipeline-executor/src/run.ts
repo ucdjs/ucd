@@ -27,10 +27,10 @@ import type {
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
 import { runGlobalArtifacts, traceRouteArtifacts } from "./artifacts";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache-helpers";
-import { emitWithSpan } from "./events";
+import { emitRuntimeEvent } from "./events";
 import { buildExecutionGraphFromTraces } from "./graph";
 import { createPipelineLogger } from "./logger";
-import { materializeOutputs } from "./outputs";
+import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./outputs";
 import { createProcessingQueue } from "./processing-queue";
 import { processFallback, processRoute, recordEmittedArtifacts } from "./route-runtime";
 import { createSourceAdapter } from "./source-files";
@@ -55,7 +55,6 @@ interface RunState {
   cacheStore?: CacheStore;
   artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
-  traces: TraceEmitter;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   logger: ReturnType<typeof createPipelineLogger>;
@@ -81,8 +80,6 @@ interface VersionState {
   globalArtifactsMap: Record<string, unknown>;
   listFiles: () => Promise<FileContext[]>;
 }
-
-const FALLBACK_OUTPUTS: readonly NormalizedRouteOutputDefinition[] = [{ id: "fallback-output", format: "json" }];
 
 export async function run(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
   const startTime = performance.now();
@@ -137,7 +134,6 @@ function createRunState(options: RunPipelineOptions): RunState {
     cacheStore,
     artifacts,
     events,
-    traces,
     runtime,
     source: createSourceAdapter(pipeline, logger, { priorResults }),
     logger,
@@ -280,7 +276,7 @@ async function executeMatchedFile(
         file,
         values: result.outputs,
         emitTrace: (trace) => state.emitTraceWithSpan(spanId, trace),
-        definitions: state.routeOutputs.get(route.id) ?? FALLBACK_OUTPUTS,
+        definitions: state.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
       });
     } catch (error) {
       await emitPipelineError(state, spanId, {
@@ -353,7 +349,7 @@ async function executeFallbackFile(
       file,
       values: outputs,
       emitTrace: (trace) => state.emitTraceWithSpan(spanId, trace),
-      definitions: FALLBACK_OUTPUTS,
+      definitions: DEFAULT_FALLBACK_OUTPUTS,
     });
   } catch (error) {
     await emitPipelineError(state, spanId, {
@@ -448,5 +444,5 @@ async function emitPipelineError(state: RunState, spanId: string, error: Pipelin
 }
 
 async function emitEvent(state: RunState, spanId: string, event: PipelineEventInput): Promise<void> {
-  await emitWithSpan(state.runtime, spanId, () => state.events.emit(event));
+  await emitRuntimeEvent(state.runtime, state.events, spanId, event);
 }

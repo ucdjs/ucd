@@ -43,3 +43,12 @@ export async function emitWithSpan(
 ): Promise<void> {
   await runtime.withSpan(spanId, fn);
 }
+
+export async function emitRuntimeEvent(
+  runtime: PipelineExecutionRuntime,
+  events: Pick<EventEmitter, "emit">,
+  spanId: string,
+  event: PipelineEventInput,
+): Promise<void> {
+  await emitWithSpan(runtime, spanId, () => events.emit(event));
+}
