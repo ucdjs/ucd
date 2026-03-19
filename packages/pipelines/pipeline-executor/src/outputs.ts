@@ -176,3 +176,87 @@ export interface PublishedOutputFile {
     outputId: string;
   };
 }
+
+type OutputTraceInput = Extract<
+  | {
+      kind: "output.produced";
+      version: string;
+      routeId: string;
+      file: FileContext;
+      outputIndex: number;
+      property?: string;
+    }
+  | {
+      kind: "output.resolved";
+      version: string;
+      routeId: string;
+      file: FileContext;
+      outputIndex: number;
+      outputId: string;
+      property?: string;
+      sink: string;
+      format: "json" | "text";
+      locator: string;
+    }
+  | {
+      kind: "output.written";
+      version: string;
+      routeId: string;
+      file: FileContext;
+      outputIndex: number;
+      outputId: string;
+      property?: string;
+      sink: string;
+      locator: string;
+      status: "written" | "failed";
+      error?: string;
+    },
+  { kind: "output.produced" | "output.resolved" | "output.written" }
+>;
+
+export async function materializeOutputs(options: {
+  outputs: unknown[];
+  version: string;
+  routeId: string;
+  file: FileContext;
+  values: readonly unknown[];
+  emitTrace: (trace: OutputTraceInput) => Promise<unknown>;
+  definitions: readonly NormalizedRouteOutputDefinition[];
+}): Promise<void> {
+  const { outputs, version, routeId, file, values, emitTrace, definitions } = options;
+
+  for (const output of values) {
+    const outputIndex = outputs.length;
+    const property = getOutputProperty(output);
+    outputs.push(output);
+
+    await emitTrace({ kind: "output.produced", version, routeId, file, outputIndex, property });
+    for (const definition of definitions) {
+      const destination = resolveOutputDestination(definition, { version, routeId, file, output, property, outputIndex });
+      const traceBase = {
+        version,
+        routeId,
+        file,
+        outputIndex,
+        outputId: definition.id,
+        property,
+        sink: definition.sink?.type ?? "memory",
+        locator: destination.displayLocator,
+      };
+
+      await emitTrace({ kind: "output.resolved", ...traceBase, format: definition.format });
+      try {
+        await writeOutputToSink(definition.sink, destination.locator, output, definition.format);
+        await emitTrace({ kind: "output.written", ...traceBase, status: "written" });
+      } catch (error) {
+        await emitTrace({
+          kind: "output.written",
+          ...traceBase,
+          status: "failed",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        throw error;
+      }
+    }
+  }
+}
