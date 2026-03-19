@@ -16,7 +16,7 @@ import {
   SidebarRail,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Type } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 import { VersionSwitcher } from "../../version-switcher";
 
 const VERSION_ITEMS = [
@@ -36,7 +36,6 @@ const TOOLS_ITEMS = [
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { ucdjsApiBaseUrl, docsUrls } = useLoaderData({ from: "__root__" });
   const navigate = useNavigate();
-  const [searchValue, setSearchValue] = useState("");
   const match = useMatch({ from: "/(app)/v/$version", shouldThrow: false });
   const currentVersion = match?.params.version;
 
@@ -67,22 +66,20 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           onSubmit={(event) => {
             event.preventDefault();
             const form = event.currentTarget;
-            const input = form.elements.namedItem("sidebar-search") as HTMLInputElement | null;
-            const value = input?.value?.trim() ?? "";
+            const formData = new FormData(form);
+            const value = String(formData.get("sidebar-search") ?? "").trim();
             if (!value) return;
-            setSearchValue("");
             navigate({
               to: "/search",
               search: currentVersion ? { q: value, version: currentVersion } : { q: value },
             });
+            form.reset();
           }}
         >
           <SidebarInput
             name="sidebar-search"
             placeholder="Search Unicode"
             autoComplete="off"
-            value={searchValue}
-            onChange={(event) => setSearchValue(event.target.value)}
           />
         </form>
         <div className="mt-3 w-full group-data-[collapsible=icon]:hidden">

@@ -14,7 +14,13 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/select";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { ArrowRight, ArrowUpRight, Code2, Layers, Search, Terminal } from "lucide-react";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
+
+const HOME_STAT_SKELETON_KEYS = [
+  "home-stat-skeleton-0",
+  "home-stat-skeleton-1",
+  "home-stat-skeleton-2",
+];
 
 export const Route = createFileRoute("/(home)/")({
   component: HomePage,
@@ -42,17 +48,12 @@ function HomePage() {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
   const [showAllVersions, setShowAllVersions] = useState(false);
 
-  const latestStable = useMemo(() => {
-    return versions.find((version) => version.type === "stable") ?? versions[0];
-  }, [versions]);
-
+  const latestStable = versions.find((version) => version.type === "stable") ?? versions[0];
   const [selectedVersion, setSelectedVersion] = useState(() => latestStable?.version ?? "");
-  const availableVersions = useMemo(() => new Set(versions.map((version) => version.version)), [versions]);
-  const currentVersion = availableVersions.has(selectedVersion)
+  const currentVersion = versions.some((version) => version.version === selectedVersion)
     ? selectedVersion
     : latestStable?.version || "";
-  const recentVersions = useMemo(() => versions.slice(0, 4), [versions]);
-  const visibleVersions = showAllVersions ? versions : recentVersions;
+  const visibleVersions = showAllVersions ? versions : versions.slice(0, 4);
 
   return (
     <div className="relative min-h-svh overflow-hidden bg-background">
@@ -190,11 +191,9 @@ function HomeStats({ version }: { version: string }) {
 }
 
 function HomeStatsSkeleton() {
-  const skeletonKeys = useMemo(() => Array.from({ length: 3 }, (_, index) => `home-stat-skeleton-${index}`), []);
-
   return (
     <div className="grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-      {skeletonKeys.map((key) => (
+      {HOME_STAT_SKELETON_KEYS.map((key) => (
         <Card key={key} className="bg-card/60">
           <CardContent className="space-y-2 p-4">
             <Skeleton className="h-3 w-24" />

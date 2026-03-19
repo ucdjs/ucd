@@ -7,7 +7,7 @@ import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { BookOpen, Search } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Suspense } from "react";
 
 export const Route = createFileRoute("/(app)/v/$version/")({
   component: VersionPage,
@@ -21,17 +21,20 @@ function VersionPage() {
   const { version } = Route.useParams();
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
 
   const versionData = versions.find((v) => v.version === version);
   const isLatest = versions[0]?.version === version;
 
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    if (searchQuery.trim()) {
+  function handleSearch(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const formData = new FormData(event.currentTarget);
+    const query = String(formData.get("version-search") ?? "").trim();
+
+    if (query) {
       navigate({
         to: "/search",
-        search: { q: searchQuery.trim(), version },
+        search: { q: query, version },
       });
     }
   }
@@ -81,11 +84,10 @@ function VersionPage() {
             <form onSubmit={handleSearch} className="relative w-full max-w-xs">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
               <Input
+                name="version-search"
                 type="search"
                 placeholder="Search characters..."
                 className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </form>
           </div>

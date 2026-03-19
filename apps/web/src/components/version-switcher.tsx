@@ -25,15 +25,11 @@ export function VersionSwitcher() {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
 
-  const currentVersion = React.useMemo(() => {
-    if ("version" in params && typeof params.version === "string") {
-      return params.version;
-    }
+  const currentVersion = "version" in params && typeof params.version === "string"
+    ? params.version
+    : versions.find((v) => v.type === "stable")?.version || "";
 
-    return versions.find((v) => v.type === "stable")?.version || "";
-  }, [params, versions]);
-
-  const handleVersionSelect = React.useCallback((selectedVersion: string) => {
+  function handleVersionSelect(selectedVersion: string) {
     if (!selectedVersion || selectedVersion === currentVersion) return;
 
     const currentPath = window.location.pathname;
@@ -48,7 +44,7 @@ export function VersionSwitcher() {
     } else {
       navigate({ to: "/v/$version", params: { version: selectedVersion } });
     }
-  }, [currentVersion, navigate]);
+  }
 
   if (!versions?.length) {
     return null;

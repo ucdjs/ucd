@@ -104,6 +104,7 @@ function FileViewerPage() {
       <FileViewerContent
         path={path}
         fileName={fileName}
+        fileUrl={fileUrl}
         statType={loaderData.statType}
         size={loaderData.size}
       />
@@ -111,7 +112,7 @@ function FileViewerPage() {
   );
 }
 
-function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
+function FileViewerContent({ path, fileName, fileUrl, statType, size }: { path: string; fileName: string; fileUrl: string; statType: string | null; size: number }) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
   // This route only handles files
@@ -121,11 +122,10 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
 
   return (
     <FileViewer
-      fileUrl=""
+      key={path}
+      fileUrl={fileUrl}
       html={data.content}
-      // contentType={data.contentType}
       fileName={fileName}
-      // filePath={path}
     />
   );
 }
