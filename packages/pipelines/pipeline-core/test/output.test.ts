@@ -2,7 +2,26 @@ import { byName, definePipelineRoute, filesystemSink, normalizeRouteOutputs } fr
 import { describe, expect, it } from "vitest";
 
 describe("normalizeRouteOutputs", () => {
-  it("defaults filesystem sinks to both so outputs remain available during the run", () => {
+  it("leaves sink undefined when an output is runtime-only", () => {
+    const route = definePipelineRoute({
+      id: "scripts",
+      filter: byName("Scripts.txt"),
+      async *parser() {},
+      resolver: async () => [],
+      outputs: [{
+        id: "json",
+      }],
+    });
+
+    const [output] = normalizeRouteOutputs(route);
+
+    expect(output).toEqual(expect.objectContaining({
+      id: "json",
+      sink: undefined,
+    }));
+  });
+
+  it("keeps filesystem sinks for persisted outputs", () => {
     const route = definePipelineRoute({
       id: "scripts",
       filter: byName("Scripts.txt"),
