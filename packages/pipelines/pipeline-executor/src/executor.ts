@@ -5,8 +5,8 @@ import type {
   PipelineExecutorOptions,
   PipelineExecutorRunOptions,
 } from "./types";
-import { createEventEmitter } from "./internal/events";
-import { createTraceEmitter } from "./internal/trace-emitter";
+import { createEventEmitter } from "./run/events";
+import { createTraceEmitter } from "./run/trace-emitter";
 import { run as runPipeline } from "./run";
 import { createNoopExecutionRuntime } from "./runtime";
 
