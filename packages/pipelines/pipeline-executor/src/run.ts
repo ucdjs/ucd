@@ -5,20 +5,21 @@ import type {
   NormalizedRouteOutputDefinition,
   PipelineError,
   PipelineEventInput,
+  PipelineLogger,
   PipelineRouteDefinition,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
+import type { EventEmitter } from "./run/events";
+import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   PipelineOutputManifestEntry,
   PipelineTraceEmitInput,
   PipelineTraceRecord,
   PipelineTraceRecordByKind,
-} from "./internal/traces";
-import type { EventEmitter } from "./internal/events";
-import type { TraceEmitter } from "./internal/trace-emitter";
+} from "./run/traces";
 import type { SourceAdapter } from "./run/source-files";
-import type { PipelineExecutionRuntime } from "./runtime";
+import type { TraceEmitter } from "./run/trace-emitter";
 import type {
   ExecutionStatus,
   PipelineExecutionResult,
@@ -26,11 +27,13 @@ import type {
   PipelineSummary,
 } from "./types";
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
-import { emitRuntimeEvent } from "./internal/events";
-import { buildExecutionGraphFromTraces } from "./internal/graph";
-import { createPipelineLogger } from "./internal/logger";
-import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./internal/outputs";
-import { buildOutputManifestFromTraces } from "./internal/traces";
+import { emitRuntimeEvent } from "./run/events";
+import { buildExecutionGraphFromTraces } from "./run/graph";
+import { createPipelineLogger } from "./run/logger";
+import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
+import {
+  buildOutputManifestFromTraces,
+} from "./run/traces";
 import { runGlobalArtifacts, traceRouteArtifacts } from "./run/artifacts";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
 import { createProcessingQueue } from "./run/processing-queue";
@@ -50,32 +53,38 @@ export interface RunPipelineOptions {
   runtime: PipelineExecutionRuntime;
 }
 
-interface RunState {
+export interface RunConfig {
   pipeline: AnyPipelineDefinition;
   cacheStore?: CacheStore;
   artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
+  traces: TraceEmitter;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
-  logger: ReturnType<typeof createPipelineLogger>;
+  logger: PipelineLogger;
   useCache: boolean;
   versions: string[];
   routesByLayer: RouteDef[][];
   routeOutputs: Map<string, readonly NormalizedRouteOutputDefinition[]>;
+}
+
+export interface RunData {
   outputs: unknown[];
   traceRecords: PipelineTraceRecord[];
   errors: PipelineError[];
   summary: PipelineSummary;
+}
+
+export interface RunContext {
+  config: RunConfig;
+  data: RunData;
   emitTrace: <TTrace extends PipelineTraceEmitInput>(
-    trace: TTrace,
-  ) => Promise<PipelineTraceRecordByKind<TTrace["kind"]>>;
-  emitTraceWithSpan: <TTrace extends PipelineTraceEmitInput>(
-    spanId: string,
     trace: TTrace,
   ) => Promise<PipelineTraceRecordByKind<TTrace["kind"]>>;
 }
 
-interface VersionState {
+interface VersionContext {
+  version: string;
   artifactsMap: Record<string, unknown>;
   globalArtifactsMap: Record<string, unknown>;
   listFiles: () => Promise<FileContext[]>;
@@ -83,39 +92,45 @@ interface VersionState {
 
 export async function run(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
   const startTime = performance.now();
-  const state = createRunState(options);
-  const spanId = state.events.nextSpanId();
+  const context = createRunContext(options);
+  const spanId = context.config.events.nextSpanId();
 
-  await emitEvent(state, spanId, {
+  await emitEvent(context, spanId, {
     type: "pipeline:start",
-    versions: state.versions,
+    versions: context.config.versions,
     spanId,
     timestamp: performance.now(),
   });
 
-  for (const version of state.versions) {
-    await runVersion(state, version);
+  for (const version of context.config.versions) {
+    await runVersion(context, version);
   }
 
-  await emitEvent(state, spanId, {
+  await emitEvent(context, spanId, {
     type: "pipeline:end",
     durationMs: performance.now() - startTime,
     spanId,
     timestamp: performance.now(),
   });
 
-  return finalizeResult(state, startTime);
+  return finalizeResult(context, startTime);
 }
 
-function createRunState(options: RunPipelineOptions): RunState {
-  const { pipeline, runOptions = {}, cacheStore, artifacts, events, traces, priorResults = [], runtime } = options;
-  const versions = runOptions.versions ?? pipeline.versions;
-  const logger = createPipelineLogger(runtime);
-  const traceRecords: PipelineTraceRecord[] = [];
-  const routesById: Map<string, RouteDef> = new Map(
+export function resolveVersions(
+  pipeline: AnyPipelineDefinition,
+  runOptions: PipelineExecutorRunOptions = {},
+): string[] {
+  return runOptions.versions ?? pipeline.versions;
+}
+
+export function buildRoutesByLayer(
+  pipeline: AnyPipelineDefinition,
+): RouteDef[][] {
+  const routesById = new Map<string, RouteDef>(
     pipeline.routes.map((route: RouteDef) => [route.id, route] as const),
   );
-  const routesByLayer: RouteDef[][] = getExecutionLayers(pipeline.dag).map((layer) => {
+
+  return getExecutionLayers(pipeline.dag).map((layer) => {
     return layer.reduce<RouteDef[]>((routes, id) => {
       const route = routesById.get(id);
       if (route) {
@@ -124,71 +139,91 @@ function createRunState(options: RunPipelineOptions): RunState {
       return routes;
     }, []);
   });
-  const routeOutputs = new Map<string, readonly NormalizedRouteOutputDefinition[]>(
+}
+
+export function buildRouteOutputs(
+  pipeline: AnyPipelineDefinition,
+): Map<string, readonly NormalizedRouteOutputDefinition[]> {
+  return new Map(
     pipeline.routes.map((route: RouteDef) => [route.id, normalizeRouteOutputs(route)] as const),
   );
+}
 
-  let state!: RunState;
-  state = {
+export function createSummary(versions: string[]): PipelineSummary {
+  return {
+    versions,
+    totalRoutes: 0,
+    cached: 0,
+    totalFiles: 0,
+    matchedFiles: 0,
+    skippedFiles: 0,
+    fallbackFiles: 0,
+    totalOutputs: 0,
+    durationMs: 0,
+  };
+}
+
+export function createRunContext(options: RunPipelineOptions): RunContext {
+  const { pipeline, runOptions = {}, cacheStore, artifacts, events, traces, priorResults = [], runtime } = options;
+  const versions = resolveVersions(pipeline, runOptions);
+  const logger = createPipelineLogger(runtime);
+
+  const config: RunConfig = {
     pipeline,
     cacheStore,
     artifacts,
     events,
+    traces,
     runtime,
     source: createSourceAdapter(pipeline, logger, { priorResults }),
     logger,
     useCache: (runOptions.cache ?? true) && cacheStore != null,
     versions,
-    routesByLayer,
-    routeOutputs,
-    outputs: [],
-    traceRecords,
-    errors: [],
-    summary: {
-      versions,
-      totalRoutes: 0,
-      cached: 0,
-      totalFiles: 0,
-      matchedFiles: 0,
-      skippedFiles: 0,
-      fallbackFiles: 0,
-      totalOutputs: 0,
-      durationMs: 0,
-    },
-    async emitTrace<TTrace extends PipelineTraceEmitInput>(trace: TTrace) {
-      const record = await traces.emit({ ...trace, pipelineId: pipeline.id });
-      traceRecords.push(record);
-      return record;
-    },
-    async emitTraceWithSpan<TTrace extends PipelineTraceEmitInput>(
-      spanId: string,
-      trace: TTrace,
-    ): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> {
-      return runtime.withSpan(spanId, () => state.emitTrace(trace));
-    },
-  } satisfies RunState;
+    routesByLayer: buildRoutesByLayer(pipeline),
+    routeOutputs: buildRouteOutputs(pipeline),
+  };
 
-  return state;
+  const data: RunData = {
+    outputs: [],
+    traceRecords: [],
+    errors: [],
+    summary: createSummary(versions),
+  };
+
+  const emitTrace = async <TTrace extends PipelineTraceEmitInput>(
+    trace: TTrace,
+  ): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> => {
+    const record = await config.traces.emit({ ...trace, pipelineId: config.pipeline.id });
+    data.traceRecords.push(record);
+    return record;
+  };
+
+  return { config, data, emitTrace };
 }
 
-function createVersionState(state: RunState, version: string): VersionState {
+function createVersionContext(
+  context: RunContext,
+  version: string,
+): VersionContext {
   let files: FileContext[] | null = null;
+
   return {
+    version,
     artifactsMap: {},
     globalArtifactsMap: {},
     listFiles: async () => {
-      files ??= await state.source.listFiles(version);
+      files ??= await context.config.source.listFiles(version);
       return files;
     },
   };
 }
 
-async function runVersion(state: RunState, version: string): Promise<void> {
+async function runVersion(context: RunContext, version: string): Promise<void> {
   const startTime = performance.now();
-  const spanId = state.events.nextSpanId();
-  const versionState = createVersionState(state, version);
+  const spanId = context.config.events.nextSpanId();
+  const versionContext = createVersionContext(context, version);
 
-  await emitEvent(state, spanId, {
+  await emitEvent(context, spanId, {
     type: "version:start",
     version,
     spanId,
@@ -196,41 +231,46 @@ async function runVersion(state: RunState, version: string): Promise<void> {
   });
 
   await runGlobalArtifacts({
-    artifacts: state.artifacts,
+    artifacts: context.config.artifacts,
     version,
-    state: versionState,
-    logger: state.logger,
-    source: state.source,
-    runtime: state.runtime,
-    events: state.events,
-    emitTraceWithSpan: state.emitTraceWithSpan,
-    onError: (spanId, error) => emitPipelineError(state, spanId, error),
+    state: versionContext,
+    logger: context.config.logger,
+    source: context.config.source,
+    runtime: context.config.runtime,
+    events: context.config.events,
+    emitTrace: context.emitTrace,
+    onError: (errorSpanId, error) => emitPipelineError(context, errorSpanId, error),
   });
-  const files = await versionState.listFiles();
-  const includedFiles = state.pipeline.include ? files.filter((file) => state.pipeline.include!({ file, logger: state.logger })) : files;
-  const processedFiles = new Set<string>();
-  state.summary.totalFiles += files.length;
 
-  for (const routes of state.routesByLayer) {
-    const queue = createProcessingQueue(state.pipeline.concurrency);
+  const files = await versionContext.listFiles();
+  const includedFiles = context.config.pipeline.include
+    ? files.filter((file) => context.config.pipeline.include!({ file, logger: context.config.logger }))
+    : files;
+
+  const processedFiles = new Set<string>();
+  context.data.summary.totalFiles += files.length;
+
+  for (const routes of context.config.routesByLayer) {
+    const queue = createProcessingQueue(context.config.pipeline.concurrency);
+
     for (const route of routes) {
-      for (const file of selectMatchingFiles(state, route, includedFiles)) {
+      for (const file of selectMatchingFiles(context, route, includedFiles)) {
         processedFiles.add(file.path);
-        state.summary.totalRoutes++;
-        await queue.add(() => executeMatchedFile(state, versionState, version, route, file));
+        context.data.summary.totalRoutes++;
+        await queue.add(() => executeMatchedFile(context, versionContext, version, route, file));
       }
     }
+
     await queue.drain();
   }
 
   for (const file of includedFiles) {
-    if (processedFiles.has(file.path)) {
-      continue;
+    if (!processedFiles.has(file.path)) {
+      await executeUnmatchedFile(context, versionContext, version, spanId, file);
     }
-    await executeUnmatchedFile(state, versionState, version, spanId, file);
   }
 
-  await emitEvent(state, spanId, {
+  await emitEvent(context, spanId, {
     type: "version:end",
     version,
     durationMs: performance.now() - startTime,
@@ -239,47 +279,83 @@ async function runVersion(state: RunState, version: string): Promise<void> {
   });
 }
 
-function selectMatchingFiles(state: RunState, route: RouteDef, files: readonly FileContext[]): FileContext[] {
-  return files.filter((file) => route.filter({ file, logger: state.logger, source: (file as SourceFileContext).source }));
+function selectMatchingFiles(
+  context: RunContext,
+  route: RouteDef,
+  files: readonly FileContext[],
+): FileContext[] {
+  return files.filter((file) => {
+    return route.filter({
+      file,
+      logger: context.config.logger,
+      source: (file as SourceFileContext).source,
+    });
+  });
 }
 
 async function executeMatchedFile(
-  state: RunState,
-  versionState: VersionState,
+  context: RunContext,
+  versionContext: VersionContext,
   version: string,
   route: RouteDef,
   file: FileContext,
 ): Promise<void> {
-  const spanId = state.events.nextSpanId();
-  state.summary.matchedFiles++;
+  const spanId = context.config.events.nextSpanId();
+  context.data.summary.matchedFiles++;
 
-  await state.emitTraceWithSpan(spanId, { kind: "source.provided", version, file });
-  await state.emitTraceWithSpan(spanId, { kind: "file.matched", version, file, routeId: route.id });
-  await emitEvent(state, spanId, { type: "file:matched", file, routeId: route.id, spanId, timestamp: performance.now() });
+  await emitTraceInSpan(context, spanId, { kind: "source.provided", version, file });
+  await emitTraceInSpan(context, spanId, { kind: "file.matched", version, file, routeId: route.id });
+  await emitEvent(context, spanId, {
+    type: "file:matched",
+    file,
+    routeId: route.id,
+    spanId,
+    timestamp: performance.now(),
+  });
 
-  await state.runtime.withSpan(spanId, async () => {
+  await context.config.runtime.withSpan(spanId, async () => {
     try {
-      const artifacts = { ...versionState.artifactsMap, ...versionState.globalArtifactsMap };
-      const result = await loadRouteResult(state, version, route, file, spanId, artifacts);
-      recordEmittedArtifacts({ routeId: route.id, emittedArtifacts: result.emittedArtifacts, routeEmits: route.emits, artifactsMap: versionState.artifactsMap, globalArtifactsMap: versionState.globalArtifactsMap });
+      const artifactsMap = {
+        ...versionContext.artifactsMap,
+        ...versionContext.globalArtifactsMap,
+      };
+
+      const result = await loadRouteResult(
+        context,
+        version,
+        route,
+        file,
+        spanId,
+        artifactsMap,
+      );
+
+      recordEmittedArtifacts({
+        routeId: route.id,
+        emittedArtifacts: result.emittedArtifacts,
+        routeEmits: route.emits,
+        artifactsMap: versionContext.artifactsMap,
+        globalArtifactsMap: versionContext.globalArtifactsMap,
+      });
+
       await traceRouteArtifacts({
-        emitTrace: state.emitTrace,
+        emitTrace: context.emitTrace,
         version,
         routeId: route.id,
         consumedArtifactIds: result.consumedArtifactIds,
         emittedArtifacts: result.emittedArtifacts,
       });
+
       await materializeOutputs({
-        outputs: state.outputs,
+        outputs: context.data.outputs,
         version,
         routeId: route.id,
         file,
         values: result.outputs,
-        emitTrace: (trace) => state.emitTraceWithSpan(spanId, trace),
-        definitions: state.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
+        emitTrace: context.emitTrace,
+        definitions: context.config.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
       });
     } catch (error) {
-      await emitPipelineError(state, spanId, {
+      await emitPipelineError(context, spanId, {
         scope: "route",
         message: error instanceof Error ? error.message : String(error),
         error,
@@ -292,67 +368,95 @@ async function executeMatchedFile(
 }
 
 async function executeUnmatchedFile(
-  state: RunState,
-  versionState: VersionState,
+  context: RunContext,
+  versionContext: VersionContext,
   version: string,
   versionSpanId: string,
   file: FileContext,
 ): Promise<void> {
-  if (!state.pipeline.fallback) {
-    state.summary.skippedFiles++;
-    if (state.pipeline.strict) {
-      await emitPipelineError(state, versionSpanId, { scope: "file", message: `No matching route for file: ${file.path}`, file, version });
+  const { pipeline, logger } = context.config;
+
+  if (!pipeline.fallback) {
+    context.data.summary.skippedFiles++;
+    if (pipeline.strict) {
+      await emitPipelineError(context, versionSpanId, {
+        scope: "file",
+        message: `No matching route for file: ${file.path}`,
+        file,
+        version,
+      });
       return;
     }
-    await emitEvent(state, versionSpanId, { type: "file:skipped", file, reason: "no-match", spanId: versionSpanId, timestamp: performance.now() });
+
+    await emitEvent(context, versionSpanId, {
+      type: "file:skipped",
+      file,
+      reason: "no-match",
+      spanId: versionSpanId,
+      timestamp: performance.now(),
+    });
     return;
   }
 
-  if (state.pipeline.fallback.filter && !state.pipeline.fallback.filter({ file, logger: state.logger })) {
-    state.summary.skippedFiles++;
-    await emitEvent(state, versionSpanId, { type: "file:skipped", file, reason: "filtered", spanId: versionSpanId, timestamp: performance.now() });
+  if (pipeline.fallback.filter && !pipeline.fallback.filter({ file, logger })) {
+    context.data.summary.skippedFiles++;
+    await emitEvent(context, versionSpanId, {
+      type: "file:skipped",
+      file,
+      reason: "filtered",
+      spanId: versionSpanId,
+      timestamp: performance.now(),
+    });
     return;
   }
 
-  state.summary.fallbackFiles++;
-  await executeFallbackFile(state, versionState, version, file);
+  context.data.summary.fallbackFiles++;
+  await executeFallbackFile(context, versionContext, version, file);
 }
 
 async function executeFallbackFile(
-  state: RunState,
-  versionState: VersionState,
+  context: RunContext,
+  versionContext: VersionContext,
   version: string,
   file: FileContext,
 ): Promise<void> {
-  const spanId = state.events.nextSpanId();
+  const spanId = context.config.events.nextSpanId();
 
-  await state.emitTraceWithSpan(spanId, { kind: "source.provided", version, file });
-  await state.emitTraceWithSpan(spanId, { kind: "file.fallback", version, file });
-  await emitEvent(state, spanId, { type: "file:fallback", file, spanId, timestamp: performance.now() });
+  await emitTraceInSpan(context, spanId, { kind: "source.provided", version, file });
+  await emitTraceInSpan(context, spanId, { kind: "file.fallback", version, file });
+  await emitEvent(context, spanId, {
+    type: "file:fallback",
+    file,
+    spanId,
+    timestamp: performance.now(),
+  });
 
   try {
-    const outputs = await state.runtime.withSpan(spanId, () => processFallback({
+    const outputs = await context.config.runtime.withSpan(spanId, () => processFallback({
       file,
-      fallback: state.pipeline.fallback!,
-      artifactsMap: { ...versionState.artifactsMap, ...versionState.globalArtifactsMap },
-      runtime: state.runtime,
-      source: state.source,
+      fallback: context.config.pipeline.fallback!,
+      artifactsMap: {
+        ...versionContext.artifactsMap,
+        ...versionContext.globalArtifactsMap,
+      },
+      runtime: context.config.runtime,
+      source: context.config.source,
       version,
-      emit: (event: PipelineEventInput) => state.events.emit({ ...event, spanId }),
-      spanId: state.events.nextSpanId,
+      emit: (event: PipelineEventInput) => context.config.events.emit({ ...event, spanId }),
+      spanId: context.config.events.nextSpanId,
     }));
 
     await materializeOutputs({
-      outputs: state.outputs,
+      outputs: context.data.outputs,
       version,
       routeId: "__fallback__",
       file,
       values: outputs,
-      emitTrace: (trace) => state.emitTraceWithSpan(spanId, trace),
+      emitTrace: context.emitTrace,
       definitions: DEFAULT_FALLBACK_OUTPUTS,
     });
   } catch (error) {
-    await emitPipelineError(state, spanId, {
+    await emitPipelineError(context, spanId, {
       scope: "file",
       message: error instanceof Error ? error.message : String(error),
       error,
@@ -363,20 +467,28 @@ async function executeFallbackFile(
 }
 
 async function loadRouteResult(
-  state: RunState,
+  context: RunContext,
   version: string,
   route: RouteDef,
   file: FileContext,
   spanId: string,
   artifactsMap: Record<string, unknown>,
 ) {
-  const routeCacheEnabled = state.useCache && route.cache !== false;
+  const { cacheStore, runtime, source, events, useCache } = context.config;
+  const routeCacheEnabled = useCache && route.cache !== false;
   let fileContent: string | undefined;
 
-  if (routeCacheEnabled && state.cacheStore) {
-    fileContent = await state.source.readFile(file);
-    const cached = await tryLoadCachedResult({ cacheStore: state.cacheStore, routeId: route.id, version, fileContent, artifactsMap });
-    await recordCacheHitOrMiss(state, version, route.id, file, spanId, cached.hit);
+  if (routeCacheEnabled && cacheStore) {
+    fileContent = await source.readFile(file);
+    const cached = await tryLoadCachedResult({
+      cacheStore,
+      routeId: route.id,
+      version,
+      fileContent,
+      artifactsMap,
+    });
+
+    await recordCacheHitOrMiss(context, version, route.id, file, spanId, cached.hit);
     if (cached.hit && cached.result) {
       return cached.result;
     }
@@ -386,26 +498,45 @@ async function loadRouteResult(
     file,
     route,
     artifactsMap,
-    runtime: state.runtime,
-    source: state.source,
+    runtime,
+    source,
     version,
-    emit: (event: PipelineEventInput) => state.events.emit({ ...event, spanId }),
-    spanId: state.events.nextSpanId,
+    emit: (event: PipelineEventInput) => events.emit({ ...event, spanId }),
+    spanId: events.nextSpanId,
   });
 
-  if (routeCacheEnabled && state.cacheStore) {
-    fileContent ??= await state.source.readFile(file);
-    const cacheKey = await buildCacheKey(route.id, version, fileContent, artifactsMap, result.consumedArtifactIds);
-    await storeCacheEntry({ cacheStore: state.cacheStore, cacheKey, outputs: result.outputs, emittedArtifacts: result.emittedArtifacts });
-    await state.emitTrace({ kind: "cache.store", routeId: route.id, file, version });
-    await state.events.emit({ type: "cache:store", routeId: route.id, file, version, spanId, timestamp: performance.now() });
+  if (routeCacheEnabled && cacheStore) {
+    fileContent ??= await source.readFile(file);
+    const cacheKey = await buildCacheKey(
+      route.id,
+      version,
+      fileContent,
+      artifactsMap,
+      result.consumedArtifactIds,
+    );
+
+    await storeCacheEntry({
+      cacheStore,
+      cacheKey,
+      outputs: result.outputs,
+      emittedArtifacts: result.emittedArtifacts,
+    });
+    await context.emitTrace({ kind: "cache.store", routeId: route.id, file, version });
+    await events.emit({
+      type: "cache:store",
+      routeId: route.id,
+      file,
+      version,
+      spanId,
+      timestamp: performance.now(),
+    });
   }
 
   return result;
 }
 
 async function recordCacheHitOrMiss(
-  state: RunState,
+  context: RunContext,
   version: string,
   routeId: string,
   file: FileContext,
@@ -413,36 +544,66 @@ async function recordCacheHitOrMiss(
   hit: boolean,
 ): Promise<void> {
   if (hit) {
-    state.summary.cached++;
+    context.data.summary.cached++;
   }
-  await state.emitTrace({ kind: hit ? "cache.hit" : "cache.miss", routeId, file, version });
-  await state.events.emit({ type: hit ? "cache:hit" : "cache:miss", routeId, file, version, spanId, timestamp: performance.now() });
+
+  await context.emitTrace({ kind: hit ? "cache.hit" : "cache.miss", routeId, file, version });
+  await context.config.events.emit({
+    type: hit ? "cache:hit" : "cache:miss",
+    routeId,
+    file,
+    version,
+    spanId,
+    timestamp: performance.now(),
+  });
 }
 
-function finalizeResult(state: RunState, startTime: number): PipelineExecutionResult {
+function finalizeResult(context: RunContext, startTime: number): PipelineExecutionResult {
   const durationMs = performance.now() - startTime;
-  const status: ExecutionStatus = state.errors.length === 0 ? "completed" : "failed";
-  state.summary.totalOutputs = state.outputs.length;
-  state.summary.durationMs = durationMs;
+  const status: ExecutionStatus = context.data.errors.length === 0 ? "completed" : "failed";
+  context.data.summary.totalOutputs = context.data.outputs.length;
+  context.data.summary.durationMs = durationMs;
 
-  const outputManifest: PipelineOutputManifestEntry[] = buildOutputManifestFromTraces(state.traceRecords);
+  const outputManifest: PipelineOutputManifestEntry[] = buildOutputManifestFromTraces(context.data.traceRecords);
+
   return {
-    id: state.pipeline.id,
-    data: state.outputs,
+    id: context.config.pipeline.id,
+    data: context.data.outputs,
     outputManifest,
-    traces: state.traceRecords,
-    graph: buildExecutionGraphFromTraces(state.traceRecords),
-    errors: state.errors,
-    summary: state.summary,
+    traces: context.data.traceRecords,
+    graph: buildExecutionGraphFromTraces(context.data.traceRecords),
+    errors: context.data.errors,
+    summary: context.data.summary,
     status,
   };
 }
 
-async function emitPipelineError(state: RunState, spanId: string, error: PipelineError): Promise<void> {
-  state.errors.push(error);
-  await state.events.emit({ type: "error", error, spanId, timestamp: performance.now() });
+async function emitPipelineError(
+  context: RunContext,
+  spanId: string,
+  error: PipelineError,
+): Promise<void> {
+  context.data.errors.push(error);
+  await context.config.events.emit({
+    type: "error",
+    error,
+    spanId,
+    timestamp: performance.now(),
+  });
 }
 
-async function emitEvent(state: RunState, spanId: string, event: PipelineEventInput): Promise<void> {
-  await emitRuntimeEvent(state.runtime, state.events, spanId, event);
+async function emitEvent(
+  context: RunContext,
+  spanId: string,
+  event: PipelineEventInput,
+): Promise<void> {
+  await emitRuntimeEvent(context.config.runtime, context.config.events, spanId, event);
+}
+
+async function emitTraceInSpan<TTrace extends PipelineTraceEmitInput>(
+  context: RunContext,
+  spanId: string,
+  trace: TTrace,
+): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> {
+  return context.config.runtime.withSpan(spanId, () => context.emitTrace(trace));
 }

@@ -1,9 +1,9 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { FileContext, ParsedRow, PipelineError, PipelineLogger } from "@ucdjs/pipelines-core";
-import type { EventEmitter } from "../internal/events";
+import type { EventEmitter } from "./events";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
-import type { PipelineTraceEmitInput } from "../internal/traces";
+import type { PipelineTraceEmitInput } from "./traces";
 import { createParseContext } from "./source-files";
 
 export interface GlobalArtifactState {
@@ -19,12 +19,12 @@ interface RunGlobalArtifactsOptions {
   source: SourceAdapter;
   runtime: PipelineExecutionRuntime;
   events: EventEmitter;
-  emitTraceWithSpan: <TTrace extends PipelineTraceEmitInput>(spanId: string, trace: TTrace) => Promise<unknown>;
+  emitTrace: <TTrace extends PipelineTraceEmitInput>(trace: TTrace) => Promise<unknown>;
   onError: (spanId: string, error: PipelineError) => Promise<void>;
 }
 
 export async function runGlobalArtifacts(options: RunGlobalArtifactsOptions): Promise<void> {
-  const { artifacts, version, state, logger, source, runtime, events, emitTraceWithSpan, onError } = options;
+  const { artifacts, version, state, logger, source, runtime, events, emitTrace, onError } = options;
 
   for (const artifact of artifacts) {
     const startTime = performance.now();
@@ -37,7 +37,7 @@ export async function runGlobalArtifacts(options: RunGlobalArtifactsOptions): Pr
       spanId,
       timestamp: performance.now(),
     }));
-    await emitTraceWithSpan(spanId, { kind: "source.provided", version, artifactId: artifact.id });
+    await runtime.withSpan(spanId, () => emitTrace({ kind: "source.provided", version, artifactId: artifact.id }));
 
     try {
       let rows: AsyncIterable<ParsedRow> | undefined;
