@@ -136,34 +136,85 @@ Your HTTP application is compatible if it does all of the following:
 
 ## Example Server Shape
 
+The nicest way to structure this is with a small `Request`/`Response` helper.
+That keeps the actual compatibility logic framework-agnostic, and both Hono and
+H3 can call it directly.
+
 ```typescript
-app.get("/files/*", async (req, res) => {
-  const stat = await getStat(req.path).catch(() => null);
-  if (!stat) {
-    return res.status(404).end();
+function isNotFoundError(error: unknown): boolean {
+  return error instanceof Error && error.message === "Not Found";
+}
+
+async function handleFilesRequest(method: "GET" | "HEAD", path: string): Promise<Response> {
+  let stat;
+  try {
+    stat = await getStat(path);
+  } catch (error) {
+    if (isNotFoundError(error)) {
+      return new Response(null, { status: 404 });
+    }
+
+    throw error;
   }
 
-  if (isDirectory(req.path)) {
-    return res.json(await listDirectory(req.path));
+  if (method === "HEAD") {
+    const headers = new Headers({
+      "X-UCD-Stat-Type": stat.type,
+    });
+
+    if (stat.type === "file") {
+      headers.set("X-UCD-Stat-Size", String(stat.size));
+    }
+    if (stat.mtime) {
+      headers.set("Last-Modified", stat.mtime.toUTCString());
+    }
+
+    return new Response(null, {
+      status: 200,
+      headers,
+    });
   }
 
-  return res.send(await readFile(req.path));
+  if (isDirectory(path)) {
+    return Response.json(await listDirectory(path));
+  }
+
+  return new Response(await readFile(path));
+}
+```
+
+### Hono Adapter
+
+```typescript
+import { Hono } from "hono";
+
+const app = new Hono();
+
+app.get("/files/*", (c) => {
+  const path = c.req.path.replace(/^\/files/, "") || "/";
+  return handleFilesRequest("GET", path);
 });
 
-app.head("/files/*", async (req, res) => {
-  const stat = await getStat(req.path).catch(() => null);
-  if (!stat) {
-    return res.status(404).end();
-  }
+app.head("/files/*", (c) => {
+  const path = c.req.path.replace(/^\/files/, "") || "/";
+  return handleFilesRequest("HEAD", path);
+});
+```
 
-  res.setHeader("X-UCD-Stat-Type", stat.type);
-  if (stat.type === "file") {
-    res.setHeader("X-UCD-Stat-Size", String(stat.size));
-  }
-  if (stat.mtime) {
-    res.setHeader("Last-Modified", stat.mtime.toUTCString());
-  }
+### H3 Adapter
 
-  res.status(200).end();
+```typescript
+import { getRequestURL, H3 } from "h3";
+
+const app = new H3();
+
+app.get("/files/**", (event) => {
+  const path = getRequestURL(event).pathname.replace(/^\/files/, "") || "/";
+  return handleFilesRequest("GET", path);
+});
+
+app.head("/files/**", (event) => {
+  const path = getRequestURL(event).pathname.replace(/^\/files/, "") || "/";
+  return handleFilesRequest("HEAD", path);
 });
 ```
