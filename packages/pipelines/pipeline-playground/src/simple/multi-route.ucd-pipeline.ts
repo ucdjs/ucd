@@ -1,7 +1,7 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createSortTransform } from "@ucdjs/pipelines-core/transforms";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { sharedSource } from "./shared";
+import { colorsSource, planetsSource, sizesSource } from "../shared.sources";
 
 const colorsRoute = definePipelineRoute({
   id: "colors",
@@ -47,7 +47,7 @@ export const multiRoutePipeline = definePipeline({
   id: "multi-route",
   name: "Multi Route",
   versions: ["1.0.0"],
-  inputs: [sharedSource],
+  inputs: [colorsSource, sizesSource, planetsSource],
   routes: [colorsRoute, sizesRoute, planetsRoute],
   concurrency: 3,
 });

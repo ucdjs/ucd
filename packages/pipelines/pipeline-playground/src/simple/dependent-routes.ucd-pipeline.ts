@@ -1,6 +1,6 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { sharedSource } from "./shared";
+import { colorsSource, sizesSource } from "../shared.sources";
 
 /**
  * Route A: processes colors first — no dependencies.
@@ -47,6 +47,6 @@ export const dependentRoutesPipeline = definePipeline({
   id: "dependent-routes",
   name: "Dependent Routes",
   versions: ["1.0.0"],
-  inputs: [sharedSource],
+  inputs: [colorsSource, sizesSource],
   routes: [colorsRoute, sizesAfterColorsRoute],
 });

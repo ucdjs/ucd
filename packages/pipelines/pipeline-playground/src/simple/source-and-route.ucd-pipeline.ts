@@ -1,6 +1,6 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { sharedSource } from "./shared";
+import { colorsSource } from "../shared.sources";
 
 const colorsRoute = definePipelineRoute({
   id: "colors",
@@ -13,6 +13,6 @@ export const sourceAndRoutePipeline = definePipeline({
   id: "source-and-route",
   name: "Source and Route",
   versions: ["1.0.0"],
-  inputs: [sharedSource],
+  inputs: [colorsSource],
   routes: [colorsRoute],
 });
