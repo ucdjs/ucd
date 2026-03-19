@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import NodeFileSystemBackend from "../src/backends/node";
-import { BackendEntryIsDirectory, BackendFileNotFound } from "../src/errors";
+import { BackendEntryIsDirectory, BackendFileNotFound, CopyDestinationAlreadyExistsError } from "../src/errors";
 
 describe("node backend", () => {
   it("reads existing files", async () => {
@@ -9,6 +9,10 @@ describe("node backend", () => {
     const backend = NodeFileSystemBackend({ basePath: dir });
 
     await expect(backend.read("/hello.txt")).resolves.toBe("world");
+  });
+
+  it("rejects blank base paths", () => {
+    expect(() => NodeFileSystemBackend({ basePath: "   " })).toThrow("basePath is required");
   });
 
   it("throws BackendFileNotFound for missing files", async () => {
@@ -230,7 +234,7 @@ describe("node backend", () => {
 
     await expect(backend.copy("/foo.txt", "/copied.txt", { overwrite: false }))
       .rejects
-      .toThrow("Copy destination already exists: /copied.txt");
+      .toThrow(CopyDestinationAlreadyExistsError);
     await expect(backend.read("/copied.txt")).resolves.toBe("existing");
   });
 

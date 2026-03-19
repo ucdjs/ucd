@@ -6,6 +6,7 @@ export {
   BackendFileNotFound,
   BackendSetupError,
   BackendUnsupportedOperation,
+  CopyDestinationAlreadyExistsError,
 } from "./errors";
 export { hasFeature, isHttpBackend } from "./guards";
 export type {

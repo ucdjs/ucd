@@ -1,3 +1,4 @@
+import type { ResolvedEntry } from "@ucdjs/pipelines-core";
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createSortTransform } from "@ucdjs/pipelines-core/transforms";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
@@ -25,12 +26,16 @@ const planetsRoute = definePipelineRoute({
   filter: byName("planets.txt"),
   parser: standardParser,
   resolver: async (ctx, rows) => {
-    const entries = [];
+    const entries: ResolvedEntry[] = [];
 
     for await (const row of rows) {
+      const value = Array.isArray(row.value)
+        ? row.value.join(", ")
+        : (row.value ?? "Unknown Planet");
+
       entries.push({
         codePoint: row.codePoint,
-        value: (row.value ?? "Unknown Planet").toUpperCase(),
+        value: value.toUpperCase(),
       });
     }
 

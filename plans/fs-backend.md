@@ -106,16 +106,22 @@ interface BackendHooks {
   "error": (payload: { op: string; path: string; error: Error }) => void;
   "read:before": (payload: { path: string }) => void;
   "read:after": (payload: { path: string; content: string }) => void;
+  "readBytes:before": (payload: { path: string }) => void;
+  "readBytes:after": (payload: { path: string; data: Uint8Array }) => void;
   "list:before": (payload: { path: string; recursive: boolean }) => void;
   "list:after": (payload: { path: string; recursive: boolean; entries: BackendEntry[] }) => void;
   "exists:before": (payload: { path: string }) => void;
   "exists:after": (payload: { path: string; result: boolean }) => void;
+  "stat:before": (payload: { path: string }) => void;
+  "stat:after": (payload: { path: string; stat: BackendStat }) => void;
   "write:before": (payload: { path: string; data: string | Uint8Array }) => void;
   "write:after": (payload: { path: string }) => void;
   "mkdir:before": (payload: { path: string }) => void;
   "mkdir:after": (payload: { path: string }) => void;
   "remove:before": (payload: { path: string } & RemoveOptions) => void;
   "remove:after": (payload: { path: string } & RemoveOptions) => void;
+  "copy:before": (payload: { sourcePath: string; destinationPath: string } & CopyOptions) => void;
+  "copy:after": (payload: { sourcePath: string; destinationPath: string } & CopyOptions) => void;
 }
 ```
 

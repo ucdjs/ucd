@@ -3,10 +3,14 @@ import type { BackendEntry, BackendStat } from "../types";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { assertNotUNCPath, resolveSafePath } from "@ucdjs/path-utils";
+import { assertNotUNCPath, PathTraversalError, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import { defineBackend } from "../define";
-import { BackendEntryIsDirectory, BackendError, BackendFileNotFound } from "../errors";
+import {
+  BackendEntryIsDirectory,
+  BackendFileNotFound,
+  CopyDestinationAlreadyExistsError,
+} from "../errors";
 import {
   assertFilePath,
   isDirectoryPath,
@@ -53,16 +57,33 @@ function normalizeRemoveError(path: string, error: unknown): never {
   throw error;
 }
 
-class CopyDestinationAlreadyExistsError extends BackendError {
-  constructor(path: string) {
-    super(`Copy destination already exists: ${path}`);
-    this.name = "CopyDestinationAlreadyExistsError";
-  }
-}
-
 async function safeStat(path: string): Promise<Awaited<ReturnType<typeof fsp.stat>> | null> {
   try {
     return await fsp.stat(path);
+  } catch (error) {
+    if (isNodeErrorWithCode(error, "ENOENT")) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+async function safeLstat(path: string): Promise<Awaited<ReturnType<typeof fsp.lstat>> | null> {
+  try {
+    return await fsp.lstat(path);
+  } catch (error) {
+    if (isNodeErrorWithCode(error, "ENOENT")) {
+      return null;
+    }
+
+    throw error;
+  }
+}
+
+async function safeRealpath(path: string): Promise<string | null> {
+  try {
+    return await fsp.realpath(path);
   } catch (error) {
     if (isNodeErrorWithCode(error, "ENOENT")) {
       return null;
@@ -82,13 +103,57 @@ async function safeExists(path: string): Promise<boolean> {
   }
 }
 
+function isWithinRealSandbox(baseRealPath: string, candidateRealPath: string): boolean {
+  const relative = nodePath.relative(baseRealPath, candidateRealPath);
+  return relative === "" || (!relative.startsWith("..") && !nodePath.isAbsolute(relative));
+}
+
+async function assertWithinRealSandbox(basePath: string, resolvedPath: string): Promise<void> {
+  const baseRealPath = await safeRealpath(basePath) ?? basePath;
+  const relativeToBase = nodePath.relative(basePath, resolvedPath);
+
+  if (!relativeToBase || relativeToBase === ".") {
+    return;
+  }
+
+  let currentPath = basePath;
+  for (const segment of relativeToBase.split(nodePath.sep).filter(Boolean)) {
+    currentPath = nodePath.join(currentPath, segment);
+
+    const stats = await safeLstat(currentPath);
+    if (stats == null) {
+      return;
+    }
+
+    if (!stats.isSymbolicLink()) {
+      continue;
+    }
+
+    const realCurrentPath = await fsp.realpath(currentPath);
+    if (!isWithinRealSandbox(baseRealPath, realCurrentPath)) {
+      throw new PathTraversalError(basePath, resolvedPath);
+    }
+  }
+
+  const realResolvedPath = await safeRealpath(resolvedPath);
+  if (realResolvedPath != null && !isWithinRealSandbox(baseRealPath, realResolvedPath)) {
+    throw new PathTraversalError(basePath, resolvedPath);
+  }
+}
+
+async function resolveSandboxedPath(basePath: string, inputPath: string): Promise<string> {
+  const resolvedPath = resolveSafePath(basePath, inputPath);
+  await assertWithinRealSandbox(basePath, resolvedPath);
+  return resolvedPath;
+}
+
 const NodeFileSystemBackend = defineBackend({
   meta: {
     name: "Node.js File System Backend",
     description: "A file system backend that uses Node.js fs module to interact with the local file system.",
   },
   optionsSchema: z.object({
-    basePath: z.string(),
+    basePath: z.string().trim().min(1, "basePath is required"),
   }),
   setup(options) {
     assertNotUNCPath(options.basePath);
@@ -105,19 +170,19 @@ const NodeFileSystemBackend = defineBackend({
       async read(path) {
         assertFilePath(path);
 
-        return fsp.readFile(resolveSafePath(basePath, path), "utf-8")
+        return fsp.readFile(await resolveSandboxedPath(basePath, path), "utf-8")
           .catch((error: unknown) => normalizeReadError(path, error));
       },
       async readBytes(path) {
         assertFilePath(path);
 
-        return fsp.readFile(resolveSafePath(basePath, path))
+        return fsp.readFile(await resolveSandboxedPath(basePath, path))
           .then((data) => new Uint8Array(data))
           .catch((error: unknown) => normalizeReadError(path, error));
       },
       async list(path, options) {
         const recursive = options?.recursive ?? false;
-        const targetPath = resolveSafePath(basePath, path);
+        const targetPath = await resolveSandboxedPath(basePath, path);
 
         if (!recursive) {
           const entries = await fsp.readdir(targetPath, { withFileTypes: true })
@@ -164,10 +229,10 @@ const NodeFileSystemBackend = defineBackend({
         return sortEntries(rootEntries);
       },
       async exists(path) {
-        return safeExists(resolveSafePath(basePath, path));
+        return safeExists(await resolveSandboxedPath(basePath, path));
       },
       async stat(path) {
-        const stats = await fsp.stat(resolveSafePath(basePath, path))
+        const stats = await fsp.stat(await resolveSandboxedPath(basePath, path))
           .catch((error: unknown) => {
             if (isNodeErrorWithCode(error, "ENOENT")) {
               throw new BackendFileNotFound(path);
@@ -187,7 +252,7 @@ const NodeFileSystemBackend = defineBackend({
       async write(path, data) {
         assertFilePath(path);
 
-        const resolvedPath = resolveSafePath(basePath, path);
+        const resolvedPath = await resolveSandboxedPath(basePath, path);
         const parentDir = nodePath.dirname(resolvedPath);
 
         if (!(await safeExists(parentDir))) {
@@ -197,17 +262,17 @@ const NodeFileSystemBackend = defineBackend({
         await fsp.writeFile(resolvedPath, data);
       },
       async mkdir(path) {
-        await fsp.mkdir(resolveSafePath(basePath, path), { recursive: true });
+        await fsp.mkdir(await resolveSandboxedPath(basePath, path), { recursive: true });
       },
       async remove(path, options) {
-        await fsp.rm(resolveSafePath(basePath, path), {
+        await fsp.rm(await resolveSandboxedPath(basePath, path), {
           recursive: options?.recursive ?? false,
           force: options?.force ?? false,
         }).catch((error: unknown) => normalizeRemoveError(path, error));
       },
       async copy(sourcePath, destinationPath, options) {
-        const resolvedSourcePath = resolveSafePath(basePath, sourcePath);
-        const resolvedDestinationPath = resolveSafePath(basePath, destinationPath);
+        const resolvedSourcePath = await resolveSandboxedPath(basePath, sourcePath);
+        const resolvedDestinationPath = await resolveSandboxedPath(basePath, destinationPath);
         const sourceStats = await safeStat(resolvedSourcePath);
 
         if (sourceStats == null) {
