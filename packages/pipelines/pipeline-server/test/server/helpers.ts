@@ -38,7 +38,7 @@ interface CreateTestRoutesAppOptions {
 
 export async function createTestApp(options: { sources?: PipelineSource[] } = {}) {
   const { createApp } = await import("#server/app");
-  const db = createDatabase({ url: "file::memory:" });
+  const db = createDatabase({ url: ":memory:" });
   await runMigrations(db);
   await ensureWorkspace(db, "test", playgroundPath);
 
@@ -52,7 +52,7 @@ export async function createTestApp(options: { sources?: PipelineSource[] } = {}
 }
 
 export async function createTestRoutesApp(routers: H3[], options: CreateTestRoutesAppOptions = {}) {
-  const db = createDatabase({ url: "file::memory:" });
+  const db = createDatabase({ url: ":memory:" });
   await runMigrations(db);
   await ensureWorkspace(db, "test", playgroundPath);
 

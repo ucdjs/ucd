@@ -24,16 +24,21 @@ sourcesEventsRouter.get(
     const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 100, 500);
     const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
 
-    const execution = await db.query.executions.findFirst({
-      where: and(
+    const [execution] = await db
+      .select({
+        id: schema.executions.id,
+        pipelineId: schema.executions.pipelineId,
+        status: schema.executions.status,
+      })
+      .from(schema.executions)
+      .where(and(
         eq(schema.executions.workspaceId, workspaceId),
         eq(schema.executions.sourceId, sourceId),
         eq(schema.executions.fileId, fileId),
         eq(schema.executions.pipelineId, pipelineId),
         eq(schema.executions.id, executionId),
-      ),
-      columns: { id: true, pipelineId: true, status: true },
-    });
+      ))
+      .limit(1);
 
     if (!execution) {
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
@@ -44,12 +49,21 @@ sourcesEventsRouter.get(
       eq(schema.events.executionId, executionId),
     );
 
-    const [events, countResult] = await Promise.all([
-      db.query.events.findMany({ where, orderBy: asc(schema.events.timestamp), limit, offset }),
-      db.select({ count: sql<number>`count(*)` }).from(schema.events).where(where),
+    const [events, [countResult]] = await Promise.all([
+      db
+        .select()
+        .from(schema.events)
+        .where(where)
+        .orderBy(asc(schema.events.timestamp))
+        .limit(limit)
+        .offset(offset),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(schema.events)
+        .where(where),
     ]);
 
-    const total = Number(countResult[0]?.count ?? 0);
+    const total = Number(countResult?.count ?? 0);
 
     return {
       executionId,
