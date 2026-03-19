@@ -1,6 +1,6 @@
 import { definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
-import { sharedSource } from "./shared";
+import { planetsSource } from "../shared.sources";
 
 /**
  * A transform that logs every row it sees using both the context logger and console.log.
@@ -80,7 +80,7 @@ export const withLoggingPipeline = definePipeline({
   id: "with-logging",
   name: "With Logging",
   versions: ["1.0.0"],
-  inputs: [sharedSource],
+  inputs: [planetsSource],
   routes: [planetsRoute],
   onEvent: (event) => {
     if (event.type === "pipeline:start") {
