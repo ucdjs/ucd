@@ -1,6 +1,6 @@
-import type { PipelineTraceRecord } from "../src/traces";
 import { describe, expect, it } from "vitest";
-import { buildOutputManifestFromTraces } from "../src/traces";
+import type { PipelineTraceRecord } from "../src/internal/traces";
+import { buildOutputManifestFromTraces } from "../src/internal/traces";
 
 describe("trace projections", () => {
   it("upgrades resolved outputs to failed or written manifest entries by locator key", () => {

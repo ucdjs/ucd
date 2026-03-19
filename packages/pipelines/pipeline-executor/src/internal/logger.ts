@@ -1,5 +1,5 @@
 import type { PipelineLogger } from "@ucdjs/pipelines-core";
-import type { PipelineExecutionRuntime } from "./runtime";
+import type { PipelineExecutionRuntime } from "../runtime";
 
 export function createPipelineLogger(runtime: PipelineExecutionRuntime): PipelineLogger {
   return {
