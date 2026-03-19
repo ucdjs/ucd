@@ -1,6 +1,6 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { FileContext, ParsedRow, PipelineError, PipelineLogger } from "@ucdjs/pipelines-core";
-import type { EventEmitter } from "./events";
+import type { EventEmitter } from "../internal/events";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
 import type { PipelineTraceEmitInput } from "./traces";

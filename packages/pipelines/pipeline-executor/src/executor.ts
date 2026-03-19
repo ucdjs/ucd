@@ -5,9 +5,9 @@ import type {
   PipelineExecutorOptions,
   PipelineExecutorRunOptions,
 } from "./types";
-import { createEventEmitter } from "./run/events";
-import { createTraceEmitter } from "./run/trace-emitter";
 import { run as runPipeline } from "./run";
+import { createEventEmitter } from "./internal/events";
+import { createTraceEmitter } from "./internal/trace-emitter";
 import { createNoopExecutionRuntime } from "./runtime";
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
@@ -89,6 +89,7 @@ function orderPipelinesByPublishedOutputDependencies(
   const visiting = new Set<string>();
   const ordered: AnyPipelineDefinition[] = [];
 
+  // eslint-disable-next-line ts/explicit-function-return-type
   function visit(pipeline: AnyPipelineDefinition) {
     if (visited.has(pipeline.id)) {
       return;

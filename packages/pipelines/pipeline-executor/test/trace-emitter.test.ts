@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
-import { createTraceEmitter } from "../src/run/trace-emitter";
+import { createTraceEmitter } from "../src/internal/trace-emitter";
 import { createMockFile } from "./helpers";
 
 describe("trace emitter", () => {

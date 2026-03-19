@@ -10,7 +10,8 @@ import type {
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
-import type { EventEmitter } from "./run/events";
+import type { EventEmitter } from "./internal/events";
+import type { TraceEmitter } from "./internal/trace-emitter";
 import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   PipelineOutputManifestEntry,
@@ -19,7 +20,6 @@ import type {
   PipelineTraceRecordByKind,
 } from "./run/traces";
 import type { SourceAdapter } from "./run/source-files";
-import type { TraceEmitter } from "./run/trace-emitter";
 import type {
   ExecutionStatus,
   PipelineExecutionResult,
@@ -27,9 +27,9 @@ import type {
   PipelineSummary,
 } from "./types";
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
-import { emitRuntimeEvent } from "./run/events";
+import { emitRuntimeEvent } from "./internal/events";
+import { createPipelineLogger } from "./internal/logger";
 import { buildExecutionGraphFromTraces } from "./run/graph";
-import { createPipelineLogger } from "./run/logger";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
 import {
   buildOutputManifestFromTraces,
