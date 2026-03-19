@@ -263,7 +263,7 @@ export type PipelineGraphNode
     | { id: string; type: "file"; file: FileContext }
     | { id: string; type: "route"; routeId: string }
     | { id: string; type: "artifact"; artifactId: string }
-    | { id: string; type: "output"; outputIndex: number; property?: string };
+    | { id: string; type: "output"; outputIndex: number; property?: string; outputId?: string; locator?: string };
 
 export type PipelineGraphEdgeType = "provides" | "matched" | "parsed" | "resolved" | "uses-artifact";
 

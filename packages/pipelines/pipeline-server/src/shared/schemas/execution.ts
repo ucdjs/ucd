@@ -1,5 +1,5 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
+import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor/shared";
 import z from "zod";
 import { ExecutionGraphViewSchema } from "./graph";
 
@@ -40,6 +40,7 @@ export const ExecutionSummaryItemSchema = z.object({
   versions: z.array(z.string()).nullable(),
   summary: PipelineSummarySchema.nullable(),
   hasGraph: z.boolean(),
+  hasTraces: z.boolean().optional(),
   error: z.string().nullable(),
 });
 
@@ -103,6 +104,37 @@ export const ExecutionGraphResponseSchema = z.object({
   graph: ExecutionGraphViewSchema.nullable(),
 });
 
+export const ExecutionTraceItemSchema = z.object({
+  id: z.string(),
+  kind: z.string(),
+  spanId: z.string().nullable(),
+  timestamp: z.string(),
+  data: z.unknown(),
+});
+
+export const OutputManifestItemSchema = z.object({
+  outputIndex: z.number(),
+  outputId: z.string(),
+  routeId: z.string(),
+  pipelineId: z.string(),
+  version: z.string(),
+  property: z.string().optional(),
+  sink: z.string(),
+  format: z.enum(["json", "text"]),
+  locator: z.string(),
+  status: z.enum(["resolved", "written", "failed"]),
+  error: z.string().optional(),
+});
+
+export const ExecutionTracesResponseSchema = z.object({
+  executionId: z.string(),
+  pipelineId: z.string(),
+  status: ExecutionStatusSchema,
+  traces: z.array(ExecutionTraceItemSchema),
+  outputManifest: z.array(OutputManifestItemSchema),
+  pagination: PaginationSchema,
+});
+
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
 export type ExecutionSummaryItem = z.infer<typeof ExecutionSummaryItemSchema>;
 export type ExecutionsResponse = z.infer<typeof ExecutionsResponseSchema>;
@@ -112,3 +144,6 @@ export type ExecutionLogPayload = z.infer<typeof ExecutionLogPayloadSchema>;
 export type ExecutionLogItem = z.infer<typeof ExecutionLogItemSchema>;
 export type ExecutionLogsResponse = z.infer<typeof ExecutionLogsResponseSchema>;
 export type ExecutionGraphResponse = z.infer<typeof ExecutionGraphResponseSchema>;
+export type ExecutionTraceItem = z.infer<typeof ExecutionTraceItemSchema>;
+export type OutputManifestItem = z.infer<typeof OutputManifestItemSchema>;
+export type ExecutionTracesResponse = z.infer<typeof ExecutionTracesResponseSchema>;

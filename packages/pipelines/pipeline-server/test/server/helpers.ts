@@ -19,14 +19,17 @@ const defaultSources: PipelineSource[] = [{
 type ExecutionInsert = typeof schema.executions.$inferInsert;
 type EventInsert = typeof schema.events.$inferInsert;
 type LogInsert = typeof schema.executionLogs.$inferInsert;
+type TraceInsert = typeof schema.executionTraces.$inferInsert;
 
 type SeedExecutionOptions = Partial<Omit<ExecutionInsert, "id">> & { id?: string };
 type SeedExecutionEventOptions = Pick<EventInsert, "executionId"> & Partial<Omit<EventInsert, "id" | "executionId">>;
 type SeedExecutionLogOptions = Pick<LogInsert, "executionId" | "message"> & Partial<Omit<LogInsert, "id" | "executionId" | "message">>;
+type SeedExecutionTraceOptions = Pick<TraceInsert, "executionId" | "kind" | "data"> & Partial<Omit<TraceInsert, "id" | "executionId" | "kind" | "data">>;
 
 interface SeedExecutionInput extends SeedExecutionOptions {
   events?: Omit<SeedExecutionEventOptions, "executionId">[];
   logs?: Omit<SeedExecutionLogOptions, "executionId">[];
+  traces?: Omit<SeedExecutionTraceOptions, "executionId">[];
 }
 
 interface CreateTestRoutesAppOptions {
@@ -35,6 +38,7 @@ interface CreateTestRoutesAppOptions {
     executions?: SeedExecutionInput[];
     events?: SeedExecutionEventOptions[];
     logs?: SeedExecutionLogOptions[];
+    traces?: SeedExecutionTraceOptions[];
   };
 }
 
@@ -74,7 +78,7 @@ export async function createTestRoutesApp(routers: H3[], options: CreateTestRout
 
   if (options.seed) {
     for (const execution of options.seed.executions ?? []) {
-      const { events, logs, ...executionOptions } = execution;
+      const { events, logs, traces, ...executionOptions } = execution;
       const executionId = await seedExecution(db, executionOptions);
       executionIds.push(executionId);
 
@@ -91,6 +95,13 @@ export async function createTestRoutesApp(routers: H3[], options: CreateTestRout
           executionId,
         });
       }
+
+      for (const trace of traces ?? []) {
+        await seedExecutionTrace(db, {
+          ...trace,
+          executionId,
+        });
+      }
     }
 
     for (const event of options.seed.events ?? []) {
@@ -99,6 +110,10 @@ export async function createTestRoutesApp(routers: H3[], options: CreateTestRout
 
     for (const log of options.seed.logs ?? []) {
       await seedExecutionLog(db, log);
+    }
+
+    for (const trace of options.seed.traces ?? []) {
+      await seedExecutionTrace(db, trace);
     }
   }
 
@@ -175,5 +190,17 @@ export async function seedExecutionLog(db: Database, options: SeedExecutionLogOp
     message: options.message,
     timestamp: options.timestamp ?? new Date("2026-01-01T00:00:02.000Z"),
     payload: options.payload ?? null,
+  });
+}
+
+export async function seedExecutionTrace(db: Database, options: SeedExecutionTraceOptions) {
+  await db.insert(schema.executionTraces).values({
+    id: randomUUID(),
+    workspaceId: options.workspaceId ?? "test",
+    executionId: options.executionId,
+    spanId: options.spanId ?? null,
+    kind: options.kind,
+    timestamp: options.timestamp ?? new Date("2026-01-01T00:00:03.000Z"),
+    data: options.data,
   });
 }

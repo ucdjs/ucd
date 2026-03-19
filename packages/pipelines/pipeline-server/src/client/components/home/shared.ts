@@ -1,5 +1,5 @@
 import type { OverviewActivityDay, OverviewExecutionSummary } from "#queries/overview";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor/shared";
 import { AlertTriangle, CheckCircle2, PlayCircle, XCircle } from "lucide-react";
 
 export interface OverviewStateDefinition {

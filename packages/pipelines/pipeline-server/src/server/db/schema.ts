@@ -4,6 +4,8 @@ import type {
   PipelineLogLevel,
   PipelineLogSource,
   PipelineSummary,
+  PipelineTraceKind,
+  PipelineTraceRecord,
 } from "@ucdjs/pipelines-executor";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
@@ -46,6 +48,21 @@ export const executions = sqliteTable("executions", {
 }, (table) => [
   index("executions_workspace_pipeline_idx").on(table.workspaceId, table.pipelineId),
   index("executions_workspace_started_idx").on(table.workspaceId, table.startedAt),
+]);
+
+export const executionTraces = sqliteTable("execution_traces", {
+  id: text("id").primaryKey(),
+  workspaceId: text("workspace_id").notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  executionId: text("execution_id").notNull()
+    .references(() => executions.id, { onDelete: "cascade" }),
+  spanId: text("span_id"),
+  kind: text("kind").$type<PipelineTraceKind>().notNull(),
+  timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
+  data: text("data", { mode: "json" }).$type<PipelineTraceRecord>().notNull(),
+}, (table) => [
+  index("execution_traces_workspace_execution_idx").on(table.workspaceId, table.executionId),
+  index("execution_traces_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
 ]);
 
 export const events = sqliteTable("events", {
