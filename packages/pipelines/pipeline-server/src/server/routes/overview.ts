@@ -28,18 +28,20 @@ overviewRouter.get("/", async (event) => {
   weekStart.setUTCDate(weekStart.getUTCDate() - (OVERVIEW_WINDOW_DAYS - 1));
 
   const [windowExecutions, recentExecutions] = await Promise.all([
-    db.query.executions.findMany({
-      where: and(
+    db
+      .select()
+      .from(schema.executions)
+      .where(and(
         eq(schema.executions.workspaceId, workspaceId),
         gte(schema.executions.startedAt, weekStart),
-      ),
-      orderBy: desc(schema.executions.startedAt),
-    }),
-    db.query.executions.findMany({
-      where: eq(schema.executions.workspaceId, workspaceId),
-      orderBy: desc(schema.executions.startedAt),
-      limit: 20,
-    }),
+      ))
+      .orderBy(desc(schema.executions.startedAt)),
+    db
+      .select()
+      .from(schema.executions)
+      .where(eq(schema.executions.workspaceId, workspaceId))
+      .orderBy(desc(schema.executions.startedAt))
+      .limit(20),
   ]);
 
   const summaryStates = { ...EMPTY_STATE_COUNTS };

@@ -1,28 +1,26 @@
-import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { existsSync } from "node:fs";
 import process from "node:process";
+import { DatabaseSync } from "node:sqlite";
 import { fileURLToPath } from "node:url";
-import { createClient } from "@libsql/client";
 import { getUcdConfigPath } from "@ucdjs/env";
-import { drizzle } from "drizzle-orm/libsql";
-import { migrate } from "drizzle-orm/libsql/migrator";
+import { drizzle } from "drizzle-orm/node-sqlite";
+import { migrate } from "drizzle-orm/node-sqlite/migrator";
+import { relations } from "./relations";
 import * as schema from "./schema";
 
-export type Database = LibSQLDatabase<typeof schema>;
+export type Database = ReturnType<typeof drizzle>;
 
 interface CreateDatabaseOptions {
   url?: string;
-  authToken?: string;
 }
 
 export function createDatabase(options: CreateDatabaseOptions = {}): Database {
   const defaultUrl = `file:${getUcdConfigPath("ucd-pipelines.db")}`;
   const url = options.url ?? process.env.DB_URL ?? defaultUrl;
-  const authToken = options.authToken ?? process.env.DB_AUTH_TOKEN;
 
-  const client = createClient({ url, authToken });
+  const sqlite = new DatabaseSync(url);
 
-  return drizzle(client, { schema });
+  return drizzle({ client: sqlite, schema, relations });
 }
 
 export async function runMigrations(db: Database): Promise<void> {
@@ -35,7 +33,7 @@ export async function runMigrations(db: Database): Promise<void> {
     );
   }
 
-  await migrate(db, { migrationsFolder });
+  migrate(db, { migrationsFolder });
 }
 
 export { schema };

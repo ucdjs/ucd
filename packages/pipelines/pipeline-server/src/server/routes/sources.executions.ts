@@ -25,17 +25,21 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
     eq(schema.executions.pipelineId, pipelineId),
   );
 
-  const [executions, countResult] = await Promise.all([
-    db.query.executions.findMany({
-      where,
-      orderBy: desc(schema.executions.startedAt),
-      limit,
-      offset,
-    }),
-    db.select({ count: sql<number>`count(*)` }).from(schema.executions).where(where),
+  const [executions, [countResult]] = await Promise.all([
+    db
+      .select()
+      .from(schema.executions)
+      .where(where)
+      .orderBy(desc(schema.executions.startedAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.executions)
+      .where(where),
   ]);
 
-  const total = Number(countResult[0]?.count ?? 0);
+  const total = Number(countResult?.count ?? 0);
 
   return {
     executions: executions.map((exec) => ({

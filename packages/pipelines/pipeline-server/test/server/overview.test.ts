@@ -43,7 +43,7 @@ describe("GET /api/overview", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-08T12:00:00.000Z"));
 
-    const db = createDatabase({ url: "file::memory:" });
+    const db = createDatabase({ url: ":memory:" });
     await runMigrations(db);
 
     const playgroundPath = fileURLToPath(new URL("../../../pipeline-playground/src", import.meta.url));

@@ -19,16 +19,22 @@ sourcesGraphRouter.get(
       throw HTTPError.status(400, "Execution ID is required");
     }
 
-    const execution = await db.query.executions.findFirst({
-      where: and(
+    const [execution] = await db
+      .select({
+        id: schema.executions.id,
+        pipelineId: schema.executions.pipelineId,
+        graph: schema.executions.graph,
+        status: schema.executions.status,
+      })
+      .from(schema.executions)
+      .where(and(
         eq(schema.executions.workspaceId, workspaceId),
         eq(schema.executions.sourceId, sourceId),
         eq(schema.executions.fileId, fileId),
         eq(schema.executions.pipelineId, pipelineId),
         eq(schema.executions.id, executionId),
-      ),
-      columns: { id: true, pipelineId: true, graph: true, status: true },
-    });
+      ))
+      .limit(1);
 
     if (!execution) {
       throw HTTPError.status(404, `Execution "${executionId}" not found`);

@@ -25,16 +25,21 @@ sourcesLogsRouter.get(
     const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
     const spanId = typeof query.spanId === "string" ? query.spanId : undefined;
 
-    const execution = await db.query.executions.findFirst({
-      where: and(
+    const [execution] = await db
+      .select({
+        id: schema.executions.id,
+        pipelineId: schema.executions.pipelineId,
+        status: schema.executions.status,
+      })
+      .from(schema.executions)
+      .where(and(
         eq(schema.executions.workspaceId, workspaceId),
         eq(schema.executions.sourceId, sourceId),
         eq(schema.executions.fileId, fileId),
         eq(schema.executions.pipelineId, pipelineId),
         eq(schema.executions.id, executionId),
-      ),
-      columns: { id: true, pipelineId: true, status: true },
-    });
+      ))
+      .limit(1);
 
     if (!execution) {
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
@@ -109,12 +114,13 @@ sourcesLogsRouter.get(
       })
         .from(schema.executionLogs)
         .where(where),
-      db.query.executionLogs.findMany({
-        where,
-        orderBy: asc(schema.executionLogs.timestamp),
-        limit,
-        offset,
-      }),
+      db
+        .select()
+        .from(schema.executionLogs)
+        .where(where)
+        .orderBy(asc(schema.executionLogs.timestamp))
+        .limit(limit)
+        .offset(offset),
     ]);
     // eslint-disable-next-line no-console
     console.timeEnd(`${timerLabel} fetch (limit=${limit} offset=${offset})`);
