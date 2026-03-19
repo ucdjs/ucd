@@ -1,4 +1,4 @@
-import type { PipelineEvent, PipelineEventType, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { PipelineEvent, PipelineEventType } from "@ucdjs/pipelines-core";
 import type {
   ExecutionStatus,
   PipelineLogLevel,
@@ -45,7 +45,6 @@ export const executions = sqliteTable("executions", {
   completedAt: integer("completed_at", { mode: "timestamp" }),
   versions: text("versions", { mode: "json" }).$type<string[]>(),
   summary: text("summary", { mode: "json" }).$type<PipelineSummary>(),
-  graph: text("graph", { mode: "json" }).$type<PipelineGraph>(),
   error: text("error"),
 }, (table) => [
   index("executions_workspace_pipeline_idx").on(table.workspaceId, table.pipelineId),
