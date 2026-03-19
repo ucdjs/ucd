@@ -4,9 +4,11 @@ import type {
   PipelineLogLevel,
   PipelineLogSource,
   PipelineSummary,
+} from "@ucdjs/pipelines-executor";
+import type {
   PipelineTraceKind,
   PipelineTraceRecord,
-} from "@ucdjs/pipelines-executor";
+} from "@ucdjs/pipelines-executor/traces";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export type ExecutionLogStream = "stdout" | "stderr";

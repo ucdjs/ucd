@@ -23,7 +23,7 @@ import type {
   PipelineSummary,
 } from "../types";
 import type { EventEmitter } from "./events";
-import type { TraceEmitter } from "./traces";
+import type { TraceEmitter } from "./trace-emitter";
 import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
 import { buildExecutionGraphFromTraces } from "../graph";
 import { createPipelineLogger } from "../logger";

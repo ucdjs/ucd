@@ -14,19 +14,11 @@ export {
 } from "./cache";
 
 export { createPipelineExecutor } from "./executor";
-export { buildExecutionGraphFromTraces } from "./graph";
 export type {
   PipelineExecutionContext,
   PipelineExecutionLogInput,
   PipelineExecutionRuntime,
 } from "./runtime";
-export { buildOutputManifestFromTraces } from "./traces";
-
-export type {
-  PipelineOutputManifestEntry,
-  PipelineTraceKind,
-  PipelineTraceRecord,
-} from "./traces";
 
 export { EXECUTION_STATUSES } from "./types";
 export type {
