@@ -2,7 +2,7 @@ import { sourcesTracesRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
 import { createTestRoutesApp } from "./helpers";
 
-describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces", () => {
+describe("gET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces", () => {
   it("returns traces and a derived output manifest", async () => {
     const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
       seed: {

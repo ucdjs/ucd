@@ -1,12 +1,12 @@
-import { byName, definePipelineRoute, filesystemSink, normalizeRouteOutputs } from "../src";
 import { describe, expect, it } from "vitest";
+import { byName, definePipelineRoute, filesystemSink, normalizeRouteOutputs } from "../src";
 
 describe("normalizeRouteOutputs", () => {
   it("leaves sink undefined when an output is runtime-only", () => {
     const route = definePipelineRoute({
       id: "scripts",
       filter: byName("Scripts.txt"),
-      async *parser() {},
+      async* parser() {},
       resolver: async () => [],
       outputs: [{
         id: "json",
@@ -25,7 +25,7 @@ describe("normalizeRouteOutputs", () => {
     const route = definePipelineRoute({
       id: "scripts",
       filter: byName("Scripts.txt"),
-      async *parser() {},
+      async* parser() {},
       resolver: async () => [],
       outputs: [{
         id: "json",

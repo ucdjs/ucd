@@ -209,11 +209,14 @@ function getGraphNodeActions(
     case "output":
       return [{
         label: "Open outputs",
-        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
         params: {
           sourceId: routeContext.sourceId,
           sourceFileId: routeContext.fileId,
           pipelineId: routeContext.pipelineId,
+        },
+        search: {
+          view: "outputs",
         },
       }];
     default:
@@ -266,6 +269,7 @@ function getNodeLabel(node: PipelineGraphNode): string {
 }
 
 function getLocatorName(locator: string): string {
+  // eslint-disable-next-line e18e/prefer-static-regex
   const normalized = locator.replace(/^memory:\/\//, "");
   const parts = normalized.split("/").filter(Boolean);
   return parts.at(-1) ?? locator;
