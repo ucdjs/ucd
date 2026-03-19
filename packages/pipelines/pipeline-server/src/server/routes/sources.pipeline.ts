@@ -150,7 +150,6 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         status: pipelineResult?.status ?? "failed",
         completedAt: new Date(),
         summary: pipelineResult?.summary ?? null,
-        graph: pipelineResult?.graph ?? null,
       })
       .where(and(
         eq(schema.executions.workspaceId, workspaceId),

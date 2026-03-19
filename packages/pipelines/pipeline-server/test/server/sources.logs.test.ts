@@ -17,6 +17,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
                 message: "first log",
                 source: "stdio",
                 stream: "stdout",
+                level: "info",
+                source: "stdio",
                 truncated: true,
                 originalSize: 2048,
               },

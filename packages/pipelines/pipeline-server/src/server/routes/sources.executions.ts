@@ -1,5 +1,6 @@
 import type { ExecutionsResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
+import { listExecutionIdsWithTraces } from "#server/db/execution-traces";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
@@ -40,6 +41,7 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
   ]);
 
   const total = Number(countResult?.count ?? 0);
+  const tracedExecutionIds = await listExecutionIdsWithTraces(db, workspaceId, executions.map((exec) => exec.id));
 
   return {
     executions: executions.map((exec) => ({
@@ -52,7 +54,8 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
       completedAt: exec.completedAt?.toISOString() ?? null,
       versions: exec.versions,
       summary: exec.summary ?? null,
-      hasGraph: Boolean(exec.graph),
+      hasGraph: tracedExecutionIds.has(exec.id),
+      hasTraces: tracedExecutionIds.has(exec.id),
       error: exec.error ?? null,
     })),
     pagination: { total, limit, offset, hasMore: offset + limit < total },

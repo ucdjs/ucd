@@ -160,7 +160,6 @@ export async function seedExecution(db: Database, options: SeedExecutionOptions 
     completedAt: options.completedAt ?? new Date("2026-01-01T00:00:05.000Z"),
     versions: options.versions ?? ["16.0.0"],
     summary: options.summary ?? null,
-    graph: options.graph ?? null,
     error: options.error ?? null,
   });
 
