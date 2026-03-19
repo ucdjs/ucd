@@ -1,6 +1,7 @@
 {
   "name": "@ucdjs/fs-bridge",
   "version": "0.1.1-beta.7",
+  "description": "DEPRECATED: use @ucdjs/fs-backend instead.",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",

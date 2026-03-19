@@ -37,6 +37,11 @@ interface RemoveOptions {
   recursive?: boolean;
   force?: boolean;
 }
+
+interface CopyOptions {
+  recursive?: boolean;
+  overwrite?: boolean;
+}
 ```
 
 **Notes:**
@@ -45,6 +50,9 @@ interface RemoveOptions {
 - `write(path, data)` — no `encoding` param; convert before calling if needed
 - `exists(path)` is intentionally lossy. Backends may return `false` both for "missing"
   and for "could not determine existence". Use `stat()` when callers need error detail.
+- `copy(sourcePath, destinationPath)` is intra-backend only
+- File copies treat `destinationPath` as the exact target by default, but copy into a
+  directory when the destination ends with `/` or already exists as a directory
 
 ## Entry Type
 
@@ -62,7 +70,7 @@ type BackendEntry =
 ## Features (runtime capability detection)
 
 ```ts
-type BackendFeature = "write" | "mkdir" | "remove";
+type BackendFeature = "write" | "mkdir" | "remove" | "copy";
 ```
 
 Exposed as `ReadonlySet<BackendFeature>` on every backend instance:
@@ -150,9 +158,11 @@ function assertFeature(backend: FileSystemBackend, feature: BackendFeature): ass
 
 ### Node (`src/backends/node.ts`)
 - Options: `{ basePath: string }`
-- All 6 operations
+- All mutable and read-only operations
 - Paths sandboxed via `resolveSafePath` from `@ucdjs/path-utils` (imported directly)
 - `list()` builds correct `BackendEntry` tree
+- `copy()` requires `recursive: true` for directory sources
+- File copies can target exact file paths or copy into directory-like destinations
 
 ### HTTP (`src/backends/http.ts`)
 - Options: `{ baseUrl: URL }`

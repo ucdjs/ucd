@@ -1,0 +1,83 @@
+---
+title: Features
+description: Runtime feature detection in fs-backend
+---
+
+# Features
+
+`fs-backend` uses a feature set instead of a capability record.
+
+## Why a Set
+
+Backends expose optional support through:
+
+```typescript
+type FileSystemBackendFeature = "write" | "mkdir" | "remove" | "copy";
+```
+
+and:
+
+```typescript
+backend.features: ReadonlySet<FileSystemBackendFeature>
+```
+
+This keeps runtime checks simple and extensible.
+
+## Checking Features
+
+Use `hasFeature()` when you want a readable check and type narrowing:
+
+```typescript
+import { hasFeature } from "@ucdjs/fs-backend";
+
+if (hasFeature(backend, "write")) {
+  await backend.write("/file.txt", "hello");
+}
+```
+
+You can also check multiple features together:
+
+```typescript
+if (hasFeature(backend, ["write", "mkdir"])) {
+  await backend.mkdir("/nested/");
+  await backend.write("/nested/file.txt", "hello");
+}
+```
+
+## Asserting Features
+
+Use `assertFeature()` when the operation is required for the current code path:
+
+```typescript
+import { assertFeature } from "@ucdjs/fs-backend";
+
+assertFeature(backend, "copy");
+await backend.copy("/source.txt", "/copied.txt");
+```
+
+If the backend does not support that feature, `assertFeature()` throws `BackendUnsupportedOperation`.
+
+## Common Patterns
+
+### Read-Only Backends
+
+```typescript
+if (!backend.features.has("write")) {
+  console.log("This backend is read-only");
+}
+```
+
+### Writable Setup
+
+```typescript
+if (hasFeature(backend, ["write", "mkdir"])) {
+  await backend.mkdir("/output/");
+  await backend.write("/output/result.txt", "done");
+}
+```
+
+## Notes
+
+- built-in HTTP backend has no mutable features
+- built-in Node backend supports all mutable features
+- custom backends get feature inference automatically from `defineBackend()`

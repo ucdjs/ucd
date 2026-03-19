@@ -1,0 +1,161 @@
+---
+title: Overview
+description: Filesystem backend abstraction for local and HTTP-based storage
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+# FS Backend
+
+The `@ucdjs/fs-backend` package is the new filesystem abstraction for UCD.js. It replaces `@ucdjs/fs-bridge` with a smaller, more explicit API for local disk access, HTTP-backed storage, and custom backend implementations.
+
+<Callout type="info">
+  `@ucdjs/fs-backend` is intended to become the shared storage foundation across `@ucdjs/ucd-store`, lockfile utilities, and future backend-compatible tooling.
+</Callout>
+
+## Getting Started
+
+<Steps>
+<Step>
+
+### Installation
+
+```package-install
+@ucdjs/fs-backend
+```
+
+</Step>
+<Step>
+
+### Pick a Built-In Backend
+
+Use the Node backend for local disk access or the HTTP backend for read-only remote access.
+
+```typescript title="node.ts"
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
+
+const backend = NodeFileSystemBackend({
+  basePath: "/path/to/store",
+});
+```
+
+```typescript title="http.ts"
+import HTTPFileSystemBackend from "@ucdjs/fs-backend/backends/http";
+
+const backend = HTTPFileSystemBackend({
+  baseUrl: new URL("https://api.ucdjs.dev/api/v1/files"),
+});
+```
+
+</Step>
+<Step>
+
+### Use the Shared API
+
+```typescript
+const text = await backend.read("/16.0.0/ucd/UnicodeData.txt");
+const bytes = await backend.readBytes("/16.0.0/ucd/UnicodeData.txt");
+const entries = await backend.list("/16.0.0/ucd/");
+const exists = await backend.exists("/16.0.0/ucd/Blocks.txt");
+const stat = await backend.stat("/16.0.0/ucd/Blocks.txt");
+```
+
+</Step>
+</Steps>
+
+## Core API
+
+Required operations:
+
+- `read(path): Promise<string>`
+- `readBytes(path): Promise<Uint8Array>`
+- `list(path, options?): Promise<BackendEntry[]>`
+- `exists(path): Promise<boolean>`
+- `stat(path): Promise<BackendStat>`
+
+Optional mutable operations:
+
+- `write(path, data)`
+- `mkdir(path)`
+- `remove(path, options?)`
+- `copy(sourcePath, destinationPath, options?)`
+
+### Path Contract
+
+- All backend paths start with `/`
+- Directory paths end with `/`
+- File paths do not end with `/`
+
+### Features
+
+Mutable support is exposed through `backend.features`:
+
+```typescript
+backend.features.has("write");
+backend.features.has("copy");
+```
+
+### Notes
+
+- `exists()` is intentionally lossy. A backend may return `false` both for "missing" and "could not determine existence". Use `stat()` when you need error detail.
+- `copy()` is intra-backend only.
+- File copies use `destinationPath` as an exact target by default, but copy into a destination directory when the destination ends with `/` or already exists as a directory.
+- Directory copies require `recursive: true`.
+
+## Built-In Backends
+
+<Cards>
+  <Card title="Node Backend" description="Full read/write backend for local filesystems with path traversal protection." href="/packages/fs-backend/bridges/node" />
+  <Card title="HTTP Backend" description="Read-only backend for remote file APIs that follow the UCD.js compatibility contract." href="/packages/fs-backend/bridges/http" />
+  <Card title="HTTP Compatibility Guide" description="Build an HTTP application that works with the built-in HTTP backend." href="/packages/fs-backend/http-compat" />
+</Cards>
+
+## Documentation
+
+- **[Specification](/packages/fs-backend/specification)** - Reference for the backend contract
+  - **[Features](/packages/fs-backend/specification/features)** - Runtime feature detection with `features`, `hasFeature()`, and `assertFeature()`
+  - **[Errors](/packages/fs-backend/specification/errors)** - Stable backend error types and handling patterns
+- **[Backends](/packages/fs-backend/bridges/node)** - Built-in Node and HTTP backend implementations
+- **[Hooks](/packages/fs-backend/hooks)** - Observe backend operations for logging and instrumentation
+- **[HTTP Compatibility Guide](/packages/fs-backend/http-compat)** - Build an HTTP application that works with the built-in HTTP backend
+- **[Migration Guide](/packages/fs-backend/migration-from-fs-bridge)** - Move existing consumers from `fs-bridge`
+
+## Creating Custom Backends
+
+Use `defineBackend()` when you want to expose the same API from your own storage system.
+
+```typescript
+import { defineBackend } from "@ucdjs/fs-backend";
+
+const MemoryBackend = defineBackend({
+  meta: {
+    name: "Memory Backend",
+  },
+  setup() {
+    return {
+      async read(path) {
+        return `value:${path}`;
+      },
+      async readBytes() {
+        return new Uint8Array();
+      },
+      async list() {
+        return [];
+      },
+      async exists() {
+        return false;
+      },
+      async stat() {
+        return {
+          type: "file",
+          size: 0,
+        };
+      },
+    };
+  },
+});
+```
+
+If your backend is HTTP-based, follow the [HTTP compatibility guide](/packages/fs-backend/http-compat).
