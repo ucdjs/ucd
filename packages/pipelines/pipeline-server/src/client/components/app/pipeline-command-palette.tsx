@@ -9,7 +9,7 @@ import {
   useCommandActions,
 } from "@ucdjs-internal/shared-ui/ui/command";
 import { FileCode, Loader2, Play, Search, Terminal } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const PIPELINE_PALETTE = "pipeline-server.main";
 const STORAGE_KEY_PREFIX = "ucd-versions-";
@@ -158,11 +158,10 @@ export function PipelineCommandPalette() {
     && pipeline.id === currentPipelineId,
   );
 
-  useEffect(() => {
-    if (!open) {
-      setSearch("");
-    }
-  }, [open]);
+  const handleOpenChange = useCallback((next: boolean) => {
+    setOpen(next);
+    if (!next) setSearch("");
+  }, []);
 
   const handleExecuteCurrent = useCallback(async () => {
     if (!currentPipeline || executing) return;
@@ -212,7 +211,7 @@ export function PipelineCommandPalette() {
     <Command.Dialog
       palette={PIPELINE_PALETTE}
       open={open}
-      onOpenChange={setOpen}
+      onOpenChange={handleOpenChange}
       value={search}
       onValueChange={setSearch}
     >

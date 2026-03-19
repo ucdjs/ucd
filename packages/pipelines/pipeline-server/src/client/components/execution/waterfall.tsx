@@ -2,7 +2,7 @@ import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
 import type { ExecutionSpan } from "../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ExecutionWaterfallAxis } from "./waterfall/axis";
 import { ExecutionWaterfallRow } from "./waterfall/row";
 import { buildTicks } from "./waterfall/shared";
@@ -30,13 +30,6 @@ export function ExecutionWaterfall({
   const [activePhases, setActivePhases] = useState<Set<PipelineEventPhase>>(
     () => new Set(availablePhases),
   );
-
-  useEffect(() => {
-    setActivePhases((current) => {
-      const next = new Set(availablePhases.filter((phase) => current.has(phase)));
-      return next.size === 0 ? new Set(availablePhases) : next;
-    });
-  }, [availablePhases]);
 
   const visibleActivePhases = useMemo(() => {
     const next = new Set(availablePhases.filter((phase) => activePhases.has(phase)));
