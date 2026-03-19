@@ -1,13 +1,13 @@
+import type { FallbackRouteDefinition } from "@ucdjs/pipelines-core";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
-  definePipelineSource,
   byName,
   definePipeline,
   definePipelineRoute,
   filesystemSink,
-  type FallbackRouteDefinition,
+
   pipelineOutputSource,
 } from "@ucdjs/pipelines-core";
 import { afterEach, describe, expect, it } from "vitest";
@@ -132,7 +132,7 @@ describe("execution traces and output manifests", () => {
         definePipelineRoute({
           id: "consume",
           filter: () => true,
-          async *parser(ctx) {
+          async* parser(ctx) {
             const content = await ctx.readContent();
             const parsed = JSON.parse(content) as { property: string };
             yield {
