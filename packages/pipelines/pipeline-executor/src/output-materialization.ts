@@ -1,10 +1,10 @@
 import type { FileContext, NormalizedRouteOutputDefinition } from "@ucdjs/pipelines-core";
-import type { PipelineRunContext } from "./run-pipeline-types";
+import type { PipelineRunContext } from "./run-types";
 import {
   getOutputProperty,
   resolveOutputDestination,
   writeOutputToSink,
-} from "../outputs";
+} from "./outputs";
 
 const DEFAULT_FALLBACK_OUTPUTS: readonly NormalizedRouteOutputDefinition[] = [{
   id: "fallback-output",

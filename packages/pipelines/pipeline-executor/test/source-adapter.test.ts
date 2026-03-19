@@ -1,8 +1,8 @@
 import type { PipelineExecutionResult } from "../src";
 import { definePipeline, pipelineOutputSource } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
-import { createSourceAdapter } from "../src/executor/source-adapter";
-import { createTestSource, createMockFile } from "./helpers";
+import { createSourceAdapter } from "../src/source-files";
+import { createMockFile, createTestSource } from "./helpers";
 
 const logger = {
   debug() {},

@@ -8,10 +8,15 @@ import type {
 import type {
   PipelineExecutionResult,
   PipelineSummary,
-} from "../types";
-import type { PipelineRunContext } from "./run-pipeline-types";
-import { buildExecutionGraphFromTraces } from "../graph";
-import { buildOutputManifestFromTraces } from "../traces";
+} from "./types";
+import type { PipelineRunContext } from "./run-types";
+import { buildExecutionGraphFromTraces } from "./graph";
+import { buildOutputManifestFromTraces } from "./traces";
+import {
+  buildCacheKey,
+  storeCacheEntry,
+  tryLoadCachedResult,
+} from "./cache-helpers";
 import { emitWithSpan } from "./events";
 import { materializeOutputs } from "./output-materialization";
 import { createProcessingQueue } from "./processing-queue";
@@ -19,12 +24,7 @@ import {
   processFallback,
   processRoute,
   recordEmittedArtifacts,
-} from "./route-execution";
-import {
-  buildCacheKey,
-  storeCacheEntry,
-  tryLoadCachedResult,
-} from "./cache-helpers";
+} from "./route-runtime";
 
 export async function runGlobalArtifacts(
   context: PipelineRunContext,
@@ -62,7 +62,7 @@ export async function runGlobalArtifacts(
               file,
               logger: context.logger,
               readContent: () => context.source.readFile(file),
-              async *readLines() {
+              async* readLines() {
                 const content = await context.source.readFile(file);
                 yield* content.split(/\r?\n/);
               },
