@@ -1,11 +1,11 @@
 import type { FileContext, PipelineFilter } from "./types";
 import picomatch from "picomatch";
 
-type FilterNode =
-  | { type: "filter"; name: string; args: unknown[] }
-  | { type: "and"; filters: PipelineFilter[] }
-  | { type: "or"; filters: PipelineFilter[] }
-  | { type: "not"; filter: PipelineFilter };
+type FilterNode
+  = | { type: "filter"; name: string; args: unknown[] }
+    | { type: "and"; filters: PipelineFilter[] }
+    | { type: "or"; filters: PipelineFilter[] }
+    | { type: "not"; filter: PipelineFilter };
 
 export const FILTER_NODE: symbol = Symbol.for("ucdjs.filter-node");
 

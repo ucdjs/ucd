@@ -45,7 +45,7 @@ export function PipelineSidebar({
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
 
   const toggle = React.useCallback((key: string, isOpen: boolean) => {
-    setExpanded(prev => ({ ...prev, [key]: !isOpen }));
+    setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
   }, []);
 
   const sources = sourcesData ?? [];
@@ -133,7 +133,7 @@ export function PipelineSidebar({
                               className={isActive
                                 ? "block truncate text-sidebar-foreground"
                                 : "block truncate hover:text-sidebar-foreground"}
-                              onClick={e => e.stopPropagation()}
+                              onClick={(e) => e.stopPropagation()}
                             >
                               {source.label}
                             </Link>

@@ -21,9 +21,9 @@ export interface SourceFileListProps {
   toggle: (key: string, isOpen: boolean) => void;
 }
 
-type FileTreeNode =
-  | { type: "folder"; name: string; path: string; children: FileTreeNode[] }
-  | { type: "file"; file: SourceFileInfo };
+type FileTreeNode
+  = | { type: "folder"; name: string; path: string; children: FileTreeNode[] }
+    | { type: "file"; file: SourceFileInfo };
 
 function buildFileTree(files: SourceFileInfo[]): FileTreeNode[] {
   const root: FileTreeNode[] = [];
@@ -54,12 +54,14 @@ function nodeKey(node: FileTreeNode): string {
 
 function fileName(file: SourceFileInfo): string {
   const segments = file.path.split("/");
-  return segments[segments.length - 1] ?? file.label;
+  return segments.at(-1) ?? file.label;
 }
 
 export function SourceFileList(props: SourceFileListProps) {
   const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId: props.sourceId }));
 
+  const files = data?.files;
+  const tree = useMemo(() => buildFileTree(files ?? []), [files]);
   if (isLoading) {
     return (
       <SidebarMenu>
@@ -68,12 +70,9 @@ export function SourceFileList(props: SourceFileListProps) {
     );
   }
 
-  const files = data?.files;
-  const tree = useMemo(() => buildFileTree(files ?? []), [files]);
-
   return (
     <SidebarMenu>
-      {tree.map(node => (
+      {tree.map((node) => (
         <TreeNode key={nodeKey(node)} node={node} {...props} />
       ))}
     </SidebarMenu>
@@ -97,7 +96,7 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
         </SidebarMenuButton>
         {isOpen && (
           <SidebarMenuSub>
-            {node.children.map(child => (
+            {node.children.map((child) => (
               <TreeNode key={nodeKey(child)} node={child} {...p} />
             ))}
           </SidebarMenuSub>
@@ -148,7 +147,7 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
       </div>
       {isOpen && hasPipelines && (
         <SidebarMenuSub>
-          {file.pipelines.map(pipeline => (
+          {file.pipelines.map((pipeline) => (
             <SidebarMenuSubItem key={`${file.id}-${pipeline.id}`}>
               <SidebarMenuSubButton
                 isActive={p.currentPipelineId === pipeline.id && isActive}
