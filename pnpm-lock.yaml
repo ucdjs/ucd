@@ -886,6 +886,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:runtime
         version: 2.7.3
+      pathe:
+        specifier: catalog:runtime
+        version: 2.0.3
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
@@ -899,9 +902,6 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.0.3(jiti@2.6.1)
-      pathe:
-        specifier: catalog:runtime
-        version: 2.0.3
       publint:
         specifier: catalog:build
         version: 0.3.18

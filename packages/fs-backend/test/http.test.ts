@@ -1,7 +1,7 @@
 import type { BackendEntry } from "../src";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import HTTPFileSystemBackend from "../src/backends/http";
 import NodeFileSystemBackend from "../src/backends/node";
 import { BackendFileNotFound } from "../src/errors";
@@ -103,6 +103,26 @@ describe("http backend", () => {
     await expect(backend.list("/missing")).rejects.toThrow(BackendFileNotFound);
   });
 
+  it("preserves nested recursive list failures in the error hook", async () => {
+    mockFetch([
+      ["GET", "https://ucdjs.dev/dir", () => HttpResponse.json([
+        { type: "directory", name: "nested", path: "/dir/nested/" },
+      ])],
+      ["GET", "https://ucdjs.dev/dir/nested", () => new HttpResponse(null, { status: 404 })],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    const errorHook = vi.fn();
+    backend.hook("error", errorHook);
+
+    await expect(backend.list("/dir", { recursive: true })).rejects.toThrow(BackendFileNotFound);
+    expect(errorHook).toHaveBeenCalledWith({
+      op: "list",
+      path: "/dir/nested/",
+      error: expect.any(BackendFileNotFound),
+    });
+  });
+
   it("throws for forbidden list responses", async () => {
     mockFetch([
       ["GET", "https://ucdjs.dev/forbidden", () => new HttpResponse(null, { status: 403 })],
@@ -163,6 +183,27 @@ describe("http backend", () => {
     await expect(backend.stat("/dir")).resolves.toMatchObject({
       type: "directory",
       size: 0,
+    });
+  });
+
+  it("ignores invalid last-modified values in stat responses", async () => {
+    mockFetch([
+      ["HEAD", "https://ucdjs.dev/file.txt", () =>
+        new HttpResponse(null, {
+          status: 200,
+          headers: {
+            [UCD_STAT_TYPE_HEADER]: "file",
+            [UCD_STAT_SIZE_HEADER]: "3",
+            "last-modified": "definitely-not-a-date",
+          },
+        })],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    await expect(backend.stat("/file.txt")).resolves.toEqual({
+      type: "file",
+      size: 3,
+      mtime: undefined,
     });
   });
 

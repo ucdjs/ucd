@@ -161,6 +161,7 @@ export function getPayloadForHook(
 export interface OperationWrapperOptions {
   hooks: HookableCore<BackendHooks>;
   operations: BackendOperationMap;
+  executionContext: object;
 }
 
 async function callBackendHook(
@@ -176,6 +177,7 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
   {
     hooks,
     operations,
+    executionContext,
   }: OperationWrapperOptions,
 ): NonNullable<BackendOperationMap[T]> {
   const operation = operations[operationName];
@@ -201,7 +203,7 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
       const beforePayload = getPayloadForHook(operationName, "before", args);
       await callBackendHook(hooks, `${operationName}:before` as HookKey, beforePayload);
 
-      const result = await (operation as (...callArgs: unknown[]) => Promise<unknown>).apply(operations, args);
+      const result = await (operation as (...callArgs: unknown[]) => Promise<unknown>).apply(executionContext, args);
 
       const afterPayload = getPayloadForHook(operationName, "after", args, result);
       await callBackendHook(hooks, `${operationName}:after` as HookKey, afterPayload);

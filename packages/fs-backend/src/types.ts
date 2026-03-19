@@ -53,6 +53,13 @@ export interface FileSystemBackendMutableOperations {
   copy?: (sourcePath: string, destinationPath: string, options?: CopyOptions) => Promise<void>;
 }
 
+export interface FileSystemBackendMutableMethods {
+  write: (path: string, data: string | Uint8Array) => Promise<void>;
+  mkdir: (path: string) => Promise<void>;
+  remove: (path: string, options?: RemoveOptions) => Promise<void>;
+  copy: (sourcePath: string, destinationPath: string, options?: CopyOptions) => Promise<void>;
+}
+
 export type FileSystemBackendFeature = keyof FileSystemBackendMutableOperations;
 
 export interface FileSystemBackendMeta {
@@ -72,7 +79,7 @@ export interface BackendDefinition<
 }
 
 export interface FileSystemBackend
-  extends FileSystemBackendOperations, FileSystemBackendMutableOperations {
+  extends FileSystemBackendOperations, FileSystemBackendMutableMethods {
   readonly features: ReadonlySet<FileSystemBackendFeature>;
   readonly meta: FileSystemBackendMeta;
   hook: HookableCore<BackendHooks>["hook"];

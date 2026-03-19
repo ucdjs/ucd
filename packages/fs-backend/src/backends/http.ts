@@ -34,6 +34,17 @@ function getBackendStatSize(headers: Headers): number {
   return Number.isNaN(parsed) ? 0 : parsed;
 }
 
+function getBackendMtime(headers: Headers): Date | undefined {
+  const lastModified = headers.get("last-modified");
+
+  if (lastModified == null) {
+    return undefined;
+  }
+
+  const parsed = new Date(lastModified);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
 const API_BASE_URL_SCHEMA = z.union([
   z.url({
     protocol: /^https?$/,
@@ -102,7 +113,7 @@ const HTTPFileSystemBackend = defineBackend({
         const recursive = options?.recursive ?? false;
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, `/${path}`),
+          resolveSafePath(baseUrl.pathname, path),
         );
 
         const response = await fetch(url, {
@@ -204,12 +215,10 @@ const HTTPFileSystemBackend = defineBackend({
           throw new Error(`Failed to stat remote path: ${response.statusText} (${response.status})`);
         }
 
-        const lastModified = response.headers.get("last-modified");
-
         const stat: BackendStat = {
           type: getBackendStatType(response.headers, path),
           size: getBackendStatSize(response.headers),
-          mtime: lastModified ? new Date(lastModified) : undefined,
+          mtime: getBackendMtime(response.headers),
         };
 
         return stat;

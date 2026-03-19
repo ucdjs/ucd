@@ -45,6 +45,14 @@ function normalizeListError(path: string, error: unknown): never {
   throw error;
 }
 
+function normalizeRemoveError(path: string, error: unknown): never {
+  if (isNodeErrorWithCode(error, "ENOENT")) {
+    throw new BackendFileNotFound(path);
+  }
+
+  throw error;
+}
+
 class CopyDestinationAlreadyExistsError extends BackendError {
   constructor(path: string) {
     super(`Copy destination already exists: ${path}`);
@@ -195,7 +203,7 @@ const NodeFileSystemBackend = defineBackend({
         await fsp.rm(resolveSafePath(basePath, path), {
           recursive: options?.recursive ?? false,
           force: options?.force ?? false,
-        });
+        }).catch((error: unknown) => normalizeRemoveError(path, error));
       },
       async copy(sourcePath, destinationPath, options) {
         const resolvedSourcePath = resolveSafePath(basePath, sourcePath);

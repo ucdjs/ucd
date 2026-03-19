@@ -56,8 +56,8 @@ const bytes = await backend.readBytes("/file.bin");
 `write()` no longer takes an encoding parameter. Convert before calling if needed.
 
 ```typescript
-await backend.write?.("/file.txt", "hello");
-await backend.write?.("/file.bin", new Uint8Array([1, 2, 3]));
+await backend.write("/file.txt", "hello");
+await backend.write("/file.bin", new Uint8Array([1, 2, 3]));
 ```
 
 ## Listing Changes
@@ -84,7 +84,7 @@ if (bridge.optionalCapabilities.write) {
 
 // After
 if (backend.features.has("write")) {
-  await backend.write?.("/file.txt", "hello");
+  await backend.write("/file.txt", "hello");
 }
 ```
 

@@ -23,7 +23,7 @@ describe("guards and assertions", () => {
     expect(() => assertFeature(httpBackend, "write")).toThrow(BackendUnsupportedOperation);
   });
 
-  it("assertFeature narrows writable backends", async () => {
+  it("assertFeature allows calling supported mutable operations", async () => {
     const dir = await testdir();
     const backend = NodeFileSystemBackend({ basePath: dir });
 

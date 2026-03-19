@@ -33,7 +33,7 @@ Typical example:
 
 ```typescript
 try {
-  await httpBackend.write?.("/file.txt", "hello");
+  await httpBackend.write("/file.txt", "hello");
 } catch (error) {
   if (error instanceof BackendUnsupportedOperation) {
     console.error(error.feature);
