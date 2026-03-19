@@ -1,5 +1,5 @@
 import type { PipelineEvent, PipelineEventInput } from "@ucdjs/pipelines-core";
-import type { PipelineExecutionRuntime } from "../runtime";
+import type { PipelineExecutionRuntime } from "./runtime";
 
 export interface EventEmitter {
   emit: (event: PipelineEventInput) => Promise<void>;
