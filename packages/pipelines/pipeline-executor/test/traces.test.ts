@@ -1,14 +1,17 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
+  definePipelineSource,
   byName,
   definePipeline,
   definePipelineRoute,
   filesystemSink,
+  type FallbackRouteDefinition,
   pipelineOutputSource,
 } from "@ucdjs/pipelines-core";
 import { afterEach, describe, expect, it } from "vitest";
+import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
 import { createMockFile, createTestSource, mockParser } from "./helpers";
 
@@ -163,5 +166,129 @@ describe("execution traces and output manifests", () => {
       property: "Consumed",
       entries: [{ codePoint: "0", value: "Script" }],
     }));
+  });
+
+  it("records fallback outputs in the trace-derived manifest", async () => {
+    const fallback: FallbackRouteDefinition = {
+      parser: mockParser,
+      resolver: async (ctx, rows) => {
+        const entries = [];
+        for await (const row of rows) {
+          entries.push({ codePoint: row.codePoint!, value: String(row.value ?? "") });
+        }
+
+        return [{
+          version: ctx.version,
+          property: "Fallback",
+          file: ctx.file.name,
+          entries,
+        }];
+      },
+    };
+
+    const pipeline = definePipeline({
+      id: "fallback-pipeline",
+      name: "Fallback Pipeline",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("Unknown.txt")], {
+        "ucd/Unknown.txt": "0041;Fallback",
+      })],
+      routes: [],
+      fallback,
+    });
+
+    const [result] = await createPipelineExecutor({}).run([pipeline]);
+
+    expect(result?.outputManifest).toEqual([
+      expect.objectContaining({
+        routeId: "__fallback__",
+        outputId: "fallback-output",
+        status: "written",
+        locator: "memory://Fallback.json",
+      }),
+    ]);
+  });
+
+  it("marks output writes as failed when sink persistence errors", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "ucd-pipeline-failed-output-"));
+    tempDirs.push(dir);
+    const blockedBaseDir = path.join(dir, "blocked");
+    await writeFile(blockedBaseDir, "not a directory", "utf8");
+
+    const pipeline = definePipeline({
+      id: "failed-output",
+      name: "Failed Output",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("Scripts.txt")], {
+        "ucd/Scripts.txt": "0041;Latin",
+      })],
+      routes: [
+        definePipelineRoute({
+          id: "scripts",
+          filter: byName("Scripts.txt"),
+          parser: mockParser,
+          resolver: async () => [{
+            version: "16.0.0",
+            property: "Script",
+            entries: [],
+          }],
+          outputs: [{
+            id: "json",
+            sink: filesystemSink({ baseDir: blockedBaseDir }),
+            path: "nested/script.json",
+          }],
+        }),
+      ],
+    });
+
+    const [result] = await createPipelineExecutor({}).run([pipeline]);
+
+    expect(result?.status).toBe("failed");
+    expect(result?.outputManifest).toEqual([
+      expect.objectContaining({
+        outputId: "json",
+        status: "failed",
+      }),
+    ]);
+    expect(result?.traces).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "output.written",
+        status: "failed",
+      }),
+    ]));
+  });
+
+  it("records cache miss/store on first run and cache hit on second run", async () => {
+    const cacheStore = createMemoryCacheStore();
+    const pipeline = definePipeline({
+      id: "cached-pipeline",
+      name: "Cached Pipeline",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("Scripts.txt")], {
+        "ucd/Scripts.txt": "0041;Latin",
+      })],
+      routes: [
+        definePipelineRoute({
+          id: "scripts",
+          filter: byName("Scripts.txt"),
+          parser: mockParser,
+          resolver: async () => [{
+            version: "16.0.0",
+            property: "Script",
+            entries: [],
+          }],
+        }),
+      ],
+    });
+
+    const executor = createPipelineExecutor({ cacheStore });
+    const [first] = await executor.run([pipeline], { cache: true });
+    const [second] = await executor.run([pipeline], { cache: true });
+
+    expect(first?.traces.map((trace) => trace.kind)).toEqual(expect.arrayContaining([
+      "cache.miss",
+      "cache.store",
+    ]));
+    expect(second?.traces.map((trace) => trace.kind)).toContain("cache.hit");
   });
 });
