@@ -11,15 +11,28 @@ import type {
 import type { CacheStore } from "../cache";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type {
+  PipelineTraceEmitInput,
+  PipelineOutputManifestEntry,
+  PipelineTraceRecord,
+  PipelineTraceRecordByKind,
+} from "../traces";
+import type {
   ExecutionStatus,
   PipelineExecutionResult,
   PipelineExecutorRunOptions,
   PipelineSummary,
 } from "../types";
 import type { EventEmitter } from "./events";
-import { getExecutionLayers } from "@ucdjs/pipelines-core";
-import { PipelineGraphBuilder } from "@ucdjs/pipelines-graph";
+import type { TraceEmitter } from "./traces";
+import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
+import { buildExecutionGraphFromTraces } from "../graph";
 import { createPipelineLogger } from "../logger";
+import {
+  getOutputProperty,
+  resolveOutputDestination,
+  writeOutputToSink,
+} from "../outputs";
+import { buildOutputManifestFromTraces } from "../traces";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache-helpers";
 import { emitWithSpan } from "./events";
 import { createProcessingQueue } from "./processing-queue";
@@ -36,19 +49,20 @@ export interface RunPipelineOptions {
   cacheStore?: CacheStore;
   artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
+  traces: TraceEmitter;
+  priorResults?: PipelineExecutionResult[];
   runtime: PipelineExecutionRuntime;
 }
 
 export async function runPipeline(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
-  const { pipeline, runOptions = {}, cacheStore, artifacts: globalArtifacts, events, runtime } = options;
+  const { pipeline, runOptions = {}, cacheStore, artifacts: globalArtifacts, events, traces, priorResults = [], runtime } = options;
   const { cache: enableCache = true, versions: runVersions } = runOptions;
   const useCache = enableCache && cacheStore != null;
   const versionsToRun = runVersions ?? pipeline.versions;
 
-  const graph = new PipelineGraphBuilder();
-
   const startTime = performance.now();
   const outputs: unknown[] = [];
+  const traceRecords: PipelineTraceRecord[] = [];
   const errors: PipelineError[] = [];
 
   let totalFiles = 0;
@@ -60,7 +74,24 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
   const dag = pipeline.dag;
   const logger = createPipelineLogger(runtime);
-  const source = createSourceAdapter(pipeline, logger);
+  const source = createSourceAdapter(pipeline, logger, { priorResults });
+  async function emitTrace<TTrace extends PipelineTraceEmitInput>(
+    trace: TTrace,
+  ): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> {
+    const record = await traces.emit({
+      ...trace,
+      pipelineId: pipeline.id,
+    });
+    traceRecords.push(record);
+    return record;
+  }
+
+  async function emitTraceWithSpan<TTrace extends PipelineTraceEmitInput>(
+    spanId: string,
+    trace: TTrace,
+  ): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> {
+    return runtime.withSpan(spanId, () => emitTrace(trace));
+  }
 
   const pipelineSpanId = events.nextSpanId();
   await emitWithSpan(runtime, pipelineSpanId, () =>
@@ -82,7 +113,6 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
         timestamp: performance.now(),
       }));
 
-    const sourceNodeId = graph.addSourceNode(version);
     const artifactsMap: Record<string, unknown> = {};
     const globalArtifactsMap: Record<string, unknown> = {};
 
@@ -107,8 +137,11 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           timestamp: performance.now(),
         }));
 
-      const artifactNodeId = graph.addArtifactNode(artifactDef.id, version);
-      graph.addEdge(sourceNodeId, artifactNodeId, "provides");
+      await emitTraceWithSpan(artifactSpanId, {
+        kind: "source.provided",
+        version,
+        artifactId: artifactDef.id,
+      });
 
       try {
         let rows: AsyncIterable<ParsedRow> | undefined;
@@ -184,14 +217,21 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           totalRoutes++;
 
           await processingQueue.add(async () => {
-            const fileNodeId = graph.addFileNode(file);
-            graph.addEdge(sourceNodeId, fileNodeId, "provides");
+            const fileSpanId = events.nextSpanId();
+
+            await emitTraceWithSpan(fileSpanId, {
+              kind: "source.provided",
+              version,
+              file,
+            });
 
             matchedFiles++;
-            const routeNodeId = graph.addRouteNode(route.id, version);
-            graph.addEdge(fileNodeId, routeNodeId, "matched");
-
-            const fileSpanId = events.nextSpanId();
+            await emitTraceWithSpan(fileSpanId, {
+              kind: "file.matched",
+              version,
+              file,
+              routeId: route.id,
+            });
             await emitWithSpan(runtime, fileSpanId, () =>
               events.emit({
                 type: "file:matched",
@@ -221,6 +261,12 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                   if (cachedResult.hit && cachedResult.result) {
                     result = cachedResult.result;
                     cached++;
+                    await emitTrace({
+                      kind: "cache.hit",
+                      routeId: route.id,
+                      file,
+                      version,
+                    });
                     await events.emit({
                       type: "cache:hit",
                       routeId: route.id,
@@ -230,6 +276,12 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                       timestamp: performance.now(),
                     });
                   } else {
+                    await emitTrace({
+                      kind: "cache.miss",
+                      routeId: route.id,
+                      file,
+                      version,
+                    });
                     await events.emit({
                       type: "cache:miss",
                       routeId: route.id,
@@ -272,6 +324,12 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                       emittedArtifacts: result.emittedArtifacts,
                     });
 
+                    await emitTrace({
+                      kind: "cache.store",
+                      routeId: route.id,
+                      file,
+                      version,
+                    });
                     await events.emit({
                       type: "cache:store",
                       routeId: route.id,
@@ -291,16 +349,98 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                   globalArtifactsMap,
                 });
 
+                for (const artifactId of result.consumedArtifactIds) {
+                  await emitTrace({
+                    kind: "artifact.consumed",
+                    routeId: route.id,
+                    artifactId,
+                    version,
+                  });
+                }
+
+                for (const artifactName of Object.keys(result.emittedArtifacts)) {
+                  await emitTrace({
+                    kind: "artifact.emitted",
+                    routeId: route.id,
+                    artifactId: `${route.id}:${artifactName}`,
+                    version,
+                  });
+                }
+
                 for (const output of result.outputs) {
                   const outputIndex = outputs.length;
                   outputs.push(output);
-
-                  const outputNodeId = graph.addOutputNode(
-                    outputIndex,
+                  const property = getOutputProperty(output);
+                  await emitTrace({
+                    kind: "output.produced",
                     version,
-                    (output as { property?: string }).property,
-                  );
-                  graph.addEdge(routeNodeId, outputNodeId, "resolved");
+                    routeId: route.id,
+                    file,
+                    outputIndex,
+                    property,
+                  });
+
+                  const outputDefinitions = normalizeRouteOutputs(route);
+                  for (const definition of outputDefinitions) {
+                    const destination = resolveOutputDestination(definition, {
+                      version,
+                      routeId: route.id,
+                      file,
+                      output,
+                      property,
+                      outputIndex,
+                    });
+
+                    await emitTrace({
+                      kind: "output.resolved",
+                      version,
+                      routeId: route.id,
+                      file,
+                      outputIndex,
+                      outputId: definition.id,
+                      property,
+                      sink: definition.sink.type,
+                      format: definition.format,
+                      locator: destination.displayLocator,
+                    });
+
+                    try {
+                      await writeOutputToSink(
+                        definition.sink,
+                        destination.locator,
+                        output,
+                        definition.format,
+                      );
+
+                      await emitTrace({
+                        kind: "output.written",
+                        version,
+                        routeId: route.id,
+                        file,
+                        outputIndex,
+                        outputId: definition.id,
+                        property,
+                        sink: definition.sink.type,
+                        locator: destination.displayLocator,
+                        status: "written",
+                      });
+                    } catch (error) {
+                      await emitTrace({
+                        kind: "output.written",
+                        version,
+                        routeId: route.id,
+                        file,
+                        outputIndex,
+                        outputId: definition.id,
+                        property,
+                        sink: definition.sink.type,
+                        locator: destination.displayLocator,
+                        status: "failed",
+                        error: error instanceof Error ? error.message : String(error),
+                      });
+                      throw error;
+                    }
+                  }
                 }
               } catch (err) {
                 const pipelineError = {
@@ -335,11 +475,18 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
         if (shouldUseFallback) {
           fallbackFiles++;
-
-          const fileNodeId = graph.addFileNode(file);
-          graph.addEdge(sourceNodeId, fileNodeId, "provides");
-
           const fallbackSpanId = events.nextSpanId();
+
+          await emitTraceWithSpan(fallbackSpanId, {
+            kind: "source.provided",
+            version,
+            file,
+          });
+          await emitTraceWithSpan(fallbackSpanId, {
+            kind: "file.fallback",
+            version,
+            file,
+          });
           await emitWithSpan(runtime, fallbackSpanId, () =>
             events.emit({
               type: "file:fallback",
@@ -363,13 +510,39 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
             for (const output of fallbackOutputs) {
               const outputIndex = outputs.length;
               outputs.push(output);
-
-              const outputNodeId = graph.addOutputNode(
-                outputIndex,
+              const property = getOutputProperty(output);
+              await emitTraceWithSpan(fallbackSpanId, {
+                kind: "output.produced",
                 version,
-                (output as { property?: string }).property,
-              );
-              graph.addEdge(fileNodeId, outputNodeId, "resolved");
+                routeId: "__fallback__",
+                file,
+                outputIndex,
+                property,
+              });
+              await emitTraceWithSpan(fallbackSpanId, {
+                kind: "output.resolved",
+                version,
+                routeId: "__fallback__",
+                file,
+                outputIndex,
+                outputId: "fallback-output",
+                property,
+                sink: "memory",
+                format: "json",
+                locator: `memory://fallback/${outputIndex}.json`,
+              });
+              await emitTraceWithSpan(fallbackSpanId, {
+                kind: "output.written",
+                version,
+                routeId: "__fallback__",
+                file,
+                outputIndex,
+                outputId: "fallback-output",
+                property,
+                sink: "memory",
+                locator: `memory://fallback/${outputIndex}.json`,
+                status: "written",
+              });
             }
           } catch (err) {
             const pipelineError = {
@@ -462,11 +635,14 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   };
 
   const status: ExecutionStatus = errors.length === 0 ? "completed" : "failed";
+  const outputManifest: PipelineOutputManifestEntry[] = buildOutputManifestFromTraces(traceRecords);
 
   return {
     id: pipeline.id,
     data: outputs,
-    graph: graph.build(),
+    outputManifest,
+    traces: traceRecords,
+    graph: buildExecutionGraphFromTraces(traceRecords),
     errors,
     summary,
     status,

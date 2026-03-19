@@ -249,18 +249,3 @@ export type ResolverFn<
   ctx: ResolveContext<TArtifacts>,
   rows: AsyncIterable<ParsedRow>,
 ) => Promise<TOutput>;
-
-/**
- * Output configuration for a route.
- */
-export interface RouteOutput {
-  /**
-   * Custom output directory.
-   */
-  dir?: string;
-
-  /**
-   * Custom file name generator.
-   */
-  fileName?: (pj: PropertyJson) => string;
-}

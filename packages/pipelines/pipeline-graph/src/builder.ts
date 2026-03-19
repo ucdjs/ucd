@@ -46,10 +46,27 @@ export class PipelineGraphBuilder {
     return id;
   }
 
-  addOutputNode(outputIndex: number, version: string, property?: string): string {
-    const id = `output:${version}:${outputIndex}`;
-    if (!this.#nodes.has(id)) {
-      this.#nodes.set(id, { id, type: "output", outputIndex, property });
+  addOutputNode(
+    outputIndex: number,
+    version: string,
+    property?: string,
+    outputId?: string,
+    locator?: string,
+  ): string {
+    const qualifiedId = outputId || locator
+      ? `${outputId ?? "default"}:${locator ?? "unknown"}`
+      : `${outputIndex}`;
+    const id = `output:${version}:${qualifiedId}`;
+    const existing = this.#nodes.get(id);
+    if (existing?.type === "output") {
+      this.#nodes.set(id, {
+        ...existing,
+        property: existing.property ?? property,
+        outputId: existing.outputId ?? outputId,
+        locator: existing.locator ?? locator,
+      });
+    } else if (!existing) {
+      this.#nodes.set(id, { id, type: "output", outputIndex, property, outputId, locator });
     }
     return id;
   }

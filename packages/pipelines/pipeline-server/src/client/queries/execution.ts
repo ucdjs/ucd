@@ -3,6 +3,7 @@ import type {
   ExecutionEventsResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
+  ExecutionTracesResponse,
   ExecutionsResponse,
   ExecutionSummaryItem,
 } from "#shared/schemas/execution";
@@ -13,6 +14,7 @@ import {
   ExecutionEventsResponseSchema,
   ExecutionGraphResponseSchema,
   ExecutionLogsResponseSchema,
+  ExecutionTracesResponseSchema,
   ExecutionsResponseSchema,
 } from "#shared/schemas/execution";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
@@ -24,6 +26,7 @@ export type {
   ExecutionEventsResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
+  ExecutionTracesResponse,
   ExecutionsResponse,
   ExecutionSummaryItem,
 };
@@ -71,6 +74,15 @@ export interface ExecutionGraphParams {
   fileId: string;
   pipelineId: string;
   executionId: string;
+}
+
+export interface ExecutionTracesParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+  executionId: string;
+  limit?: number;
+  offset?: number;
 }
 
 export async function executePipeline({
@@ -270,6 +282,48 @@ export function executionGraphQueryOptions({
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "graph"],
     queryFn: () => fetchExecutionGraph({ sourceId, fileId, pipelineId, executionId }),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) => refetchWhileExecutionActive(query),
+  });
+}
+
+export async function fetchExecutionTraces({
+  sourceId,
+  fileId,
+  pipelineId,
+  executionId,
+  limit,
+  offset,
+}: ExecutionTracesParams): Promise<ExecutionTracesResponse> {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  const qs = params.toString();
+
+  return (
+    await customFetch<ExecutionTracesResponse>(
+      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/traces${qs ? `?${qs}` : ""}`,
+      {
+        schema: ExecutionTracesResponseSchema,
+      },
+    )
+  ).data!;
+}
+
+export function executionTracesQueryOptions({
+  sourceId,
+  fileId,
+  pipelineId,
+  executionId,
+  limit,
+  offset,
+}: ExecutionTracesParams) {
+  const opts = { limit, offset };
+
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "traces", opts],
+    queryFn: () => fetchExecutionTraces({ sourceId, fileId, pipelineId, executionId, limit, offset }),
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => refetchWhileExecutionActive(query),
