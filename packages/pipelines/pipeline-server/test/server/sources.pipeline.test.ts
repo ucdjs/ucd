@@ -1,4 +1,6 @@
+import { schema } from "#server/db";
 import { sourcesPipelineRouter } from "#server/routes";
+import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import {
@@ -59,7 +61,7 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   });
 
   it("starts an execution for a local source", async () => {
-    const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`,
@@ -77,6 +79,21 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
       success: true,
       executionId: expect.any(String),
     }));
+
+    const [execution] = await db
+      .select()
+      .from(schema.executions)
+      .where(eq(schema.executions.id, data.executionId))
+      .limit(1);
+
+    expect(execution).toEqual(expect.objectContaining({
+      id: data.executionId,
+      workspaceId: "test",
+      sourceId: "local",
+      fileId: DEFAULT_DISCOVERABLE_FILE_ID,
+      pipelineId: DEFAULT_DISCOVERABLE_PIPELINE_ID,
+    }));
+    expect(["completed", "failed"]).toContain(execution?.status);
   });
 
   it("starts an execution for a cached remote source", async () => {
