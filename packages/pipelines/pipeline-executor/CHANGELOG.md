@@ -1,5 +1,17 @@
 # @ucdjs/pipelines-executor
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.7...@ucdjs/pipelines-executor@0.0.1-beta.8) (2026-03-15)
+
+
+### 🚀 Features
+* emit logs through host callbacks ([c2ddcebd](https://github.com/ucdjs/ucd/commit/c2ddcebdec5b052e5cfa40f88e609558b27deb78)) (by [@luxass](https://github.com/luxass))
+* add context-aware logger to runtime contexts ([dd578d3b](https://github.com/ucdjs/ucd/commit/dd578d3bb02b489b3f63dfeb14e9d4d60262c9c4)) (by [@luxass](https://github.com/luxass))
+* add type exports and update entry points ([dafdc1ac](https://github.com/ucdjs/ucd/commit/dafdc1acf4aacfaec80a2fb203b0ed4b05c17629)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* refresh execution views and summaries ([c62717a4](https://github.com/ucdjs/ucd/commit/c62717a4503193b309b346f4cad92f60d1be9dc3)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.6...@ucdjs/pipelines-executor@0.0.1-beta.7) (2026-02-27)
 
 

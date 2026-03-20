@@ -1,5 +1,13 @@
 # @ucdjs/client
 
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.7...@ucdjs/client@0.1.1-beta.8) (2026-03-15)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.7...@ucdjs/client@0.1.1-beta.8)
+
+
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.6...@ucdjs/client@0.1.1-beta.7) (2026-02-27)
 
 
