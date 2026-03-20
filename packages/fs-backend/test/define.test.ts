@@ -3,6 +3,7 @@ import { z } from "zod";
 import HTTPFileSystemBackend from "../src/backends/http";
 import NodeFileSystemBackend from "../src/backends/node";
 import { defineBackend } from "../src/define";
+import type { FileSystemBackendOperations, FileSystemBackendMutableOperations } from "../src/types";
 import { BackendSetupError } from "../src/errors";
 
 describe("defineBackend", () => {
@@ -61,6 +62,34 @@ describe("defineBackend", () => {
       expect(error.originalError).toBe(originalError);
       expect(error.cause).toBe(originalError);
     }
+  });
+
+  it("throws BackendSetupError when a required operation is missing", () => {
+    const createBackend = defineBackend({
+      meta: {
+        name: "Missing Operation Backend",
+      },
+      setup() {
+        return {
+          async read() {
+            return "content";
+          },
+          async readBytes() {
+            return new Uint8Array([1]);
+          },
+          async list() {
+            return [];
+          },
+          async exists() {
+            return true;
+          },
+        } as unknown as FileSystemBackendOperations & FileSystemBackendMutableOperations;
+      },
+    });
+
+    expect(() => createBackend()).toThrowError(
+      new BackendSetupError("Backend is missing required operation: stat"),
+    );
   });
 
   it("validates options with the provided Zod schema", () => {
