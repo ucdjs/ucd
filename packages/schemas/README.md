@@ -2,7 +2,6 @@
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![codecov][codecov-src]][codecov-href]
 
 Zod schemas that define the shared data contracts across the UCD.js monorepo — API responses, store manifests, lockfiles, and Unicode metadata.
 
@@ -42,5 +41,3 @@ Published under [MIT License](./LICENSE).
 [npm-version-href]: https://npmjs.com/package/@ucdjs/schemas
 [npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/schemas?style=flat&colorA=18181B&colorB=4169E1
 [npm-downloads-href]: https://npmjs.com/package/@ucdjs/schemas
-[codecov-src]: https://img.shields.io/codecov/c/gh/ucdjs/ucd?style=flat&colorA=18181B&colorB=4169E1
-[codecov-href]: https://codecov.io/gh/ucdjs/ucd

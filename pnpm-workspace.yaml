@@ -51,7 +51,6 @@ catalogs:
     "@rolldown/plugin-babel": 0.2.1
 
   test:
-    "@vitest/coverage-istanbul": 4.1.0
     "@vitest/expect": 4.1.0
     "@vitest/ui": 4.1.0
     vitest: 4.1.0
