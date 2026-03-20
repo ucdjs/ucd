@@ -17,6 +17,7 @@ import {
   assertFilePath,
   isDirectoryPath,
   normalizeEntryPath,
+  normalizePathSeparators,
   sortEntries,
 } from "@ucdjs/fs-backend/utils";
 import { resolveSafePath } from "@ucdjs/path-utils";
@@ -102,6 +103,10 @@ function hasChildEntries(files: Map<string, StoredValue>, path: string): boolean
   return false;
 }
 
+function toCanonicalPath(path: string, type: BackendEntry["type"]): string {
+  return normalizeEntryPath(normalizeRootPath(path), type);
+}
+
 export const createMemoryMockFS = defineBackend({
   meta: {
     name: "In-Memory File System Backend",
@@ -171,9 +176,15 @@ export const createMemoryMockFS = defineBackend({
   }).optional(),
   setup(options) {
     const basePath = options?.basePath ?? "/";
+    const normalizedBasePath = nodePath.resolve(basePath);
     const files = new Map<string, StoredValue>();
 
-    const resolve = (path: string): string => resolveSafePath(basePath, path);
+    const resolve = (path: string): string => normalizeRootPath(
+      normalizePathSeparators(nodePath.relative(
+        normalizedBasePath,
+        nodePath.resolve("/", resolveSafePath(basePath, path)),
+      )),
+    );
     const resolveFile = (path: string): string => {
       assertFilePath(path);
       return resolve(path);
@@ -184,16 +195,61 @@ export const createMemoryMockFS = defineBackend({
       return normalizedPath === "" ? "" : getDirMarkerKey(normalizedPath);
     };
 
+    const collectAncestorDirectories = (path: string, options?: { includeSelf?: boolean }): string[] => {
+      const normalizedPath = normalizeRootPath(path).replace(TRAILING_SLASH_RE, "");
+      if (normalizedPath === "") {
+        return [];
+      }
+
+      let currentPath = options?.includeSelf === true
+        ? normalizedPath
+        : normalizeRootPath(nodePath.dirname(normalizedPath));
+      const directoryPaths: string[] = [];
+
+      while (currentPath !== "") {
+        directoryPaths.unshift(currentPath);
+        currentPath = normalizeRootPath(nodePath.dirname(currentPath));
+      }
+
+      return directoryPaths;
+    };
+
+    const ensureDirectories = (directoryPaths: Iterable<string>): void => {
+      const plannedDirectories = [...new Set(
+        Array.from(directoryPaths, (path) => normalizeRootPath(path))
+          .filter((path) => path !== ""),
+      )];
+
+      for (const directoryPath of plannedDirectories) {
+        if (files.has(directoryPath)) {
+          throw new BackendEntryIsFile(toCanonicalPath(directoryPath, "file"));
+        }
+      }
+
+      for (const directoryPath of plannedDirectories) {
+        files.set(getDirMarkerKey(directoryPath), DIR_MARKER);
+      }
+    };
+
     const ensureParentDirectories = (path: string): void => {
-      const parent = normalizeRootPath(nodePath.dirname(path));
-      if (parent === "") {
+      ensureDirectories(collectAncestorDirectories(path));
+    };
+
+    const ensureDirectory = (path: string): void => {
+      const normalizedPath = normalizeRootPath(path).replace(TRAILING_SLASH_RE, "");
+      if (normalizedPath === "") {
         return;
       }
 
-      const segments = parent.split("/").filter(Boolean);
-      for (let index = 0; index < segments.length; index++) {
-        const directoryPath = segments.slice(0, index + 1).join("/");
-        files.set(getDirMarkerKey(directoryPath), DIR_MARKER);
+      ensureDirectories(collectAncestorDirectories(normalizedPath, { includeSelf: true }));
+    };
+
+    const assertFilePathCanBeWritten = (path: string): void => {
+      const normalizedPath = normalizeRootPath(path);
+      const directoryKey = getDirMarkerKey(normalizedPath);
+
+      if (files.has(directoryKey) || hasChildEntries(files, directoryKey)) {
+        throw new BackendEntryIsDirectory(toCanonicalPath(normalizedPath, "file"));
       }
     };
 
@@ -221,13 +277,13 @@ export const createMemoryMockFS = defineBackend({
         if (isDirectoryPath(path)) {
           const directoryPath = resolveDirectory(path);
           if (directoryPath !== "") {
-            ensureParentDirectories(directoryPath);
-            files.set(directoryPath, DIR_MARKER);
+            ensureDirectory(directoryPath);
           }
           continue;
         }
 
         const resolvedPath = resolve(path);
+        assertFilePathCanBeWritten(resolvedPath);
         ensureParentDirectories(resolvedPath);
         files.set(resolvedPath, cloneValue(value));
       }
@@ -443,6 +499,7 @@ export const createMemoryMockFS = defineBackend({
       },
       async write(path: string, data: string | Uint8Array): Promise<void> {
         const resolvedPath = resolveFile(path);
+        assertFilePathCanBeWritten(resolvedPath);
         ensureParentDirectories(resolvedPath);
         files.set(resolvedPath, typeof data === "string" ? data : new Uint8Array(data));
       },
@@ -452,8 +509,7 @@ export const createMemoryMockFS = defineBackend({
           return;
         }
 
-        ensureParentDirectories(resolvedPath);
-        files.set(resolvedPath, DIR_MARKER);
+        ensureDirectory(resolvedPath);
       },
       async remove(path: string, options?: RemoveOptions): Promise<void> {
         const stat = await operations.stat(path).catch((error: unknown) => {
@@ -513,7 +569,7 @@ export const createMemoryMockFS = defineBackend({
             ? resolveFile(`${destinationPath}/${nodePath.basename(sourcePath)}`)
             : resolveFile(destinationPath);
         const normalizedDestinationPath = normalizeEntryPath(
-          nodePath.relative(basePath, resolvedDestinationPath),
+          resolvedDestinationPath,
           sourceStat.type,
         );
 
@@ -527,14 +583,17 @@ export const createMemoryMockFS = defineBackend({
             throw new BackendFileNotFound(sourcePath);
           }
 
+          assertFilePathCanBeWritten(resolvedDestinationPath);
           ensureParentDirectories(resolvedDestinationPath);
           files.set(resolvedDestinationPath, cloneValue(value));
           return;
         }
 
-        ensureParentDirectories(resolvedDestinationPath);
+        const targetDirectories = new Set<string>();
+        const targetFiles: string[] = [];
+
         if (resolvedDestinationPath !== "") {
-          files.set(resolvedDestinationPath, DIR_MARKER);
+          targetDirectories.add(normalizeRootPath(resolvedDestinationPath));
         }
 
         for (const [filePath, value] of [...files.entries()]) {
@@ -546,11 +605,29 @@ export const createMemoryMockFS = defineBackend({
           const targetPath = `${resolvedDestinationPath}${suffix}`;
 
           if (value === DIR_MARKER) {
-            files.set(targetPath, DIR_MARKER);
+            targetDirectories.add(normalizeRootPath(targetPath));
             continue;
           }
 
-          ensureParentDirectories(targetPath);
+          targetFiles.push(targetPath);
+          for (const directoryPath of collectAncestorDirectories(targetPath)) {
+            targetDirectories.add(directoryPath);
+          }
+        }
+
+        ensureDirectories(targetDirectories);
+
+        for (const targetPath of targetFiles) {
+          assertFilePathCanBeWritten(targetPath);
+        }
+
+        for (const [filePath, value] of [...files.entries()]) {
+          if (!filePath.startsWith(sourceResolvedPath) || value === DIR_MARKER) {
+            continue;
+          }
+
+          const suffix = filePath.slice(sourceResolvedPath.length);
+          const targetPath = `${resolvedDestinationPath}${suffix}`;
           files.set(targetPath, cloneValue(value));
         }
       },
