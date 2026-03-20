@@ -13,10 +13,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
               spanId: "span-1",
               message: "first log",
               payload: {
-                level: "info",
                 message: "first log",
-                source: "stdio",
-                stream: "stdout",
                 level: "info",
                 source: "stdio",
                 truncated: true,

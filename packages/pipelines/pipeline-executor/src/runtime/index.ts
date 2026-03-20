@@ -3,7 +3,6 @@ import type {
   PipelineLogEntry,
   PipelineLogLevel,
   PipelineLogSource,
-  PipelineLogStream,
 } from "../types";
 
 export interface PipelineExecutionContext {
@@ -15,7 +14,6 @@ export interface PipelineExecutionContext {
 
 export interface PipelineExecutionLogInput {
   level: PipelineLogLevel;
-  stream: PipelineLogStream;
   source: PipelineLogSource;
   message: string;
   timestamp?: number;

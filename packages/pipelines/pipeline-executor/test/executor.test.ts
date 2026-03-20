@@ -406,7 +406,7 @@ describe("running single pipeline via run()", () => {
   });
 
   it("should capture stdio output through onLog when enabled", async () => {
-    const logs: Array<{ source: string; stream: string; message: string }> = [];
+    const logs: Array<{ source: string; level: string; message: string }> = [];
     const runtime = createNodeExecutionRuntime({
       outputCapture: { stdio: true },
     });
@@ -432,7 +432,7 @@ describe("running single pipeline via run()", () => {
       onLog: (entry) => {
         logs.push({
           source: entry.source,
-          stream: entry.stream,
+          level: entry.level,
           message: entry.message,
         });
       },
@@ -452,8 +452,8 @@ describe("running single pipeline via run()", () => {
     );
 
     expect(logs).toEqual([
-      { source: "stdio", stream: "stdout", message: "stdout:LineBreak.txt" },
-      { source: "stdio", stream: "stderr", message: "stderr:test" },
+      { source: "stdio", level: "info", message: "stdout:LineBreak.txt" },
+      { source: "stdio", level: "error", message: "stderr:test" },
     ]);
   });
 

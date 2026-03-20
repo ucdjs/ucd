@@ -185,7 +185,6 @@ export async function seedExecutionLog(db: Database, options: SeedExecutionLogOp
     workspaceId: options.workspaceId ?? "test",
     executionId: options.executionId,
     spanId: options.spanId ?? null,
-    stream: options.stream ?? "stdout",
     message: options.message,
     timestamp: options.timestamp ?? new Date("2026-01-01T00:00:02.000Z"),
     payload: options.payload ?? null,

@@ -30,7 +30,6 @@ export type {
   PipelineLogEntry,
   PipelineLogLevel,
   PipelineLogSource,
-  PipelineLogStream,
   PipelineSummary,
 } from "./types";
 export type { PipelineLogger } from "@ucdjs/pipelines-core";
