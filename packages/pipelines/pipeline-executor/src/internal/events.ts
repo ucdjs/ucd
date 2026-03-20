@@ -36,19 +36,11 @@ export function createEventEmitter(options: EventHandlerOptions): EventEmitter {
   return { emit, nextEventId, nextSpanId };
 }
 
-export async function emitWithSpan(
-  runtime: PipelineExecutionRuntime,
-  spanId: string,
-  fn: () => Promise<void>,
-): Promise<void> {
-  await runtime.withSpan(spanId, fn);
-}
-
 export async function emitRuntimeEvent(
   runtime: PipelineExecutionRuntime,
   events: Pick<EventEmitter, "emit">,
   spanId: string,
   event: PipelineEventInput,
 ): Promise<void> {
-  await emitWithSpan(runtime, spanId, () => events.emit(event));
+  await runtime.withSpan(spanId, () => events.emit(event));
 }
