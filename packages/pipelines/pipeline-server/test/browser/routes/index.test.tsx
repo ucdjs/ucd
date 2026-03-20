@@ -1,39 +1,8 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-import { renderFileRoute } from "./route-test-utils";
+import { describe, expect, it } from "vitest";
+import { renderFileRoute } from "../route-test-utils";
 
-vi.mock("#components/app/pipeline-command-palette", () => {
-  return {
-    PipelineCommandPalette: () => null,
-  };
-});
-
-vi.mock("@tanstack/react-devtools", () => {
-  return {
-    TanStackDevtools: () => null,
-  };
-});
-
-vi.mock("@tanstack/react-query-devtools", () => {
-  return {
-    ReactQueryDevtoolsPanel: () => null,
-  };
-});
-
-vi.mock("@tanstack/react-hotkeys-devtools", () => {
-  return {
-    HotkeysDevtoolsPanel: () => null,
-  };
-});
-
-vi.mock("@tanstack/react-router-devtools", () => {
-  return {
-    TanStackRouterDevtoolsPanel: () => null,
-  };
-});
-
-// eslint-disable-next-line test/prefer-lowercase-title
 describe("file-based route /", () => {
   it("renders the home route through the generated route tree", async () => {
     mockFetch([
