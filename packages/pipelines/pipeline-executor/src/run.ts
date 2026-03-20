@@ -7,7 +7,6 @@ import type {
   PipelineEventInput,
   PipelineLogger,
   PipelineRouteDefinition,
-  SourceFileContext,
 } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { EventEmitter } from "./internal/events";
@@ -17,7 +16,6 @@ import type {
   PipelineOutputManifestEntry,
   PipelineTraceEmitInput,
   PipelineTraceRecord,
-  PipelineTraceRecordByKind,
 } from "./run/traces";
 import type { PipelineExecutionRuntime } from "./runtime";
 import type {
@@ -35,7 +33,7 @@ import { buildExecutionGraphFromTraces } from "./run/graph";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
 import { createProcessingQueue } from "./run/processing-queue";
 import { processFallback, processRoute, recordEmittedArtifacts } from "./run/route-runtime";
-import { createSourceAdapter } from "./run/source-files";
+import { createSourceAdapter, isSourceFileContext } from "./run/source-files";
 import {
   buildOutputManifestFromTraces,
 } from "./run/traces";
@@ -78,9 +76,7 @@ export interface RunData {
 export interface RunContext {
   config: RunConfig;
   data: RunData;
-  emitTrace: <TTrace extends PipelineTraceEmitInput>(
-    trace: TTrace,
-  ) => Promise<PipelineTraceRecordByKind<TTrace["kind"]>>;
+  emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
 }
 
 interface VersionContext {
@@ -190,9 +186,7 @@ export function createRunContext(options: RunPipelineOptions): RunContext {
     summary: createSummary(versions),
   };
 
-  const emitTrace = async <TTrace extends PipelineTraceEmitInput>(
-    trace: TTrace,
-  ): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> => {
+  const emitTrace = async (trace: PipelineTraceEmitInput): Promise<PipelineTraceRecord> => {
     const record = await config.traces.emit({ ...trace, pipelineId: config.pipeline.id });
     data.traceRecords.push(record);
     return record;
@@ -288,7 +282,7 @@ function selectMatchingFiles(
     return route.filter({
       file,
       logger: context.config.logger,
-      source: (file as SourceFileContext).source,
+      source: isSourceFileContext(file) ? file.source : undefined,
     });
   });
 }
@@ -600,10 +594,10 @@ async function emitEvent(
   await emitRuntimeEvent(context.config.runtime, context.config.events, spanId, event);
 }
 
-async function emitTraceInSpan<TTrace extends PipelineTraceEmitInput>(
+async function emitTraceInSpan(
   context: RunContext,
   spanId: string,
-  trace: TTrace,
-): Promise<PipelineTraceRecordByKind<TTrace["kind"]>> {
+  trace: PipelineTraceEmitInput,
+): Promise<PipelineTraceRecord> {
   return context.config.runtime.withSpan(spanId, () => context.emitTrace(trace));
 }

@@ -16,6 +16,12 @@ import { serializeOutputValue } from "./outputs";
 
 const LINE_SPLIT_RE = /\r?\n/;
 
+export function isSourceFileContext(file: FileContext): file is SourceFileContext {
+  if (!("source" in file)) return false;
+  const { source } = file;
+  return source != null && typeof source === "object" && "id" in source;
+}
+
 export interface SourceAdapter {
   listFiles: (version: string) => Promise<FileContext[]>;
   readFile: (file: FileContext) => Promise<string>;
@@ -66,9 +72,8 @@ export function createSourceAdapter(
       return [...filesByPath.values()];
     },
     readFile: async (file) => {
-      const sourceFile = file as SourceFileContext;
-      if ("source" in sourceFile && sourceFile.source) {
-        const outputEntries = publishedOutputFiles.get(sourceFile.source.id);
+      if (isSourceFileContext(file)) {
+        const outputEntries = publishedOutputFiles.get(file.source.id);
         if (outputEntries) {
           const entry = outputEntries.find((candidate) => candidate.file.path === file.path);
           if (entry) {
@@ -76,7 +81,7 @@ export function createSourceAdapter(
           }
         }
 
-        const backend = backends.get(sourceFile.source.id);
+        const backend = backends.get(file.source.id);
         if (backend) {
           return backend.readFile(file);
         }

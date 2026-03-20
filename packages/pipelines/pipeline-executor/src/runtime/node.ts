@@ -19,8 +19,10 @@ interface ConsoleLogInput {
   args: unknown[];
 }
 
-// eslint-disable-next-line node/prefer-global/process
-type NodeWriteFn = typeof process.stdout.write;
+interface WriteFunction {
+  (chunk: string | Uint8Array, callback?: (error: Error | null | undefined) => void): boolean;
+  (chunk: string | Uint8Array, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): boolean;
+}
 
 export interface NodeExecutionRuntimeOptions {
   outputCapture?: {
@@ -42,11 +44,11 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     error: console.error,
   };
 
-  static readonly #originalStdio = {
+  static readonly #originalStdio: { stdoutWrite: WriteFunction; stderrWrite: WriteFunction } = {
     // eslint-disable-next-line node/prefer-global/process
-    stdoutWrite: process.stdout.write.bind(process.stdout) as NodeWriteFn,
+    stdoutWrite: process.stdout.write.bind(process.stdout),
     // eslint-disable-next-line node/prefer-global/process
-    stderrWrite: process.stderr.write.bind(process.stderr) as NodeWriteFn,
+    stderrWrite: process.stderr.write.bind(process.stderr),
   };
 
   readonly #contextStorage = new AsyncLocalStorage<PipelineExecutionContext>();
@@ -261,8 +263,8 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     };
   }
 
-  static #wrapWrite(original: NodeWriteFn, stream: PipelineLogStream): NodeWriteFn {
-    return ((chunk, encodingOrCallback, callback) => {
+  static #wrapWrite(original: WriteFunction, stream: PipelineLogStream): WriteFunction {
+    const wrapped: WriteFunction = (chunk: string | Uint8Array, encodingOrCallback?: BufferEncoding | ((error: Error | null | undefined) => void), callback?: (error: Error | null | undefined) => void): boolean => {
       const encoding = typeof encodingOrCallback === "string" ? encodingOrCallback : undefined;
 
       if (NodeExecutionRuntime.#stdioSuppressionDepth === 0) {
@@ -273,8 +275,13 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
         return original(chunk, encodingOrCallback);
       }
 
-      return original(chunk, encodingOrCallback, callback);
-    }) as NodeWriteFn;
+      if (encodingOrCallback != null) {
+        return original(chunk, encodingOrCallback, callback);
+      }
+
+      return original(chunk, callback);
+    };
+    return wrapped;
   }
 
   static #formatLogArgs(args: unknown[]): string {

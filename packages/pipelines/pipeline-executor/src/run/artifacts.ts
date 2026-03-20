@@ -3,7 +3,7 @@ import type { FileContext, ParsedRow, PipelineError, PipelineLogger } from "@ucd
 import type { EventEmitter } from "../internal/events";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
-import type { PipelineTraceEmitInput } from "./traces";
+import type { PipelineTraceEmitInput, PipelineTraceRecord } from "./traces";
 import { createParseContext } from "./source-files";
 
 export interface GlobalArtifactState {
@@ -19,7 +19,7 @@ interface RunGlobalArtifactsOptions {
   source: SourceAdapter;
   runtime: PipelineExecutionRuntime;
   events: EventEmitter;
-  emitTrace: <TTrace extends PipelineTraceEmitInput>(trace: TTrace) => Promise<unknown>;
+  emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
   onError: (spanId: string, error: PipelineError) => Promise<void>;
 }
 
@@ -44,7 +44,7 @@ export async function runGlobalArtifacts(options: RunGlobalArtifactsOptions): Pr
       if (artifact.filter && artifact.parser) {
         const file = (await state.listFiles()).find((candidate) => artifact.filter!({ file: candidate, logger }));
         if (file) {
-          rows = artifact.parser(createParseContext(file, source, runtime)) as AsyncIterable<ParsedRow>;
+          rows = artifact.parser(createParseContext(file, source, runtime));
         }
       }
       state.artifactsMap[artifact.id] = await artifact.build({ version, logger }, rows);
@@ -70,7 +70,7 @@ export async function runGlobalArtifacts(options: RunGlobalArtifactsOptions): Pr
 }
 
 export async function traceRouteArtifacts(options: {
-  emitTrace: <TTrace extends PipelineTraceEmitInput>(trace: TTrace) => Promise<unknown>;
+  emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
   version: string;
   routeId: string;
   consumedArtifactIds: string[];
