@@ -1,8 +1,8 @@
-import type { PipelineExecutionRuntime } from "../runtime";
 import type {
   PipelineTraceInput,
   PipelineTraceRecord,
 } from "../run/traces";
+import type { PipelineExecutionRuntime } from "../runtime";
 
 export interface TraceEmitter {
   emit: (trace: PipelineTraceInput) => Promise<PipelineTraceRecord>;
@@ -22,11 +22,11 @@ export function createTraceEmitter(options: TraceHandlerOptions): TraceEmitter {
 
   const emit = async (trace: PipelineTraceInput): Promise<PipelineTraceRecord> => {
     const context = runtime.getExecutionContext();
-    const fullTrace = Object.assign({}, trace, {
+    const fullTrace = { ...trace, ...{
       id: nextTraceId(),
       spanId: context?.spanId,
       timestamp: Date.now(),
-    });
+    } };
 
     await onTrace?.(fullTrace);
     return fullTrace;
