@@ -1,5 +1,5 @@
-import { act, render } from "@testing-library/react";
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
+import { act, render } from "@testing-library/react";
 import { createAppQueryClient, createAppRouter } from "../../../src/client/app-router";
 
 export async function renderFileRoute(initialPath: string) {
