@@ -1,0 +1,29 @@
+import { act, render } from "@testing-library/react";
+import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
+import { createAppQueryClient, createAppRouter } from "../../../src/client/app-router";
+
+export async function renderFileRoute(initialPath: string) {
+  const history = createMemoryHistory({
+    initialEntries: [initialPath],
+  });
+
+  const queryClient = createAppQueryClient();
+  const router = createAppRouter({
+    history,
+    queryClient,
+  });
+
+  let rendered!: ReturnType<typeof render>;
+
+  await act(async () => {
+    rendered = render(<RouterProvider router={router} />);
+    await router.load();
+  });
+
+  return {
+    ...rendered,
+    history,
+    queryClient,
+    router,
+  };
+}

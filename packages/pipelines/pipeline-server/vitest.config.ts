@@ -16,6 +16,11 @@ const projects = [
       name: "pipeline-server-browser",
       include: ["browser/**/*.test.ts?(x)"],
       environment: "jsdom",
+      environmentOptions: {
+        jsdom: {
+          url: "http://localhost/",
+        },
+      },
       setupFiles: [browserSetupFile],
     },
   },
