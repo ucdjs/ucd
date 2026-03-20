@@ -2,7 +2,7 @@ import { LogPayloadPanel } from "#components/execution/logs/log-payload-panel";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-describe("LogPayloadPanel", () => {
+describe("logPayloadPanel", () => {
   it("renders the raw message when a log has no payload", () => {
     render(
       <LogPayloadPanel

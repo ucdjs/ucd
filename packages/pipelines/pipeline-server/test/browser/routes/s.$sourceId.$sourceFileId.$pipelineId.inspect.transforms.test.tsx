@@ -84,7 +84,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/transf
 
     expect(await screen.findByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "ship"
+      && element.textContent?.trim() === "ship",
     )).toBeInTheDocument();
     expect(screen.getByText("Routes using this transform across the pipeline.")).toBeInTheDocument();
     expect(screen.getByText("1 route")).toBeInTheDocument();

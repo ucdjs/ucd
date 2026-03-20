@@ -42,7 +42,7 @@ const logs = [
   },
 ] satisfies ComponentProps<typeof ExecutionLogTable>["logs"];
 
-describe("ExecutionLogTable", () => {
+describe("executionLogTable", () => {
   it("renders the empty state when there are no logs", () => {
     render(<ExecutionLogTable logs={[]} />);
 
@@ -54,7 +54,7 @@ describe("ExecutionLogTable", () => {
 
     render(<ExecutionLogTable logs={logs} />);
 
-    const row = screen.getByText('Handled payload %O {"attempt":1,"worker":"alpha"}').closest("tr");
+    const row = screen.getByText("Handled payload %O {\"attempt\":1,\"worker\":\"alpha\"}").closest("tr");
     expect(row).not.toBeNull();
 
     await user.click(row!);
@@ -73,10 +73,10 @@ describe("ExecutionLogTable", () => {
     const stderrRow = screen.getByText("A stderr message").closest("tr");
     expect(stderrRow).toHaveClass("bg-red-500/5");
 
-    const loggerRow = screen.getByText('Handled payload %O {"attempt":1,"worker":"alpha"}').closest("tr");
+    const loggerRow = screen.getByText("Handled payload %O {\"attempt\":1,\"worker\":\"alpha\"}").closest("tr");
     expect(loggerRow).not.toBeNull();
 
     const rowCells = within(loggerRow!).getAllByRole("cell");
-    expect(rowCells[2]).toHaveTextContent('Handled payload %O {"attempt":1,"worker":"alpha"}');
+    expect(rowCells[2]).toHaveTextContent("Handled payload %O {\"attempt\":1,\"worker\":\"alpha\"}");
   });
 });

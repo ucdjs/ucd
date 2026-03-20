@@ -39,7 +39,7 @@ const span: ExecutionSpan = {
   isError: false,
 };
 
-describe("ExecutionSpanDrawer", () => {
+describe("executionSpanDrawer", () => {
   it("stays closed when no span is selected", () => {
     render(
       <ExecutionSpanDrawer

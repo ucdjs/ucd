@@ -115,7 +115,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
 
     expect(await screen.findByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Recent executions"
+      && element.textContent?.trim() === "Recent executions",
     )).toBeInTheDocument();
     expect(screen.getByText("Pipeline at a glance")).toBeInTheDocument();
     expect(screen.getByText("Versions (2/2)")).toBeInTheDocument();

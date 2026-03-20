@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-describe("VersionSelector", () => {
+describe("versionSelector", () => {
   it("renders the selected version count and toggles individual versions", async () => {
     const user = userEvent.setup();
     const onToggleVersion = vi.fn();

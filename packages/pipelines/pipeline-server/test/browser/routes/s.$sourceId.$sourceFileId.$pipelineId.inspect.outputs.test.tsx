@@ -87,7 +87,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
 
     expect(await screen.findByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.replace(/\s+/g, " ").trim() === "publish output1"
+      && element.textContent?.replace(/\s+/g, " ").trim() === "publish output1",
     )).toBeInTheDocument();
     expect(screen.getByText("Output definition for where this route writes artifacts.")).toBeInTheDocument();
 
@@ -96,7 +96,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
 
     const compileGroup = within(outputsSection!).getAllByRole("button").find((button) =>
       button.textContent?.replace(/\s+/g, " ").trim().includes("compile")
-      && button.textContent.includes("2 outputs")
+      && button.textContent.includes("2 outputs"),
     );
     expect(compileGroup).not.toBeNull();
     await user.click(compileGroup!);

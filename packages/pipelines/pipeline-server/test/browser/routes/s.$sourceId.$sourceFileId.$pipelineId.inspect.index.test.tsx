@@ -93,18 +93,18 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
 
     expect(await screen.findByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect"
+      && element.textContent?.trim() === "Inspect",
     )).toBeInTheDocument();
 
     const inspectShell = screen.getByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect"
+      && element.textContent?.trim() === "Inspect",
     ).closest("[data-slot='card']") as HTMLElement | null;
     expect(inspectShell).not.toBeNull();
 
     expect(screen.getByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "publish"
+      && element.textContent?.trim() === "publish",
     )).toBeInTheDocument();
     expect(screen.getByText("Route dependencies, transforms, and output definitions.")).toBeInTheDocument();
 
@@ -112,10 +112,10 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
     await user.type(screen.getByRole("textbox", { name: "Search inspect routes" }), "archive");
 
     expect(within(inspectShell!).getAllByRole("button").some((button) =>
-      button.textContent?.replace(/\s+/g, " ").trim().startsWith("archive")
+      button.textContent?.replace(/\s+/g, " ").trim().startsWith("archive"),
     )).toBe(true);
     expect(within(inspectShell!).getAllByRole("button").some((button) =>
-      button.textContent?.replace(/\s+/g, " ").trim().startsWith("compile")
+      button.textContent?.replace(/\s+/g, " ").trim().startsWith("compile"),
     )).toBe(false);
 
     await user.clear(screen.getByRole("textbox", { name: "Search inspect routes" }));
@@ -204,24 +204,24 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
 
     const inspectShell = screen.getByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect"
+      && element.textContent?.trim() === "Inspect",
     ).closest("[data-slot='card']") as HTMLElement | null;
     expect(inspectShell).not.toBeNull();
 
     const transformsViewButton = within(inspectShell!).getAllByRole("button").find((button) =>
-      button.textContent?.trim() === "transforms"
+      button.textContent?.trim() === "transforms",
     );
     expect(transformsViewButton).not.toBeNull();
     await user.click(transformsViewButton!);
 
     expect(await screen.findByText((_, element) =>
       element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "normalize"
+      && element.textContent?.trim() === "normalize",
     )).toBeInTheDocument();
     expect(history.location.search).toContain("view=transforms");
 
     const outputsViewButton = within(inspectShell!).getAllByRole("button").find((button) =>
-      button.textContent?.trim() === "outputs"
+      button.textContent?.trim() === "outputs",
     );
     expect(outputsViewButton).not.toBeNull();
     await user.click(outputsViewButton!);
@@ -229,7 +229,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
     await waitFor(() => {
       expect(screen.getByText((_, element) =>
         element?.getAttribute("data-slot") === "card-title"
-        && element.textContent?.replace(/\s+/g, " ").trim() === "compile output1"
+        && element.textContent?.replace(/\s+/g, " ").trim() === "compile output1",
       )).toBeInTheDocument();
       expect(history.location.search).toContain("view=outputs");
     });

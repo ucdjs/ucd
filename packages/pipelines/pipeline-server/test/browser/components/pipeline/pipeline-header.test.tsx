@@ -1,5 +1,5 @@
-import type { ReactNode } from "react";
 import type { PipelineHeaderProps } from "#components/pipeline/pipeline-header";
+import type { ReactNode } from "react";
 import { PipelineHeader } from "#components/pipeline/pipeline-header";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -60,7 +60,7 @@ const pipeline = {
   sources: [],
 } satisfies PipelineHeaderProps["pipeline"];
 
-describe("PipelineHeader", () => {
+describe("pipelineHeader", () => {
   beforeEach(() => {
     mockedNavigate.mockReset();
     mockedExecute.mockReset();

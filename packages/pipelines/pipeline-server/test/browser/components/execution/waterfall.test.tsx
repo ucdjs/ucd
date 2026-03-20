@@ -32,7 +32,7 @@ const spans: ExecutionSpan[] = [
   },
 ];
 
-describe("ExecutionWaterfall", () => {
+describe("executionWaterfall", () => {
   it("renders an empty state when there are no spans", () => {
     render(
       <ExecutionWaterfall
