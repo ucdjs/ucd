@@ -103,6 +103,19 @@ describe("http backend", () => {
     await expect(backend.list("/missing")).rejects.toThrow(BackendFileNotFound);
   });
 
+  it("preserves trailing slashes for directory-like list requests", async () => {
+    mockFetch([
+      ["GET", "https://ucdjs.dev/dir/", () => HttpResponse.json([
+        { type: "file", name: "foo.txt", path: "/dir/foo.txt" },
+      ])],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    await expect(backend.list("/dir/")).resolves.toEqual([
+      { type: "file", name: "foo.txt", path: "/dir/foo.txt" },
+    ]);
+  });
+
   it("preserves nested recursive list failures in the error hook", async () => {
     mockFetch([
       ["GET", "https://ucdjs.dev/dir", () => HttpResponse.json([
@@ -181,6 +194,24 @@ describe("http backend", () => {
 
     const backend = HTTPFileSystemBackend({ baseUrl });
     await expect(backend.stat("/dir")).resolves.toMatchObject({
+      type: "directory",
+      size: 0,
+    });
+  });
+
+  it("preserves trailing slashes for directory-like stat requests", async () => {
+    mockFetch([
+      ["HEAD", "https://ucdjs.dev/dir/", () =>
+        new HttpResponse(null, {
+          status: 200,
+          headers: {
+            [UCD_STAT_TYPE_HEADER]: "directory",
+          },
+        })],
+    ]);
+
+    const backend = HTTPFileSystemBackend({ baseUrl });
+    await expect(backend.stat("/dir/")).resolves.toMatchObject({
       type: "directory",
       size: 0,
     });

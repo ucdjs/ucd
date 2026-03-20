@@ -60,7 +60,7 @@ That means a recursive `list()` result can be used directly by consumers without
 ### `list()`
 
 - missing paths throw `BackendFileNotFound`
-- listing a file path throws `BackendEntryIsDirectory`
+- listing a file path throws `BackendEntryIsFile`
 - recursive listing returns a nested tree with `children`
 - results are deterministically sorted
 

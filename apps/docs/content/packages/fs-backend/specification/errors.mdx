@@ -14,7 +14,9 @@ BackendError
 ├── BackendSetupError
 ├── BackendUnsupportedOperation
 ├── BackendFileNotFound
-└── BackendEntryIsDirectory
+├── BackendEntryIsDirectory
+├── BackendEntryIsFile
+└── CopyDestinationAlreadyExistsError
 ```
 
 ## Error Types
@@ -61,6 +63,23 @@ Examples:
 - `readBytes("/dir/")`
 - directory copy without `recursive: true`
 
+### `BackendEntryIsFile`
+
+Thrown when a directory-like operation targets a file path.
+
+Examples:
+
+- `list("/file.txt")`
+
+### `CopyDestinationAlreadyExistsError`
+
+Thrown when `copy()` is called with `overwrite: false` and the destination already exists.
+
+Examples:
+
+- `copy("/foo.txt", "/copied.txt", { overwrite: false })`
+- `copy("/source/", "/copied/", { recursive: true, overwrite: false })`
+
 ## Error Handling Pattern
 
 ```typescript
@@ -71,8 +90,12 @@ try {
     console.error("Missing path:", error.path);
   } else if (error instanceof BackendEntryIsDirectory) {
     console.error("Expected a file:", error.path);
+  } else if (error instanceof BackendEntryIsFile) {
+    console.error("Expected a directory:", error.path);
   } else if (error instanceof BackendUnsupportedOperation) {
     console.error("Unsupported feature:", error.feature);
+  } else if (error instanceof CopyDestinationAlreadyExistsError) {
+    console.error("Copy destination exists:", error.path);
   } else {
     console.error("Unexpected backend error:", error);
   }
