@@ -7,6 +7,8 @@ import type {
 } from "./index";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -123,6 +125,15 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       args: entry.args,
       meta: entry.meta,
     }));
+  }
+
+  async writeOutput(locator: string, content: string): Promise<void> {
+    await mkdir(path.dirname(locator), { recursive: true });
+    await writeFile(locator, content, "utf8");
+  }
+
+  resolvePath(base: string, relative: string): string {
+    return path.resolve(base, relative);
   }
 
   startOutputCapture(): () => void {

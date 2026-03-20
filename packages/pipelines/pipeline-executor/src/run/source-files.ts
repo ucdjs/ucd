@@ -9,10 +9,10 @@ import type {
 } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { PipelineExecutionResult } from "../types";
-import path from "node:path";
 import { isPipelineOutputSource, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "../internal/logger";
 import { serializeOutputValue } from "./outputs";
+import { basename, extname } from "./path-utils";
 
 const LINE_SPLIT_RE = /\r?\n/;
 
@@ -115,8 +115,8 @@ function buildPublishedOutputFiles(
       const locatorPath = entry.locator.startsWith("memory://")
         ? entry.locator.slice("memory://".length)
         : entry.locator;
-      const name = path.basename(locatorPath) || `${entry.outputId}.${entry.format === "text" ? "txt" : "json"}`;
-      const ext = path.extname(name) || (entry.format === "text" ? ".txt" : ".json");
+      const name = basename(locatorPath) || `${entry.outputId}.${entry.format === "text" ? "txt" : "json"}`;
+      const ext = extname(name) || (entry.format === "text" ? ".txt" : ".json");
 
       return {
         file: {

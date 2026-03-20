@@ -347,6 +347,7 @@ async function executeMatchedFile(
         values: result.outputs,
         emitTrace: context.emitTrace,
         definitions: context.config.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
+        runtime: context.config.runtime,
       });
     } catch (error) {
       await emitPipelineError(context, spanId, {
@@ -448,6 +449,7 @@ async function executeFallbackFile(
       values: outputs,
       emitTrace: context.emitTrace,
       definitions: DEFAULT_FALLBACK_OUTPUTS,
+      runtime: context.config.runtime,
     });
   } catch (error) {
     await emitPipelineError(context, spanId, {

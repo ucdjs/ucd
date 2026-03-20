@@ -6,8 +6,7 @@ import type {
   RouteOutputDefinition,
   RouteOutputPathContext,
 } from "@ucdjs/pipelines-core";
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
+import type { PipelineExecutionRuntime } from "../runtime";
 
 export interface ResolvedOutputDestination {
   locator: string;
@@ -37,13 +36,14 @@ export function getOutputProperty(output: unknown): string | undefined {
 export function resolveOutputDestination(
   definition: NormalizedRouteOutputDefinition,
   ctx: RouteOutputPathContext,
+  runtime?: PipelineExecutionRuntime,
 ): ResolvedOutputDestination {
   if (definition.path) {
     const relativeLocator = typeof definition.path === "function"
       ? definition.path(ctx)
       : renderOutputPathTemplate(definition.path, ctx);
 
-    return createDestination(definition.sink, relativeLocator);
+    return createDestination(definition.sink, relativeLocator, runtime);
   }
 
   const legacyFileName = resolveLegacyFileName(definition.fileName, ctx.output, ctx.outputIndex);
@@ -52,19 +52,23 @@ export function resolveOutputDestination(
     .join("/");
 
   if (legacyRelative) {
-    return createDestination(definition.sink, legacyRelative);
+    return createDestination(definition.sink, legacyRelative, runtime);
   }
 
   const property = ctx.property ?? "output";
   const defaultRelative = `${ctx.routeId}/${propertyToKebab(property)}-${ctx.outputIndex}.${definition.format === "text" ? "txt" : "json"}`;
-  return createDestination(definition.sink, defaultRelative);
+  return createDestination(definition.sink, defaultRelative, runtime);
 }
 
-function createDestination(sink: OutputSinkDefinition | undefined, relativeLocator: string): ResolvedOutputDestination {
+function createDestination(
+  sink: OutputSinkDefinition | undefined,
+  relativeLocator: string,
+  runtime?: PipelineExecutionRuntime,
+): ResolvedOutputDestination {
   if (sink?.type === "filesystem") {
     const resolved = sink.baseDir
-      ? path.resolve(sink.baseDir, relativeLocator)
-      : path.resolve(relativeLocator);
+      ? runtime?.resolvePath?.(sink.baseDir, relativeLocator) ?? `${sink.baseDir}/${relativeLocator}`
+      : runtime?.resolvePath?.("", relativeLocator) ?? relativeLocator;
 
     return {
       locator: resolved,
@@ -108,14 +112,14 @@ export async function writeOutputToSink(
   locator: string,
   value: unknown,
   format: "json" | "text",
+  runtime?: PipelineExecutionRuntime,
 ): Promise<void> {
-  if (!sink) {
+  if (!sink || !runtime?.writeOutput) {
     return;
   }
 
   const content = serializeOutputValue(value, format);
-  await mkdir(path.dirname(locator), { recursive: true });
-  await writeFile(locator, content, "utf8");
+  await runtime.writeOutput(locator, content);
 }
 
 export function serializeOutputValue(value: unknown, format: "json" | "text"): string {
@@ -227,8 +231,9 @@ export async function materializeOutputs(options: {
   values: readonly unknown[];
   emitTrace: (trace: OutputTraceInput) => Promise<unknown>;
   definitions: readonly NormalizedRouteOutputDefinition[];
+  runtime?: PipelineExecutionRuntime;
 }): Promise<void> {
-  const { outputs, version, routeId, file, values, emitTrace, definitions } = options;
+  const { outputs, version, routeId, file, values, emitTrace, definitions, runtime } = options;
 
   for (const output of values) {
     const outputIndex = outputs.length;
@@ -237,7 +242,7 @@ export async function materializeOutputs(options: {
 
     await emitTrace({ kind: "output.produced", version, routeId, file, outputIndex, property });
     for (const definition of definitions) {
-      const destination = resolveOutputDestination(definition, { version, routeId, file, output, property, outputIndex });
+      const destination = resolveOutputDestination(definition, { version, routeId, file, output, property, outputIndex }, runtime);
       const traceBase = {
         version,
         routeId,
@@ -251,7 +256,7 @@ export async function materializeOutputs(options: {
 
       await emitTrace({ kind: "output.resolved", ...traceBase, format: definition.format });
       try {
-        await writeOutputToSink(definition.sink, destination.locator, output, definition.format);
+        await writeOutputToSink(definition.sink, destination.locator, output, definition.format, runtime);
         await emitTrace({ kind: "output.written", ...traceBase, status: "written" });
       } catch (error) {
         await emitTrace({

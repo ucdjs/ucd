@@ -13,6 +13,7 @@ import {
 import { afterEach, describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
+import { createNodeExecutionRuntime } from "../src/runtime/node";
 import { createMockFile, createTestSource, mockParser } from "./helpers";
 
 const tempDirs: string[] = [];
@@ -65,6 +66,7 @@ describe("execution traces and output manifests", () => {
 
     const traces: string[] = [];
     const executor = createPipelineExecutor({
+      runtime: createNodeExecutionRuntime(),
       onTrace: (trace) => {
         traces.push(trace.kind);
       },
@@ -241,7 +243,7 @@ describe("execution traces and output manifests", () => {
       ],
     });
 
-    const [result] = await createPipelineExecutor({}).run([pipeline]);
+    const [result] = await createPipelineExecutor({ runtime: createNodeExecutionRuntime() }).run([pipeline]);
 
     expect(result?.status).toBe("failed");
     expect(result?.outputManifest).toEqual([

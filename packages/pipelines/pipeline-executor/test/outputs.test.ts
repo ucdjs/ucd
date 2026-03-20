@@ -11,6 +11,7 @@ import {
   writeOutputToSink,
 } from "../src/run/outputs";
 import { buildOutputManifestFromTraces } from "../src/run/traces";
+import { createNodeExecutionRuntime } from "../src/runtime/node";
 import { createMockFile } from "./helpers";
 
 const tempDirs: string[] = [];
@@ -67,8 +68,9 @@ describe("output utilities", () => {
     const jsonFile = path.join(dir, "payload.json");
     const textFile = path.join(dir, "payload.txt");
 
-    await writeOutputToSink(filesystemSink({ baseDir: dir }), jsonFile, { hello: "world" }, "json");
-    await writeOutputToSink(filesystemSink({ baseDir: dir }), textFile, "plain text", "text");
+    const runtime = createNodeExecutionRuntime();
+    await writeOutputToSink(filesystemSink({ baseDir: dir }), jsonFile, { hello: "world" }, "json", runtime);
+    await writeOutputToSink(filesystemSink({ baseDir: dir }), textFile, "plain text", "text", runtime);
 
     expect(JSON.parse(await readFile(jsonFile, "utf8"))).toEqual({ hello: "world" });
     expect(await readFile(textFile, "utf8")).toBe("plain text");
