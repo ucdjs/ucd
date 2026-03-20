@@ -2,7 +2,6 @@
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
-[![codecov][codecov-src]][codecov-href]
 
 A TypeScript-first client for the UCD.js API with resource-based helpers for files, versions, manifests, and published server configuration.
 
@@ -156,5 +155,3 @@ Published under [MIT License](./LICENSE).
 [npm-version-href]: https://npmjs.com/package/@ucdjs/client
 [npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/client?style=flat&colorA=18181B&colorB=4169E1
 [npm-downloads-href]: https://npmjs.com/package/@ucdjs/client
-[codecov-src]: https://img.shields.io/codecov/c/gh/ucdjs/ucd?style=flat&colorA=18181B&colorB=4169E1
-[codecov-href]: https://codecov.io/gh/ucdjs/ucd

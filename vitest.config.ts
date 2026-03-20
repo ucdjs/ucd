@@ -56,11 +56,6 @@ const hiddenLogs: string[] = [];
 
 export default defineConfig({
   test: {
-    coverage: {
-      provider: "istanbul",
-      include: ["**/src/**.{js,jsx,ts,tsx}"],
-      exclude: ["tooling/*"],
-    },
     environment: "node",
     mockReset: true,
     setupFiles: [

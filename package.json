@@ -38,7 +38,6 @@
     "@types/node": "catalog:types",
     "@ucdjs/release-scripts": "catalog:build",
     "@ucdjs/ucdjs-scripts": "workspace:*",
-    "@vitest/coverage-istanbul": "catalog:test",
     "@vitest/ui": "catalog:test",
     "eslint": "catalog:lint",
     "turbo": "catalog:build",

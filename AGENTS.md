@@ -42,9 +42,6 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
   > [!NOTE]
   > The project name is taken from the folder name in `packages/` or `apps/`.
 
-> [!NOTE]
-> By default we are outputting coverage reports.
-
 ## Code quality
 
 - **Linting**: `pnpm run lint`
