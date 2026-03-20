@@ -293,7 +293,7 @@ const NodeFileSystemBackend = defineBackend({
           : resolvedDestinationPath;
         const copyDestinationPath = normalizeEntryPath(
           normalizePathSeparators(nodePath.relative(basePath, resolvedCopyDestinationPath)),
-          "file",
+          sourceStats.isDirectory() ? "directory" : "file",
         );
         const copyDestinationStats = await safeStat(resolvedCopyDestinationPath);
 

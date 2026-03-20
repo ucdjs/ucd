@@ -7,11 +7,21 @@ import { BackendEntryListSchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineBackend } from "../define";
 import { BackendFileNotFound } from "../errors";
-import { assertFilePath, sortEntries } from "../utils";
+import { assertFilePath, isDirectoryPath, sortEntries } from "../utils";
 
 const debug = createDebugger("ucdjs:fs-backend:http");
 
 export const kHttpBackendSymbol = Symbol.for("@ucdjs/fs-backend:http");
+
+function resolveHttpRequestPath(basePathname: string, path: string): string {
+  const resolvedPath = resolveSafePath(basePathname, path);
+
+  if (!isDirectoryPath(path) || resolvedPath === "/") {
+    return resolvedPath;
+  }
+
+  return resolvedPath.endsWith("/") ? resolvedPath : `${resolvedPath}/`;
+}
 
 function getBackendStatType(headers: Headers, fallbackPath: string): BackendStat["type"] {
   const typeHeader = headers.get(UCD_STAT_TYPE_HEADER);
@@ -113,7 +123,7 @@ const HTTPFileSystemBackend = defineBackend({
         const recursive = options?.recursive ?? false;
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveHttpRequestPath(baseUrl.pathname, path),
         );
 
         const response = await fetch(url, {
@@ -182,7 +192,7 @@ const HTTPFileSystemBackend = defineBackend({
       async exists(path) {
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveHttpRequestPath(baseUrl.pathname, path),
         );
 
         return fetch(url, { method: "HEAD" })
@@ -202,7 +212,7 @@ const HTTPFileSystemBackend = defineBackend({
       async stat(path) {
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveHttpRequestPath(baseUrl.pathname, path),
         );
 
         const response = await fetch(url, { method: "HEAD" });

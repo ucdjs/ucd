@@ -243,6 +243,22 @@ describe("node backend", () => {
     await expect(backend.read("/copied.txt")).resolves.toBe("existing");
   });
 
+  it("preserves canonical directory paths in copy collision errors", async () => {
+    const dir = await testdir({
+      source: {
+        "child.txt": "hello",
+      },
+      copied: {},
+    });
+    const backend = NodeFileSystemBackend({ basePath: dir });
+
+    await expect(backend.copy("/source/", "/copied/", { recursive: true, overwrite: false }))
+      .rejects
+      .toMatchObject({
+        path: "/copied/",
+      });
+  });
+
   it("allows remove with force true for missing paths", async () => {
     const dir = await testdir();
     const backend = NodeFileSystemBackend({ basePath: dir });
