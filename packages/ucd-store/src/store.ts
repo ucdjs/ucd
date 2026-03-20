@@ -1,5 +1,5 @@
 import type { PathFilter } from "@ucdjs-internal/shared";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type z from "zod";
 import type {
@@ -18,7 +18,7 @@ import {
   getDefaultUCDEndpointConfig,
 } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
+import { canUseLockfile, getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./context";
 import { UCDStoreGenericError } from "./errors";
@@ -35,8 +35,8 @@ import { verify } from "./utils/verify";
 const debug = createDebugger("ucdjs:ucd-store");
 
 export async function createUCDStore<
-  BridgeOptionsSchema extends z.ZodType,
->(options: UCDStoreOptions<BridgeOptionsSchema>): Promise<UCDStore> {
+  BackendOptionsSchema extends z.ZodType,
+>(options: UCDStoreOptions<BackendOptionsSchema>): Promise<UCDStore> {
   debug?.("Creating UCD Store with options", options);
   const {
     baseUrl,
@@ -88,13 +88,11 @@ export async function createUCDStore<
   // Call the factory with resolved options
   // We need to handle 3 cases: no-args factory, optional-args factory, required-args factory
   const fs = resolvedFsOptions !== undefined
-    // @ts-expect-error - TS cannot infer the args length properly here
-    ? fsFactory(resolvedFsOptions)
-    // @ts-expect-error - TS cannot infer the args length properly here
-    : fsFactory();
+    ? (fsFactory as (options: typeof resolvedFsOptions) => FileSystemBackend)(resolvedFsOptions)
+    : (fsFactory as () => FileSystemBackend)();
 
   // Lockfiles only make sense for writable file systems
-  const supportsLockfile = fs.optionalCapabilities?.write === true;
+  const supportsLockfile = canUseLockfile(fs);
   // Lockfile path is always relative
   const lockfilePath = supportsLockfile ? getLockfilePath() : null;
   debug?.("Lockfile support:", supportsLockfile, "path:", lockfilePath);
@@ -178,7 +176,7 @@ export async function createUCDStore<
     internalContext.lockfile.exists = true;
   }
 
-  // Case 2: Writable bridge but no lockfile - need initialization
+  // Case 2: Writable backend but no lockfile - need initialization
   if (!internalContext.lockfile.exists && internalContext.lockfile.supports) {
     if (requireExistingStore) {
       throw new UCDStoreGenericError(
@@ -197,7 +195,7 @@ export async function createUCDStore<
     internalContext.lockfile.exists = true;
   }
 
-  // Case 3: Read-only bridge - must have versions
+  // Case 3: Read-only backend - must have versions
   if (!internalContext.lockfile.supports) {
     if (!storeVersions.length && configVersions.length) {
       storeVersions = configVersions;
@@ -206,7 +204,7 @@ export async function createUCDStore<
 
     if (!storeVersions.length) {
       throw new UCDStoreGenericError(
-        `No versions provided for read-only file system bridge. `
+        `No versions provided for read-only file system backend. `
         + `Provide versions in options or ensure endpoint config is available.`,
       );
     }
@@ -256,7 +254,7 @@ export async function handleVersionConflict(
   strategy: VersionConflictStrategy,
   providedVersions: string[],
   lockfileVersions: string[],
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   lockfilePath: string,
   _configVersions?: string[],
   filter?: PathFilter,

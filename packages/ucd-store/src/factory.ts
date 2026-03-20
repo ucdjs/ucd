@@ -4,25 +4,25 @@ import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { patheResolve } from "@ucdjs/path-utils";
 import { createUCDStore } from "./store";
 
-export interface NodeUCDStoreOptions<BridgeOptionsSchema extends z.ZodType>
-  extends Omit<UCDStoreOptions<BridgeOptionsSchema>, "fs" | "fsOptions"> {
+export interface NodeUCDStoreOptions<BackendOptionsSchema extends z.ZodType>
+  extends Omit<UCDStoreOptions<BackendOptionsSchema>, "fs" | "fsOptions"> {
   basePath?: string;
 }
 
 /**
- * Creates a UCD store backed by the Node.js FileSystemBridge.
- * @template BridgeOptionsSchema extends z.ZodType
- * @param {NodeUCDStoreOptions<BridgeOptionsSchema>} [options] Store options; provide basePath to set the filesystem root.
+ * Creates a UCD store backed by the Node.js filesystem backend.
+ * @template BackendOptionsSchema extends z.ZodType
+ * @param {NodeUCDStoreOptions<BackendOptionsSchema>} [options] Store options; provide basePath to set the filesystem root.
  * @returns {Promise<UCDStore>} A ready-to-use store instance.
- * @throws {Error} If the Node.js FileSystemBridge could not be loaded.
+ * @throws {Error} If the Node.js filesystem backend could not be loaded.
  */
-export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(
-  options: NodeUCDStoreOptions<BridgeOptionsSchema> = {},
+export async function createNodeUCDStore<BackendOptionsSchema extends z.ZodType>(
+  options: NodeUCDStoreOptions<BackendOptionsSchema> = {},
 ): Promise<UCDStore> {
-  const nodeFs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
+  const nodeFs = await import("@ucdjs/fs-backend/backends/node").then((m) => m.default);
 
   if (!nodeFs) {
-    throw new Error("Node.js FileSystemBridge could not be loaded");
+    throw new Error("Node.js filesystem backend could not be loaded");
   }
 
   const { basePath, ...storeOptions } = options;
@@ -35,35 +35,35 @@ export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(
   });
 }
 
-export interface HTTPUCDStoreOptions<BridgeOptionsSchema extends z.ZodType>
-  extends Omit<UCDStoreOptions<BridgeOptionsSchema>, "fs" | "fsOptions"> {
-  bridgeBaseUrl?: string;
+export interface HTTPUCDStoreOptions<BackendOptionsSchema extends z.ZodType>
+  extends Omit<UCDStoreOptions<BackendOptionsSchema>, "fs" | "fsOptions"> {
+  backendBaseUrl?: string;
 }
 
 /**
- * Creates a UCD store backed by the HTTP FileSystemBridge.
- * @template BridgeOptionsSchema extends z.ZodType
+ * Creates a UCD store backed by the HTTP filesystem backend.
+ * @template BackendOptionsSchema extends z.ZodType
  * @param {HTTPUCDStoreOptions<BridgeOptionsSchema>} [options] Store options; provide baseUrl to override the default.
  * @returns {Promise<UCDStore>} A ready-to-use store instance.
- * @throws {Error} If the HTTP FileSystemBridge could not be loaded.
+ * @throws {Error} If the HTTP filesystem backend could not be loaded.
  */
-export async function createHTTPUCDStore<BridgeOptionsSchema extends z.ZodType>(
-  options: HTTPUCDStoreOptions<BridgeOptionsSchema> = {},
+export async function createHTTPUCDStore<BackendOptionsSchema extends z.ZodType>(
+  options: HTTPUCDStoreOptions<BackendOptionsSchema> = {},
 ): Promise<UCDStore> {
-  const httpFsBridge = await import("@ucdjs/fs-bridge/bridges/http").then((m) => m.default);
+  const httpFsBackend = await import("@ucdjs/fs-backend/backends/http").then((m) => m.default);
 
-  if (!httpFsBridge) {
-    throw new Error("HTTP FileSystemBridge could not be loaded");
+  if (!httpFsBackend) {
+    throw new Error("HTTP filesystem backend could not be loaded");
   }
 
-  const { bridgeBaseUrl, ...storeOptions } = options;
-  const resolvedBridgeBaseUrl = bridgeBaseUrl ?? UCDJS_STORE_BASE_URL;
+  const { backendBaseUrl, ...storeOptions } = options;
+  const resolvedBackendBaseUrl = backendBaseUrl ?? UCDJS_STORE_BASE_URL;
 
   return createUCDStore({
     ...storeOptions,
-    fs: httpFsBridge,
+    fs: httpFsBackend,
     fsOptions: {
-      baseUrl: resolvedBridgeBaseUrl,
+      baseUrl: resolvedBackendBaseUrl,
     },
   });
 }

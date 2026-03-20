@@ -1,6 +1,6 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge, FileSystemBridgeArgs, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
+import type { BackendArgs, BackendFactory, FileSystemBackend } from "@ucdjs/fs-backend";
 import type { ExpectedFile, UCDWellKnownConfig, UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type z from "zod";
 import type { StoreError } from "./errors";
@@ -18,7 +18,7 @@ import type { SyncOptions, SyncResult } from "./tasks/sync";
 export type VersionConflictStrategy = "strict" | "merge" | "overwrite";
 
 /**
- * Context available during bridge construction after endpoint discovery.
+ * Context available during backend construction after endpoint discovery.
  */
 export interface DiscoveryContext {
   /**
@@ -38,22 +38,22 @@ export interface DiscoveryContext {
 }
 
 /**
- * Helper type to extract the options type from a FileSystemBridgeFactory.
+ * Helper type to extract the options type from a backend factory.
  * Returns the first argument type, or `never` if the factory takes no arguments.
  */
-type ExtractBridgeOptions<TSchema extends z.ZodType> = FileSystemBridgeArgs<TSchema>[0];
+type ExtractBackendOptions<TSchema extends z.ZodType> = BackendArgs<TSchema>[0];
 
-type FsOptionsInputFn<TSchema extends z.ZodType> = (ctx: DiscoveryContext) => ExtractBridgeOptions<TSchema>;
+type FsOptionsInputFn<TSchema extends z.ZodType> = (ctx: DiscoveryContext) => ExtractBackendOptions<TSchema>;
 
 /**
  * Input type for fsOptions - can be static options or a function receiving DiscoveryContext.
  */
 export type FsOptionsInput<TSchema extends z.ZodType>
-  = [ExtractBridgeOptions<TSchema>] extends [never]
+  = [ExtractBackendOptions<TSchema>] extends [never]
     ? never // Factory takes no arguments, fsOptions not allowed
-    : ExtractBridgeOptions<TSchema> | FsOptionsInputFn<TSchema>;
+    : ExtractBackendOptions<TSchema> | FsOptionsInputFn<TSchema>;
 
-export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType = z.ZodUnknown> {
+export interface UCDStoreOptions<BackendOptionsSchema extends z.ZodType = z.ZodUnknown> {
   /**
    * Base URL for the Unicode API
    *
@@ -81,15 +81,15 @@ export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType = z.ZodUn
   globalFilters?: PathFilterOptions;
 
   /**
-   * File System Bridge to use for file operations.
+   * File System Backend to use for file operations.
    * You can either provide your own implementation or use one of the following:
-   * - `@ucdjs/fs-bridge/bridges/node` for Node.js environments with full capabilities
-   * - `@ucdjs/fs-bridge/bridges/http` for HTTP-based file systems (read-only)
+   * - `@ucdjs/fs-backend/backends/node` for Node.js environments with full capabilities
+   * - `@ucdjs/fs-backend/backends/http` for HTTP-based file systems (read-only)
    */
-  fs: FileSystemBridgeFactory<BridgeOptionsSchema>;
+  fs: BackendFactory<BackendOptionsSchema>;
 
   /**
-   * Options to pass to the File System Bridge factory.
+   * Options to pass to the filesystem backend factory.
    * Can be static options or a function that receives the discovery context.
    *
    * TODO:
@@ -97,7 +97,7 @@ export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType = z.ZodUn
    * E.g. the function allows unspecified properties that are not in the schema.
    * This should be fixed to strictly enforce the schema shape.
    */
-  fsOptions?: FsOptionsInput<BridgeOptionsSchema>;
+  fsOptions?: FsOptionsInput<BackendOptionsSchema>;
 
   /**
    * List of Unicode versions to include in the store.
@@ -153,16 +153,16 @@ export interface InternalUCDStoreContext {
   filter: PathFilter;
 
   /**
-   * File system bridge for file operations.
+   * File system backend for file operations.
    */
-  fs: FileSystemBridge;
+  fs: FileSystemBackend;
 
   /**
    * Lockfile-related state and configuration.
    */
   lockfile: {
     /**
-     * Whether the file system bridge supports lockfile operations (write capability).
+     * Whether the file system backend supports lockfile operations.
      */
     supports: boolean;
 

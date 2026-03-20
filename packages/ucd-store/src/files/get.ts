@@ -27,7 +27,7 @@ export interface GetFileOptions extends SharedOperationOptions {
  * By default, only reads files that are actually present in the store.
  * Optionally caches the file to local FS after fetching from API (if allowApi is enabled).
  *
- * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, filesystem backend, and configuration
  * @param {string} version - The Unicode version containing the file
  * @param {string} filePath - The path to the file within the version
  * @param {GetFileOptions} [options] - Optional filters, cache behavior, and API fallback
@@ -68,7 +68,7 @@ async function _getFile(
 
     if (fileExists) {
       debug?.("Local file exists:", localPath);
-      const content = await tryOr({
+      const content = await tryOr<string, undefined>({
         try: this.fs.read(localPath),
         err: (err) => {
           debug?.("Failed to read local file:", localPath, err);
@@ -79,6 +79,8 @@ async function _getFile(
               { version, filePath },
             );
           }
+
+          return undefined;
         },
       });
 

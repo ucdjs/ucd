@@ -17,7 +17,7 @@ import {
   normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
+import { hasFeature } from "@ucdjs/fs-backend";
 import {
   computeFileHash,
   computeFileHashWithoutUCDHeader,
@@ -157,7 +157,7 @@ function finalizeVersionReport(report: MirrorVersionReport, duration: number): v
  * Mirrors Unicode data files from the API to local storage.
  * Downloads actual Unicode data files for specified versions.
  *
- * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, filesystem backend, and configuration
  * @param {MirrorOptions} [options] - Mirror options
  * @returns {Promise<OperationResult<MirrorReport, StoreError>>} Operation result
  */
@@ -166,7 +166,7 @@ async function _mirror(
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>> {
   return wrapTry(async () => {
-    if (!hasCapability(this.fs, ["mkdir", "write"])) {
+    if (!hasFeature(this.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
     }
 

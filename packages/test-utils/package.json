@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./fs-backends": "./dist/fs-backends/index.mjs",
     "./fs-bridges": "./dist/fs-bridges/index.mjs",
     "./matchers/types": "./dist/matchers/types.mjs",
     "./matchers/vitest-setup": "./dist/matchers/vitest-setup.mjs",
@@ -54,7 +55,9 @@
     "@luxass/utils": "catalog:runtime",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
