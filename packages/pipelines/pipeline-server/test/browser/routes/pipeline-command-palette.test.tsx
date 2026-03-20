@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 

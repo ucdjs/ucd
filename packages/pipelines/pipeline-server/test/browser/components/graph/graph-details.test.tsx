@@ -50,7 +50,7 @@ const node: ExecutionGraphNodeView = {
   ],
 };
 
-describe("PipelineGraphDetails", () => {
+describe("pipelineGraphDetails", () => {
   it("does not render when no node is selected", () => {
     render(<PipelineGraphDetails node={null} onClose={() => {}} />);
 

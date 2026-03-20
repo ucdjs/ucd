@@ -99,14 +99,14 @@ export function SourceSwitcher() {
             </DropdownMenuItem>
             {sources.map((source) => {
               const badge = getTypeBadge(source.type);
-                const isActive = source.id === currentSourceId;
-                return (
-                  <DropdownMenuItem
-                    key={source.id}
-                    data-testid={`source-switcher-option:${source.id}`}
-                    onSelect={(event) => {
-                      event.preventDefault();
-                      handleSelect(source.id);
+              const isActive = source.id === currentSourceId;
+              return (
+                <DropdownMenuItem
+                  key={source.id}
+                  data-testid={`source-switcher-option:${source.id}`}
+                  onSelect={(event) => {
+                    event.preventDefault();
+                    handleSelect(source.id);
                   }}
                   onClick={() => handleSelect(source.id)}
                   className={isActive ? "bg-accent text-accent-foreground" : undefined}

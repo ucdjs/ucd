@@ -54,7 +54,7 @@ const execution = {
   error: null,
 } satisfies ComponentProps<typeof ExecutionTable>["executions"][number];
 
-describe("ExecutionTable", () => {
+describe("executionTable", () => {
   it("renders the empty state messaging when there are no executions", () => {
     render(
       <ExecutionTable

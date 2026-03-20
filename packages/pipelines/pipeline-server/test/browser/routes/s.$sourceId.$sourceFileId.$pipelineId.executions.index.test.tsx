@@ -3,7 +3,6 @@ import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
-// eslint-disable-next-line test/prefer-lowercase-title
 describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", () => {
   it("renders the executions page through the generated route tree", async () => {
     mockFetch([
