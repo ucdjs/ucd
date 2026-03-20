@@ -1,7 +1,11 @@
 import { sourcesPipelineRouter } from "#server/routes";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createTestRoutesApp } from "./helpers";
+import {
+  createTestRoutesApp,
+  DEFAULT_DISCOVERABLE_FILE_ID,
+  DEFAULT_DISCOVERABLE_PIPELINE_ID,
+} from "./helpers";
 
 vi.mock("@ucdjs/env", async () => {
   const actual = await vi.importActual("@ucdjs/env");
@@ -22,14 +26,16 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
   it("returns exactly the pipeline payload", async () => {
     const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple"));
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}`,
+    ));
 
     expect(res.status).toBe(200);
 
     const data = await res.json();
     expect(Object.keys(data)).toEqual(["pipeline"]);
     expect(data.pipeline).toEqual(expect.objectContaining({
-      id: "simple",
+      id: DEFAULT_DISCOVERABLE_PIPELINE_ID,
       versions: expect.any(Array),
       routes: expect.any(Array),
     }));
@@ -38,7 +44,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
   it("returns 404 for an unknown pipeline", async () => {
     const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/missing"));
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/missing`,
+    ));
 
     expect(res.status).toBe(404);
   });
@@ -53,11 +61,14 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   it("starts an execution for a local source", async () => {
     const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ versions: ["16.0.0"] }),
-    }));
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ versions: ["16.0.0"] }),
+      },
+    ));
 
     expect(res.status).toBe(200);
 
@@ -132,11 +143,14 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   it("returns 404 for an unknown pipeline", async () => {
     const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/missing/execute", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ versions: ["16.0.0"] }),
-    }));
+    const res = await app.fetch(new Request(
+      `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/missing/execute`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ versions: ["16.0.0"] }),
+      },
+    ));
 
     expect(res.status).toBe(404);
   });
