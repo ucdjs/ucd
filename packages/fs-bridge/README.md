@@ -5,6 +5,11 @@
 
 A collection of filesystem bridge implementations for the UCD project, providing both Node.js and HTTP-based file system access.
 
+> [!WARNING]
+> `@ucdjs/fs-bridge` is deprecated. Use `@ucdjs/fs-backend` for new work.
+>
+> Migration guide: [docs.ucdjs.dev/packages/fs-backend/migration-from-fs-bridge](https://docs.ucdjs.dev/packages/fs-backend/migration-from-fs-bridge)
+
 ## Installation
 
 ```bash

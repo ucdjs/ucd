@@ -1,11 +1,17 @@
 export { ApiErrorSchema, UCDWellKnownConfigSchema } from "./api";
 export type { ApiError, UCDWellKnownConfig } from "./api";
 export {
+  BackendDirectoryEntrySchema,
+  BackendEntryListSchema,
+  BackendEntrySchema,
+  BackendFileEntrySchema,
   FileEntryListSchema,
   FileEntrySchema,
   UCDStoreManifestSchema,
 } from "./fs";
 export type {
+  BackendEntry,
+  BackendEntryList,
   FileEntry,
   FileEntryList,
   UCDStoreManifest,

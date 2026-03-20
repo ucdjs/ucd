@@ -1,0 +1,12 @@
+{
+  "title": "FS Backend",
+  "description": "Filesystem backend abstraction layer",
+  "pages": [
+    "index",
+    "specification",
+    "bridges",
+    "hooks",
+    "http-compat",
+    "migration-from-fs-bridge"
+  ]
+}

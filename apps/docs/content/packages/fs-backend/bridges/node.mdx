@@ -1,0 +1,122 @@
+---
+title: Node Backend
+description: Full-featured local filesystem backend for Node.js
+---
+
+# Node File System Backend
+
+The Node backend gives `@ucdjs/fs-backend` full local filesystem support with path traversal protection and canonical backend paths.
+
+## Import
+
+```typescript
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
+```
+
+## Configuration
+
+```typescript
+const backend = NodeFileSystemBackend({
+  basePath: "/path/to/store",
+});
+```
+
+### Options
+
+- `basePath` (string, required): root directory for all backend operations
+
+All operations are sandboxed inside `basePath` using `resolveSafePath`.
+
+## Supported Operations
+
+| Operation | Supported | Notes |
+|---|---|---|
+| `read` | Yes | Reads text as UTF-8 |
+| `readBytes` | Yes | Reads binary data |
+| `list` | Yes | Supports recursive tree listing |
+| `exists` | Yes | Best-effort boolean check |
+| `stat` | Yes | Returns file or directory metadata |
+| `write` | Yes | Creates missing parent directories |
+| `mkdir` | Yes | Creates directories recursively |
+| `remove` | Yes | Supports `recursive` and `force` |
+| `copy` | Yes | Supports file and directory copy semantics |
+
+## Path Behavior
+
+The Node backend accepts backend-style paths and always returns canonical backend paths:
+
+- files: `/dir/file.txt`
+- directories: `/dir/subdir/`
+
+That means a recursive `list()` result can be used directly by consumers without path cleanup.
+
+## Important Semantics
+
+### `read()` and `readBytes()`
+
+- missing paths throw `BackendFileNotFound`
+- directory reads throw `BackendEntryIsDirectory`
+
+### `list()`
+
+- missing paths throw `BackendFileNotFound`
+- listing a file path throws `BackendEntryIsFile`
+- recursive listing returns a nested tree with `children`
+- results are deterministically sorted
+
+### `write()`
+
+`write()` automatically creates missing parent directories:
+
+```typescript
+await backend.write("/deep/nested/file.txt", "hello");
+```
+
+### `copy()`
+
+`copy()` is intra-backend only.
+
+#### File source
+
+- exact target path:
+
+```typescript
+await backend.copy("/foo.txt", "/copied.txt");
+```
+
+- copy into a directory-like destination:
+
+```typescript
+await backend.copy("/foo.txt", "/target-dir/");
+// creates /target-dir/foo.txt
+```
+
+- existing directory destination:
+
+```typescript
+await backend.copy("/foo.txt", "/target-dir");
+// if /target-dir already exists as a directory, creates /target-dir/foo.txt
+```
+
+#### Directory source
+
+Directory copies require `recursive: true`:
+
+```typescript
+await backend.copy("/source/", "/copied/", { recursive: true });
+```
+
+Without `recursive: true`, the backend throws `BackendEntryIsDirectory`.
+
+### `exists()`
+
+`exists()` is intentionally best-effort. Use `stat()` when you need a typed error instead of a boolean.
+
+## Why Use It
+
+Use the Node backend when you want:
+
+- local storage for `ucd-store`
+- safe filesystem access inside a project-specific root
+- a writable backend for tests or tooling
+- the reference implementation for custom backend semantics

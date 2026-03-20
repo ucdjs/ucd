@@ -1,0 +1,111 @@
+---
+title: Errors
+description: Error types and error handling in fs-backend
+---
+
+# Error Handling
+
+`fs-backend` exposes a small error model so consumers can reliably distinguish common backend failures from generic exceptions.
+
+## Error Hierarchy
+
+```typescript
+BackendError
+├── BackendSetupError
+├── BackendUnsupportedOperation
+├── BackendFileNotFound
+├── BackendEntryIsDirectory
+├── BackendEntryIsFile
+└── CopyDestinationAlreadyExistsError
+```
+
+## Error Types
+
+### `BackendSetupError`
+
+Thrown when backend creation fails during `setup()`.
+
+Use this to distinguish construction failures from runtime I/O failures.
+
+### `BackendUnsupportedOperation`
+
+Thrown when you call an optional mutable operation on a backend that does not support it.
+
+Typical example:
+
+```typescript
+try {
+  await httpBackend.write("/file.txt", "hello");
+} catch (error) {
+  if (error instanceof BackendUnsupportedOperation) {
+    console.error(error.feature);
+  }
+}
+```
+
+### `BackendFileNotFound`
+
+Thrown when a file or directory cannot be found.
+
+Examples:
+
+- `read("/missing.txt")`
+- `list("/missing/")`
+- `stat("/missing.txt")`
+
+### `BackendEntryIsDirectory`
+
+Thrown when a file-like operation targets a directory path.
+
+Examples:
+
+- `read("/dir/")`
+- `readBytes("/dir/")`
+- directory copy without `recursive: true`
+
+### `BackendEntryIsFile`
+
+Thrown when a directory-like operation targets a file path.
+
+Examples:
+
+- `list("/file.txt")`
+
+### `CopyDestinationAlreadyExistsError`
+
+Thrown when `copy()` is called with `overwrite: false` and the destination already exists.
+
+Examples:
+
+- `copy("/foo.txt", "/copied.txt", { overwrite: false })`
+- `copy("/source/", "/copied/", { recursive: true, overwrite: false })`
+
+## Error Handling Pattern
+
+```typescript
+try {
+  const content = await backend.read("/file.txt");
+} catch (error) {
+  if (error instanceof BackendFileNotFound) {
+    console.error("Missing path:", error.path);
+  } else if (error instanceof BackendEntryIsDirectory) {
+    console.error("Expected a file:", error.path);
+  } else if (error instanceof BackendEntryIsFile) {
+    console.error("Expected a directory:", error.path);
+  } else if (error instanceof BackendUnsupportedOperation) {
+    console.error("Unsupported feature:", error.feature);
+  } else if (error instanceof CopyDestinationAlreadyExistsError) {
+    console.error("Copy destination exists:", error.path);
+  } else {
+    console.error("Unexpected backend error:", error);
+  }
+}
+```
+
+## A Note on Generic Errors
+
+Not every backend failure is normalized into a dedicated error class.
+
+Some backend-specific or transport-specific failures are still surfaced as generic `Error` instances, especially when the failure is not one of the stable cross-backend cases above.
+
+That is intentional: the package normalizes the obvious, portable error cases first and leaves specialized failure modes available through the original error message and cause chain.

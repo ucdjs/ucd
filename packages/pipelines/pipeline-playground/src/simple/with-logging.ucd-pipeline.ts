@@ -1,3 +1,4 @@
+import type { ParsedRow, PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
 import { definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
 import { planetsSource } from "../shared.sources";
@@ -5,7 +6,7 @@ import { planetsSource } from "../shared.sources";
 /**
  * A transform that logs every row it sees using both the context logger and console.log.
  */
-const loggingTransform = definePipelineTransform({
+const loggingTransform = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "logging-transform",
   async* fn(ctx, rows) {
     let count = 0;
@@ -52,9 +53,9 @@ const planetsRoute = definePipelineRoute({
   resolver: async (ctx, rows) => {
     ctx.logger.info("Resolver started", { version: ctx.version, file: ctx.file.name });
 
-    const entries = [];
+    const entries: ResolvedEntry[] = [];
 
-    for await (const row of rows) {
+    for await (const row of rows as AsyncIterable<ParsedRow>) {
       if (!row.value) {
         ctx.logger.warn("Row has no value, skipping", { codePoint: row.codePoint });
         continue;
@@ -72,7 +73,7 @@ const planetsRoute = definePipelineRoute({
       property: "Planets",
       file: ctx.file.name,
       entries,
-    }];
+    }] satisfies PropertyJson[];
   },
 });
 

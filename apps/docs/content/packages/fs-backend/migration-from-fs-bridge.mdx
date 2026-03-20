@@ -1,0 +1,126 @@
+---
+title: Migration From FS Bridge
+description: Migrate from @ucdjs/fs-bridge to @ucdjs/fs-backend
+---
+
+# Migration From FS Bridge
+
+`@ucdjs/fs-backend` is the successor to `@ucdjs/fs-bridge`. The overall model is still the same, but the public API is smaller, the naming is clearer, and the path and backend contracts are more explicit.
+
+## Package Renames
+
+```typescript
+// Before
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+import HTTPFileSystemBridge from "@ucdjs/fs-bridge/bridges/http";
+
+// After
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
+import HTTPFileSystemBackend from "@ucdjs/fs-backend/backends/http";
+```
+
+## API Renames
+
+| `fs-bridge` | `fs-backend` |
+|---|---|
+| `listdir(path, recursive?)` | `list(path, { recursive })` |
+| `rm(path, options?)` | `remove(path, options?)` |
+| `optionalCapabilities` | `features` |
+| `hasCapability()` | `hasFeature()` |
+| `assertCapability()` | `assertFeature()` |
+
+## Read and Write Changes
+
+### `read`
+
+`read()` is text-only in `fs-backend`.
+
+```typescript
+// Before
+const text = await bridge.read("file.txt", "utf8");
+
+// After
+const text = await backend.read("/file.txt");
+```
+
+### `readBytes`
+
+Use `readBytes()` for binary data.
+
+```typescript
+const bytes = await backend.readBytes("/file.bin");
+```
+
+### `write`
+
+`write()` no longer takes an encoding parameter. Convert before calling if needed.
+
+```typescript
+await backend.write("/file.txt", "hello");
+await backend.write("/file.bin", new Uint8Array([1, 2, 3]));
+```
+
+## Listing Changes
+
+`list()` always takes an options object:
+
+```typescript
+// Before
+const entries = await bridge.listdir("ucd", true);
+
+// After
+const entries = await backend.list("/ucd/", { recursive: true });
+```
+
+Directory entries in `fs-backend` always use canonical backend paths and recursive listings always return nested `children`.
+
+## Features Instead of Capability Records
+
+```typescript
+// Before
+if (bridge.optionalCapabilities.write) {
+  await bridge.write("file.txt", "hello");
+}
+
+// After
+if (backend.features.has("write")) {
+  await backend.write("/file.txt", "hello");
+}
+```
+
+## Path Expectations
+
+`fs-backend` is stricter about canonical paths:
+
+- use leading `/`
+- use trailing `/` for directories
+- do not use trailing `/` for files
+
+Examples:
+
+- file: `/16.0.0/ucd/UnicodeData.txt`
+- directory: `/16.0.0/ucd/`
+
+## New or Sharpened Semantics
+
+### `stat()`
+
+`stat()` is a required operation in `fs-backend`.
+
+### `copy()`
+
+`copy()` is optional and intra-backend only.
+
+- file copies use the destination as an exact target by default
+- file copies also support copying into a directory destination when the destination ends with `/` or already exists as a directory
+- directory copies require `recursive: true`
+
+## Migration Checklist
+
+1. Replace package imports from `@ucdjs/fs-bridge` to `@ucdjs/fs-backend`.
+2. Rename `listdir` to `list`.
+3. Rename `rm` to `remove`.
+4. Replace capability checks with `backend.features.has(...)`.
+5. Split text reads from binary reads by using `read()` and `readBytes()`.
+6. Normalize paths to the backend contract.
+7. Update tests to assert nested `children` for recursive listing.

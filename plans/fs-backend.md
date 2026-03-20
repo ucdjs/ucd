@@ -11,35 +11,52 @@ Replaces `@ucdjs/fs-bridge` as the single filesystem abstraction for the entire 
 
 ## Operations
 
-Three required, three optional:
+Five required operations, four optional backend capabilities:
 
 ```ts
 interface FileSystemBackendOperations {
   read(path: string): Promise<string>;
+  readBytes(path: string): Promise<Uint8Array>;
   list(path: string, options?: ListOptions): Promise<BackendEntry[]>;
   exists(path: string): Promise<boolean>;
+  stat(path: string): Promise<BackendStat>;
 }
 
 interface ListOptions {
   recursive?: boolean;
 }
 
-interface FileSystemBackendMutableOperations {
-  write?(path: string, data: string | Uint8Array): Promise<void>;
-  mkdir?(path: string): Promise<void>;
-  remove?(path: string, options?: RemoveOptions): Promise<void>;
+interface FileSystemBackendMutableMethods {
+  write(path: string, data: string | Uint8Array): Promise<void>;
+  mkdir(path: string): Promise<void>;
+  remove(path: string, options?: RemoveOptions): Promise<void>;
+  copy(sourcePath: string, destinationPath: string, options?: CopyOptions): Promise<void>;
 }
 
 interface RemoveOptions {
   recursive?: boolean;
   force?: boolean;
 }
+
+interface CopyOptions {
+  recursive?: boolean;
+  overwrite?: boolean;
+}
 ```
 
-**Naming rationale:**
+Backend instances always expose `write`, `mkdir`, `remove`, and `copy`.
+Unsupported mutable operations throw `BackendUnsupportedOperation` and should be
+guarded with `features.has(...)` when the current code path depends on them.
+
+**Notes:**
 - `list` not `listdir` — generic listing, not a POSIX syscall name
 - `remove` not `rm` — readable English, no UNIX shorthand
 - `write(path, data)` — no `encoding` param; convert before calling if needed
+- `exists(path)` is intentionally lossy. Backends may return `false` both for "missing"
+  and for "could not determine existence". Use `stat()` when callers need error detail.
+- `copy(sourcePath, destinationPath)` is intra-backend only
+- File copies treat `destinationPath` as the exact target by default, but copy into a
+  directory when the destination ends with `/` or already exists as a directory
 
 ## Entry Type
 
@@ -57,7 +74,7 @@ type BackendEntry =
 ## Features (runtime capability detection)
 
 ```ts
-type BackendFeature = "write" | "mkdir" | "remove";
+type BackendFeature = "write" | "mkdir" | "remove" | "copy";
 ```
 
 Exposed as `ReadonlySet<BackendFeature>` on every backend instance:
@@ -73,7 +90,7 @@ backend.features.has("write")  // true on node backend, false on http backend
 ```ts
 interface FileSystemBackend
   extends FileSystemBackendOperations,
-    FileSystemBackendMutableOperations {
+    FileSystemBackendMutableMethods {
   readonly features: ReadonlySet<BackendFeature>;
   readonly meta: { name: string; description?: string };
   hook: HookableCore<BackendHooks>["hook"];
@@ -89,16 +106,22 @@ interface BackendHooks {
   "error": (payload: { op: string; path: string; error: Error }) => void;
   "read:before": (payload: { path: string }) => void;
   "read:after": (payload: { path: string; content: string }) => void;
+  "readBytes:before": (payload: { path: string }) => void;
+  "readBytes:after": (payload: { path: string; data: Uint8Array }) => void;
   "list:before": (payload: { path: string; recursive: boolean }) => void;
   "list:after": (payload: { path: string; recursive: boolean; entries: BackendEntry[] }) => void;
   "exists:before": (payload: { path: string }) => void;
   "exists:after": (payload: { path: string; result: boolean }) => void;
+  "stat:before": (payload: { path: string }) => void;
+  "stat:after": (payload: { path: string; stat: BackendStat }) => void;
   "write:before": (payload: { path: string; data: string | Uint8Array }) => void;
   "write:after": (payload: { path: string }) => void;
   "mkdir:before": (payload: { path: string }) => void;
   "mkdir:after": (payload: { path: string }) => void;
   "remove:before": (payload: { path: string } & RemoveOptions) => void;
   "remove:after": (payload: { path: string } & RemoveOptions) => void;
+  "copy:before": (payload: { sourcePath: string; destinationPath: string } & CopyOptions) => void;
+  "copy:after": (payload: { sourcePath: string; destinationPath: string } & CopyOptions) => void;
 }
 ```
 
@@ -127,7 +150,9 @@ BackendError (base)
 ├── BackendSetupError
 ├── BackendUnsupportedOperation
 ├── BackendFileNotFound
-└── BackendEntryIsDirectory
+├── BackendEntryIsDirectory
+├── BackendEntryIsFile
+└── CopyDestinationAlreadyExistsError
 ```
 
 ## Guards & Assertions
@@ -145,16 +170,19 @@ function assertFeature(backend: FileSystemBackend, feature: BackendFeature): ass
 
 ### Node (`src/backends/node.ts`)
 - Options: `{ basePath: string }`
-- All 6 operations
+- All mutable and read-only operations
 - Paths sandboxed via `resolveSafePath` from `@ucdjs/path-utils` (imported directly)
 - `list()` builds correct `BackendEntry` tree
+- `copy()` requires `recursive: true` for directory sources
+- File copies can target exact file paths or copy into directory-like destinations
 
 ### HTTP (`src/backends/http.ts`)
 - Options: `{ baseUrl: URL }`
-- Read-only: `read`, `list`, `exists` only
+- Read-only: `read`, `readBytes`, `list`, `exists`, `stat`
 - Identity via `kHttpBackendSymbol`
 - `list()` expects JSON `BackendEntry[]` response
 - `exists()` uses HEAD request with fallback
+- `stat()` infers type from `X-UCD-Stat-Type` when available
 
 ## Package Structure
 
