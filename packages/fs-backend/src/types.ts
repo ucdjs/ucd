@@ -95,12 +95,16 @@ export type BackendArgs<TOptionsSchema extends z.ZodType>
 export type BackendFactory<TOptionsSchema extends z.ZodType>
   = (...args: BackendArgs<TOptionsSchema>) => FileSystemBackend;
 
+export interface BackendErrorHookPayload {
+  op: keyof (FileSystemBackendOperations & FileSystemBackendMutableOperations);
+  path: string;
+  error: Error;
+  sourcePath?: string;
+  destinationPath?: string;
+}
+
 export interface BackendHooks {
-  "error": (payload: {
-    op: keyof (FileSystemBackendOperations & FileSystemBackendMutableOperations);
-    path: string;
-    error: Error;
-  }) => void;
+  "error": (payload: BackendErrorHookPayload) => void;
   "read:before": (payload: { path: string }) => void;
   "read:after": (payload: { path: string; content: string }) => void;
   "readBytes:before": (payload: { path: string }) => void;

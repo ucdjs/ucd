@@ -1,6 +1,7 @@
 import type { HookableCore } from "hookable";
 import type {
   BackendEntry,
+  BackendErrorHookPayload,
   BackendHooks,
   BackendStat,
   CopyOptions,
@@ -171,6 +172,28 @@ export interface OperationWrapperOptions {
   executionContext: object;
 }
 
+function getErrorPayload(
+  operation: keyof BackendOperationMap,
+  args: unknown[],
+  error: Error,
+): BackendErrorHookPayload {
+  if (operation === "copy") {
+    return {
+      op: operation,
+      path: args[0] as string,
+      sourcePath: args[0] as string,
+      destinationPath: args[1] as string,
+      error,
+    };
+  }
+
+  return {
+    op: operation,
+    path: args[0] as string,
+    error,
+  };
+}
+
 async function callBackendHook(
   hooks: HookableCore<BackendHooks>,
   name: HookKey,
@@ -197,11 +220,7 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
     const unsupportedOperation = async (...args: unknown[]): Promise<never> => {
       const error = new BackendUnsupportedOperation(operationName as FileSystemBackendFeature);
 
-      await hooks.callHook("error", {
-        op: operationName,
-        path: args[0] as string,
-        error,
-      });
+      await hooks.callHook("error", getErrorPayload(operationName, args, error));
 
       throw error;
     };
@@ -242,11 +261,7 @@ async function handleError(
     throw normalizedError;
   }
 
-  await hooks.callHook("error", {
-    op: operation,
-    path: args[0] as string,
-    error: normalizedError,
-  });
+  await hooks.callHook("error", getErrorPayload(operation, args, normalizedError));
 
   if (normalizedError instanceof BackendError || normalizedError instanceof PathUtilsBaseError) {
     throw normalizedError;
