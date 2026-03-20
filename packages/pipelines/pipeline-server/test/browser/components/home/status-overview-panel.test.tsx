@@ -1,7 +1,8 @@
+import { StatusOverviewPanel } from "#components/home/status-overview-panel";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { StatusOverviewPanel } from "../../src/client/components/home/status-overview-panel";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("StatusOverviewPanel", () => {
   it("renders totals and hides zero-value optional states", () => {
     render(
@@ -19,11 +20,11 @@ describe("StatusOverviewPanel", () => {
     );
 
     const heading = screen.getByText("Status overview");
-    const card = heading.closest('[data-slot="card"]');
+    const card = heading.closest("[data-slot=\"card\"]");
 
-    expect(card).not.toBeNull();
+    expect(card).toBeInstanceOf(HTMLElement);
 
-    const panel = within(card!);
+    const panel = within(card as HTMLElement);
     expect(panel.getByText("Executions")).toBeInTheDocument();
     expect(panel.getByText("8")).toBeInTheDocument();
     expect(panel.getByText("Completed")).toBeInTheDocument();

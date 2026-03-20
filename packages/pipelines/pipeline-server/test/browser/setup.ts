@@ -1,7 +1,61 @@
+import { cleanup, renderHook as rtlRenderHook } from "@testing-library/react";
+import { act as reactAct } from "react";
+import { createRoot } from "react-dom/client";
+import { afterEach, vi } from "vitest";
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
-import { afterEach } from "vitest";
+
+const roots = new Map<Element, ReturnType<typeof createRoot>>();
+
+vi.mock("react-dom/test-utils", () => {
+  return {
+    act: reactAct,
+  };
+});
+
+vi.mock("@testing-library/react-hooks", () => {
+  return {
+    renderHook: rtlRenderHook,
+    act: reactAct,
+    cleanup: async () => cleanup(),
+    addCleanup: () => () => {},
+    removeCleanup: () => {},
+    suppressErrorOutput: () => () => {},
+  };
+});
+
+vi.mock("react-dom", async () => {
+  const actual = await vi.importActual<typeof import("react-dom")>("react-dom");
+
+  return {
+    ...actual,
+    render(element: Parameters<ReturnType<typeof createRoot>["render"]>[0], container: Element) {
+      let root = roots.get(container);
+
+      if (!root) {
+        root = createRoot(container);
+        roots.set(container, root);
+      }
+
+      root.render(element);
+      return root;
+    },
+    unmountComponentAtNode(container: Element) {
+      const root = roots.get(container);
+      if (!root) {
+        return false;
+      }
+
+      root.unmount();
+      roots.delete(container);
+      return true;
+    },
+  };
+});
 
 afterEach(() => {
   cleanup();
+  localStorage.clear();
 });
+
+// @ts-expect-error yes
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
