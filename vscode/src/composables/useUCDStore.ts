@@ -15,7 +15,7 @@ export const useUCDStore = defineService(() => {
 
     if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
       return createHTTPUCDStore({
-        bridgeBaseUrl: config["store-url"],
+        backendBaseUrl: config["store-url"],
         baseUrl: config["api-base-url"],
         globalFilters,
       });
