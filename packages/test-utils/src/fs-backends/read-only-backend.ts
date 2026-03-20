@@ -1,5 +1,5 @@
 import type { BackendEntry, BackendStat, FileSystemBackend } from "@ucdjs/fs-backend";
-import { BackendFileNotFound, defineBackend } from "@ucdjs/fs-backend";
+import { BackendEntryIsDirectory, BackendEntryIsFile, BackendFileNotFound, defineBackend } from "@ucdjs/fs-backend";
 import { isDirectoryPath } from "@ucdjs/fs-backend/utils";
 import { vi } from "vitest";
 
@@ -23,10 +23,34 @@ export function createReadOnlyBackend(
       const existsFn = options.exists ?? vi.fn().mockResolvedValue(true);
 
       return {
-        read: options.read ?? vi.fn().mockResolvedValue("content"),
-        readBytes: options.readBytes ?? vi.fn().mockResolvedValue(new TextEncoder().encode("content")),
+        read: options.read ?? vi.fn().mockImplementation(async (path: string) => {
+          if (isDirectoryPath(path)) {
+            throw new BackendEntryIsDirectory(path);
+          }
+
+          if ((await existsFn(path)) === false) {
+            throw new BackendFileNotFound(path);
+          }
+
+          return "content";
+        }),
+        readBytes: options.readBytes ?? vi.fn().mockImplementation(async (path: string) => {
+          if (isDirectoryPath(path)) {
+            throw new BackendEntryIsDirectory(path);
+          }
+
+          if ((await existsFn(path)) === false) {
+            throw new BackendFileNotFound(path);
+          }
+
+          return new TextEncoder().encode("content");
+        }),
         exists: existsFn,
         stat: options.stat ?? vi.fn().mockImplementation(async (path: string) => {
+          if ((await existsFn(path)) === false) {
+            throw new BackendFileNotFound(path);
+          }
+
           if (isDirectoryPath(path)) {
             return {
               type: "directory",
@@ -34,16 +58,22 @@ export function createReadOnlyBackend(
             };
           }
 
-          if ((await existsFn(path)) === false) {
-            throw new BackendFileNotFound(path);
-          }
-
           return {
             type: "file",
             size: 0,
           };
         }),
-        list: options.list ?? vi.fn().mockResolvedValue([]),
+        list: options.list ?? vi.fn().mockImplementation(async (path: string) => {
+          if ((await existsFn(path)) === false) {
+            throw new BackendFileNotFound(path);
+          }
+
+          if (!isDirectoryPath(path)) {
+            throw new BackendEntryIsFile(path);
+          }
+
+          return [];
+        }),
       };
     },
   })();

@@ -1,13 +1,37 @@
 import type { BackendEntry, BackendStat, CopyOptions, ListOptions, RemoveOptions } from "@ucdjs/fs-backend";
+import nodePath from "node:path";
 import { trimTrailingSlash } from "@luxass/utils";
-import { defineBackend } from "@ucdjs/fs-backend";
-import { normalizeEntryPath, sortEntries } from "@ucdjs/fs-backend/utils";
+import {
+  BackendEntryIsDirectory,
+  CopyDestinationAlreadyExistsError,
+  defineBackend,
+} from "@ucdjs/fs-backend";
+import { normalizeEntryPath, normalizePathSeparators, sortEntries } from "@ucdjs/fs-backend/utils";
 import { resolveSafePath } from "@ucdjs/path-utils";
 import { FileType, Uri, workspace } from "vscode";
 import { z } from "zod";
 
 const LEADING_SLASH_RE = /^\/+/;
 const RELATIVE_LEADING_SLASH_RE = /^\/+/;
+
+function isDirectory(type: FileType): boolean {
+  return (type & FileType.Directory) === FileType.Directory;
+}
+
+function hasErrorCode(error: unknown, code: string): boolean {
+  return typeof error === "object"
+    && error !== null
+    && "code" in error
+    && (error as { code?: unknown }).code === code;
+}
+
+function isFileNotFoundError(error: unknown): boolean {
+  return hasErrorCode(error, "FileNotFound")
+    || (error instanceof Error && (
+      error.name.includes("FileNotFound")
+      || error.message.includes("FileNotFound")
+    ));
+}
 
 function normalizeRelativePath(path: string): string {
   const trimmedPath = trimTrailingSlash(path.trim());
@@ -19,7 +43,7 @@ function normalizeRelativePath(path: string): string {
 }
 
 function createBackendEntry(name: string, type: FileType, relativePath: string): BackendEntry {
-  const entryType = type === FileType.Directory ? "directory" : "file";
+  const entryType = isDirectory(type) ? "directory" : "file";
   const normalizedPath = normalizeEntryPath(relativePath, entryType);
 
   return entryType === "directory"
@@ -48,6 +72,32 @@ export const vscodeFSBackend = defineBackend({
     const baseUri = Uri.file(options.basePath);
 
     const resolvePath = (path: string): string => resolveSafePath(baseUri.fsPath, path);
+    const toRelativePath = (absolutePath: string): string => normalizePathSeparators(nodePath.relative(baseUri.fsPath, absolutePath));
+    const toCanonicalPath = (absolutePath: string, type: BackendEntry["type"]): string =>
+      normalizeEntryPath(toRelativePath(absolutePath), type);
+    const safeStat = async (uri: Uri): Promise<FileType | null> => {
+      try {
+        return (await workspace.fs.stat(uri)).type;
+      } catch (error) {
+        if (isFileNotFoundError(error)) {
+          return null;
+        }
+
+        throw error;
+      }
+    };
+    const ensureParentDirectory = async (uri: Uri): Promise<void> => {
+      const parentUri = Uri.file(nodePath.dirname(uri.fsPath));
+      if (parentUri.fsPath === uri.fsPath) {
+        return;
+      }
+
+      try {
+        await workspace.fs.stat(parentUri);
+      } catch {
+        await workspace.fs.createDirectory(parentUri);
+      }
+    };
 
     return {
       async read(path: string) {
@@ -69,7 +119,7 @@ export const vscodeFSBackend = defineBackend({
       async stat(path: string): Promise<BackendStat> {
         const stats = await workspace.fs.stat(Uri.file(resolvePath(path)));
         return {
-          type: stats.type === FileType.Directory ? "directory" : "file",
+          type: isDirectory(stats.type) ? "directory" : "file",
           size: stats.size,
           mtime: stats.mtime ? new Date(stats.mtime) : undefined,
         };
@@ -101,11 +151,15 @@ export const vscodeFSBackend = defineBackend({
               const relativePath = currentPath ? `${currentPath}/${name}` : name;
               allEntries.push({ name, type, relativePath });
 
-              if (type === FileType.Directory) {
+              if (isDirectory(type)) {
                 await collectEntries(Uri.joinPath(currentUri, name), relativePath);
               }
             }
-          } catch {
+          } catch (error) {
+            if (currentUri.toString() === targetUri.toString()) {
+              throw error;
+            }
+
             // Ignore directories we can't read.
           }
         }
@@ -143,13 +197,7 @@ export const vscodeFSBackend = defineBackend({
       },
       async write(path: string, data: string | Uint8Array) {
         const resolvedUri = Uri.file(resolvePath(path));
-        const parentUri = Uri.joinPath(resolvedUri, "..");
-
-        try {
-          await workspace.fs.stat(parentUri);
-        } catch {
-          await workspace.fs.createDirectory(parentUri);
-        }
+        await ensureParentDirectory(resolvedUri);
 
         await workspace.fs.writeFile(
           resolvedUri,
@@ -160,15 +208,49 @@ export const vscodeFSBackend = defineBackend({
         await workspace.fs.createDirectory(Uri.file(resolvePath(path)));
       },
       async remove(path: string, options?: RemoveOptions) {
-        await workspace.fs.delete(Uri.file(resolvePath(path)), {
-          recursive: options?.recursive ?? false,
-          useTrash: false,
-        });
+        try {
+          await workspace.fs.delete(Uri.file(resolvePath(path)), {
+            recursive: options?.recursive ?? false,
+            useTrash: false,
+          });
+        } catch (error) {
+          if (options?.force === true && isFileNotFoundError(error)) {
+            return;
+          }
+
+          throw error;
+        }
       },
       async copy(sourcePath: string, destinationPath: string, options?: CopyOptions) {
+        const sourceUri = Uri.file(resolvePath(sourcePath));
+        const sourceStats = await workspace.fs.stat(sourceUri);
+        const sourceIsDirectory = isDirectory(sourceStats.type);
+
+        if (sourceIsDirectory && options?.recursive !== true) {
+          throw new BackendEntryIsDirectory(sourcePath);
+        }
+
+        const destinationUri = Uri.file(resolvePath(destinationPath));
+        const destinationType = await safeStat(destinationUri);
+        const destinationActsAsDirectory = !sourceIsDirectory
+          && (destinationPath.trim().endsWith("/") || (destinationType != null && isDirectory(destinationType)));
+        const resolvedCopyDestinationUri = destinationActsAsDirectory
+          ? Uri.file(nodePath.join(destinationUri.fsPath, nodePath.basename(sourceUri.fsPath)))
+          : destinationUri;
+        const copyDestinationType = await safeStat(resolvedCopyDestinationUri);
+        const copyDestinationPath = toCanonicalPath(
+          resolvedCopyDestinationUri.fsPath,
+          sourceIsDirectory ? "directory" : "file",
+        );
+
+        if (options?.overwrite === false && copyDestinationType != null) {
+          throw new CopyDestinationAlreadyExistsError(copyDestinationPath);
+        }
+
+        await ensureParentDirectory(resolvedCopyDestinationUri);
         await workspace.fs.copy(
-          Uri.file(resolvePath(sourcePath)),
-          Uri.file(resolvePath(destinationPath)),
+          sourceUri,
+          resolvedCopyDestinationUri,
           {
             overwrite: options?.overwrite ?? true,
           },
