@@ -11,11 +11,8 @@ import type {
 } from "@ucdjs/pipelines-executor/traces";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export type ExecutionLogStream = "stdout" | "stderr";
-
 export interface ExecutionLogPayload {
   message: string;
-  stream: ExecutionLogStream;
   args?: unknown[];
   level: PipelineLogLevel;
   source: PipelineLogSource;
@@ -86,7 +83,7 @@ export const executionLogs = sqliteTable("execution_logs", {
   executionId: text("execution_id").notNull()
     .references(() => executions.id, { onDelete: "cascade" }),
   spanId: text("span_id"),
-  stream: text("stream").$type<ExecutionLogStream>().notNull(),
+  stream: text("stream"),
   message: text("message").notNull(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
   payload: text("payload", { mode: "json" }).$type<ExecutionLogPayload>(),

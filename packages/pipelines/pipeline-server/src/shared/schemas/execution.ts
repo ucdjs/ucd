@@ -66,7 +66,6 @@ export const ExecutionEventsResponseSchema = z.object({
 
 export const ExecutionLogPayloadSchema = z.object({
   message: z.string(),
-  stream: z.enum(["stdout", "stderr"]),
   args: z.array(z.unknown()).optional(),
   level: z.enum(["debug", "info", "warn", "error"]),
   source: z.enum(["logger", "console", "stdio"]),
@@ -80,7 +79,6 @@ export const ExecutionLogPayloadSchema = z.object({
 export const ExecutionLogItemSchema = z.object({
   id: z.string(),
   spanId: z.string().nullable(),
-  stream: z.enum(["stdout", "stderr"]),
   message: z.string(),
   timestamp: z.string(),
   payload: ExecutionLogPayloadSchema,
