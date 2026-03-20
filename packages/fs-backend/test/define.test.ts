@@ -1,9 +1,9 @@
+import type { FileSystemBackendMutableOperations, FileSystemBackendOperations } from "../src/types";
 import { assert, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import HTTPFileSystemBackend from "../src/backends/http";
 import NodeFileSystemBackend from "../src/backends/node";
 import { defineBackend } from "../src/define";
-import type { FileSystemBackendOperations, FileSystemBackendMutableOperations } from "../src/types";
 import { BackendSetupError } from "../src/errors";
 
 describe("defineBackend", () => {

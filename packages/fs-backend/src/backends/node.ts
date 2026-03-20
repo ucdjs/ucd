@@ -8,6 +8,7 @@ import { z } from "zod";
 import { defineBackend } from "../define";
 import {
   BackendEntryIsDirectory,
+  BackendEntryIsFile,
   BackendFileNotFound,
   CopyDestinationAlreadyExistsError,
 } from "../errors";
@@ -43,7 +44,7 @@ function normalizeListError(path: string, error: unknown): never {
   }
 
   if (isNodeErrorWithCode(error, "ENOTDIR")) {
-    throw new BackendEntryIsDirectory(path);
+    throw new BackendEntryIsFile(path);
   }
 
   throw error;

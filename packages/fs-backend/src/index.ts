@@ -2,6 +2,7 @@ export { assertFeature } from "./assertions";
 export { defineBackend } from "./define";
 export {
   BackendEntryIsDirectory,
+  BackendEntryIsFile,
   BackendError,
   BackendFileNotFound,
   BackendSetupError,

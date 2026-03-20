@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import NodeFileSystemBackend from "../src/backends/node";
-import { BackendEntryIsDirectory, BackendFileNotFound, CopyDestinationAlreadyExistsError } from "../src/errors";
+import {
+  BackendEntryIsDirectory,
+  BackendEntryIsFile,
+  BackendFileNotFound,
+  CopyDestinationAlreadyExistsError,
+} from "../src/errors";
 
 describe("node backend", () => {
   it("reads existing files", async () => {
@@ -92,11 +97,11 @@ describe("node backend", () => {
     await expect(backend.list("/missing/")).rejects.toThrow(BackendFileNotFound);
   });
 
-  it("throws BackendEntryIsDirectory when listing a file path", async () => {
+  it("throws BackendEntryIsFile when listing a file path", async () => {
     const dir = await testdir({ "hello.txt": "world" });
     const backend = NodeFileSystemBackend({ basePath: dir });
 
-    await expect(backend.list("/hello.txt")).rejects.toThrow(BackendEntryIsDirectory);
+    await expect(backend.list("/hello.txt")).rejects.toThrow(BackendEntryIsFile);
   });
 
   it("reports existence correctly", async () => {
