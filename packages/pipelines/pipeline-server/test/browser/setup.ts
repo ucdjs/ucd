@@ -52,6 +52,36 @@ vi.mock("react-dom", async () => {
   };
 });
 
+vi.mock("#components/app/pipeline-command-palette", () => {
+  return {
+    PipelineCommandPalette: () => null,
+  };
+});
+
+vi.mock("@tanstack/react-devtools", () => {
+  return {
+    TanStackDevtools: () => null,
+  };
+});
+
+vi.mock("@tanstack/react-query-devtools", () => {
+  return {
+    ReactQueryDevtoolsPanel: () => null,
+  };
+});
+
+vi.mock("@tanstack/react-hotkeys-devtools", () => {
+  return {
+    HotkeysDevtoolsPanel: () => null,
+  };
+});
+
+vi.mock("@tanstack/react-router-devtools", () => {
+  return {
+    TanStackRouterDevtoolsPanel: () => null,
+  };
+});
+
 afterEach(() => {
   cleanup();
   localStorage.clear();
