@@ -72,9 +72,7 @@ export interface NormalizedRouteOutputDefinition {
 export function normalizeRouteOutputs(route: PipelineRouteDefinition): NormalizedRouteOutputDefinition[] {
   const rawOutputs = route.outputs?.length
     ? route.outputs
-    : route.out
-      ? [route.out]
-      : [{ id: "default" }];
+    : [{ id: "default" }];
 
   return rawOutputs.map((output, index) => {
     return {
