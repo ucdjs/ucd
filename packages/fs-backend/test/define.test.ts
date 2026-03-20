@@ -4,7 +4,7 @@ import { z } from "zod";
 import HTTPFileSystemBackend from "../src/backends/http";
 import NodeFileSystemBackend from "../src/backends/node";
 import { defineBackend } from "../src/define";
-import { BackendSetupError } from "../src/errors";
+import { BackendSetupError, BackendUnsupportedOperation } from "../src/errors";
 
 describe("defineBackend", () => {
   it("returns a working backend factory", async () => {
@@ -282,6 +282,49 @@ describe("defineBackend", () => {
       op: "read",
       path: "/file.txt",
       error: expect.any(Error),
+    });
+  });
+
+  it("includes source and destination paths for copy errors", async () => {
+    const errorHook = vi.fn();
+    const backend = defineBackend({
+      meta: {
+        name: "Readonly Backend",
+      },
+      setup() {
+        return {
+          async read() {
+            return "content";
+          },
+          async readBytes() {
+            return new Uint8Array([1]);
+          },
+          async list() {
+            return [];
+          },
+          async exists() {
+            return true;
+          },
+          async stat() {
+            return {
+              type: "file" as const,
+              size: 1,
+            };
+          },
+        };
+      },
+    })();
+
+    backend.hook("error", errorHook);
+
+    await expect(backend.copy("/source.txt", "/dest.txt")).rejects.toThrow(BackendUnsupportedOperation);
+
+    expect(errorHook).toHaveBeenCalledWith({
+      op: "copy",
+      path: "/source.txt",
+      sourcePath: "/source.txt",
+      destinationPath: "/dest.txt",
+      error: expect.any(BackendUnsupportedOperation),
     });
   });
 
