@@ -37,6 +37,8 @@ export interface PipelineExecutionRuntime {
   ) => T | Promise<T>;
   emitLog: (entry: PipelineExecutionLogInput) => void;
   startOutputCapture?: () => () => void;
+  writeOutput?: (locator: string, content: string) => Promise<void>;
+  resolvePath?: (base: string, relative: string) => string;
 }
 
 // eslint-disable-next-line ts/explicit-function-return-type
