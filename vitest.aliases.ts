@@ -22,8 +22,12 @@ const normalizedEntries = Object.entries(paths).flatMap(([find, targets]) => {
 
   const normalizedFind = find.includes("*") ? find.replace(/\*.*$/, "") : find;
   const normalizedTarget = target.includes("*") ? target.replace(/\*.*$/, "") : target;
+  const replacement = resolve(tsconfigDir, baseUrl, normalizedTarget);
 
-  return [[normalizedFind, resolve(tsconfigDir, baseUrl, normalizedTarget)] as const];
+  return [[
+    normalizedFind,
+    normalizedFind.endsWith("/") ? `${replacement}/` : replacement,
+  ] as const];
 });
 
 export const aliases = normalizedEntries

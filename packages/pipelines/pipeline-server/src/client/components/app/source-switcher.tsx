@@ -58,6 +58,7 @@ export function SourceSwitcher() {
             render={(triggerProps) => (
               <SidebarMenuButton
                 {...triggerProps}
+                data-testid="source-switcher-trigger"
                 size="lg"
                 className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
@@ -86,6 +87,7 @@ export function SourceSwitcher() {
             style={{ width: "var(--anchor-width)", maxHeight: "18rem" }}
           >
             <DropdownMenuItem
+              data-testid="source-switcher-option:all"
               onSelect={(event) => {
                 event.preventDefault();
                 handleSelect(null);
@@ -97,13 +99,14 @@ export function SourceSwitcher() {
             </DropdownMenuItem>
             {sources.map((source) => {
               const badge = getTypeBadge(source.type);
-              const isActive = source.id === currentSourceId;
-              return (
-                <DropdownMenuItem
-                  key={source.id}
-                  onSelect={(event) => {
-                    event.preventDefault();
-                    handleSelect(source.id);
+                const isActive = source.id === currentSourceId;
+                return (
+                  <DropdownMenuItem
+                    key={source.id}
+                    data-testid={`source-switcher-option:${source.id}`}
+                    onSelect={(event) => {
+                      event.preventDefault();
+                      handleSelect(source.id);
                   }}
                   onClick={() => handleSelect(source.id)}
                   className={isActive ? "bg-accent text-accent-foreground" : undefined}

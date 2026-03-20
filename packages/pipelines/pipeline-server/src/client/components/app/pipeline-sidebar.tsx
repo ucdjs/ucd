@@ -51,13 +51,14 @@ export function PipelineSidebar({
   const sources = sourcesData ?? [];
 
   return (
-    <Sidebar>
-      <SidebarHeader className="p-3">
+    <Sidebar data-testid="pipeline-sidebar">
+      <SidebarHeader className="p-3" data-testid="pipeline-sidebar-header">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
             <Link
               to="/"
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
+              data-testid="pipeline-sidebar-home-link"
             >
               <div className="rounded-lg transition-colors">
                 <UcdLogo className="size-9 shrink-0" />
@@ -74,6 +75,7 @@ export function PipelineSidebar({
               <Badge
                 variant="outline"
                 className="text-[10px] h-5 px-1.5 gap-1 font-mono bg-primary/5 border-primary/20 max-w-full"
+                data-testid="pipeline-sidebar-workspace"
                 title={workspaceId}
               >
                 <Hash className="h-3 w-3 text-primary shrink-0" />
@@ -84,6 +86,7 @@ export function PipelineSidebar({
               <Badge
                 variant="outline"
                 className="text-[10px] h-5 px-1.5 gap-1 font-mono bg-secondary/5 border-secondary/20 max-w-full"
+                data-testid="pipeline-sidebar-version"
                 title={version}
               >
                 <Tag className="h-3 w-3 text-secondary-foreground shrink-0" />
@@ -94,14 +97,14 @@ export function PipelineSidebar({
         </div>
       </SidebarHeader>
 
-      <div className="px-3 pb-1.5">
+      <div className="px-3 pb-1.5" data-testid="pipeline-sidebar-source-switcher">
         <SourceSwitcher />
       </div>
 
-      <SidebarContent>
+      <SidebarContent data-testid="pipeline-sidebar-content">
         {currentSourceId
           ? (
-              <SidebarGroup className="px-2 py-1">
+              <SidebarGroup className="px-2 py-1" data-testid={`pipeline-sidebar-current-source:${currentSourceId}`}>
                 <SourceFileList
                   sourceId={currentSourceId}
                   currentFileId={currentFileId}
@@ -118,11 +121,16 @@ export function PipelineSidebar({
                 const isActive = currentSourceId === source.id;
 
                 return (
-                  <SidebarGroup key={source.id} className="px-2 py-1">
+                  <SidebarGroup
+                    key={source.id}
+                    className="px-2 py-1"
+                    data-testid={`pipeline-sidebar-source-group:${source.id}`}
+                  >
                     <SidebarMenu>
                       <SidebarMenuItem>
                         <SidebarMenuButton
                           className="h-9 gap-2 px-2.5"
+                          data-testid={`pipeline-sidebar-source-toggle:${source.id}`}
                           onClick={() => toggle(sourceKey, isOpen)}
                         >
                           <ChevronRight className={`size-3.5 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
@@ -130,6 +138,7 @@ export function PipelineSidebar({
                             <Link
                               to="/s/$sourceId"
                               params={{ sourceId: source.id }}
+                              data-testid={`pipeline-sidebar-source-link:${source.id}`}
                               className={isActive
                                 ? "block truncate text-sidebar-foreground"
                                 : "block truncate hover:text-sidebar-foreground"}
@@ -158,14 +167,14 @@ export function PipelineSidebar({
             )}
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter data-testid="pipeline-sidebar-footer">
         <SidebarGroup>
           <SidebarGroupLabel>Documentation</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 render={(
-                  <a href="https://docs.ucdjs.dev/pipelines">
+                  <a href="https://docs.ucdjs.dev/pipelines" data-testid="pipeline-sidebar-docs-getting-started">
                     <BookOpen className="size-4" />
                     <span>Getting Started</span>
                   </a>
@@ -175,7 +184,12 @@ export function PipelineSidebar({
             <SidebarMenuItem>
               <SidebarMenuButton
                 render={(
-                  <a href="https://docs.ucdjs.dev/pipelines/api" target="_blank" rel="noopener noreferrer">
+                  <a
+                    href="https://docs.ucdjs.dev/pipelines/api"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-testid="pipeline-sidebar-docs-api"
+                  >
                     <ExternalLink className="size-4" />
                     <span>API Reference</span>
                   </a>

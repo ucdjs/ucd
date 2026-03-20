@@ -51,8 +51,13 @@ catalogs:
     "@rolldown/plugin-babel": 0.2.1
 
   test:
+    "@testing-library/jest-dom": 6.9.1
+    "@testing-library/react-hooks": 8.0.1
+    "@testing-library/react": 16.3.2
+    "@testing-library/user-event": 14.6.1
     "@vitest/expect": 4.1.0
     "@vitest/ui": 4.1.0
+    jsdom: 29.0.0
     vitest: 4.1.0
     vitest-testdirs: 4.4.3
     msw: 2.12.10

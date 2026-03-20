@@ -1,11 +1,33 @@
 import { existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type TestProjectConfiguration } from "vitest/config";
-import { aliases } from "./vitest.aliases";
+import { aliases } from "./vitest.aliases.ts";
 import { normalize } from "node:path";
 
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value != null && typeof value === "object";
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return isRecord(value) && typeof value.then === "function";
+}
+
+function getNestedProjects(config: unknown): TestProjectConfiguration[] | null {
+  if (!isRecord(config)) {
+    return null;
+  }
+
+  const testConfig = config.test;
+
+  if (!isRecord(testConfig) || !Array.isArray(testConfig.projects)) {
+    return null;
+  }
+
+  return testConfig.projects as TestProjectConfiguration[];
+}
 
 async function createProjects(root: string): Promise<TestProjectConfiguration[]> {
   try {
@@ -15,10 +37,22 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
     const promises = dirs.map(async (dir) => {
       const base = {
         extends: true,
+        resolve: {
+          alias: aliases,
+        },
         test: {
           dir: `./${root}/${dir}/test`,
           include: ["**/*.{test,spec}.?(c|m)[jt]s?(x)"],
           name: dir,
+        },
+      } satisfies TestProjectConfiguration;
+      const nestedBase = {
+        extends: true,
+        resolve: {
+          alias: aliases,
+        },
+        test: {
+          dir: `./${root}/${dir}/test`,
         },
       } satisfies TestProjectConfiguration;
 
@@ -29,6 +63,17 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
 
         try {
           const customConfig = await import(safePath).then((m) => m.default);
+          const nestedProjects = getNestedProjects(customConfig);
+
+          if (nestedProjects) {
+            return nestedProjects.map((project) => {
+              if (typeof project === "string" || typeof project === "function" || isPromiseLike(project)) {
+                return project;
+              }
+
+              return mergeConfig(nestedBase, project);
+            });
+          }
 
           return mergeConfig(base, customConfig);
         } catch (err) {
@@ -40,7 +85,7 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
       return base;
     });
 
-    return Promise.all(promises);
+    return (await Promise.all(promises)).flat();
   } catch (err) {
     console.warn(`[vitest] Failed to scan ${root} directory:`, err);
     return [];

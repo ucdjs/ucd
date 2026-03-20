@@ -224,21 +224,31 @@ export function PipelineCommandPalette() {
         onNavigate={handleNavigate}
       />
 
-      <Command.Input placeholder="Type a command or search..." />
+      <Command.Input
+        data-testid="pipeline-command-palette-input"
+        placeholder="Type a command or search..."
+      />
 
-      <Command.List>
+      <Command.List data-testid="pipeline-command-palette-list">
         <Command.Empty>No results found.</Command.Empty>
 
         {currentPipeline && (
-          <Command.Group heading="Current Pipeline">
+          <Command.Group
+            data-testid="pipeline-command-palette-current-group"
+            heading="Current Pipeline"
+          >
             <Command.Actions />
           </Command.Group>
         )}
 
-        <Command.Group heading="All Pipelines">
+        <Command.Group
+          data-testid="pipeline-command-palette-all-group"
+          heading="All Pipelines"
+        >
           {pipelines.map((pipeline) => (
             <Command.Item
               key={`${pipeline.sourceId}-${pipeline.fileId}-${pipeline.id}`}
+              data-testid={`pipeline-command-palette-item:${pipeline.sourceId}:${pipeline.fileId}:${pipeline.id}`}
               onSelect={() => handleExecutePipeline(pipeline.sourceId, pipeline.fileId, pipeline.id, pipeline.versions)}
               value={pipeline.name || pipeline.id}
               keywords={[
