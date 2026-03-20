@@ -1,11 +1,11 @@
 import type { ArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
+  AnyPipelineRouteDefinition,
   FallbackRouteDefinition,
   FileContext,
   ParsedRow,
   PipelineEventInput,
   PipelineFilter,
-  PipelineRouteDefinition,
   PipelineTransformDefinition,
   RouteResolveContext,
 } from "@ucdjs/pipelines-core";
@@ -24,7 +24,7 @@ export interface ProcessRouteResult {
 
 export interface ProcessRouteOptions {
   file: FileContext;
-  route: PipelineRouteDefinition<any, any, any, any, any>;
+  route: AnyPipelineRouteDefinition;
   artifactsMap: Record<string, unknown>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;

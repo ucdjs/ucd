@@ -22,7 +22,6 @@
     ".": "./dist/index.mjs",
     "./graph": "./dist/graph.mjs",
     "./node": "./dist/node.mjs",
-    "./shared": "./dist/shared.mjs",
     "./traces": "./dist/traces.mjs",
     "./package.json": "./package.json"
   },

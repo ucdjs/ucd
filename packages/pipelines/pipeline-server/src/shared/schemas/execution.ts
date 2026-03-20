@@ -1,5 +1,5 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor/shared";
+import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import z from "zod";
 import { ExecutionGraphViewSchema } from "./graph";
 
