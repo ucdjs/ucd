@@ -39,8 +39,6 @@ export interface PipelineExecutionResult {
 
 export type PipelineLogLevel = "debug" | "info" | "warn" | "error";
 
-export type PipelineLogStream = "stdout" | "stderr";
-
 export type PipelineLogSource = "logger" | "console" | "stdio";
 
 export interface PipelineLogEntry {
@@ -49,7 +47,6 @@ export interface PipelineLogEntry {
   spanId?: string;
   event?: PipelineEvent;
   level: PipelineLogLevel;
-  stream: PipelineLogStream;
   source: PipelineLogSource;
   message: string;
   timestamp: number;

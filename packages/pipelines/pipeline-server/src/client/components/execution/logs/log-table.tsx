@@ -86,13 +86,13 @@ export function ExecutionLogTable({ logs }: ExecutionLogTableProps) {
                   <TableRow
                     className={cn(
                       "cursor-pointer",
-                      log.payload ? LOG_LEVEL_ROW[log.payload.level] : log.stream === "stderr" && "bg-red-500/5",
+                      log.payload && LOG_LEVEL_ROW[log.payload.level],
                       isExpanded && "bg-muted",
                     )}
                     onClick={() => handleToggle(log.id)}
                   >
                     <TableCell>
-                      <span className={cn("block h-6 w-1 rounded-full", log.payload ? LOG_LEVEL_BAR[log.payload.level] : log.stream === "stderr" ? "bg-red-500" : "bg-sky-500")} />
+                      <span className={cn("block h-6 w-1 rounded-full", log.payload ? LOG_LEVEL_BAR[log.payload.level] : "bg-sky-500")} />
                     </TableCell>
                     <TableCell className="text-xs font-mono text-muted-foreground">
                       {formatTimestamp(log.timestamp)}
