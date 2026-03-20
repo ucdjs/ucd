@@ -1,3 +1,4 @@
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineLogEntry, PipelineLogLevel, PipelineLogStream } from "../types";
 import type {
@@ -27,6 +28,7 @@ interface WriteFunction {
 }
 
 export interface NodeExecutionRuntimeOptions {
+  fs?: FileSystemBackend;
   outputCapture?: {
     console?: boolean;
     stdio?: boolean;
@@ -55,12 +57,14 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
 
   readonly #contextStorage = new AsyncLocalStorage<PipelineExecutionContext>();
   readonly #logHandlerStorage = new AsyncLocalStorage<LoggerRuntimeContext>();
+  readonly #fs;
   readonly #outputCapture;
   #captureSessionCount = 0;
   #consoleCaptureEnabledCount = 0;
   #stdioCaptureEnabledCount = 0;
 
   constructor(options: NodeExecutionRuntimeOptions) {
+    this.#fs = options.fs;
     this.#outputCapture = options.outputCapture ?? {};
   }
 
@@ -128,6 +132,11 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   }
 
   async writeOutput(locator: string, content: string): Promise<void> {
+    if (this.#fs) {
+      await this.#fs.write(locator, content);
+      return;
+    }
+
     await mkdir(path.dirname(locator), { recursive: true });
     await writeFile(locator, content, "utf8");
   }

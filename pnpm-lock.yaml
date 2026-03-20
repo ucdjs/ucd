@@ -1193,6 +1193,9 @@ importers:
 
   packages/pipelines/pipeline-executor:
     dependencies:
+      '@ucdjs/fs-backend':
+        specifier: workspace:*
+        version: link:../../fs-backend
       '@ucdjs/pipelines-artifacts':
         specifier: workspace:*
         version: link:../pipeline-artifacts
