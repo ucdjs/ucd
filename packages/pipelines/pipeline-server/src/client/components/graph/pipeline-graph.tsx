@@ -116,10 +116,16 @@ export function PipelineGraph({
   }, [onNodeSelect]);
 
   return (
-    <div className={cn("pipeline-graph flex h-full w-full overflow-hidden", className)}>
-      <div className="relative flex min-w-0 flex-1 flex-col">
+    <div
+      data-testid="pipeline-graph"
+      className={cn("pipeline-graph flex h-full w-full overflow-hidden", className)}
+    >
+      <div
+        data-testid="pipeline-graph-flow"
+        className="relative flex min-w-0 flex-1 flex-col"
+      >
         {showFilters && (
-          <div className="absolute left-3 top-3 z-10">
+          <div data-testid="pipeline-graph-filters" className="absolute left-3 top-3 z-10">
             <PipelineGraphFilters
               visibleTypes={visibleTypes}
               onToggleType={handleToggleType}

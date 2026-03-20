@@ -60,9 +60,9 @@ export function VersionSelector({
         )}
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {versions.map((version) => (
+        {versions.map((version, index) => (
           <VersionTag
-            key={version}
+            key={`${version}-${index}`}
             version={version}
             selected={selectedVersions.has(version)}
             onToggle={versionToggles.get(version)}
