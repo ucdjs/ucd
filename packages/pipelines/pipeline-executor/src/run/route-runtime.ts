@@ -6,7 +6,7 @@ import type {
   PipelineEventInput,
   PipelineFilter,
   PipelineRouteDefinition,
-  ResolvedEntry,
+  PipelineTransformDefinition,
   RouteResolveContext,
 } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionRuntime } from "../runtime";
@@ -86,58 +86,103 @@ export function createRouteResolveContext(
   };
 }
 
-export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
-  const { file, route, artifactsMap, runtime, source, version, emit, spanId } = options;
+// --- Shared parse → filter → transform → resolve pipeline ---
+
+interface ExecuteParseResolveOptions {
+  file: FileContext;
+  routeId: string;
+  parser: (ctx: ReturnType<typeof createParseContext>) => AsyncIterable<ParsedRow>;
+  filter?: PipelineFilter;
+  transforms?: readonly PipelineTransformDefinition<any, any>[];
+  resolveContext: RouteResolveContext<string, Record<string, ArtifactDefinition>>;
+  resolver: (ctx: RouteResolveContext<string, Record<string, ArtifactDefinition>>, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
+  runtime: PipelineExecutionRuntime;
+  source: SourceAdapter;
+  version: string;
+  emit: (event: PipelineEventInput) => Promise<void>;
+  spanId: () => string;
+}
+
+async function executeParseResolve(options: ExecuteParseResolveOptions): Promise<unknown[]> {
+  const { file, routeId, parser, filter, transforms, resolveContext, resolver, runtime, source, version, emit, spanId } = options;
+
+  // Parse phase
   const parseStartTime = performance.now();
   const parseSpanId = spanId();
-  await runtime.withSpan(parseSpanId, async () => {
-    await emit({
-      type: "parse:start",
-      file,
-      routeId: route.id,
-      spanId: parseSpanId,
-      timestamp: performance.now(),
-    });
+  await emitInSpan(runtime, parseSpanId, emit, {
+    type: "parse:start",
+    file,
+    routeId,
+    spanId: parseSpanId,
+    timestamp: performance.now(),
   });
 
   const parseCtx = createParseContext(file, source, runtime);
-  const parsedRows = route.parser(parseCtx);
+  const parsedRows = parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(parsedRows, file, route.filter, runtime, collectedRows);
+  const filteredRows = filterRows(parsedRows, file, filter, runtime, collectedRows);
 
-  const resolverRows = (route.transforms && route.transforms.length > 0)
-    ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRows, route.transforms)
+  const resolverRows = (transforms && transforms.length > 0)
+    ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRows, transforms)
     : filteredRows;
 
-  await runtime.withSpan(parseSpanId, async () => {
-    await emit({
-      type: "parse:end",
-      file,
-      routeId: route.id,
-      rowCount: collectedRows.length,
-      durationMs: performance.now() - parseStartTime,
-      spanId: parseSpanId,
-      timestamp: performance.now(),
-    });
+  await emitInSpan(runtime, parseSpanId, emit, {
+    type: "parse:end",
+    file,
+    routeId,
+    rowCount: collectedRows.length,
+    durationMs: performance.now() - parseStartTime,
+    spanId: parseSpanId,
+    timestamp: performance.now(),
   });
 
+  // Resolve phase
   const resolveStartTime = performance.now();
   const resolveSpanId = spanId();
-  await runtime.withSpan(resolveSpanId, async () => {
-    await emit({
-      type: "resolve:start",
-      file,
-      routeId: route.id,
-      spanId: resolveSpanId,
-      timestamp: performance.now(),
-    });
+  await emitInSpan(runtime, resolveSpanId, emit, {
+    type: "resolve:start",
+    file,
+    routeId,
+    spanId: resolveSpanId,
+    timestamp: performance.now(),
   });
+
+  const outputs = await resolver(resolveContext, resolverRows as AsyncIterable<ParsedRow>);
+  const outputArray = Array.isArray(outputs) ? outputs : [outputs];
+
+  await emitInSpan(runtime, resolveSpanId, emit, {
+    type: "resolve:end",
+    file,
+    routeId,
+    outputCount: outputArray.length,
+    durationMs: performance.now() - resolveStartTime,
+    spanId: resolveSpanId,
+    timestamp: performance.now(),
+  });
+
+  return outputArray;
+}
+
+async function emitInSpan(
+  runtime: PipelineExecutionRuntime,
+  spanId: string,
+  emit: (event: PipelineEventInput) => Promise<void>,
+  event: PipelineEventInput,
+): Promise<void> {
+  await runtime.withSpan(spanId, () => emit(event));
+}
+
+// --- Public API ---
+
+export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
+  const { file, route, artifactsMap, runtime, source, version, emit, spanId } = options;
 
   const emittedArtifacts: Record<string, unknown> = {};
   const consumedArtifactIds: string[] = [];
 
-  const resolveCtx = createRouteResolveContext({
+  const resolveSpanId = spanId();
+  const resolveContext = createRouteResolveContext({
     version,
     file,
     routeId: route.id,
@@ -146,50 +191,49 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     emittedArtifacts,
     emitsDefinition: route.emits,
     onArtifactEmit: async (id) => {
-      await runtime.withSpan(resolveSpanId, async () => {
-        await emit({
-          type: "artifact:produced",
-          artifactId: `${route.id}:${id}`,
-          routeId: route.id,
-          version,
-          spanId: resolveSpanId,
-          timestamp: performance.now(),
-        });
+      await emitInSpan(runtime, resolveSpanId, emit, {
+        type: "artifact:produced",
+        artifactId: `${route.id}:${id}`,
+        routeId: route.id,
+        version,
+        spanId: resolveSpanId,
+        timestamp: performance.now(),
       });
     },
     onArtifactGet: async (id) => {
       if (!consumedArtifactIds.includes(id)) {
         consumedArtifactIds.push(id);
-        await runtime.withSpan(resolveSpanId, async () => {
-          await emit({
-            type: "artifact:consumed",
-            artifactId: id,
-            routeId: route.id,
-            version,
-            spanId: resolveSpanId,
-            timestamp: performance.now(),
-          });
+        await emitInSpan(runtime, resolveSpanId, emit, {
+          type: "artifact:consumed",
+          artifactId: id,
+          routeId: route.id,
+          version,
+          spanId: resolveSpanId,
+          timestamp: performance.now(),
         });
       }
     },
   });
 
-  const outputs = await route.resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
-  const outputArray = Array.isArray(outputs) ? outputs : [outputs];
-
-  await runtime.withSpan(resolveSpanId, async () => {
-    await emit({
-      type: "resolve:end",
-      file,
-      routeId: route.id,
-      outputCount: outputArray.length,
-      durationMs: performance.now() - resolveStartTime,
-      spanId: resolveSpanId,
-      timestamp: performance.now(),
-    });
+  const outputs = await executeParseResolve({
+    file,
+    routeId: route.id,
+    parser: route.parser,
+    filter: route.filter,
+    transforms: route.transforms,
+    resolveContext,
+    resolver: route.resolver,
+    runtime,
+    source,
+    version,
+    emit,
+    spanId: () => {
+      // First call returns the pre-allocated resolveSpanId, subsequent calls generate new ones
+      return options.spanId();
+    },
   });
 
-  return { outputs: outputArray, emittedArtifacts, consumedArtifactIds };
+  return { outputs, emittedArtifacts, consumedArtifactIds };
 }
 
 export interface ProcessFallbackOptions {
@@ -205,89 +249,31 @@ export interface ProcessFallbackOptions {
 
 export async function processFallback(options: ProcessFallbackOptions): Promise<unknown[]> {
   const { file, fallback, artifactsMap, runtime, source, version, emit, spanId } = options;
-  const parseStartTime = performance.now();
-  const parseSpanId = spanId();
-  await runtime.withSpan(parseSpanId, async () => {
-    await emit({
-      type: "parse:start",
-      file,
-      routeId: "__fallback__",
-      spanId: parseSpanId,
-      timestamp: performance.now(),
-    });
-  });
-
-  const parseCtx = createParseContext(file, source, runtime);
-  const rows = fallback.parser(parseCtx);
-
-  const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(rows, file, fallback.filter, runtime, collectedRows);
-
-  await runtime.withSpan(parseSpanId, async () => {
-    await emit({
-      type: "parse:end",
-      file,
-      routeId: "__fallback__",
-      rowCount: collectedRows.length,
-      durationMs: performance.now() - parseStartTime,
-      spanId: parseSpanId,
-      timestamp: performance.now(),
-    });
-  });
-
-  const resolveStartTime = performance.now();
-  const resolveSpanId = spanId();
-  await runtime.withSpan(resolveSpanId, async () => {
-    await emit({
-      type: "resolve:start",
-      file,
-      routeId: "__fallback__",
-      spanId: resolveSpanId,
-      timestamp: performance.now(),
-    });
-  });
 
   const emittedArtifacts: Record<string, unknown> = {};
 
-  const resolveCtx = {
+  const resolveContext = createRouteResolveContext({
     version,
     file,
-    logger: createPipelineLogger(runtime),
-    getArtifact: <K extends string>(id: K): unknown => {
-      if (!(id in artifactsMap)) {
-        throw new Error(`Artifact "${String(id)}" not found.`);
-      }
-      return artifactsMap[id];
-    },
-    emitArtifact: <K extends string, V>(id: K, value: V): void => {
-      emittedArtifacts[id] = value;
-    },
-    normalizeEntries: (entries: ResolvedEntry[]) => {
-      return entries.sort((a, b) => {
-        const aStart = a.range?.split("..")[0] ?? a.codePoint ?? "";
-        const bStart = b.range?.split("..")[0] ?? b.codePoint ?? "";
-        return aStart.localeCompare(bStart);
-      });
-    },
-    now: () => new Date().toISOString(),
-  };
-
-  const outputs = await fallback.resolver(resolveCtx, filteredRows);
-  const outputArray = Array.isArray(outputs) ? outputs : [outputs];
-
-  await runtime.withSpan(resolveSpanId, async () => {
-    await emit({
-      type: "resolve:end",
-      file,
-      routeId: "__fallback__",
-      outputCount: outputArray.length,
-      durationMs: performance.now() - resolveStartTime,
-      spanId: resolveSpanId,
-      timestamp: performance.now(),
-    });
+    routeId: "__fallback__",
+    runtime,
+    artifactsMap,
+    emittedArtifacts,
   });
 
-  return outputArray;
+  return executeParseResolve({
+    file,
+    routeId: "__fallback__",
+    parser: fallback.parser,
+    filter: fallback.filter,
+    resolveContext,
+    resolver: fallback.resolver,
+    runtime,
+    source,
+    version,
+    emit,
+    spanId,
+  });
 }
 
 export async function* filterRows(
