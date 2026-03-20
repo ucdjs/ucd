@@ -38,17 +38,39 @@ export interface FileFallbackTraceRecord extends PipelineTraceBase<"file.fallbac
   file: FileContext;
 }
 
-export interface ArtifactTraceRecord extends PipelineTraceBase<"artifact.emitted" | "artifact.consumed"> {
+export interface ArtifactEmittedTraceRecord extends PipelineTraceBase<"artifact.emitted"> {
   version: string;
   routeId: string;
   artifactId: string;
 }
 
-export interface CacheTraceRecord extends PipelineTraceBase<"cache.hit" | "cache.miss" | "cache.store"> {
+export interface ArtifactConsumedTraceRecord extends PipelineTraceBase<"artifact.consumed"> {
+  version: string;
+  routeId: string;
+  artifactId: string;
+}
+
+export type ArtifactTraceRecord = ArtifactEmittedTraceRecord | ArtifactConsumedTraceRecord;
+
+export interface CacheHitTraceRecord extends PipelineTraceBase<"cache.hit"> {
   version: string;
   routeId: string;
   file: FileContext;
 }
+
+export interface CacheMissTraceRecord extends PipelineTraceBase<"cache.miss"> {
+  version: string;
+  routeId: string;
+  file: FileContext;
+}
+
+export interface CacheStoreTraceRecord extends PipelineTraceBase<"cache.store"> {
+  version: string;
+  routeId: string;
+  file: FileContext;
+}
+
+export type CacheTraceRecord = CacheHitTraceRecord | CacheMissTraceRecord | CacheStoreTraceRecord;
 
 export interface OutputProducedTraceRecord extends PipelineTraceBase<"output.produced"> {
   version: string;
@@ -87,8 +109,11 @@ export type PipelineTraceRecord
   = | SourceProvidedTraceRecord
     | FileMatchedTraceRecord
     | FileFallbackTraceRecord
-    | ArtifactTraceRecord
-    | CacheTraceRecord
+    | ArtifactEmittedTraceRecord
+    | ArtifactConsumedTraceRecord
+    | CacheHitTraceRecord
+    | CacheMissTraceRecord
+    | CacheStoreTraceRecord
     | OutputProducedTraceRecord
     | OutputResolvedTraceRecord
     | OutputWrittenTraceRecord;
@@ -96,11 +121,13 @@ export type PipelineTraceRecord
 export type PipelineTraceRecordByKind<TKind extends PipelineTraceKind>
   = Extract<PipelineTraceRecord, { kind: TKind }>;
 
-export type PipelineTraceInput<TKind extends PipelineTraceKind = PipelineTraceKind>
-  = Omit<PipelineTraceRecordByKind<TKind>, "id" | "timestamp" | "spanId">;
+export type PipelineTraceInput = {
+  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "timestamp" | "spanId">;
+}[PipelineTraceKind];
 
-export type PipelineTraceEmitInput<TKind extends PipelineTraceKind = PipelineTraceKind>
-  = Omit<PipelineTraceRecordByKind<TKind>, "id" | "timestamp" | "spanId" | "pipelineId">;
+export type PipelineTraceEmitInput = {
+  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "timestamp" | "spanId" | "pipelineId">;
+}[PipelineTraceKind];
 
 export interface PipelineOutputManifestEntry {
   outputIndex: number;
