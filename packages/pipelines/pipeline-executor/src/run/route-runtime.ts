@@ -101,21 +101,14 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
   });
 
   const parseCtx = createParseContext(file, source, runtime);
-  let rows: AsyncIterable<unknown> = route.parser(parseCtx);
+  const parsedRows = route.parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(rows as AsyncIterable<ParsedRow>, file, route.filter, runtime, collectedRows);
+  const filteredRows = filterRows(parsedRows, file, route.filter, runtime, collectedRows);
 
-  if (route.transforms && route.transforms.length > 0) {
-    const logger = createPipelineLogger(runtime);
-    rows = applyTransforms(
-      { version, file, logger },
-      filteredRows,
-      route.transforms,
-    );
-  } else {
-    rows = filteredRows;
-  }
+  const resolverRows = (route.transforms && route.transforms.length > 0)
+    ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRows, route.transforms)
+    : filteredRows;
 
   await runtime.withSpan(parseSpanId, async () => {
     await emit({
@@ -181,7 +174,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     },
   });
 
-  const outputs = await route.resolver(resolveCtx, rows as AsyncIterable<ParsedRow>);
+  const outputs = await route.resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
 
   await runtime.withSpan(resolveSpanId, async () => {
