@@ -8,6 +8,8 @@ import { ensureWorkspace } from "#server/workspace";
 import { H3 as H3App } from "h3";
 
 const playgroundPath = fileURLToPath(new URL("../../../pipeline-playground/src", import.meta.url));
+export const DEFAULT_DISCOVERABLE_FILE_ID = "simple~multiple";
+export const DEFAULT_DISCOVERABLE_PIPELINE_ID = "first-pipeline";
 const defaultSources: PipelineSource[] = [{
   kind: "local",
   id: "local",
@@ -112,11 +114,14 @@ export async function createTestRoutesApp(routers: H3[], options: CreateTestRout
 }
 
 export async function createTestExecution(app: H3) {
-  const execRes = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ versions: ["16.0.0"] }),
-  }));
+  const execRes = await app.fetch(new Request(
+    `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versions: ["16.0.0"] }),
+    },
+  ));
 
   const execData = await execRes.json();
   if (!execData.executionId) {
