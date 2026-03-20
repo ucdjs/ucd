@@ -49,6 +49,16 @@ export class BackendEntryIsDirectory extends BackendError {
   }
 }
 
+export class BackendEntryIsFile extends BackendError {
+  public readonly path: string;
+
+  constructor(path: string) {
+    super(`Expected directory but found file: ${path}`);
+    this.name = "BackendEntryIsFile";
+    this.path = path;
+  }
+}
+
 export class CopyDestinationAlreadyExistsError extends BackendError {
   public readonly path: string;
 

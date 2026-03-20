@@ -150,7 +150,9 @@ BackendError (base)
 ├── BackendSetupError
 ├── BackendUnsupportedOperation
 ├── BackendFileNotFound
-└── BackendEntryIsDirectory
+├── BackendEntryIsDirectory
+├── BackendEntryIsFile
+└── CopyDestinationAlreadyExistsError
 ```
 
 ## Guards & Assertions
