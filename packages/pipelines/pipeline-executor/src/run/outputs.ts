@@ -184,38 +184,38 @@ export interface PublishedOutputFile {
 
 type OutputTraceInput = Extract<
   | {
-      kind: "output.produced";
-      version: string;
-      routeId: string;
-      file: FileContext;
-      outputIndex: number;
-      property?: string;
-    }
+    kind: "output.produced";
+    version: string;
+    routeId: string;
+    file: FileContext;
+    outputIndex: number;
+    property?: string;
+  }
   | {
-      kind: "output.resolved";
-      version: string;
-      routeId: string;
-      file: FileContext;
-      outputIndex: number;
-      outputId: string;
-      property?: string;
-      sink: string;
-      format: "json" | "text";
-      locator: string;
-    }
+    kind: "output.resolved";
+    version: string;
+    routeId: string;
+    file: FileContext;
+    outputIndex: number;
+    outputId: string;
+    property?: string;
+    sink: string;
+    format: "json" | "text";
+    locator: string;
+  }
   | {
-      kind: "output.written";
-      version: string;
-      routeId: string;
-      file: FileContext;
-      outputIndex: number;
-      outputId: string;
-      property?: string;
-      sink: string;
-      locator: string;
-      status: "written" | "failed";
-      error?: string;
-    },
+    kind: "output.written";
+    version: string;
+    routeId: string;
+    file: FileContext;
+    outputIndex: number;
+    outputId: string;
+    property?: string;
+    sink: string;
+    locator: string;
+    status: "written" | "failed";
+    error?: string;
+  },
   { kind: "output.produced" | "output.resolved" | "output.written" }
 >;
 
