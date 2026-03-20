@@ -1,7 +1,13 @@
 /// <reference types="../../test-utils/src/matchers/types.d.ts" />
 
 import { describe, expect, it } from "vitest";
-import { FileEntryListSchema, FileEntrySchema, UCDStoreManifestSchema } from "../src/fs";
+import {
+  BackendEntryListSchema,
+  BackendEntrySchema,
+  FileEntryListSchema,
+  FileEntrySchema,
+  UCDStoreManifestSchema,
+} from "../src/fs";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("FileEntrySchema", () => {
@@ -130,6 +136,133 @@ describe("FileEntryListSchema", () => {
     expect(invalidList).toMatchSchema({
       schema: FileEntryListSchema,
       success: false,
+    });
+  });
+});
+
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("BackendEntrySchema", () => {
+  it("should validate a backend file entry without lastModified", () => {
+    const validEntry = {
+      name: "README.md",
+      path: "/docs/README.md",
+      type: "file",
+    };
+
+    expect(validEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: true,
+      data: {
+        type: "file",
+        name: "README.md",
+      },
+    });
+  });
+
+  it("should validate a recursive backend directory entry", () => {
+    const validEntry = {
+      name: "docs",
+      path: "/docs/",
+      type: "directory",
+      children: [
+        {
+          name: "README.md",
+          path: "/docs/README.md",
+          type: "file",
+        },
+      ],
+    };
+
+    expect(validEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: true,
+    });
+  });
+
+  it("should default backend directory children to an empty array", () => {
+    const validEntry = {
+      name: "docs",
+      path: "/docs/",
+      type: "directory",
+    };
+
+    expect(validEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: true,
+      data: {
+        type: "directory",
+        name: "docs",
+        children: [],
+      },
+    });
+  });
+
+  it("should allow store-style backend entries with lastModified", () => {
+    const validEntry = {
+      name: "README.md",
+      path: "/docs/README.md",
+      type: "file",
+      lastModified: Date.now(),
+    };
+
+    expect(validEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: true,
+      data: {
+        type: "file",
+        name: "README.md",
+      },
+    });
+  });
+
+  it("should reject backend entries without leading slash", () => {
+    const invalidEntry = {
+      name: "README.md",
+      path: "docs/README.md",
+      type: "file",
+    };
+
+    expect(invalidEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: false,
+    });
+  });
+
+  it("should reject backend directories without trailing slash", () => {
+    const invalidEntry = {
+      name: "docs",
+      path: "/docs",
+      type: "directory",
+      children: [],
+    };
+
+    expect(invalidEntry).toMatchSchema({
+      schema: BackendEntrySchema,
+      success: false,
+    });
+  });
+});
+
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("BackendEntryListSchema", () => {
+  it("should validate a list of backend entries", () => {
+    const validList = [
+      {
+        name: "folder",
+        path: "/folder/",
+        type: "directory",
+        children: [],
+      },
+      {
+        name: "file.txt",
+        path: "/file.txt",
+        type: "file",
+      },
+    ];
+
+    expect(validList).toMatchSchema({
+      schema: BackendEntryListSchema,
+      success: true,
     });
   });
 });

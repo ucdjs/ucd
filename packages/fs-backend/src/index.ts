@@ -1,0 +1,35 @@
+export { assertFeature } from "./assertions";
+export { defineBackend } from "./define";
+export {
+  BackendEntryIsDirectory,
+  BackendEntryIsFile,
+  BackendError,
+  BackendFileNotFound,
+  BackendSetupError,
+  BackendUnsupportedOperation,
+  CopyDestinationAlreadyExistsError,
+} from "./errors";
+export { hasFeature, isHttpBackend } from "./guards";
+export type {
+  BackendArgs,
+  BackendDefinition,
+  BackendEntry,
+  BackendFactory,
+  BackendHooks,
+  BackendStat,
+  CopyOptions,
+  FileSystemBackend,
+  FileSystemBackendFeature,
+  FileSystemBackendMeta,
+  FileSystemBackendMutableMethods,
+  FileSystemBackendMutableOperations,
+  FileSystemBackendOperations,
+  ListOptions,
+  RemoveOptions,
+} from "./types";
+export {
+  BackendDirectoryEntrySchema,
+  BackendEntryListSchema,
+  BackendEntrySchema,
+  BackendFileEntrySchema,
+} from "@ucdjs/schemas";

@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/env",
-  "version": "0.1.1-beta.8",
+  "name": "@ucdjs/fs-backend",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,13 +13,21 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/env"
+    "directory": "packages/fs-backend"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "imports": {
+    "#internal:backend/node": "./src/backends/node.ts",
+    "#internal:backend/http": "./src/backends/http.ts"
+  },
   "exports": {
     ".": "./dist/index.mjs",
+    "./backends/http": "./dist/backends/http.mjs",
+    "./backends/node": "./dist/backends/node.mjs",
+    "./errors": "./dist/errors.mjs",
+    "./utils": "./dist/utils.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -38,21 +46,28 @@
   },
   "dependencies": {
     "@luxass/utils": "catalog:runtime",
-    "pathe": "catalog:runtime"
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "hookable": "catalog:runtime",
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@luxass/msw-utils": "catalog:runtime",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
-    "typescript": "catalog:build"
+    "typescript": "catalog:build",
+    "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"
   },
   "inlinedDependencies": {
-    "pathe": "2.0.3"
+    "@luxass/msw-utils": "0.6.0"
   }
 }

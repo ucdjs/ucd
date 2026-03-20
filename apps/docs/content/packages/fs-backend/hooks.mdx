@@ -1,0 +1,151 @@
+---
+title: Hooks
+description: Monitor, instrument, and debug filesystem backend operations
+---
+
+# Hooks
+
+Every `FileSystemBackend` instance exposes a `hook()` method powered by `hookable`. Hooks let you observe operations without coupling logging, tracing, metrics, or debugging directly into backend logic.
+
+## Why Hooks Exist
+
+Backends are deliberately small. Instead of baking monitoring into each backend, the hook system gives consumers a standard way to watch operations across Node, HTTP, and custom implementations.
+
+Typical uses:
+
+- debug path handling
+- log read and write activity
+- collect timings
+- capture errors in one place
+- add lightweight observability around custom backends
+
+## Basic Usage
+
+```typescript
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
+
+const backend = NodeFileSystemBackend({
+  basePath: "/tmp/ucd",
+});
+
+backend.hook("read:before", (payload) => {
+  console.log(`Reading ${payload.path}`);
+});
+
+await backend.read("/UnicodeData.txt");
+```
+
+## Hook Naming Pattern
+
+The hook system follows a small naming convention:
+
+- `error`
+- `operation:before`
+- `operation:after`
+
+Every backend operation gets `before` and `after` hooks, and all failures flow through the shared `error` hook.
+
+That means you do not need a separate docs row for every hook to understand the system. If a new operation is added later, the hook naming stays predictable.
+
+## What the Payloads Look Like
+
+The exact source of truth is the `BackendHooks` type in the package source, but the payloads follow a few consistent patterns.
+
+### Path-Based Operations
+
+Operations like `read`, `readBytes`, `exists`, `stat`, `write`, and `mkdir` use straightforward path payloads:
+
+```typescript
+backend.hook("read:before", ({ path }) => {
+  console.log(path);
+});
+
+backend.hook("write:before", ({ path, data }) => {
+  console.log(path, data);
+});
+```
+
+### Listing
+
+`list()` includes the recursive flag and the resulting entries:
+
+```typescript
+backend.hook("list:before", ({ path, recursive }) => {
+  console.log(path, recursive);
+});
+
+backend.hook("list:after", ({ entries }) => {
+  console.log(entries.length);
+});
+```
+
+### Copy
+
+`copy()` uses `sourcePath` and `destinationPath`:
+
+```typescript
+backend.hook("copy:before", ({ sourcePath, destinationPath, overwrite }) => {
+  console.log(sourcePath, destinationPath, overwrite);
+});
+```
+
+### Errors
+
+The `error` hook receives the operation name, the primary path argument, and the thrown error:
+
+```typescript
+backend.hook("error", ({ op, path, error }) => {
+  console.error(op, path, error.message);
+});
+```
+
+## Execution Model
+
+Hooks run around the wrapped backend operations:
+
+1. `before` hook
+2. backend operation
+3. `after` hook
+4. `error` hook if any step throws
+
+That means hooks can observe both built-in and custom backends consistently.
+
+## Practical Patterns
+
+### Logging
+
+```typescript
+backend.hook("list:before", ({ path, recursive }) => {
+  console.log("list", path, { recursive });
+});
+
+backend.hook("error", ({ op, path, error }) => {
+  console.error(op, path, error.message);
+});
+```
+
+### Timing
+
+```typescript
+const timings = new Map<string, number>();
+
+backend.hook("read:before", ({ path }) => {
+  timings.set(path, Date.now());
+});
+
+backend.hook("read:after", ({ path }) => {
+  const start = timings.get(path);
+  if (start != null) {
+    console.log(`${path} took ${Date.now() - start}ms`);
+    timings.delete(path);
+  }
+});
+```
+
+## Best Practices
+
+- keep hooks lightweight
+- avoid mutating payloads
+- prefer hooks for observability, not business logic
+- clean up temporary hook state such as timing maps
+- use the `error` hook to centralize debugging across backend implementations

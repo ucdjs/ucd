@@ -1,5 +1,5 @@
 ---
-title: FS-Bridge
+title: Overview
 description: File system abstraction layer
 ---
 
@@ -10,6 +10,10 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 # FS-Bridge
 
 The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations, allowing different storage backends to be used interchangeably. This enables your code to work seamlessly across different environments—from Node.js file systems to HTTP-based remote storage.
+
+<Callout type="warn">
+  `@ucdjs/fs-bridge` is deprecated. Use <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a> for new code and follow the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when moving existing consumers.
+</Callout>
 
 <Callout type="info">
   The `fs-bridge` is used internally by the `@ucdjs/client` and `@ucdjs/cli` to seamlessly switch between fetching UCD files locally or over the network without changing the core application logic.
