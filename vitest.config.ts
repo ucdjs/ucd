@@ -7,6 +7,20 @@ import { normalize } from "node:path";
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
 
+function getNestedProjects(config: unknown): TestProjectConfiguration[] | null {
+  if (!config || typeof config !== "object") {
+    return null;
+  }
+
+  const testConfig = "test" in config ? config.test : undefined;
+
+  return testConfig
+    && typeof testConfig === "object"
+    && Array.isArray(testConfig.projects)
+    ? testConfig.projects as TestProjectConfiguration[]
+    : null;
+}
+
 async function createProjects(root: string): Promise<TestProjectConfiguration[]> {
   try {
     const rootDir = fileURLToPath(new URL(`./${root}`, import.meta.url));
@@ -29,6 +43,11 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
 
         try {
           const customConfig = await import(safePath).then((m) => m.default);
+          const nestedProjects = getNestedProjects(customConfig);
+
+          if (nestedProjects) {
+            return nestedProjects;
+          }
 
           return mergeConfig(base, customConfig);
         } catch (err) {
@@ -40,7 +59,7 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
       return base;
     });
 
-    return Promise.all(promises);
+    return (await Promise.all(promises)).flat();
   } catch (err) {
     console.warn(`[vitest] Failed to scan ${root} directory:`, err);
     return [];

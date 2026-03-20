@@ -79,6 +79,9 @@
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:lint",
+    "@testing-library/jest-dom": "catalog:test",
+    "@testing-library/react": "catalog:test",
+    "@testing-library/user-event": "catalog:test",
     "@luxass/eslint-config": "catalog:lint",
     "@rolldown/plugin-babel": "catalog:build",
     "@tailwindcss/vite": "catalog:build",
@@ -106,6 +109,7 @@
     "vite": "catalog:build",
     "vite-plugin-inspect": "catalog:build",
     "vite-tsconfig-paths": "catalog:build",
+    "jsdom": "catalog:test",
     "vitest": "catalog:test",
     "vitest-testdirs": "catalog:test"
   },
