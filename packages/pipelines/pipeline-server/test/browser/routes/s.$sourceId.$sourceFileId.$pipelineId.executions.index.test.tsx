@@ -137,4 +137,85 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
     );
     expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/executions");
   });
+
+  it("renders the empty executions state when there are no runs", async () => {
+    mockFetch([
+      ["GET", "/api/config", () => {
+        return HttpResponse.json({
+          workspaceId: "workspace-123",
+          version: "16.0.0",
+        });
+      }],
+      ["GET", "/api/sources", () => {
+        return HttpResponse.json([
+          {
+            id: "local",
+            type: "local",
+            label: "Local Source",
+            fileCount: 1,
+            pipelineCount: 1,
+            errors: [],
+          },
+        ]);
+      }],
+      ["GET", "/api/sources/local", () => {
+        return HttpResponse.json({
+          id: "local",
+          type: "local",
+          label: "Local Source",
+          errors: [],
+          files: [
+            {
+              id: "alpha",
+              path: "src/alpha.ts",
+              label: "Alpha file",
+              pipelines: [
+                {
+                  id: "main-pipeline",
+                  name: "Main pipeline",
+                  description: "Build and publish",
+                  versions: ["16.0.0", "15.1.0"],
+                  routeCount: 8,
+                  sourceCount: 3,
+                  sourceId: "local",
+                },
+              ],
+            },
+          ],
+        });
+      }],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => {
+        return HttpResponse.json({
+          pipeline: {
+            id: "main-pipeline",
+            name: "Main pipeline",
+            description: "Build and publish",
+            include: undefined,
+            versions: ["16.0.0", "15.1.0"],
+            routeCount: 0,
+            sourceCount: 1,
+            routes: [],
+            sources: [{ id: "local" }],
+          },
+        });
+      }],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => {
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit: 50,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
+    ]);
+
+    await renderFileRoute("/s/local/alpha/main-pipeline/executions");
+
+    expect(await screen.findByText("0 total runs")).toBeInTheDocument();
+    expect(screen.getByText("No executions yet")).toBeInTheDocument();
+    expect(screen.getByText("Execute the pipeline to see results here")).toBeInTheDocument();
+  });
 });

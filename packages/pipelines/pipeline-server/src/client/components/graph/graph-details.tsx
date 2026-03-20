@@ -68,7 +68,10 @@ export function PipelineGraphDetails({
   const nodeConfig = getGraphNodeConfig(node.nodeType);
 
   return (
-    <div className="flex h-full w-80 shrink-0 flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-sm">
+    <div
+      data-testid="pipeline-graph-details"
+      className="flex h-full w-80 shrink-0 flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-sm"
+    >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <span className={cn("rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.05em]", getNodeBadgeClassName(node.nodeType))}>
           {nodeConfig.label}

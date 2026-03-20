@@ -53,6 +53,10 @@ vi.mock("react-dom", async () => {
 });
 
 vi.mock("#components/app/pipeline-command-palette", () => {
+  if ((globalThis as { __useRealPipelineCommandPalette__?: boolean }).__useRealPipelineCommandPalette__) {
+    return vi.importActual<typeof import("#components/app/pipeline-command-palette")>("#components/app/pipeline-command-palette");
+  }
+
   return {
     PipelineCommandPalette: () => null,
   };
@@ -103,6 +107,10 @@ if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {
       },
     }),
   });
+}
+
+if (typeof Element !== "undefined" && typeof Element.prototype.scrollIntoView !== "function") {
+  Element.prototype.scrollIntoView = () => {};
 }
 
 // @ts-expect-error yes
