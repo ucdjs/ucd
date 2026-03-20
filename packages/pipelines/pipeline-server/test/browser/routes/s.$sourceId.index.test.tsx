@@ -33,7 +33,6 @@ vi.mock("@tanstack/react-router-devtools", () => {
   };
 });
 
-// eslint-disable-next-line test/prefer-lowercase-title
 describe("file-based route /s/$sourceId", () => {
   it("renders the source route through the generated route tree", async () => {
     mockFetch([
@@ -98,7 +97,6 @@ describe("file-based route /s/$sourceId", () => {
     ]);
 
     const { history } = await renderFileRoute("/s/local");
-
     expect(await screen.findByText("Alpha file")).toBeInTheDocument();
     expect(screen.getByText("1 source issue")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Alpha file/i })).toHaveAttribute("href", "/s/local/alpha");

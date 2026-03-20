@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { render } from "@testing-library/react";
 import {
   createMemoryHistory,
   createRootRoute,
@@ -8,6 +7,7 @@ import {
   Outlet,
   RouterProvider,
 } from "@tanstack/react-router";
+import { render } from "@testing-library/react";
 
 interface RenderWithQuickActionsRouterOptions {
   initialPath?: string;
