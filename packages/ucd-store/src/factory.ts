@@ -43,7 +43,7 @@ export interface HTTPUCDStoreOptions<BackendOptionsSchema extends z.ZodType>
 /**
  * Creates a UCD store backed by the HTTP filesystem backend.
  * @template BackendOptionsSchema extends z.ZodType
- * @param {HTTPUCDStoreOptions<BridgeOptionsSchema>} [options] Store options; provide baseUrl to override the default.
+ * @param {HTTPUCDStoreOptions<BackendOptionsSchema>} [options] Store options; provide baseUrl to override the default.
  * @returns {Promise<UCDStore>} A ready-to-use store instance.
  * @throws {Error} If the HTTP filesystem backend could not be loaded.
  */

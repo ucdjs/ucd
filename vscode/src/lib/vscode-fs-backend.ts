@@ -42,7 +42,7 @@ export const vscodeFSBackend = defineBackend({
     description: "A filesystem backend built on top of VS Code's workspace.fs API.",
   },
   optionsSchema: z.object({
-    basePath: z.string(),
+    basePath: z.string().trim().min(1, "basePath is required"),
   }),
   setup(options) {
     const baseUri = Uri.file(options.basePath);

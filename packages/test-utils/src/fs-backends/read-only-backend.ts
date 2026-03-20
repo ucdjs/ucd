@@ -19,28 +19,32 @@ export function createReadOnlyBackend(
       name: "Read-Only Test Backend",
       description: "A read-only backend for tests.",
     },
-    setup: () => ({
-      read: options.read ?? vi.fn().mockResolvedValue("content"),
-      readBytes: options.readBytes ?? vi.fn().mockResolvedValue(new TextEncoder().encode("content")),
-      exists: options.exists ?? vi.fn().mockResolvedValue(true),
-      stat: options.stat ?? vi.fn().mockImplementation(async (path: string) => {
-        if (isDirectoryPath(path)) {
+    setup: () => {
+      const existsFn = options.exists ?? vi.fn().mockResolvedValue(true);
+
+      return {
+        read: options.read ?? vi.fn().mockResolvedValue("content"),
+        readBytes: options.readBytes ?? vi.fn().mockResolvedValue(new TextEncoder().encode("content")),
+        exists: existsFn,
+        stat: options.stat ?? vi.fn().mockImplementation(async (path: string) => {
+          if (isDirectoryPath(path)) {
+            return {
+              type: "directory",
+              size: 0,
+            };
+          }
+
+          if ((await existsFn(path)) === false) {
+            throw new BackendFileNotFound(path);
+          }
+
           return {
-            type: "directory",
+            type: "file",
             size: 0,
           };
-        }
-
-        if ((await (options.exists ?? vi.fn().mockResolvedValue(true))(path)) === false) {
-          throw new BackendFileNotFound(path);
-        }
-
-        return {
-          type: "file",
-          size: 0,
-        };
-      }),
-      list: options.list ?? vi.fn().mockResolvedValue([]),
-    }),
+        }),
+        list: options.list ?? vi.fn().mockResolvedValue([]),
+      };
+    },
   })();
 }
