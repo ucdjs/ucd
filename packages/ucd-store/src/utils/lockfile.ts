@@ -1,6 +1,6 @@
 import type { InternalUCDStoreContext } from "../types";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { assertCapability } from "@ucdjs/fs-bridge";
+import { assertFeature } from "@ucdjs/fs-backend";
 import { writeLockfile } from "@ucdjs/lockfile";
 import { extractFilterPatterns } from "../context";
 import { UCDStoreGenericError } from "../errors";
@@ -9,7 +9,7 @@ const debug = createDebugger("ucdjs:ucd-store:init-lockfile");
 
 /**
  * Initializes a new store lockfile by validating versions against the API
- * and creating the initial lockfile (if the bridge supports writing).
+ * and creating the initial lockfile (if the backend supports writing).
  *
  * This only creates the lockfile structure - it does NOT download any files.
  * Use `mirror()` to download the actual Unicode data files.
@@ -42,17 +42,17 @@ export async function initLockfile(context: InternalUCDStoreContext): Promise<vo
 
   debug?.("✓ All requested versions are available");
 
-  // Check if store root exists using "." - fs-bridge will resolve it to basePath
+  // Check if store root exists using "." - the backend resolves it relative to basePath
   const storeRootExists = await fs.exists(".");
   if (!storeRootExists) {
     debug?.("Creating store root directory");
-    assertCapability(fs, "mkdir");
+    assertFeature(fs, "mkdir");
     await fs.mkdir(".");
   } else {
     debug?.("Base directory already exists");
   }
 
-  // Only write lockfile if the bridge supports it
+  // Only write lockfile if the backend supports it
   if (context.lockfile.supports && context.lockfile.path) {
     debug?.(`Writing lockfile to: ${context.lockfile.path}`);
     const filters = filter ? extractFilterPatterns(filter) : undefined;
@@ -77,7 +77,7 @@ export async function initLockfile(context: InternalUCDStoreContext): Promise<vo
     });
     debug?.("✓ Lockfile written");
   } else {
-    debug?.("Skipping lockfile write - bridge does not support writing");
+    debug?.("Skipping lockfile write - backend does not support writing");
   }
 
   debug?.("✓ Lockfile initialization completed successfully");

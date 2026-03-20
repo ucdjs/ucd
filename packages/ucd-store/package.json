@@ -47,7 +47,7 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
