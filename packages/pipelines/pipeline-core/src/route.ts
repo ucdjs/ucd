@@ -61,7 +61,6 @@ export interface PipelineRouteDefinition<
   parser: ParserFn;
   transforms?: TTransforms;
   resolver: PipelineRouteResolver<TDepends, TEmits, TTransforms, TOutput>;
-  out?: RouteOutputDefinition;
   outputs?: RouteOutputDefinition[];
   cache?: boolean;
 }

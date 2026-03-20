@@ -120,14 +120,14 @@ describe("definePipelineRoute", () => {
       filter: () => true,
       parser: mockParser,
       resolver: async () => [],
-      out: {
+      outputs: [{
         dir: "custom-dir",
         fileName: (pj) => `${pj.property}.json`,
-      },
+      }],
     });
 
-    expect(route.out?.dir).toBe("custom-dir");
-    expect(typeof route.out?.fileName).toBe("function");
+    expect(route.outputs?.[0]?.dir).toBe("custom-dir");
+    expect(typeof route.outputs?.[0]?.fileName).toBe("function");
   });
 
   it("should define a route with cache option", () => {
@@ -166,7 +166,7 @@ describe("definePipelineRoute", () => {
       parser: mockParser,
       transforms: [transform] as const,
       resolver: async () => [],
-      out: { dir: "output" },
+      outputs: [{ dir: "output" }],
       cache: true,
     });
 
@@ -174,7 +174,7 @@ describe("definePipelineRoute", () => {
     expect(route.depends).toHaveLength(1);
     expect(route.emits).toBe(emits);
     expect(route.transforms).toHaveLength(1);
-    expect(route.out?.dir).toBe("output");
+    expect(route.outputs?.[0]?.dir).toBe("output");
     expect(route.cache).toBe(true);
   });
 });

@@ -25,9 +25,9 @@ export const unicodeDataRoute = definePipelineRoute({
     addMetadata,
   ],
   resolver: propertyJsonResolver,
-  out: {
+  outputs: [{
     fileName: (pj: PropertyJson) => `properties/${pj.property.toLowerCase().replace(UNDERSCORE_RE, "-")}.json`,
-  },
+  }],
 });
 
 export const blocksRoute = definePipelineRoute({
