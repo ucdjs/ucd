@@ -16,10 +16,17 @@ import type {
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError } from "@ucdjs/path-utils";
-import { BackendError, BackendUnsupportedOperation } from "./errors";
+import { BackendError, BackendSetupError, BackendUnsupportedOperation } from "./errors";
 
 const debug = createDebugger("ucdjs:fs-backend:utils");
 type BackendOperationMap = FileSystemBackendOperations & FileSystemBackendMutableOperations;
+const REQUIRED_OPERATIONS = new Set<keyof FileSystemBackendOperations>([
+  "read",
+  "readBytes",
+  "list",
+  "exists",
+  "stat",
+]);
 
 export function inferFeaturesFromOperations(
   ops: FileSystemBackendMutableOperations,
@@ -183,6 +190,10 @@ export function createOperationWrapper<T extends keyof BackendOperationMap>(
   const operation = operations[operationName];
 
   if (operation == null || typeof operation !== "function") {
+    if (REQUIRED_OPERATIONS.has(operationName as keyof FileSystemBackendOperations)) {
+      throw new BackendSetupError(`Backend is missing required operation: ${String(operationName)}`);
+    }
+
     const unsupportedOperation = async (...args: unknown[]): Promise<never> => {
       const error = new BackendUnsupportedOperation(operationName as FileSystemBackendFeature);
 
