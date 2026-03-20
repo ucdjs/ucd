@@ -1,7 +1,7 @@
 /// <reference types="../../../test-utils/src/matchers/types.d.ts" />
 
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createMemoryMockFS } from "#test-utils/fs-backends";
 import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { describe, expect, it } from "vitest";

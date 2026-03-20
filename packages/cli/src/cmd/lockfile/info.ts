@@ -2,7 +2,7 @@ import type { CLIArguments } from "../../cli-utils";
 import type { CLILockfileCmdOptions } from "./root";
 import { resolve } from "node:path";
 import process from "node:process";
-import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { printHelp } from "../../cli-utils";
 import {
@@ -41,7 +41,7 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
   const storePath = storeDir ? resolve(storeDir) : process.cwd();
 
   try {
-    const fs = NodeFileSystemBridge({ basePath: storePath });
+    const fs = NodeFileSystemBackend({ basePath: storePath });
     const lockfilePath = getLockfilePath();
 
     let lockfile;

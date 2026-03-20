@@ -1,6 +1,6 @@
 import type { PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { ExpectedFile } from "@ucdjs/schemas";
 import type {
   InternalUCDStoreContext,
@@ -14,7 +14,7 @@ const debug = createDebugger("ucdjs:ucd-store:context");
 interface CreateInternalContextOptions {
   client: UCDClient;
   filter: PathFilter;
-  fs: FileSystemBridge;
+  fs: FileSystemBackend;
 
   lockfile: {
     supports: boolean;

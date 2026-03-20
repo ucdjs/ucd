@@ -47,7 +47,7 @@
     "@luxass/utils": "catalog:runtime",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/fs-backend": "workspace:*",
     "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",

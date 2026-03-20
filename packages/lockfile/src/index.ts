@@ -18,7 +18,6 @@ export {
   validateLockfile,
   writeLockfile,
 } from "./lockfile";
-
 export type { ValidateLockfileResult } from "./lockfile";
 
 export {

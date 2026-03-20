@@ -1,6 +1,6 @@
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { Snapshot } from "@ucdjs/schemas";
-import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
+import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
 import { LockfileInvalidError } from "./errors";
@@ -38,28 +38,28 @@ function parseSnapshotFromContent(content: string, snapshotPath: string): Snapsh
 /**
  * Reads and validates a snapshot for a specific version.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {FileSystemBackend} fs - Filesystem backend to use for reading
  * @param {string} version - The Unicode version
  * @returns {Promise<Snapshot>} A promise that resolves to the validated snapshot
  * @throws {LockfileInvalidError} When the snapshot is invalid or missing
  */
 export async function readSnapshot(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   version: string,
 ): Promise<Snapshot> {
   const snapshotPath = getSnapshotPath(version);
   debug?.("Reading snapshot from:", snapshotPath);
 
-  const snapshotData = await tryOr({
-    try: fs.read(snapshotPath),
-    err: (err) => {
-      debug?.("Failed to read snapshot:", err);
-      throw new LockfileInvalidError({
-        lockfilePath: snapshotPath,
-        message: "snapshot could not be read",
-      });
-    },
-  });
+  let snapshotData: string;
+  try {
+    snapshotData = await fs.read(snapshotPath);
+  } catch (err) {
+    debug?.("Failed to read snapshot:", err);
+    throw new LockfileInvalidError({
+      lockfilePath: snapshotPath,
+      message: "snapshot could not be read",
+    });
+  }
 
   if (!snapshotData) {
     throw new LockfileInvalidError({
@@ -74,20 +74,20 @@ export async function readSnapshot(
 
 /**
  * Writes a snapshot for a specific version to the filesystem.
- * Only works if the filesystem bridge supports write operations.
+ * Only works if the filesystem backend supports write operations.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
+ * @param {FileSystemBackend} fs - Filesystem backend to use for writing
  * @param {string} version - The Unicode version
  * @param {Snapshot} snapshot - The snapshot data to write
  * @returns {Promise<void>} A promise that resolves when the snapshot has been written
  */
 export async function writeSnapshot(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   version: string,
   snapshot: Snapshot,
 ): Promise<void> {
   if (!canUseLockfile(fs)) {
-    debug?.("Filesystem bridge does not support write operations, skipping snapshot write");
+    debug?.("Filesystem does not support write operations, skipping snapshot write");
     return;
   }
 
@@ -110,12 +110,12 @@ export async function writeSnapshot(
 /**
  * Reads a snapshot or returns undefined if it doesn't exist or is invalid.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {FileSystemBackend} fs - Filesystem backend to use for reading
  * @param {string} version - The Unicode version
  * @returns {Promise<Snapshot | undefined>} A promise that resolves to the snapshot or undefined
  */
 export async function readSnapshotOrUndefined(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   version: string,
 ): Promise<Snapshot | undefined> {
   return readSnapshot(fs, version).catch((err) => {

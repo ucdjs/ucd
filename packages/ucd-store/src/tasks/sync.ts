@@ -13,7 +13,7 @@ import {
   createDebugger,
   wrapTry,
 } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
+import { hasFeature } from "@ucdjs/fs-backend";
 import {
   readLockfileOrUndefined,
   readSnapshotOrUndefined,
@@ -112,7 +112,7 @@ async function _sync(
   return wrapTry(async () => {
     const startTime = Date.now();
 
-    if (!hasCapability(this.fs, ["mkdir", "write"])) {
+    if (!hasFeature(this.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
     }
 
@@ -336,7 +336,7 @@ async function _sync(
           await Promise.all(orphanedFiles.map((filePath) => limit(async () => {
             try {
               if (await this.fs.exists(filePath)) {
-                await this.fs.rm!(filePath);
+                await this.fs.remove(filePath);
                 removedFiles.get(version)!.push({
                   name: patheBasename(filePath),
                   filePath: prependLeadingSlash(filePath),

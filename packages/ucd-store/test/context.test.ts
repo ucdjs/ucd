@@ -1,5 +1,5 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createMemoryMockFS } from "#test-utils/fs-backends";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig, getDefaultUCDEndpointConfig } from "@ucdjs/client";
