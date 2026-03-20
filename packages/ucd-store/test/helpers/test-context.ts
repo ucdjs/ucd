@@ -1,10 +1,10 @@
 import type { PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
+import type { BackendFactory, FileSystemBackend } from "@ucdjs/fs-backend";
 import type { LockfileInput } from "@ucdjs/schemas";
 import type z from "zod";
 import type { InternalUCDStoreContext } from "../../src/types";
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createMemoryMockFS } from "#test-utils/fs-backends";
 import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig, getDefaultUCDEndpointConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -58,30 +58,30 @@ export interface CreateTestContextOptions {
   baseUrl?: string;
 
   /**
-   * Custom filesystem bridge (if not provided, will create default)
+   * Custom filesystem backend (if not provided, will create default)
    */
-  fs?: FileSystemBridge;
+  fs?: FileSystemBackend;
 }
 
 export interface TestContext {
   /** Internal context for testing store internals directly */
   context: InternalUCDStoreContext;
-  /** The instantiated filesystem bridge */
-  fs: FileSystemBridge;
+  /** The instantiated filesystem backend */
+  fs: FileSystemBackend;
   /** A factory that returns the same fs instance - for use with createUCDStore */
-  fsFactory: FileSystemBridgeFactory<z.ZodUndefined>;
+  fsFactory: BackendFactory<z.ZodUndefined>;
   client: UCDClient;
   basePath: string;
   lockfilePath: string;
 }
 
 /**
- * Wraps an existing FileSystemBridge into a factory function.
+ * Wraps an existing filesystem backend into a factory function.
  * Used by tests that need to call `createUCDStore()` which expects a factory.
  * @internal
  */
-function wrapBridgeAsFactory(bridge: FileSystemBridge): FileSystemBridgeFactory<z.ZodUndefined> {
-  return () => bridge;
+function wrapBackendAsFactory(backend: FileSystemBackend): BackendFactory<z.ZodUndefined> {
+  return () => backend;
 }
 
 /**
@@ -142,7 +142,7 @@ export async function createTestContext(
   return {
     context,
     fs,
-    fsFactory: wrapBridgeAsFactory(fs),
+    fsFactory: wrapBackendAsFactory(fs),
     client,
     basePath,
     lockfilePath,

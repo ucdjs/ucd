@@ -1,5 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { FSEntry } from "@ucdjs/fs-bridge";
+import type { BackendEntry } from "@ucdjs/fs-backend";
 import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
@@ -23,9 +23,9 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
 }
 
 /**
- * Converts FSEntry array to UnicodeFileTreeNode array by adding lastModified field.
+ * Converts BackendEntry array to UnicodeFileTreeNode array by adding lastModified field.
  */
-function fsEntryToFileTreeNode(entries: FSEntry[]): UnicodeFileTreeNode[] {
+function fsEntryToFileTreeNode(entries: BackendEntry[]): UnicodeFileTreeNode[] {
   return entries.map((entry): UnicodeFileTreeNode => {
     if (entry.type === "directory") {
       return {
@@ -50,7 +50,7 @@ function fsEntryToFileTreeNode(entries: FSEntry[]): UnicodeFileTreeNode[] {
  * By default, only returns the tree structure for files actually present in the store.
  * Applies global filters and optional method-specific filters to the tree.
  *
- * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, filesystem backend, and configuration
  * @param {string} version - The Unicode version to fetch the file tree for
  * @param {GetFileTreeOptions} [options] - Optional filters and API fallback behavior
  * @returns {Promise<OperationResult<UnicodeFileTreeNode[], StoreError>>} Operation result with filtered file tree or error
@@ -75,8 +75,8 @@ async function _getFileTree(
 
     if (dirExists) {
       try {
-        const entries = await this.fs.listdir(localPath, true);
-        // Convert FSEntry to UnicodeFileTreeNode and normalize for filtering
+        const entries = await this.fs.list(localPath, { recursive: true });
+        // Convert BackendEntry to UnicodeFileTreeNode and normalize for filtering
         const convertedEntries = fsEntryToFileTreeNode(entries);
         const normalizedEntries = normalizeTreeForFiltering(version, convertedEntries);
 

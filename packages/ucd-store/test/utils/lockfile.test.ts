@@ -2,7 +2,7 @@ import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
+import { defineBackend } from "@ucdjs/fs-backend";
 import { readLockfile } from "@ucdjs/lockfile";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
@@ -267,20 +267,29 @@ describe("initLockfile", () => {
 
     it("should throw error when filesystem lacks mkdir capability", async () => {
       // Arrange
-      const noMkdirFS = defineFileSystemBridge({
+      const noMkdirFS = defineBackend({
         meta: {
-          name: "No-Mkdir Bridge",
-          description: "Bridge without mkdir capability",
+          name: "No-Mkdir Backend",
+          description: "Backend without mkdir capability",
         },
         setup() {
           return {
             async read() {
               return "";
             },
+            async readBytes() {
+              return new TextEncoder().encode("");
+            },
             async exists() {
               return false;
             },
-            async listdir() {
+            async stat() {
+              return {
+                type: "directory" as const,
+                size: 0,
+              };
+            },
+            async list() {
               return [];
             },
             async write() {},
@@ -301,7 +310,7 @@ describe("initLockfile", () => {
       });
 
       // Act & Assert
-      await expect(initLockfile(context)).rejects.toThrow("File system bridge does not support the 'mkdir' capability.");
+      await expect(initLockfile(context)).rejects.toThrow("File system backend does not support the 'mkdir' feature.");
     });
 
     it("should skip lockfile write when bridge does not support writing", async () => {

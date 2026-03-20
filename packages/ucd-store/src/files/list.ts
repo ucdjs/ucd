@@ -1,5 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { FSEntry } from "@ucdjs/fs-bridge";
+import type { BackendEntry } from "@ucdjs/fs-backend";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { trimLeadingSlash } from "@luxass/utils";
@@ -33,8 +33,8 @@ export interface ListFilesOptions extends SharedOperationOptions {
  */
 function buildPathMapping(
   version: string,
-  originalEntries: FSEntry[],
-  normalizedEntries: FSEntry[],
+  originalEntries: BackendEntry[],
+  normalizedEntries: BackendEntry[],
 ): Map<string, string> {
   const originalPaths = flattenFilePaths(originalEntries);
   const normalizedPaths = flattenFilePaths(normalizedEntries);
@@ -57,8 +57,8 @@ function buildPathMapping(
 
 /**
  * Lists all file paths for a Unicode version. The operation prefers the
- * configured file system bridge and can optionally fall back to the API when
- * the bridge path is missing or cannot be read.
+ * configured filesystem backend and can optionally fall back to the API when
+ * the backend path is missing or cannot be read.
  *
  * Returns full paths (e.g., "/16.0.0/UnicodeData.txt"), not just filenames.
  *
@@ -89,7 +89,7 @@ async function _listFiles(
 
     if (dirExists) {
       try {
-        const entries = await this.fs.listdir(filesPath, true);
+        const entries = await this.fs.list(filesPath, { recursive: true });
 
         debug?.("Listed entries from store for version:", version);
 

@@ -1,4 +1,4 @@
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createMemoryMockFS } from "#test-utils/fs-backends";
 import { describe, expect, it } from "vitest";
 import { LockfileInvalidError } from "../src/errors";
 import { parseSnapshot, parseSnapshotOrUndefined, readSnapshot, readSnapshotOrUndefined, writeSnapshot } from "../src/snapshot";

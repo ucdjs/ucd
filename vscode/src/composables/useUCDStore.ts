@@ -3,19 +3,25 @@ import type { Ref } from "reactive-vscode";
 import { createHTTPUCDStore, createUCDStore } from "@ucdjs/ucd-store";
 import { defineService, ref, watch } from "reactive-vscode";
 import { config } from "../config";
-import { vscodeFSBridge } from "../lib/vscode-fs-bridge";
+import { vscodeFSBackend } from "../lib/vscode-fs-backend";
 import { logger } from "../logger";
 
 export const useUCDStore = defineService(() => {
   const store = ref<UCDStore | null>(null);
 
   const createStoreFromConfig = async (localDataFilesStore: string | null): Promise<UCDStore> => {
+    const normalizedLocalStorePath = localDataFilesStore?.trim() || "";
+    const backendBaseUrl = config["store-url"]?.trim() || undefined;
     const globalFilters = config["store-filters"];
-    logger.info("Creating UCD store with config:", JSON.stringify({ localDataFilesStore, globalFilters }));
+    logger.info("Creating UCD store with config:", JSON.stringify({
+      localDataFilesStore: normalizedLocalStorePath,
+      globalFilters,
+      backendBaseUrl,
+    }));
 
-    if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
+    if (normalizedLocalStorePath === "") {
       return createHTTPUCDStore({
-        bridgeBaseUrl: config["store-url"],
+        backendBaseUrl,
         baseUrl: config["api-base-url"],
         globalFilters,
       });
@@ -24,9 +30,9 @@ export const useUCDStore = defineService(() => {
     return createUCDStore({
       baseUrl: config["api-base-url"],
       globalFilters,
-      fs: vscodeFSBridge,
+      fs: vscodeFSBackend,
       fsOptions: {
-        basePath: localDataFilesStore,
+        basePath: normalizedLocalStorePath,
       },
     });
   };

@@ -1,6 +1,6 @@
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { Lockfile, LockfileInput } from "@ucdjs/schemas";
-import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
+import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
 import { LockfileSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
 import { LockfileInvalidError } from "./errors";
@@ -61,13 +61,13 @@ export function validateLockfile(data: unknown): ValidateLockfileResult {
 }
 
 /**
- * Checks if the filesystem bridge supports lockfile operations (requires write & mkdir capability)
+ * Checks if the filesystem backend supports lockfile operations (requires write & mkdir features)
  *
- * @param {FileSystemBridge} fs - The filesystem bridge to check
- * @returns {boolean} True if the bridge supports lockfile operations
+ * @param {FileSystemBackend} fs - The filesystem backend to check
+ * @returns {boolean} True if the filesystem supports lockfile operations
  */
-export function canUseLockfile(fs: FileSystemBridge): fs is FileSystemBridge & Required<Pick<FileSystemBridge, "write" | "mkdir">> {
-  return !!fs.optionalCapabilities.write && !!fs.optionalCapabilities.mkdir;
+export function canUseLockfile(fs: FileSystemBackend): boolean {
+  return fs.features.has("write") && fs.features.has("mkdir");
 }
 
 /**
@@ -99,27 +99,27 @@ function parseLockfileFromContent(content: string, lockfilePath: string): Lockfi
 /**
  * Reads and validates a lockfile from the filesystem.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {FileSystemBackend} fs - Filesystem backend to use for reading
  * @param {string} lockfilePath - Path to the lockfile
  * @returns {Promise<Lockfile>} A promise that resolves to the validated lockfile
  * @throws {LockfileInvalidError} When the lockfile is invalid or missing
  */
 export async function readLockfile(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   lockfilePath: string,
 ): Promise<Lockfile> {
   debug?.("Reading lockfile from:", lockfilePath);
 
-  const lockfileData = await tryOr({
-    try: fs.read(lockfilePath),
-    err: (err) => {
-      debug?.("Failed to read lockfile:", err);
-      throw new LockfileInvalidError({
-        lockfilePath,
-        message: "lockfile could not be read",
-      });
-    },
-  });
+  let lockfileData: string;
+  try {
+    lockfileData = await fs.read(lockfilePath);
+  } catch (err) {
+    debug?.("Failed to read lockfile:", err);
+    throw new LockfileInvalidError({
+      lockfilePath,
+      message: "lockfile could not be read",
+    });
+  }
 
   if (!lockfileData) {
     throw new LockfileInvalidError({
@@ -134,21 +134,21 @@ export async function readLockfile(
 
 /**
  * Writes a lockfile to the filesystem.
- * If the filesystem bridge does not support write operations, the function
+ * If the filesystem backend does not support write operations, the function
  * will skip writing the lockfile and return without throwing.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
+ * @param {FileSystemBackend} fs - Filesystem backend to use for writing
  * @param {string} lockfilePath - Path where the lockfile should be written
  * @param {LockfileInput} lockfile - The lockfile data to write
  * @returns {Promise<void>} A promise that resolves when the lockfile has been written
  */
 export async function writeLockfile(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   lockfilePath: string,
   lockfile: LockfileInput,
 ): Promise<void> {
   if (!canUseLockfile(fs)) {
-    debug?.("Filesystem bridge does not support write operations, skipping lockfile write");
+    debug?.("Filesystem does not support write operations, skipping lockfile write");
     return;
   }
 
@@ -172,12 +172,12 @@ export async function writeLockfile(
 /**
  * Reads a lockfile or returns undefined if it doesn't exist or is invalid.
  *
- * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {FileSystemBackend} fs - Filesystem backend to use for reading
  * @param {string} lockfilePath - Path to the lockfile
  * @returns {Promise<Lockfile | undefined>} A promise that resolves to the lockfile or undefined
  */
 export async function readLockfileOrUndefined(
-  fs: FileSystemBridge,
+  fs: FileSystemBackend,
   lockfilePath: string,
 ): Promise<Lockfile | undefined> {
   return readLockfile(fs, lockfilePath).catch(() => {
