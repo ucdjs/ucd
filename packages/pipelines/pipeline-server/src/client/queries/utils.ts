@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor/shared";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 
 export function isNotFoundError(error: unknown): error is Error & { status: number } {
   return error instanceof Error

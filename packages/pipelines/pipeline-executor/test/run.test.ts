@@ -5,7 +5,7 @@ import {
   buildRoutesByLayer,
   createSummary,
   resolveVersions,
-} from "../src/run";
+} from "../src/run/setup";
 import { createTestSource, mockParser } from "./helpers";
 
 describe("run helpers", () => {

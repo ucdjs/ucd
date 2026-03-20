@@ -1,12 +1,12 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
   AnyPipelineDefinition,
+  AnyPipelineRouteDefinition,
   FileContext,
   NormalizedRouteOutputDefinition,
   PipelineError,
   PipelineEventInput,
   PipelineLogger,
-  PipelineRouteDefinition,
 } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { EventEmitter } from "./internal/events";
@@ -24,7 +24,6 @@ import type {
   PipelineExecutorRunOptions,
   PipelineSummary,
 } from "./types";
-import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
 import { emitRuntimeEvent } from "./internal/events";
 import { createPipelineLogger } from "./internal/logger";
 import { runGlobalArtifacts, traceRouteArtifacts } from "./run/artifacts";
@@ -33,12 +32,11 @@ import { buildExecutionGraphFromTraces } from "./run/graph";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
 import { createProcessingQueue } from "./run/processing-queue";
 import { processFallback, processRoute, recordEmittedArtifacts } from "./run/route-runtime";
+import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
 import { createSourceAdapter, isSourceFileContext } from "./run/source-files";
-import {
-  buildOutputManifestFromTraces,
-} from "./run/traces";
+import { buildOutputManifestFromTraces } from "./run/traces";
 
-type RouteDef = PipelineRouteDefinition<any, any, any, any, any>;
+type RouteDef = AnyPipelineRouteDefinition;
 
 export interface RunPipelineOptions {
   pipeline: AnyPipelineDefinition;
@@ -112,54 +110,7 @@ export async function run(options: RunPipelineOptions): Promise<PipelineExecutio
   return finalizeResult(context, startTime);
 }
 
-export function resolveVersions(
-  pipeline: AnyPipelineDefinition,
-  runOptions: PipelineExecutorRunOptions = {},
-): string[] {
-  return runOptions.versions ?? pipeline.versions;
-}
-
-export function buildRoutesByLayer(
-  pipeline: AnyPipelineDefinition,
-): RouteDef[][] {
-  const routesById = new Map<string, RouteDef>(
-    pipeline.routes.map((route: RouteDef) => [route.id, route] as const),
-  );
-
-  return getExecutionLayers(pipeline.dag).map((layer) => {
-    return layer.reduce<RouteDef[]>((routes, id) => {
-      const route = routesById.get(id);
-      if (route) {
-        routes.push(route);
-      }
-      return routes;
-    }, []);
-  });
-}
-
-export function buildRouteOutputs(
-  pipeline: AnyPipelineDefinition,
-): Map<string, readonly NormalizedRouteOutputDefinition[]> {
-  return new Map(
-    pipeline.routes.map((route: RouteDef) => [route.id, normalizeRouteOutputs(route)] as const),
-  );
-}
-
-export function createSummary(versions: string[]): PipelineSummary {
-  return {
-    versions,
-    totalRoutes: 0,
-    cached: 0,
-    totalFiles: 0,
-    matchedFiles: 0,
-    skippedFiles: 0,
-    fallbackFiles: 0,
-    totalOutputs: 0,
-    durationMs: 0,
-  };
-}
-
-export function createRunContext(options: RunPipelineOptions): RunContext {
+function createRunContext(options: RunPipelineOptions): RunContext {
   const { pipeline, runOptions = {}, cacheStore, artifacts, events, traces, priorResults = [], runtime } = options;
   const versions = resolveVersions(pipeline, runOptions);
   const logger = createPipelineLogger(runtime);
