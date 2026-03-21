@@ -1,14 +1,11 @@
 import { useInspectData } from "#hooks/use-inspect-data";
-import { getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Link2, Package } from "lucide-react";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Link2, Package, Spline } from "lucide-react";
 import { useMemo } from "react";
 
-const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
-
 export function RouteDependenciesSection() {
-  const { selectedRoute } = useInspectData();
-  const navigate = InspectRoute.useNavigate();
+  const { selectedRoute, navigateToRoute } = useInspectData();
 
   const artifactDependencies = useMemo(() => {
     if (!selectedRoute) return [];
@@ -16,16 +13,6 @@ export function RouteDependenciesSection() {
   }, [selectedRoute]);
 
   if (!selectedRoute) return null;
-
-  function selectRoute(routeId: string) {
-    navigate({
-      search: (current) => ({
-        ...current,
-        route: routeId,
-        transform: undefined,
-      }),
-    });
-  }
 
   return (
     <>
@@ -39,19 +26,22 @@ export function RouteDependenciesSection() {
             ? selectedRoute.depends.map((dependency) => (
                 dependency.type === "route"
                   ? (
-                      <button
+                      <Button
                         key={`${dependency.type}-${dependency.routeId}`}
                         type="button"
-                        onClick={() => selectRoute(dependency.routeId)}
-                        className="inline-flex items-center rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigateToRoute(dependency.routeId)}
                       >
+                        <Spline className="h-3 w-3" />
                         route:
                         {" "}
                         {dependency.routeId}
-                      </button>
+                      </Button>
                     )
                   : (
                       <Badge key={`${dependency.type}-${dependency.routeId}-${dependency.artifactName}`} variant="outline">
+                        <Package className="h-3 w-3" />
                         artifact:
                         {" "}
                         {dependency.routeId}
@@ -83,6 +73,7 @@ export function RouteDependenciesSection() {
           {selectedRoute.emits.length
             ? selectedRoute.emits.map((emit) => (
                 <Badge key={emit.id} variant="secondary">
+                  <Package className="h-3 w-3" />
                   {emit.id}
                   {" "}
                   <span className="text-[10px] opacity-70">{emit.scope}</span>

@@ -1,28 +1,11 @@
 import { useInspectData } from "#hooks/use-inspect-data";
-import { getRouteApi } from "@tanstack/react-router";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { ArrowRight, FolderOutput } from "lucide-react";
 
-const InspectRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId/inspect");
-
 export function RouteOutputsSection() {
-  const { selectedRoute } = useInspectData();
-  const navigate = InspectRoute.useNavigate();
+  const { selectedRoute, navigateToOutput } = useInspectData();
 
   if (!selectedRoute) return null;
-
-  const routeId = selectedRoute.id;
-
-  function openOutput(outputIndex: number) {
-    navigate({
-      search: (current) => ({
-        ...current,
-        route: routeId,
-        transform: undefined,
-        output: `${routeId}:${outputIndex}`,
-        view: "outputs" as const,
-      }),
-    });
-  }
 
   return (
     <section className="space-y-3">
@@ -40,14 +23,15 @@ export function RouteOutputsSection() {
                       Output
                       {index + 1}
                     </div>
-                    <button
+                    <Button
                       type="button"
-                      onClick={() => openOutput(index)}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigateToOutput(selectedRoute.id, index)}
                     >
                       Open output
                       <ArrowRight className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </div>
                   <div className="mt-3 grid gap-3">
                     <div className="space-y-1">
