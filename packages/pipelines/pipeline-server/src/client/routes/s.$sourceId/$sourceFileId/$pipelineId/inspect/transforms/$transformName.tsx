@@ -1,7 +1,7 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { ArrowLeft, ArrowRight, Shuffle } from "lucide-react";
+import { ArrowRight, Shuffle } from "lucide-react";
 import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");

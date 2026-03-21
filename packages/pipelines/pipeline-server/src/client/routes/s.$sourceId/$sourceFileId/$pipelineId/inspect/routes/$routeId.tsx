@@ -3,7 +3,7 @@ import { DefinitionGraph } from "#components/inspect/definition-graph";
 import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { ArrowLeft, ArrowRight, FileOutput, FolderOutput, Link2, Package, Shuffle, Spline } from "lucide-react";
+import { ArrowRight, FileOutput, FolderOutput, Link2, Package, Shuffle, Spline } from "lucide-react";
 import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");

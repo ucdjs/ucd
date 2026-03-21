@@ -170,7 +170,11 @@ export function ExecutionTable({
                     {execution.summary
                       ? (
                           <div className="text-sm">
-                            <div>{execution.summary.totalRoutes} routes</div>
+                            <div>
+                              {execution.summary.totalRoutes}
+                              {" "}
+                              routes
+                            </div>
                             <div className="text-xs text-muted-foreground">
                               {execution.summary.cached}
                               {" "}

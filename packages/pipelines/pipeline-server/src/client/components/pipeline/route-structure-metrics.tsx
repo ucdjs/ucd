@@ -1,5 +1,5 @@
-import { cn } from "@ucdjs-internal/shared-ui";
 import type { LucideIcon } from "lucide-react";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { Boxes, FolderTree, Layers3, Route as RouteIcon } from "lucide-react";
 
 export interface RouteStructureMetricsProps {
