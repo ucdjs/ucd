@@ -1,4 +1,4 @@
-import type { SourceResponse, SourceSummary } from "#shared/schemas/source";
+import type { SourceResponse } from "#shared/schemas/source";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
   Dialog,
@@ -13,7 +13,7 @@ import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { AlertTriangle, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-type SourceIssue = SourceResponse["errors"][number] | SourceSummary["errors"][number];
+type SourceIssue = SourceResponse["errors"][number];
 
 interface SourceIssuesDialogProps {
   issues: SourceIssue[];
