@@ -1,4 +1,4 @@
-import { SourceFileList } from "#components/app/pipeline-sidebar-source-file-list";
+import { SourceFileList } from "#components/app/source-file-list";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";

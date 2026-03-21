@@ -35,7 +35,7 @@ function buildFileTree(files: SourceFileInfo[]): FileTreeNode[] {
       const name = segments[i]!;
       pathSoFar = pathSoFar ? `${pathSoFar}/${name}` : name;
       let folder = current.find(
-        (n): n is FileTreeNode & { type: "folder" } => n.type === "folder" && n.name === name,
+        (node): node is FileTreeNode & { type: "folder" } => node.type === "folder" && node.name === name,
       );
       if (!folder) {
         folder = { type: "folder", name, path: pathSoFar, children: [] };
@@ -52,16 +52,15 @@ function nodeKey(node: FileTreeNode): string {
   return node.type === "folder" ? `d:${node.path}` : node.file.id;
 }
 
-function fileName(file: SourceFileInfo): string {
+function getFileName(file: SourceFileInfo): string {
   const segments = file.path.split("/");
   return segments.at(-1) ?? file.label;
 }
 
 export function SourceFileList(props: SourceFileListProps) {
   const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId: props.sourceId }));
+  const tree = useMemo(() => buildFileTree(data?.files ?? []), [data?.files]);
 
-  const files = data?.files;
-  const tree = useMemo(() => buildFileTree(files ?? []), [files]);
   if (isLoading) {
     return (
       <SidebarMenu>
@@ -79,17 +78,17 @@ export function SourceFileList(props: SourceFileListProps) {
   );
 }
 
-function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) {
+function TreeNode({ node, ...props }: { node: FileTreeNode } & SourceFileListProps) {
   if (node.type === "folder") {
-    const stateKey = `${p.sourceId}:dir:${node.path}`;
-    const isOpen = p.expanded[stateKey] ?? true;
+    const stateKey = `${props.sourceId}:dir:${node.path}`;
+    const isOpen = props.expanded[stateKey] ?? true;
 
     return (
       <SidebarMenuItem>
         <SidebarMenuButton
           size="sm"
           className="gap-1.5 px-1 text-muted-foreground hover:text-foreground"
-          onClick={() => p.toggle(stateKey, isOpen)}
+          onClick={() => props.toggle(stateKey, isOpen)}
         >
           <ChevronRight className={`size-3 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
           <span className="truncate text-xs font-medium">{node.name}</span>
@@ -97,7 +96,7 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
         {isOpen && (
           <SidebarMenuSub>
             {node.children.map((child) => (
-              <TreeNode key={nodeKey(child)} node={child} {...p} />
+              <TreeNode key={nodeKey(child)} node={child} {...props} />
             ))}
           </SidebarMenuSub>
         )}
@@ -106,9 +105,9 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
   }
 
   const { file } = node;
-  const stateKey = `${p.sourceId}:${file.id}`;
-  const isActive = p.currentFileId === file.id;
-  const isOpen = p.expanded[stateKey] ?? isActive;
+  const stateKey = `${props.sourceId}:${file.id}`;
+  const isActive = props.currentFileId === file.id;
+  const isOpen = props.expanded[stateKey] ?? isActive;
   const hasPipelines = file.pipelines.length > 0;
 
   return (
@@ -118,8 +117,8 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
           ? (
               <button
                 type="button"
-                className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors"
-                onClick={() => p.toggle(stateKey, isOpen)}
+                className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
+                onClick={() => props.toggle(stateKey, isOpen)}
               >
                 <ChevronRight className={`size-3 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
               </button>
@@ -132,10 +131,10 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
           render={(
             <Link
               to="/s/$sourceId/$sourceFileId"
-              params={{ sourceId: p.sourceId, sourceFileId: file.id }}
+              params={{ sourceId: props.sourceId, sourceFileId: file.id }}
             >
               <FileCode className="size-3.5 shrink-0 opacity-60" />
-              <span className="truncate">{fileName(file)}</span>
+              <span className="truncate">{getFileName(file)}</span>
               {hasPipelines && (
                 <span className="ml-auto rounded bg-sidebar-accent/60 px-1 py-0.5 text-[10px] leading-none text-muted-foreground tabular-nums">
                   {file.pipelines.length}
@@ -150,13 +149,13 @@ function TreeNode({ node, ...p }: { node: FileTreeNode } & SourceFileListProps) 
           {file.pipelines.map((pipeline) => (
             <SidebarMenuSubItem key={`${file.id}-${pipeline.id}`}>
               <SidebarMenuSubButton
-                isActive={p.currentPipelineId === pipeline.id && isActive}
+                isActive={props.currentPipelineId === pipeline.id && isActive}
                 size="sm"
                 className="gap-1.5 px-1"
                 render={(
                   <Link
                     to="/s/$sourceId/$sourceFileId/$pipelineId"
-                    params={{ sourceId: p.sourceId, sourceFileId: file.id, pipelineId: pipeline.id }}
+                    params={{ sourceId: props.sourceId, sourceFileId: file.id, pipelineId: pipeline.id }}
                   >
                     <Route className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">{pipeline.name || pipeline.id}</span>

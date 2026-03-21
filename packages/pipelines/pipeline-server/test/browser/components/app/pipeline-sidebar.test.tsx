@@ -71,7 +71,7 @@ vi.mock("#components/app/source-switcher", () => {
   };
 });
 
-vi.mock("#components/app/pipeline-sidebar-source-file-list", () => {
+vi.mock("#components/app/source-file-list", () => {
   return {
     SourceFileList: (props: {
       sourceId: string;

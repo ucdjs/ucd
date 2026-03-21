@@ -30,7 +30,7 @@ export function ExecutionLogsViewer({ sourceId, sourceFileId, pipelineId, execut
   return (
     <>
       {logsData.truncated && (
-        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 px-4 py-3 text-sm text-amber-900 dark:text-amber-300">
+        <div className="flex items-start gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
           <span className="shrink-0 font-semibold">Logs truncated</span>
           <span className="text-amber-700 dark:text-amber-400">
             Captured

@@ -125,7 +125,7 @@ export function SourceSwitcher() {
   );
 }
 
-SourceSwitcher.Skeleton = function SourcePickerSkeleton() {
+export function SourceSwitcherSkeleton() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -140,4 +140,4 @@ SourceSwitcher.Skeleton = function SourcePickerSkeleton() {
       </SidebarMenuItem>
     </SidebarMenu>
   );
-};
+}
