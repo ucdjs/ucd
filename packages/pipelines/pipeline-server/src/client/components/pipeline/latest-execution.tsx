@@ -19,7 +19,7 @@ export function LatestExecution({
   const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
 
   return (
-    <Card className="xl:col-span-7">
+    <Card className="xl:col-span-7 2xl:col-span-10">
       <CardHeader className="border-b border-border/60 pb-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Latest execution</CardTitle>

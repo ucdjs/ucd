@@ -1,5 +1,6 @@
 import { useInspectData } from "#hooks/use-inspect-data";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowDownRight, ArrowUpRight, Spline } from "lucide-react";
 import { useMemo } from "react";
 
@@ -37,13 +38,15 @@ export function RouteFlowSection() {
   if (!selectedRoute) return null;
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center gap-2">
-        <Spline className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-xs uppercase tracking-wide text-muted-foreground">Route flow</h3>
-      </div>
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-border/60 p-4">
+    <Card>
+      <CardHeader className="border-b border-border/60 pb-4">
+        <div className="flex items-center gap-2">
+          <Spline className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-base">Route flow</CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="grid gap-4 pt-5 lg:grid-cols-2">
+        <div className="space-y-3">
           <div className="flex items-center gap-1.5 text-sm font-medium">
             <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
             Upstream routes
@@ -64,7 +67,7 @@ export function RouteFlowSection() {
                 ))}
           </div>
         </div>
-        <div className="rounded-lg border border-border/60 p-4">
+        <div className="space-y-3">
           <div className="flex items-center gap-1.5 text-sm font-medium">
             <ArrowDownRight className="h-3.5 w-3.5 text-muted-foreground" />
             Downstream routes
@@ -85,7 +88,7 @@ export function RouteFlowSection() {
                 ))}
           </div>
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

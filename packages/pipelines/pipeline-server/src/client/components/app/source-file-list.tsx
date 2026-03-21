@@ -135,11 +135,6 @@ function TreeNode({ node, ...props }: { node: FileTreeNode } & SourceFileListPro
             >
               <FileCode className="size-3.5 shrink-0 opacity-60" />
               <span className="truncate">{getFileName(file)}</span>
-              {hasPipelines && (
-                <span className="ml-auto rounded bg-sidebar-accent/60 px-1 py-0.5 text-[10px] leading-none text-muted-foreground tabular-nums">
-                  {file.pipelines.length}
-                </span>
-              )}
             </Link>
           )}
         />
