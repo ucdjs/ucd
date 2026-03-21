@@ -92,7 +92,7 @@ describe("pipelineHeader", () => {
     );
 
     expect(screen.getByRole("button", { name: "Running..." })).toBeDisabled();
-    expect(screen.queryByRole("link", { name: "View Execution" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "View Execution" })).not.toBeInTheDocument();
   });
 
   it("navigates to the execution details page after a successful run", async () => {
@@ -163,7 +163,7 @@ describe("pipelineHeader", () => {
       />,
     );
 
-    expect(screen.getByRole("link", { name: "View Execution" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "View Execution" })).toHaveAttribute(
       "href",
       "/s/local/alpha/main-pipeline/executions/exec-existing",
     );

@@ -42,15 +42,15 @@ describe("QuickActionsCard", () => {
       component: () => <QuickActionsCard versions={["16.0.0"]} />,
     });
 
-    expect(screen.getByRole("link", { name: /View executions/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /View executions/i })).toHaveAttribute(
       "href",
       "/s/local/simple/first-pipeline/executions",
     );
-    expect(screen.getByRole("link", { name: /Browse graphs/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Browse graphs/i })).toHaveAttribute(
       "href",
       "/s/local/simple/first-pipeline/graphs",
     );
-    expect(screen.getByRole("link", { name: /Inspect routes/i })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Inspect routes/i })).toHaveAttribute(
       "href",
       "/s/local/simple/first-pipeline/inspect",
     );

@@ -1,4 +1,4 @@
-import { StatusBadge } from "#components/execution/execution-status";
+import { StatusBadge } from "#components/execution/status-badge";
 import { PipelineGraph } from "#components/graph/pipeline-graph";
 import { executionGraphQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";

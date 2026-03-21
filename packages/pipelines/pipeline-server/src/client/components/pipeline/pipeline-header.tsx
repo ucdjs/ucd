@@ -3,7 +3,7 @@ import { useExecute } from "#hooks/use-execute";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Play } from "lucide-react";
+import { FileCode2, Layers3, Play, Spline } from "lucide-react";
 import { useCallback } from "react";
 
 export interface PipelineHeaderProps {
@@ -41,16 +41,19 @@ export function PipelineHeader({ selectedVersions, pipeline, fileLabel }: Pipeli
               {pipeline.name || pipeline.id}
             </h1>
             <Badge variant="secondary" className="text-[10px] font-medium">
+              <Layers3 className="h-3 w-3" />
               {pipeline.versions.length}
               {" "}
               versions
             </Badge>
             <Badge variant="secondary" className="text-[10px] font-medium">
+              <Spline className="h-3 w-3" />
               {pipeline.routeCount}
               {" "}
               routes
             </Badge>
             <Badge variant="secondary" className="text-[10px] font-medium">
+              <FileCode2 className="h-3 w-3" />
               {pipeline.sourceCount}
               {" "}
               sources
@@ -68,6 +71,7 @@ export function PipelineHeader({ selectedVersions, pipeline, fileLabel }: Pipeli
             <Button
               variant="outline"
               size="sm"
+              nativeButton={false}
               render={(props) => (
                 <Link
                   to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"

@@ -1,7 +1,8 @@
 import type { ExecutionSpan } from "#lib/execution-utils";
-import { StatusBadge, StatusIcon } from "#components/execution/execution-status";
+import { StatusBadge } from "#components/execution/status-badge";
+import { StatusIcon } from "#components/execution/status-icon";
 import { LogsErrorBoundary } from "#components/execution/logs/logs-error-boundary";
-import { ExecutionLogsViewer } from "#components/execution/logs/logs-wrapper";
+import { ExecutionLogsViewer } from "#components/execution/logs/execution-logs-viewer";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";

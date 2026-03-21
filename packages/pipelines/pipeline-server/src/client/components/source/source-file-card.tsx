@@ -2,7 +2,7 @@ import type { SourceResponse } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { FileCode2, FolderTree, GitBranchPlus, Layers3, Workflow } from "lucide-react";
+import { FileCode2, FolderTree, Layers3, Route as PipelineIcon, Spline } from "lucide-react";
 
 export type SourceFileCardData = SourceResponse["files"][number];
 
@@ -60,7 +60,7 @@ export function SourceFileCard({
                         {pipeline.description || pipeline.id}
                       </div>
                     </div>
-                    <Workflow className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <PipelineIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                   </div>
 
                   <div className="mt-1.5 flex min-w-0 flex-wrap gap-2.5 text-[11px] text-muted-foreground">
@@ -69,7 +69,7 @@ export function SourceFileCard({
                       {pipeline.versions.length}
                     </span>
                     <span className="inline-flex shrink-0 items-center gap-1">
-                      <GitBranchPlus className="h-3 w-3" />
+                      <Spline className="h-3 w-3" />
                       {pipeline.routeCount}
                     </span>
                     <span className="inline-flex shrink-0 items-center gap-1">
