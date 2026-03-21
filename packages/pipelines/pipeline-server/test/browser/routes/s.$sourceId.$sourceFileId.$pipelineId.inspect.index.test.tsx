@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
 describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () => {
-  it("renders the routes view by default and filters the route list", async () => {
+  it("renders the shared inspect workspace and filters the route list", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -91,22 +91,13 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
     const user = userEvent.setup();
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=publish");
 
-    expect(await screen.findByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect",
-    )).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Pipeline workspace" })).toBeInTheDocument();
 
-    const inspectShell = screen.getByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect",
-    ).closest("[data-slot='card']") as HTMLElement | null;
+    const inspectShell = screen.getByRole("heading", { name: "Pipeline workspace" }).closest("aside") as HTMLElement | null;
     expect(inspectShell).not.toBeNull();
 
-    expect(screen.getByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "publish",
-    )).toBeInTheDocument();
-    expect(screen.getByText("Route dependencies, transforms, and output definitions.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "publish" })).toBeInTheDocument();
+    expect(screen.getByText("Route dependencies, transforms, outputs, and artifact flow.")).toBeInTheDocument();
 
     await user.clear(screen.getByRole("textbox", { name: "Search inspect routes" }));
     await user.type(screen.getByRole("textbox", { name: "Search inspect routes" }), "archive");
@@ -125,7 +116,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
     expect(history.location.search).toContain("route=publish");
   });
 
-  it("switches views inside the inspect shell using search state", async () => {
+  it("selects and clears routes from the shared inspect workspace", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -202,36 +193,26 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
     const user = userEvent.setup();
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect");
 
-    const inspectShell = screen.getByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Inspect",
-    ).closest("[data-slot='card']") as HTMLElement | null;
+    const inspectShell = screen.getByRole("heading", { name: "Pipeline workspace" }).closest("aside") as HTMLElement | null;
     expect(inspectShell).not.toBeNull();
 
-    const transformsViewButton = within(inspectShell!).getAllByRole("button").find((button) =>
-      button.textContent?.trim() === "transforms",
+    const compileRouteButton = within(inspectShell!).getAllByRole("button").find((button) =>
+      button.textContent?.replace(/\s+/g, " ").trim().startsWith("compile"),
     );
-    expect(transformsViewButton).not.toBeNull();
-    await user.click(transformsViewButton!);
+    expect(compileRouteButton).not.toBeNull();
+    await user.click(compileRouteButton!);
 
-    expect(await screen.findByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "normalize",
-    )).toBeInTheDocument();
-    expect(history.location.search).toContain("view=transforms");
+    expect(await screen.findByRole("heading", { name: "compile" })).toBeInTheDocument();
+    expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
+    expect(history.location.search).toContain("route=compile");
 
-    const outputsViewButton = within(inspectShell!).getAllByRole("button").find((button) =>
-      button.textContent?.trim() === "outputs",
-    );
-    expect(outputsViewButton).not.toBeNull();
-    await user.click(outputsViewButton!);
+    const clearRouteButton = within(inspectShell!).getByRole("button", { name: "Clear route" });
+    await user.click(clearRouteButton);
 
     await waitFor(() => {
-      expect(screen.getByText((_, element) =>
-        element?.getAttribute("data-slot") === "card-title"
-        && element.textContent?.replace(/\s+/g, " ").trim() === "compile output1",
-      )).toBeInTheDocument();
-      expect(history.location.search).toContain("view=outputs");
+      expect(screen.getByText("Pick a route to start inspecting")).toBeInTheDocument();
+      expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
+      expect(history.location.search).not.toContain("route=");
     });
   });
 });
