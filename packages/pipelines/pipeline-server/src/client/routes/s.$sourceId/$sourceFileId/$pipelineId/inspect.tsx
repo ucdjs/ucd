@@ -64,12 +64,7 @@ function RouteComponent() {
         return true;
       }
 
-      return route.emits.some((emit) => emit.id.toLowerCase().includes(value))
-        || route.depends.some((dependency) => (
-          dependency.type === "route"
-            ? dependency.routeId.toLowerCase().includes(value)
-            : `${dependency.routeId}:${dependency.artifactName}`.toLowerCase().includes(value)
-        ));
+      return route.depends.some((dependency) => dependency.routeId.toLowerCase().includes(value));
     });
   }, [pipeline.routes, search.q]);
 
@@ -320,7 +315,7 @@ function RouteComponent() {
                             : <Badge variant="outline">live</Badge>}
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Route dependencies, transforms, outputs, and artifact flow.
+                          Route dependencies, transforms, and outputs.
                         </p>
                       </div>
                     </div>

@@ -5,10 +5,6 @@ import type {
   PipelineGraphNode,
 } from "@ucdjs/pipelines-core";
 
-export interface GraphBuilderOptions {
-  includeArtifacts?: boolean;
-}
-
 export class PipelineGraphBuilder {
   #nodes: Map<string, PipelineGraphNode> = new Map();
   #edges: PipelineGraphEdge[] = [];
@@ -34,14 +30,6 @@ export class PipelineGraphBuilder {
     const id = `route:${version}:${routeId}`;
     if (!this.#nodes.has(id)) {
       this.#nodes.set(id, { id, type: "route", routeId });
-    }
-    return id;
-  }
-
-  addArtifactNode(artifactId: string, version: string): string {
-    const id = `artifact:${version}:${artifactId}`;
-    if (!this.#nodes.has(id)) {
-      this.#nodes.set(id, { id, type: "artifact", artifactId });
     }
     return id;
   }

@@ -41,7 +41,6 @@
   },
   "dependencies": {
     "@ucdjs/fs-backend": "workspace:*",
-    "@ucdjs/pipelines-artifacts": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-graph": "workspace:*"
   },

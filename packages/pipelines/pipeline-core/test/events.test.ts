@@ -10,7 +10,6 @@ describe("getPipelineEventPhase", () => {
     expect(getPipelineEventPhase("version:start")).toBe("Version");
     expect(getPipelineEventPhase("parse:start")).toBe("Parse");
     expect(getPipelineEventPhase("resolve:start")).toBe("Resolve");
-    expect(getPipelineEventPhase("artifact:start")).toBe("Artifact");
     expect(getPipelineEventPhase("file:matched")).toBe("File");
     expect(getPipelineEventPhase("cache:hit")).toBe("Cache");
     expect(getPipelineEventPhase("error")).toBe("Error");
@@ -28,7 +27,6 @@ describe("pIPELINE_EVENT_PHASES", () => {
       "Version",
       "Parse",
       "Resolve",
-      "Artifact",
       "File",
       "Cache",
       "Error",

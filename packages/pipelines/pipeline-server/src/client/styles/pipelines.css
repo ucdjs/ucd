@@ -27,12 +27,6 @@
   --execution-phase-resolve-chip-fg:       rgb(109 40 217);
   --execution-phase-resolve-bar-start:     #a78bfa;
   --execution-phase-resolve-bar:           #8b5cf6;
-  --execution-phase-artifact-dot:          rgb(251 113 133 / 0.8);
-  --execution-phase-artifact-chip-border:  rgb(244 63 94 / 0.3);
-  --execution-phase-artifact-chip-bg:      rgb(244 63 94 / 0.12);
-  --execution-phase-artifact-chip-fg:      rgb(190 24 93);
-  --execution-phase-artifact-bar-start:    #fb7185;
-  --execution-phase-artifact-bar:          #f43f5e;
   --execution-phase-file-dot:              rgb(34 211 238 / 0.8);
   --execution-phase-file-chip-border:      rgb(6 182 212 / 0.3);
   --execution-phase-file-chip-bg:          rgb(6 182 212 / 0.12);
@@ -68,8 +62,6 @@
   --execution-phase-parse-chip-fg:     rgb(253 224 71);
   --execution-phase-resolve-chip-bg:   color-mix(in srgb, var(--execution-phase-resolve-bar)  18%, transparent);
   --execution-phase-resolve-chip-fg:   rgb(196 181 253);
-  --execution-phase-artifact-chip-bg:  color-mix(in srgb, var(--execution-phase-artifact-bar) 18%, transparent);
-  --execution-phase-artifact-chip-fg:  rgb(253 164 175);
   --execution-phase-file-chip-bg:      color-mix(in srgb, var(--execution-phase-file-bar)     18%, transparent);
   --execution-phase-file-chip-fg:      rgb(103 232 249);
   --execution-phase-cache-chip-bg:     color-mix(in srgb, var(--execution-phase-cache-bar)    18%, transparent);
@@ -101,11 +93,6 @@
   --color-execution-phase-resolve-chip-bg:       var(--execution-phase-resolve-chip-bg);
   --color-execution-phase-resolve-chip-fg:       var(--execution-phase-resolve-chip-fg);
   --color-execution-phase-resolve-bar:           var(--execution-phase-resolve-bar);
-  --color-execution-phase-artifact-dot:          var(--execution-phase-artifact-dot);
-  --color-execution-phase-artifact-chip-border:  var(--execution-phase-artifact-chip-border);
-  --color-execution-phase-artifact-chip-bg:      var(--execution-phase-artifact-chip-bg);
-  --color-execution-phase-artifact-chip-fg:      var(--execution-phase-artifact-chip-fg);
-  --color-execution-phase-artifact-bar:          var(--execution-phase-artifact-bar);
   --color-execution-phase-file-dot:              var(--execution-phase-file-dot);
   --color-execution-phase-file-chip-border:      var(--execution-phase-file-chip-border);
   --color-execution-phase-file-chip-bg:          var(--execution-phase-file-chip-bg);
@@ -174,14 +161,6 @@
     --_bar:         var(--execution-phase-resolve-bar);
   }
 
-  .execution-phase[data-phase="Artifact"] {
-    --_dot:         var(--execution-phase-artifact-dot);
-    --_chip-border: var(--execution-phase-artifact-chip-border);
-    --_chip-bg:     var(--execution-phase-artifact-chip-bg);
-    --_chip-fg:     var(--execution-phase-artifact-chip-fg);
-    --_bar-start:   var(--execution-phase-artifact-bar-start);
-    --_bar:         var(--execution-phase-artifact-bar);
-  }
 
   .execution-phase[data-phase="File"] {
     --_dot:         var(--execution-phase-file-dot);

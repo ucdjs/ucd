@@ -4,7 +4,7 @@ import { executionsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { FolderOutput, Layers3, Link2, Package, Shuffle, Spline } from "lucide-react";
+import { FolderOutput, Layers3, Link2, Shuffle, Spline } from "lucide-react";
 
 const ParentRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
@@ -32,12 +32,11 @@ function RouteComponent() {
   const pipeline = pipelineResponse.pipeline;
   const recentExecutions = executionsData.executions;
   const cachedRouteCount = pipeline.routes.filter((route) => route.cache).length;
-  const emittedArtifactCount = pipeline.routes.reduce((count, route) => count + route.emits.length, 0);
   const transformCount = pipeline.routes.reduce((count, route) => count + route.transforms.length, 0);
   const outputCount = pipeline.routes.reduce((count, route) => count + route.outputs.length, 0);
   const busiestRoutes = pipeline.routes.toSorted((left, right) => {
-    const leftScore = left.depends.length + left.transforms.length + left.emits.length;
-    const rightScore = right.depends.length + right.transforms.length + right.emits.length;
+    const leftScore = left.depends.length + left.transforms.length;
+    const rightScore = right.depends.length + right.transforms.length;
 
     return rightScore - leftScore;
   })
@@ -79,11 +78,6 @@ function RouteComponent() {
                   <span className="text-xs text-muted-foreground">cached routes</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
-                  <div className="text-lg font-semibold tabular-nums">{emittedArtifactCount}</div>
-                  <span className="text-xs text-muted-foreground">emits</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg border border-border/60 bg-muted/20 px-3 py-2">
                   <FolderOutput className="h-4 w-4 text-muted-foreground" />
                   <div className="text-lg font-semibold tabular-nums">{outputCount}</div>
                   <span className="text-xs text-muted-foreground">outputs</span>
@@ -119,10 +113,6 @@ function RouteComponent() {
                                 : <Badge variant="outline">live</Badge>}
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                              <span className="inline-flex items-center gap-1">
-                                <Package className="h-3 w-3" />
-                                {route.emits.length}
-                              </span>
                               <span className="inline-flex items-center gap-1">
                                 <Link2 className="h-3 w-3" />
                                 {route.depends.length}
