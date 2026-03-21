@@ -1,5 +1,5 @@
-import { DefinitionGraph } from "#components/inspect/definition-graph";
 import type { PipelineDetails } from "#shared/schemas/pipeline";
+import { DefinitionGraph } from "#components/inspect/definition-graph";
 import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -8,7 +8,7 @@ import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
-export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId/")({
+export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId")({
   component: RouteDetailPage,
 });
 
@@ -23,7 +23,9 @@ function RouteDetailPage() {
   if (!selectedRoute) {
     return (
       <div className="rounded-lg border border-border/60 px-4 py-10 text-sm text-muted-foreground">
-        Route &ldquo;{routeId}&rdquo; not found in this pipeline.
+        Route &ldquo;
+        {routeId}
+        &rdquo; not found in this pipeline.
       </div>
     );
   }
@@ -37,15 +39,6 @@ function RouteDetailPage() {
 
   return (
     <div className="space-y-4">
-      <Link
-        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes"
-        params={{ sourceId, sourceFileId, pipelineId }}
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" />
-        Routes
-      </Link>
-
       <Card className="bg-muted/5">
         <CardContent className="space-y-5 pt-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -176,7 +169,7 @@ function DependenciesSection({ route, sourceId, sourceFileId, pipelineId }: Sect
                       {dependency.artifactName}
                     </Badge>
                   )
-          ))
+            ))
           : <span className="text-sm text-muted-foreground">No dependencies.</span>}
       </div>
       {artifactDependencies.length > 0 && (
@@ -225,8 +218,8 @@ function TransformsSection({ route, sourceId, sourceFileId, pipelineId }: Sectio
               return (
                 <Link
                   key={transform}
-                  to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name"
-                  params={{ sourceId, sourceFileId, pipelineId, name: transform }}
+                  to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName"
+                  params={{ sourceId, sourceFileId, pipelineId, transformName: transform }}
                   className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                 >
                   {transform}
