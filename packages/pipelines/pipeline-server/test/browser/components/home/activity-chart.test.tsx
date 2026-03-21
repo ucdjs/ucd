@@ -1,4 +1,4 @@
-import { ExecutionActivityChart } from "#components/home/activity-chart";
+import { ExecutionActivityChart } from "#components/overview/activity-chart";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
