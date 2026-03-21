@@ -1,11 +1,11 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
-describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms", () => {
-  it("selects a transform from search params and links back to the inspect route", async () => {
+describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect transform focus", () => {
+  it("selects a transform from search params and focuses it on another route in the shared workspace", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -80,25 +80,25 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/transf
     ]);
 
     const user = userEvent.setup();
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect/transforms?transform=ship");
+    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile&transform=normalize");
 
-    expect(await screen.findByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "ship",
-    )).toBeInTheDocument();
-    expect(screen.getByText("Routes using this transform across the pipeline.")).toBeInTheDocument();
-    expect(screen.getByText("1 route")).toBeInTheDocument();
+    const focusedTransformSection = (await screen.findByRole("heading", { name: "normalize" })).closest("section");
+    expect(focusedTransformSection).not.toBeNull();
+    expect(within(focusedTransformSection!).getByText("Focused transform usage across the pipeline.")).toBeInTheDocument();
+    expect(within(focusedTransformSection!).getAllByText("2 routes").length).toBeGreaterThan(0);
 
-    await user.click(screen.getByRole("link", { name: /publish/i }));
+    const publishCard = within(focusedTransformSection!).getByText("publish").closest("div.rounded-2xl");
+    expect(publishCard).not.toBeNull();
+    await user.click(within(publishCard as HTMLElement).getByRole("button", { name: "Focus here" }));
 
     await waitFor(() => {
       expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
       expect(history.location.search).toContain("route=publish");
-      expect(history.location.search).toContain("transform=ship");
+      expect(history.location.search).toContain("transform=normalize");
     });
   });
 
-  it("renders the empty transform state when the pipeline has no transforms", async () => {
+  it("renders the empty transform state when the selected route has no transforms", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -163,8 +163,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/transf
       })],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/inspect/transforms");
+    await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile");
 
-    expect(await screen.findByText("No transforms defined")).toBeInTheDocument();
+    expect(await screen.findByText("No transforms.")).toBeInTheDocument();
   });
 });

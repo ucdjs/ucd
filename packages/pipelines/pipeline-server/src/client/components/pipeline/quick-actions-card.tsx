@@ -2,7 +2,7 @@ import { useExecute } from "#hooks/use-execute";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { ArrowRight, Boxes, History, Loader2, Play, Route as RouteIcon } from "lucide-react";
+import { ArrowRight, Boxes, History, Loader2, Play, Spline } from "lucide-react";
 
 interface QuickActionsCardProps {
   versions: string[];
@@ -58,6 +58,7 @@ export function QuickActionsCard({
         <Button
           variant="outline"
           className="justify-between"
+          nativeButton={false}
           render={(props) => (
             <Link
               to="/s/$sourceId/$sourceFileId/$pipelineId/executions"
@@ -75,6 +76,7 @@ export function QuickActionsCard({
         <Button
           variant="outline"
           className="justify-between"
+          nativeButton={false}
           render={(props) => (
             <Link
               to="/s/$sourceId/$sourceFileId/$pipelineId/graphs"
@@ -92,6 +94,7 @@ export function QuickActionsCard({
         <Button
           variant="outline"
           className="justify-between"
+          nativeButton={false}
           render={(props) => (
             <Link
               to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
@@ -100,7 +103,7 @@ export function QuickActionsCard({
               {...props}
             >
               <span className="flex items-center gap-2">
-                <RouteIcon className="h-4 w-4" />
+                <Spline className="h-4 w-4" />
                 Inspect routes
               </span>
               <ArrowRight className="h-4 w-4" />

@@ -8,7 +8,7 @@ import {
   Command,
   useCommandActions,
 } from "@ucdjs-internal/shared-ui/ui/command";
-import { FileCode, Loader2, Play, Search, Terminal } from "lucide-react";
+import { Loader2, Play, Search, Spline, Terminal } from "lucide-react";
 import { useCallback, useMemo, useState } from "react";
 
 const PIPELINE_PALETTE = "pipeline-server.main";
@@ -108,7 +108,7 @@ function CurrentPipelineActions({
           "inspect",
         ],
         onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}/inspect`),
-        icon: <FileCode className="mr-2 h-4 w-4" />,
+        icon: <Spline className="mr-2 h-4 w-4" />,
       },
     ];
   }, [currentPipeline, executing, onExecuteCurrent, onNavigate]);
