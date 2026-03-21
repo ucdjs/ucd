@@ -1,10 +1,25 @@
 import { DefinitionGraph } from "#components/inspect/definition-graph";
-import { createFileRoute, getRouteApi, useNavigate } from "@tanstack/react-router";
+import { pipelineQueryOptions } from "#queries/pipeline";
+import { createFileRoute, getRouteApi, redirect, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/")({
+  loader: async ({ context, params }) => {
+    const pipelineResponse = await context.queryClient.ensureQueryData(pipelineQueryOptions({
+      sourceId: params.sourceId,
+      fileId: params.sourceFileId,
+      pipelineId: params.pipelineId,
+    }));
+    const firstRoute = pipelineResponse.pipeline.routes[0];
+    if (firstRoute) {
+      throw redirect({
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId",
+        params: { ...params, routeId: firstRoute.id },
+      });
+    }
+  },
   component: RoutesIndexPage,
 });
 

@@ -16,9 +16,7 @@ function TransformDetailPage() {
   const { sourceId, sourceFileId, pipelineId, name } = Route.useParams();
 
   const transformRoutes = useMemo(() => {
-    return pipeline.routes
-      .filter((route) => route.transforms.includes(name))
-      .map((route) => route.id);
+    return pipeline.routes.filter((route) => route.transforms.includes(name));
   }, [pipeline.routes, name]);
 
   return (
@@ -26,10 +24,10 @@ function TransformDetailPage() {
       <Link
         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms"
         params={{ sourceId, sourceFileId, pipelineId }}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to transforms
+        <ArrowLeft className="h-3 w-3" />
+        Transforms
       </Link>
 
       <Card>
@@ -53,15 +51,24 @@ function TransformDetailPage() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            {transformRoutes.map((routeId) => (
-              <div key={routeId} className="rounded-xl border border-border/60 p-4">
+            {transformRoutes.map((route) => (
+              <div key={route.id} className="rounded-xl border border-border/60 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <div className="text-sm font-medium">{routeId}</div>
+                    <div className="text-sm font-medium">{route.id}</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground">
+                      {route.depends.length}
+                      {" "}
+                      depends
+                      {" \u00B7 "}
+                      {route.outputs.length}
+                      {" "}
+                      outputs
+                    </div>
                   </div>
                   <Link
                     to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
-                    params={{ sourceId, sourceFileId, pipelineId, routeId }}
+                    params={{ sourceId, sourceFileId, pipelineId, routeId: route.id }}
                     className="inline-flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                   >
                     Route

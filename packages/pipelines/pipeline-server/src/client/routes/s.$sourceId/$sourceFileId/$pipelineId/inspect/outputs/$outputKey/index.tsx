@@ -35,10 +35,10 @@ function OutputDetailPage() {
         <Link
           to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs"
           params={{ sourceId, sourceFileId, pipelineId }}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back to outputs
+          <ArrowLeft className="h-3 w-3" />
+          Outputs
         </Link>
         <div className="rounded-lg border border-border/60 px-4 py-10 text-sm text-muted-foreground">
           Output &ldquo;{outputKey}&rdquo; not found in this pipeline.
@@ -54,15 +54,15 @@ function OutputDetailPage() {
       <Link
         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs"
         params={{ sourceId, sourceFileId, pipelineId }}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="h-3.5 w-3.5" />
-        Back to outputs
+        <ArrowLeft className="h-3 w-3" />
+        Outputs
       </Link>
 
       <Card>
         <CardContent className="space-y-4 pt-5">
-          <div className="space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
                 <FolderOutput className="h-4 w-4 text-muted-foreground" />
@@ -83,6 +83,14 @@ function OutputDetailPage() {
                 </div>
               </div>
             </div>
+            <Link
+              to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
+              params={{ sourceId, sourceFileId, pipelineId, routeId: selectedOutput.routeId }}
+              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+            >
+              Go to route
+              <ArrowRight className="h-3 w-3" />
+            </Link>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
@@ -100,42 +108,35 @@ function OutputDetailPage() {
             </div>
           </div>
 
-          <Link
-            to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
-            params={{ sourceId, sourceFileId, pipelineId, routeId: selectedOutput.routeId }}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-          >
-            Go to route
-            <ArrowRight className="h-3 w-3" />
-          </Link>
-
-          <div className="space-y-3">
-            <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</div>
-            <div className="grid gap-3 md:grid-cols-2">
-              {routeOutputs.map((output) => {
-                const active = output.key === selectedOutput.key;
-                return (
-                  <Link
-                    key={output.key}
-                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
-                    params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
-                    className={`flex h-auto justify-start rounded-xl border px-4 py-4 text-left ${active ? "border-border bg-muted/20" : "border-input hover:bg-accent hover:text-accent-foreground"}`}
-                  >
-                    <div className="w-full">
-                      <div className="flex items-center gap-2 text-sm font-medium">
-                        <FileOutput className="h-3.5 w-3.5" />
-                        Output
-                        {" "}
-                        {output.outputIndex + 1}
+          {routeOutputs.length > 1 && (
+            <div className="space-y-3">
+              <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</div>
+              <div className="grid gap-3 md:grid-cols-2">
+                {routeOutputs.map((output) => {
+                  const active = output.key === selectedOutput.key;
+                  return (
+                    <Link
+                      key={output.key}
+                      to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
+                      params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
+                      className={`flex h-auto justify-start rounded-xl border px-4 py-4 text-left ${active ? "border-border bg-muted/20" : "border-input hover:bg-accent hover:text-accent-foreground"}`}
+                    >
+                      <div className="w-full">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                          <FileOutput className="h-3.5 w-3.5" />
+                          Output
+                          {" "}
+                          {output.outputIndex + 1}
+                        </div>
+                        <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
+                        <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
                       </div>
-                      <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
-                      <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
-                    </div>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>

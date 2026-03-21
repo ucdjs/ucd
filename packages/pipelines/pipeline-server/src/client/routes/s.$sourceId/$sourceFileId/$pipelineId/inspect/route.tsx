@@ -148,10 +148,10 @@ function InspectSidebar({
     );
   }, [outputs, normalizedFilter]);
 
-  const tabs: { id: TabId; label: string; to: string }[] = [
-    { id: "routes", label: "Routes", to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes" },
-    { id: "transforms", label: "Transforms", to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms" },
-    { id: "outputs", label: "Outputs", to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs" },
+  const tabs: { id: TabId; label: string; count: number; to: string }[] = [
+    { id: "routes", label: "Routes", count: pipeline.routes.length, to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes" },
+    { id: "transforms", label: "Transforms", count: transformCount, to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms" },
+    { id: "outputs", label: "Outputs", count: outputCount, to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs" },
   ];
 
   function handleTabChange(tab: TabId) {
@@ -200,37 +200,31 @@ function InspectSidebar({
               key={tab.id}
               type="button"
               onClick={() => handleTabChange(tab.id)}
-              className={`px-3 pb-2 text-xs font-medium transition-colors ${
+              className={`px-4 pb-2 text-xs font-medium transition-colors ${
                 activeTab === tab.id
                   ? "border-b-2 border-foreground text-foreground"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tab.label}
+              {" "}
+              <span className="tabular-nums text-muted-foreground">({tab.count})</span>
             </button>
           ))}
         </div>
 
-        <div className="space-y-3">
-          <div className="text-xs text-muted-foreground">
-            {activeTab === "routes" && `${filteredRoutes.length} shown`}
-            {activeTab === "transforms" && `${filteredTransforms.length} shown`}
-            {activeTab === "outputs" && `${filteredOutputs.length} shown`}
-          </div>
-
-          <Input
-            value={filterValue}
-            onChange={(event) => setFilterValue(event.target.value)}
-            placeholder={
-              activeTab === "routes"
-                ? "Search routes, transforms, outputs, dependencies"
-                : activeTab === "transforms"
-                  ? "Search transforms"
-                  : "Search outputs by dir, file, route"
-            }
-            aria-label="Search inspect items"
-          />
-        </div>
+        <Input
+          value={filterValue}
+          onChange={(event) => setFilterValue(event.target.value)}
+          placeholder={
+            activeTab === "routes"
+              ? `Search ${pipeline.routes.length} routes\u2026`
+              : activeTab === "transforms"
+                ? `Search ${transformCount} transforms\u2026`
+                : `Search ${outputCount} outputs\u2026`
+          }
+          aria-label="Search inspect items"
+        />
 
         <div className="rounded-xl border border-border/60">
           {activeTab === "routes" && (
@@ -247,8 +241,7 @@ function InspectSidebar({
                         key={route.id}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
                         params={{ sourceId, sourceFileId, pipelineId, routeId: route.id }}
-                        activeProps={{ className: "bg-muted/20" }}
-                        className="relative flex w-full flex-col gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/20"
+                        className="relative flex w-full flex-col gap-2 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/10 [&.active]:before:absolute [&.active]:before:inset-y-2 [&.active]:before:left-0 [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-foreground/80"
                       >
                         <div className="flex items-center justify-between gap-3">
                           <div className="min-w-0">
@@ -258,17 +251,17 @@ function InspectSidebar({
                         </div>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                           <span>
-                            {route.depends.length}
+                            <span className="font-medium tabular-nums text-foreground/70">{route.depends.length}</span>
                             {" "}
                             depends
                           </span>
                           <span>
-                            {route.transforms.length}
+                            <span className="font-medium tabular-nums text-foreground/70">{route.transforms.length}</span>
                             {" "}
                             transforms
                           </span>
                           <span>
-                            {route.outputs.length}
+                            <span className="font-medium tabular-nums text-foreground/70">{route.outputs.length}</span>
                             {" "}
                             outputs
                           </span>
@@ -293,9 +286,10 @@ function InspectSidebar({
                         key={transform.name}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name"
                         params={{ sourceId, sourceFileId, pipelineId, name: transform.name }}
-                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/20"
+                        className="relative flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/10 [&.active]:before:absolute [&.active]:before:inset-y-2 [&.active]:before:left-0 [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-foreground/80"
                       >
-                        <div className="min-w-0">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <Shuffle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                           <div className="truncate text-sm font-medium text-foreground">{transform.name}</div>
                         </div>
                         <Badge variant="secondary" className="shrink-0 text-[10px]">
@@ -323,17 +317,14 @@ function InspectSidebar({
                         key={output.key}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
                         params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
-                        className="flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/20"
+                        className="relative flex w-full flex-col gap-1 px-4 py-3 text-left transition-colors hover:bg-muted/10 [&.active]:bg-muted/10 [&.active]:before:absolute [&.active]:before:inset-y-2 [&.active]:before:left-0 [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-foreground/80"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="truncate text-sm font-medium text-foreground">
-                            {output.routeId}
-                            {" "}
-                            <span className="text-muted-foreground">
-                              output
-                              {output.outputIndex + 1}
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] text-muted-foreground">{output.routeId}</span>
+                          <span className="truncate text-sm font-semibold text-foreground">
+                            output
+                            {output.outputIndex + 1}
+                          </span>
                         </div>
                         <div className="truncate text-[11px] text-muted-foreground">{output.dir}</div>
                         <div className="truncate text-[11px] text-muted-foreground">{output.fileName}</div>
