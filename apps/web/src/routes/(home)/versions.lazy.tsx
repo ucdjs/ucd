@@ -4,7 +4,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Layers } from "lucide-react";
-import { useMemo } from "react";
 
 export const Route = createLazyFileRoute("/(home)/versions")({
   component: RouteComponent,
@@ -12,9 +11,7 @@ export const Route = createLazyFileRoute("/(home)/versions")({
 
 function RouteComponent() {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-  const latestStable = useMemo(() => {
-    return versions.find((version) => version.type === "stable") ?? versions[0];
-  }, [versions]);
+  const latestStable = versions.find((version) => version.type === "stable") ?? versions[0];
 
   return (
     <div className="relative min-h-svh overflow-hidden bg-background">
