@@ -1,5 +1,5 @@
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { cn } from "@ucdjs-internal/shared-ui";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 
 export interface VersionSelectorProps {
   versions: string[];
