@@ -1,4 +1,5 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
+import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
 import { describe, expect, it } from "vitest";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
 
@@ -39,7 +40,7 @@ describe("node execution runtime", () => {
     const runtime = createNodeExecutionRuntime({
       outputCapture: { console: true },
     });
-    const logs: Array<{ message: string; executionId: string; spanId?: string; source: string }> = [];
+    const logs: Pick<PipelineLogEntry, "message" | "executionId" | "spanId" | "source">[] = [];
 
     await runtime.runWithLogHandler((entry) => {
       logs.push({
@@ -47,6 +48,7 @@ describe("node execution runtime", () => {
         executionId: entry.executionId,
         spanId: entry.spanId,
         source: entry.source,
+
       });
     }, async () => {
       const stopCapture = runtime.startOutputCapture?.() ?? (() => {});
@@ -57,6 +59,7 @@ describe("node execution runtime", () => {
           workspaceId: "workspace-1",
           spanId: "span-1",
         }, async () => {
+          // eslint-disable-next-line no-console
           console.log("captured log line");
           await Promise.resolve();
         });
