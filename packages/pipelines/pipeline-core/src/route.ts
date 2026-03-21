@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
-import type { PipelineLogger } from "./logger";
+import type { PipelineLogger } from "./types";
 import type { RouteOutputDefinition } from "./output";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {

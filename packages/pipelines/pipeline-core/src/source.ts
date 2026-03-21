@@ -1,4 +1,4 @@
-import type { FileContext, PipelineFilter } from "./types";
+import type { FileContext, PipelineFilter, PipelineLogger } from "./types";
 
 export interface StreamOptions {
   chunkSize?: number;
@@ -40,7 +40,7 @@ export interface SourceFileContext extends FileContext {
 }
 
 export interface ResolveSourceContext {
-  logger: import("./logger").PipelineLogger;
+  logger: PipelineLogger;
 }
 
 export function definePipelineSource<const TId extends string>(
