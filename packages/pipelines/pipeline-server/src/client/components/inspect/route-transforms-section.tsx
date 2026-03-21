@@ -1,12 +1,14 @@
-import { useInspectData } from "#hooks/use-inspect-data";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import type { PipelineDetails } from "#shared/schemas/pipeline";
+import { Link, useParams } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, Shuffle } from "lucide-react";
 
-export function RouteTransformsSection() {
-  const { selectedRoute, navigateToTransform } = useInspectData();
+export interface RouteTransformsSectionProps {
+  route: PipelineDetails["routes"][number];
+}
 
-  if (!selectedRoute) return null;
+export function RouteTransformsSection({ route }: RouteTransformsSectionProps) {
+  const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
 
   return (
     <Card>
@@ -18,18 +20,18 @@ export function RouteTransformsSection() {
       </CardHeader>
       <CardContent className="pt-5">
         <div className="flex flex-wrap gap-2">
-          {selectedRoute.transforms.length
-            ? selectedRoute.transforms.map((transform) => {
+          {route.transforms.length
+            ? route.transforms.map((transform) => {
                 return (
-                  <Button
+                  <Link
                     key={transform}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigateToTransform(transform, selectedRoute.id)}
+                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name"
+                    params={{ sourceId, sourceFileId, pipelineId, name: transform }}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                   >
                     {transform}
                     <ArrowRight className="h-3 w-3" />
-                  </Button>
+                  </Link>
                 );
               })
             : <span className="text-sm text-muted-foreground">No transforms.</span>}

@@ -1,12 +1,14 @@
-import { useInspectData } from "#hooks/use-inspect-data";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import type { PipelineDetails } from "#shared/schemas/pipeline";
+import { Link, useParams } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, FolderOutput } from "lucide-react";
 
-export function RouteOutputsSection() {
-  const { selectedRoute, navigateToOutput } = useInspectData();
+export interface RouteOutputsSectionProps {
+  route: PipelineDetails["routes"][number];
+}
 
-  if (!selectedRoute) return null;
+export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
+  const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
 
   return (
     <Card>
@@ -17,25 +19,24 @@ export function RouteOutputsSection() {
         </div>
       </CardHeader>
       <CardContent className="pt-5">
-        {selectedRoute.outputs.length
+        {route.outputs.length
           ? (
               <div className="grid gap-3">
-                {selectedRoute.outputs.map((output, index) => (
+                {route.outputs.map((output, index) => (
                   <div key={`${output.dir ?? "none"}-${output.fileName ?? "none"}-${index}`} className="rounded-lg border border-border/60 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-medium">
                         Output
                         {index + 1}
                       </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigateToOutput(selectedRoute.id, index)}
+                      <Link
+                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
+                        params={{ sourceId, sourceFileId, pipelineId, outputKey: `${route.id}:${index}` }}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                       >
                         Open output
                         <ArrowRight className="h-3 w-3" />
-                      </Button>
+                      </Link>
                     </div>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       <div className="space-y-1">

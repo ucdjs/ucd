@@ -70,9 +70,8 @@ export function PipelineStructure({
                     return (
                       <Link
                         key={route.id}
-                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect"
-                        params={{ sourceId, sourceFileId, pipelineId }}
-                        search={{ q: undefined, route: route.id, transform: undefined, output: undefined }}
+                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
+                        params={{ sourceId, sourceFileId, pipelineId, routeId: route.id }}
                         className="grid gap-3 rounded-lg border border-border/60 px-4 py-4 transition-colors hover:bg-muted/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                       >
                         <div className="min-w-0 space-y-2">
