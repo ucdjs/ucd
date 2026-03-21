@@ -10,7 +10,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { ChevronRight, FileCode, Route } from "lucide-react";
+import { ChevronRight, FileCode, Workflow } from "lucide-react";
 import { useMemo } from "react";
 
 export interface SourceFileListProps {
@@ -157,7 +157,7 @@ function TreeNode({ node, ...props }: { node: FileTreeNode } & SourceFileListPro
                     to="/s/$sourceId/$sourceFileId/$pipelineId"
                     params={{ sourceId: props.sourceId, sourceFileId: file.id, pipelineId: pipeline.id }}
                   >
-                    <Route className="size-3.5 shrink-0 text-muted-foreground" />
+                    <Workflow className="size-3.5 shrink-0 text-muted-foreground" />
                     <span className="truncate">{pipeline.name || pipeline.id}</span>
                   </Link>
                 )}

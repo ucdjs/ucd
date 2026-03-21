@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { FileCode2, Layers3, Route as PipelineIcon } from "lucide-react";
+import { FileCode2, Layers3, Workflow as PipelineIcon } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/")({
   component: RouteComponent,
