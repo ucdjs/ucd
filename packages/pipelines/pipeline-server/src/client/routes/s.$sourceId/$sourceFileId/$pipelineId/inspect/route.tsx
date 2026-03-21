@@ -208,7 +208,11 @@ function InspectSidebar({
             >
               {tab.label}
               {" "}
-              <span className="tabular-nums text-muted-foreground">({tab.count})</span>
+              <span className="tabular-nums text-muted-foreground">
+                (
+                {tab.count}
+                )
+              </span>
             </button>
           ))}
         </div>

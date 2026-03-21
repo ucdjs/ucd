@@ -6,30 +6,21 @@ import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
-export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name/")({
+export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName")({
   component: TransformDetailPage,
 });
 
 function TransformDetailPage() {
   const { pipelineResponse } = PipelineRoute.useLoaderData();
   const pipeline = pipelineResponse.pipeline;
-  const { sourceId, sourceFileId, pipelineId, name } = Route.useParams();
+  const { sourceId, sourceFileId, pipelineId, transformName } = Route.useParams();
 
   const transformRoutes = useMemo(() => {
-    return pipeline.routes.filter((route) => route.transforms.includes(name));
-  }, [pipeline.routes, name]);
+    return pipeline.routes.filter((route) => route.transforms.includes(transformName));
+  }, [pipeline.routes, transformName]);
 
   return (
     <div className="space-y-4">
-      <Link
-        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms"
-        params={{ sourceId, sourceFileId, pipelineId }}
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" />
-        Transforms
-      </Link>
-
       <Card>
         <CardContent className="space-y-4 pt-5">
           <div className="space-y-2">
@@ -39,7 +30,7 @@ function TransformDetailPage() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-lg font-semibold tracking-tight">{name}</h3>
+                  <h3 className="text-lg font-semibold tracking-tight">{transformName}</h3>
                   <Badge variant="secondary">
                     {transformRoutes.length}
                     {" "}

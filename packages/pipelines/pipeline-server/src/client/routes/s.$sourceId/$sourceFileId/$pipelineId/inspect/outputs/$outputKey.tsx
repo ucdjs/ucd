@@ -6,7 +6,7 @@ import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
-export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey/")({
+export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey")({
   component: OutputDetailPage,
 });
 
@@ -41,7 +41,9 @@ function OutputDetailPage() {
           Outputs
         </Link>
         <div className="rounded-lg border border-border/60 px-4 py-10 text-sm text-muted-foreground">
-          Output &ldquo;{outputKey}&rdquo; not found in this pipeline.
+          Output &ldquo;
+          {outputKey}
+          &rdquo; not found in this pipeline.
         </div>
       </div>
     );
@@ -51,15 +53,6 @@ function OutputDetailPage() {
 
   return (
     <div className="space-y-4">
-      <Link
-        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs"
-        params={{ sourceId, sourceFileId, pipelineId }}
-        className="inline-flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-3 w-3" />
-        Outputs
-      </Link>
-
       <Card>
         <CardContent className="space-y-4 pt-5">
           <div className="flex flex-wrap items-center justify-between gap-3">

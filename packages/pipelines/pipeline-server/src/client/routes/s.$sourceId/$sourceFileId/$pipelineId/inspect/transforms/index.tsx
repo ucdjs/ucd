@@ -10,12 +10,12 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/ins
       pipelineId: params.pipelineId,
     }));
     const allTransforms = new Set(pipelineResponse.pipeline.routes.flatMap((route) => route.transforms));
-    const sorted = [...allTransforms].sort((a, b) => a.localeCompare(b));
+    const sorted = [...allTransforms].toSorted((a, b) => a.localeCompare(b));
     const firstName = sorted[0];
     if (firstName) {
       throw redirect({
-        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name",
-        params: { ...params, name: firstName },
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName",
+        params: { ...params, transformName: firstName },
       });
     }
   },
