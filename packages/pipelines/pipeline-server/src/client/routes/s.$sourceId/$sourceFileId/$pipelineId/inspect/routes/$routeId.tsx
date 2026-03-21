@@ -243,18 +243,18 @@ function OutputsSection({ route, sourceId, sourceFileId, pipelineId }: SectionPr
       {route.outputs.length
         ? (
             <div className="grid gap-3">
-              {route.outputs.map((output, index) => (
-                <div key={`${output.dir ?? "none"}-${output.fileName ?? "none"}-${index}`} className="rounded-lg border border-border/60 p-4">
+              {route.outputs.map((output, idx) => (
+                <div key={`${output.dir ?? "none"}-${output.fileName ?? "none"}`} className="rounded-lg border border-border/60 p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2 text-sm font-medium">
                       <FileOutput className="h-3.5 w-3.5 text-muted-foreground" />
                       Output
                       {" "}
-                      {index + 1}
+                      {idx + 1}
                     </div>
                     <Link
                       to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
-                      params={{ sourceId, sourceFileId, pipelineId, outputKey: `${route.id}:${index}` }}
+                      params={{ sourceId, sourceFileId, pipelineId, outputKey: `${route.id}:${idx}` }}
                       className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                     >
                       Open output

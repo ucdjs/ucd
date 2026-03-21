@@ -22,8 +22,10 @@ export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
         {route.outputs.length
           ? (
               <div className="grid gap-3">
+                {/* Outputs are positional — index is the canonical key (used as outputKey param) */}
                 {route.outputs.map((output, index) => (
-                  <div key={`${output.dir ?? "none"}-${output.fileName ?? "none"}-${index}`} className="rounded-lg border border-border/60 p-4">
+                  // eslint-disable-next-line react/no-array-index-key
+                  <div key={index} className="rounded-lg border border-border/60 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-medium">
                         Output
