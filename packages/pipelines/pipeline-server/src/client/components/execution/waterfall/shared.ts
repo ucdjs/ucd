@@ -8,7 +8,6 @@ export const phaseLabels: Record<PipelineEventPhase, string> = {
   Version: "Version",
   Parse: "Parse",
   Resolve: "Resolve",
-  Artifact: "Artifact",
   File: "File",
   Cache: "Cache",
   Error: "Error",

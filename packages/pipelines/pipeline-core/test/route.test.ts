@@ -1,12 +1,9 @@
-import type { PipelineLogger } from "../src/types";
 import type {
-  ArtifactDefinition,
   InferRoute,
   RouteResolveContext,
 } from "../src/route";
-import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
+import type { FileContext, ParsedRow, PipelineLogger, PropertyJson } from "../src/types";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { z } from "zod";
 import {
   definePipelineRoute,
 } from "../src/route";
@@ -39,8 +36,7 @@ function createMockResolveContext(): RouteResolveContext {
     version: "16.0.0",
     file: createFileContext(),
     logger: noopLogger,
-    getArtifact: vi.fn(),
-    emitArtifact: vi.fn(),
+    getRouteData: vi.fn(() => []),
     normalizeEntries: vi.fn((entries) => entries),
     now: vi.fn(() => "2024-01-01T00:00:00Z"),
   };
@@ -65,32 +61,12 @@ describe("definePipelineRoute", () => {
     const route = definePipelineRoute({
       id: "dependent-route",
       filter: () => true,
-      depends: ["route:other-route", "artifact:source:data"] as const,
+      depends: ["route:other-route"] as const,
       parser: mockParser,
       resolver: async () => [],
     });
 
-    expect(route.depends).toEqual(["route:other-route", "artifact:source:data"]);
-  });
-
-  it("should define a route with emits", () => {
-    const emits = {
-      result: {
-        _type: "artifact" as const,
-        schema: z.string(),
-        scope: "version" as const,
-      },
-    };
-
-    const route = definePipelineRoute({
-      id: "emitting-route",
-      filter: () => true,
-      emits,
-      parser: mockParser,
-      resolver: async () => [],
-    });
-
-    expect(route.emits).toBe(emits);
+    expect(route.depends).toEqual(["route:other-route"]);
   });
 
   it("should define a route with transforms", () => {
@@ -148,19 +124,10 @@ describe("definePipelineRoute", () => {
       },
     });
 
-    const emits = {
-      data: {
-        _type: "artifact" as const,
-        schema: z.number(),
-        scope: "version" as const,
-      },
-    };
-
     const route = definePipelineRoute({
       id: "full-route",
       filter: (ctx) => ctx.file.ext === ".txt",
       depends: ["route:dependency"] as const,
-      emits,
       parser: mockParser,
       transforms: [transform] as const,
       resolver: async () => [],
@@ -170,7 +137,6 @@ describe("definePipelineRoute", () => {
 
     expect(route.id).toBe("full-route");
     expect(route.depends).toHaveLength(1);
-    expect(route.emits).toBe(emits);
     expect(route.transforms).toHaveLength(1);
     expect(route.outputs?.[0]?.path).toBe("output/{property:kebab}.json");
     expect(route.cache).toBe(true);
@@ -260,7 +226,7 @@ describe("route resolver", () => {
       data: string[];
     }
 
-    const route = definePipelineRoute<"custom", readonly [], Record<string, never>, readonly [], CustomOutput>({
+    const route = definePipelineRoute<"custom", readonly [], readonly [], CustomOutput>({
       id: "custom",
       filter: () => true,
       parser: mockParser,
@@ -283,58 +249,28 @@ describe("route resolver", () => {
 });
 
 describe("route context methods", () => {
-  it("should provide getArtifact in resolver context", async () => {
-    const getArtifact = vi.fn().mockReturnValue("artifact-value");
+  it("should provide getRouteData in resolver context", async () => {
+    const getRouteData = vi.fn().mockReturnValue([{ data: "test" }]);
 
     const route = definePipelineRoute({
       id: "test",
       filter: () => true,
-      depends: ["artifact:source:data"] as const,
+      depends: ["route:source"] as const,
       parser: mockParser,
       resolver: async (ctx) => {
-        const value = ctx.getArtifact("source:data");
-        return [{ value }] as any;
+        const data = ctx.getRouteData("source");
+        return [{ data }] as any;
       },
     });
 
     const ctx: RouteResolveContext = {
       ...createMockResolveContext(),
-      getArtifact,
+      getRouteData,
     };
 
     await route.resolver(ctx, mockParser());
 
-    expect(getArtifact).toHaveBeenCalledWith("source:data");
-  });
-
-  it("should provide emitArtifact in resolver context", async () => {
-    const emitArtifact = vi.fn();
-
-    const route = definePipelineRoute({
-      id: "test",
-      filter: () => true,
-      emits: {
-        result: {
-          _type: "artifact",
-          schema: z.string(),
-          scope: "version",
-        },
-      },
-      parser: mockParser,
-      resolver: async (ctx) => {
-        ctx.emitArtifact("result", "emitted-value");
-        return [];
-      },
-    });
-
-    const ctx: RouteResolveContext = {
-      ...createMockResolveContext(),
-      emitArtifact,
-    };
-
-    await route.resolver(ctx, mockParser());
-
-    expect(emitArtifact).toHaveBeenCalledWith("result", "emitted-value");
+    expect(getRouteData).toHaveBeenCalledWith("source");
   });
 
   it("should provide normalizeEntries in resolver context", async () => {
@@ -408,36 +344,13 @@ describe("type inference", () => {
       const route = definePipelineRoute({
         id: "test",
         filter: () => true,
-        depends: ["route:dep1", "artifact:route:artifact"] as const,
+        depends: ["route:dep1"] as const,
         parser: mockParser,
         resolver: async () => [],
       });
 
       type Depends = InferRoute<typeof route>["depends"];
-      expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1", "artifact:route:artifact"]>();
-    });
-
-    it("should infer route emits", () => {
-      const emits = {
-        data: {
-          _type: "artifact" as const,
-          schema: z.string(),
-          scope: "version" as const,
-        },
-      } satisfies Record<string, ArtifactDefinition>;
-
-      const route = definePipelineRoute({
-        id: "test",
-        filter: () => true,
-        emits,
-        parser: mockParser,
-        resolver: async () => [],
-      });
-
-      type Emits = InferRoute<typeof route>["emits"];
-      const routeEmits: Emits = route.emits!;
-
-      expect(routeEmits.data._type).toBe("artifact");
+      expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1"]>();
     });
 
     it("should infer route output type", () => {

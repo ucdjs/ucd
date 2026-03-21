@@ -1,4 +1,3 @@
-import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph, PipelineLogLevel } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./run/traces";
@@ -55,7 +54,6 @@ export interface PipelineLogEntry {
 }
 
 export interface PipelineExecutorOptions {
-  artifacts?: PipelineArtifactDefinition[];
   cacheStore?: CacheStore;
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;

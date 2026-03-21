@@ -212,7 +212,7 @@ export interface PropertyJson {
   meta?: Record<string, unknown>;
 }
 
-export interface ResolveContext<TArtifacts extends Record<string, unknown> = Record<string, unknown>> {
+export interface ResolveContext {
   /**
    * The Unicode version being processed.
    */
@@ -229,14 +229,9 @@ export interface ResolveContext<TArtifacts extends Record<string, unknown> = Rec
   logger: PipelineLogger;
 
   /**
-   * Get an artifact by ID.
+   * Read output data from a previously executed route.
    */
-  getArtifact: <K extends keyof TArtifacts>(id: K) => TArtifacts[K];
-
-  /**
-   * Emit an artifact for subsequent routes.
-   */
-  emitArtifact: <K extends string, V>(id: K, value: V) => void;
+  getRouteData: (routeId: string) => unknown[];
 
   /**
    * Normalize and sort entries by code point range.
@@ -250,9 +245,8 @@ export interface ResolveContext<TArtifacts extends Record<string, unknown> = Rec
 }
 
 export type ResolverFn<
-  TArtifacts extends Record<string, unknown> = Record<string, unknown>,
   TOutput = PropertyJson[],
 > = (
-  ctx: ResolveContext<TArtifacts>,
+  ctx: ResolveContext,
   rows: AsyncIterable<ParsedRow>,
 ) => Promise<TOutput>;

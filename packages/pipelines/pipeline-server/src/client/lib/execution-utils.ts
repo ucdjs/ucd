@@ -18,9 +18,6 @@ function buildSpanLabel(event: PipelineEvent): string {
   if ("routeId" in event && event.routeId) {
     return `${event.type} ${event.routeId}`;
   }
-  if ("artifactId" in event && event.artifactId) {
-    return `${event.type} ${event.artifactId}`;
-  }
   if ("file" in event && event.file) {
     return `${event.type} ${event.file.name}`;
   }

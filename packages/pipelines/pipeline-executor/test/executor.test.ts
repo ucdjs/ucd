@@ -33,22 +33,6 @@ describe("createPipelineExecutor", () => {
     expectTypeOf(executor.run).returns.toEqualTypeOf<Promise<PipelineExecutionResult[]>>();
   });
 
-  it("should accept pipelines and optional artifacts", () => {
-    definePipeline({
-      id: "test",
-      name: "Test",
-      versions: ["16.0.0"],
-      inputs: [createTestSource([])],
-      routes: [],
-    });
-
-    const executor = createPipelineExecutor({
-      artifacts: [],
-    });
-
-    expect(executor).toBeDefined();
-  });
-
   it("should accept optional cache store", () => {
     const cacheStore = createMemoryCacheStore();
 

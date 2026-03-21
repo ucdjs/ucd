@@ -16,9 +16,6 @@ export function buildExecutionGraphFromTraces(
         if (trace.file) {
           const fileNodeId = builder.addFileNode(trace.file);
           builder.addEdge(sourceNodeId, fileNodeId, "provides");
-        } else if (trace.artifactId) {
-          const artifactNodeId = builder.addArtifactNode(trace.artifactId, trace.version);
-          builder.addEdge(sourceNodeId, artifactNodeId, "provides");
         }
         break;
       }
@@ -61,18 +58,6 @@ export function buildExecutionGraphFromTraces(
       }
       case "file.fallback": {
         builder.addFileNode(trace.file);
-        break;
-      }
-      case "artifact.emitted": {
-        const routeNodeId = builder.addRouteNode(trace.routeId, trace.version);
-        const artifactNodeId = builder.addArtifactNode(trace.artifactId, trace.version);
-        builder.addEdge(routeNodeId, artifactNodeId, "resolved");
-        break;
-      }
-      case "artifact.consumed": {
-        const artifactNodeId = builder.addArtifactNode(trace.artifactId, trace.version);
-        const routeNodeId = builder.addRouteNode(trace.routeId, trace.version);
-        builder.addEdge(artifactNodeId, routeNodeId, "uses-artifact");
         break;
       }
       default:

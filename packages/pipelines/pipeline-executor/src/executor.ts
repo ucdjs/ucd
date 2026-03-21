@@ -12,7 +12,6 @@ import { createNoopExecutionRuntime } from "./runtime";
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
   const {
-    artifacts: globalArtifacts = [],
     cacheStore,
     onEvent,
     onLog,
@@ -37,7 +36,6 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               pipeline,
               runOptions,
               cacheStore,
-              artifacts: globalArtifacts,
               events,
               traces,
               priorResults: results,

@@ -37,38 +37,6 @@ describe("buildRouteGraph", () => {
 
     expect(graph).toEqual(expected.build());
   });
-
-  it("should add artifact nodes and resolved edges", () => {
-    const emits = {
-      meta: { _type: "artifact" as const, schema: {} as unknown, scope: "version" as const },
-    };
-    const routes = [
-      createMockRoute("producer", { emits: emits as any }),
-      createMockRoute("consumer", { depends: ["artifact:producer:meta"] }),
-    ];
-
-    const pipeline = definePipeline({
-      id: "artifact-pipeline",
-      name: "Artifact Pipeline",
-      versions: ["16.0.0"],
-      inputs: [],
-      routes,
-    });
-
-    const dagResult = buildDAG(routes);
-    expect(dagResult.valid).toBe(true);
-
-    const graph = buildRouteGraph(pipeline, dagResult.dag!);
-
-    const expected = new PipelineGraphBuilder();
-    expected.addRouteNode("producer", "static");
-    expected.addArtifactNode("producer:meta", "static");
-    expected.addRouteNode("consumer", "static");
-    expected.addEdge("route:static:producer", "artifact:static:producer:meta", "resolved");
-    expected.addEdge("route:static:producer", "route:static:consumer", "provides");
-
-    expect(graph).toEqual(expected.build());
-  });
 });
 
 describe("toVisualTree", () => {

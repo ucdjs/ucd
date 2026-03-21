@@ -23,10 +23,6 @@
     "type": "patch",
     "version": "0.1.1-beta.8"
   },
-  "@ucdjs/pipelines-artifacts": {
-    "type": "patch",
-    "version": "0.0.1-beta.8"
-  },
   "@ucdjs/pipelines-core": {
     "type": "patch",
     "version": "0.0.1-beta.8"

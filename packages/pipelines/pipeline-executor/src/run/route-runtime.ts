@@ -1,4 +1,3 @@
-import type { ArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
   AnyPipelineRouteDefinition,
   FallbackRouteDefinition,
@@ -11,21 +10,18 @@ import type {
 } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
-import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
 import { applyTransforms } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "../internal/logger";
 import { createParseContext } from "./source-files";
 
 export interface ProcessRouteResult {
   outputs: unknown[];
-  emittedArtifacts: Record<string, unknown>;
-  consumedArtifactIds: string[];
 }
 
 export interface ProcessRouteOptions {
   file: FileContext;
   route: AnyPipelineRouteDefinition;
-  artifactsMap: Record<string, unknown>;
+  routeDataMap: Record<string, unknown[]>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
@@ -38,42 +34,24 @@ interface ResolveContextOptions {
   file: FileContext;
   routeId: string;
   runtime: PipelineExecutionRuntime;
-  artifactsMap: Record<string, unknown>;
-  emittedArtifacts: Record<string, unknown>;
-  emitsDefinition?: Record<string, ArtifactDefinition>;
-  onArtifactEmit?: (id: string, value: unknown) => void;
-  onArtifactGet?: (id: string) => void;
+  routeDataMap: Record<string, unknown[]>;
 }
 
 export function createRouteResolveContext(
   options: ResolveContextOptions,
-): RouteResolveContext<string, Record<string, ArtifactDefinition>> {
-  const { version, file, routeId, runtime, artifactsMap, emittedArtifacts, emitsDefinition, onArtifactEmit, onArtifactGet } = options;
+): RouteResolveContext {
+  const { version, file, routeId, runtime, routeDataMap } = options;
   const logger = createPipelineLogger(runtime);
 
   return {
     version,
     file,
     logger,
-    getArtifact: <K extends string>(key: K): unknown => {
-      if (!(key in artifactsMap)) {
-        throw new Error(`Artifact "${key}" not found. Make sure a route that produces this artifact runs before route "${routeId}".`);
+    getRouteData: (targetRouteId: string): unknown[] => {
+      if (!(targetRouteId in routeDataMap)) {
+        throw new Error(`Route data for "${targetRouteId}" not found. Make sure route "${targetRouteId}" runs before route "${routeId}" by declaring it as a dependency.`);
       }
-      onArtifactGet?.(key);
-      return artifactsMap[key];
-    },
-    emitArtifact: <K extends string>(id: K, value: unknown): void => {
-      if (emitsDefinition) {
-        const def = emitsDefinition[id];
-        if (def) {
-          const result = def.schema.safeParse(value);
-          if (!result.success) {
-            throw new Error(`Artifact "${id}" validation failed: ${result.error.message}`);
-          }
-        }
-      }
-      emittedArtifacts[id] = value;
-      onArtifactEmit?.(id, value);
+      return routeDataMap[targetRouteId]!;
     },
     normalizeEntries: (entries) => {
       return entries.sort((a, b) => {
@@ -94,8 +72,8 @@ interface ExecuteParseResolveOptions {
   parser: (ctx: ReturnType<typeof createParseContext>) => AsyncIterable<ParsedRow>;
   filter?: PipelineFilter;
   transforms?: readonly PipelineTransformDefinition<any, any>[];
-  resolveContext: RouteResolveContext<string, Record<string, ArtifactDefinition>>;
-  resolver: (ctx: RouteResolveContext<string, Record<string, ArtifactDefinition>>, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
+  resolveContext: RouteResolveContext;
+  resolver: (ctx: RouteResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
@@ -176,43 +154,14 @@ async function emitInSpan(
 // --- Public API ---
 
 export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
-  const { file, route, artifactsMap, runtime, source, version, emit, spanId } = options;
+  const { file, route, routeDataMap, runtime, source, version, emit } = options;
 
-  const emittedArtifacts: Record<string, unknown> = {};
-  const consumedArtifactIds: string[] = [];
-
-  const resolveSpanId = spanId();
   const resolveContext = createRouteResolveContext({
     version,
     file,
     routeId: route.id,
     runtime,
-    artifactsMap,
-    emittedArtifacts,
-    emitsDefinition: route.emits,
-    onArtifactEmit: async (id) => {
-      await emitInSpan(runtime, resolveSpanId, emit, {
-        type: "artifact:produced",
-        artifactId: `${route.id}:${id}`,
-        routeId: route.id,
-        version,
-        spanId: resolveSpanId,
-        timestamp: performance.now(),
-      });
-    },
-    onArtifactGet: async (id) => {
-      if (!consumedArtifactIds.includes(id)) {
-        consumedArtifactIds.push(id);
-        await emitInSpan(runtime, resolveSpanId, emit, {
-          type: "artifact:consumed",
-          artifactId: id,
-          routeId: route.id,
-          version,
-          spanId: resolveSpanId,
-          timestamp: performance.now(),
-        });
-      }
-    },
+    routeDataMap,
   });
 
   const outputs = await executeParseResolve({
@@ -228,18 +177,17 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     version,
     emit,
     spanId: () => {
-      // First call returns the pre-allocated resolveSpanId, subsequent calls generate new ones
       return options.spanId();
     },
   });
 
-  return { outputs, emittedArtifacts, consumedArtifactIds };
+  return { outputs };
 }
 
 export interface ProcessFallbackOptions {
   file: FileContext;
   fallback: FallbackRouteDefinition;
-  artifactsMap: Record<string, unknown>;
+  routeDataMap: Record<string, unknown[]>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
@@ -248,17 +196,14 @@ export interface ProcessFallbackOptions {
 }
 
 export async function processFallback(options: ProcessFallbackOptions): Promise<unknown[]> {
-  const { file, fallback, artifactsMap, runtime, source, version, emit, spanId } = options;
-
-  const emittedArtifacts: Record<string, unknown> = {};
+  const { file, fallback, routeDataMap, runtime, source, version, emit, spanId } = options;
 
   const resolveContext = createRouteResolveContext({
     version,
     file,
     routeId: "__fallback__",
     runtime,
-    artifactsMap,
-    emittedArtifacts,
+    routeDataMap,
   });
 
   return executeParseResolve({
@@ -301,27 +246,6 @@ export async function* filterRows(
 
     if (shouldInclude) {
       yield row;
-    }
-  }
-}
-
-export function recordEmittedArtifacts(options: {
-  routeId: string;
-  emittedArtifacts: Record<string, unknown>;
-  routeEmits: Record<string, ArtifactDefinition> | undefined;
-  artifactsMap: Record<string, unknown>;
-  globalArtifactsMap: Record<string, unknown>;
-}): void {
-  const { routeId, emittedArtifacts, routeEmits, artifactsMap, globalArtifactsMap } = options;
-
-  for (const [artifactName, artifactValue] of Object.entries(emittedArtifacts)) {
-    const prefixedKey = `${routeId}:${artifactName}`;
-    const artifactDef = routeEmits?.[artifactName];
-
-    if (artifactDef && isGlobalArtifact(artifactDef)) {
-      globalArtifactsMap[prefixedKey] = artifactValue;
-    } else {
-      artifactsMap[prefixedKey] = artifactValue;
     }
   }
 }

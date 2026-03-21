@@ -1,4 +1,3 @@
-import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
   AnyPipelineDefinition,
   AnyPipelineRouteDefinition,
@@ -26,12 +25,11 @@ import type {
 } from "./types";
 import { emitRuntimeEvent } from "./internal/events";
 import { createPipelineLogger } from "./internal/logger";
-import { runGlobalArtifacts, traceRouteArtifacts } from "./run/artifacts";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
 import { buildExecutionGraphFromTraces } from "./run/graph";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
 import { createProcessingQueue } from "./run/processing-queue";
-import { processFallback, processRoute, recordEmittedArtifacts } from "./run/route-runtime";
+import { processFallback, processRoute } from "./run/route-runtime";
 import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
 import { createSourceAdapter, isSourceFileContext } from "./run/source-files";
 import { buildOutputManifestFromTraces } from "./run/traces";
@@ -42,7 +40,6 @@ export interface RunPipelineOptions {
   pipeline: AnyPipelineDefinition;
   runOptions?: PipelineExecutorRunOptions;
   cacheStore?: CacheStore;
-  artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
   traces: TraceEmitter;
   priorResults?: PipelineExecutionResult[];
@@ -52,7 +49,6 @@ export interface RunPipelineOptions {
 export interface RunConfig {
   pipeline: AnyPipelineDefinition;
   cacheStore?: CacheStore;
-  artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
   traces: TraceEmitter;
   runtime: PipelineExecutionRuntime;
@@ -79,8 +75,7 @@ export interface RunContext {
 
 interface VersionContext {
   version: string;
-  artifactsMap: Record<string, unknown>;
-  globalArtifactsMap: Record<string, unknown>;
+  routeDataMap: Record<string, unknown[]>;
   listFiles: () => Promise<FileContext[]>;
 }
 
@@ -111,14 +106,13 @@ export async function run(options: RunPipelineOptions): Promise<PipelineExecutio
 }
 
 function createRunContext(options: RunPipelineOptions): RunContext {
-  const { pipeline, runOptions = {}, cacheStore, artifacts, events, traces, priorResults = [], runtime } = options;
+  const { pipeline, runOptions = {}, cacheStore, events, traces, priorResults = [], runtime } = options;
   const versions = resolveVersions(pipeline, runOptions);
   const logger = createPipelineLogger(runtime);
 
   const config: RunConfig = {
     pipeline,
     cacheStore,
-    artifacts,
     events,
     traces,
     runtime,
@@ -147,17 +141,16 @@ function createRunContext(options: RunPipelineOptions): RunContext {
 }
 
 function createVersionContext(
-  context: RunContext,
+  _context: RunContext,
   version: string,
 ): VersionContext {
   let files: FileContext[] | null = null;
 
   return {
     version,
-    artifactsMap: {},
-    globalArtifactsMap: {},
+    routeDataMap: {},
     listFiles: async () => {
-      files ??= await context.config.source.listFiles(version);
+      files ??= await _context.config.source.listFiles(version);
       return files;
     },
   };
@@ -173,18 +166,6 @@ async function runVersion(context: RunContext, version: string): Promise<void> {
     version,
     spanId,
     timestamp: performance.now(),
-  });
-
-  await runGlobalArtifacts({
-    artifacts: context.config.artifacts,
-    version,
-    state: versionContext,
-    logger: context.config.logger,
-    source: context.config.source,
-    runtime: context.config.runtime,
-    events: context.config.events,
-    emitTrace: context.emitTrace,
-    onError: (errorSpanId, error) => emitPipelineError(context, errorSpanId, error),
   });
 
   const files = await versionContext.listFiles();
@@ -260,35 +241,17 @@ async function executeMatchedFile(
 
   await context.config.runtime.withSpan(spanId, async () => {
     try {
-      const artifactsMap = {
-        ...versionContext.artifactsMap,
-        ...versionContext.globalArtifactsMap,
-      };
-
       const result = await loadRouteResult(
         context,
         version,
         route,
         file,
         spanId,
-        artifactsMap,
+        versionContext.routeDataMap,
       );
 
-      recordEmittedArtifacts({
-        routeId: route.id,
-        emittedArtifacts: result.emittedArtifacts,
-        routeEmits: route.emits,
-        artifactsMap: versionContext.artifactsMap,
-        globalArtifactsMap: versionContext.globalArtifactsMap,
-      });
-
-      await traceRouteArtifacts({
-        emitTrace: context.emitTrace,
-        version,
-        routeId: route.id,
-        consumedArtifactIds: result.consumedArtifactIds,
-        emittedArtifacts: result.emittedArtifacts,
-      });
+      versionContext.routeDataMap[route.id] ??= [];
+      versionContext.routeDataMap[route.id]!.push(...result.outputs);
 
       await materializeOutputs({
         outputs: context.data.outputs,
@@ -381,10 +344,7 @@ async function executeFallbackFile(
     const outputs = await context.config.runtime.withSpan(spanId, () => processFallback({
       file,
       fallback: context.config.pipeline.fallback!,
-      artifactsMap: {
-        ...versionContext.artifactsMap,
-        ...versionContext.globalArtifactsMap,
-      },
+      routeDataMap: versionContext.routeDataMap,
       runtime: context.config.runtime,
       source: context.config.source,
       version,
@@ -419,8 +379,8 @@ async function loadRouteResult(
   route: RouteDef,
   file: FileContext,
   spanId: string,
-  artifactsMap: Record<string, unknown>,
-) {
+  routeDataMap: Record<string, unknown[]>,
+): Promise<{ outputs: unknown[] }> {
   const { cacheStore, runtime, source, events, useCache } = context.config;
   const routeCacheEnabled = useCache && route.cache !== false;
   let fileContent: string | undefined;
@@ -432,7 +392,6 @@ async function loadRouteResult(
       routeId: route.id,
       version,
       fileContent,
-      artifactsMap,
     });
 
     await recordCacheHitOrMiss(context, version, route.id, file, spanId, cached.hit);
@@ -444,7 +403,7 @@ async function loadRouteResult(
   const result = await processRoute({
     file,
     route,
-    artifactsMap,
+    routeDataMap,
     runtime,
     source,
     version,
@@ -454,19 +413,16 @@ async function loadRouteResult(
 
   if (routeCacheEnabled && cacheStore) {
     fileContent ??= await source.readFile(file);
-    const cacheKey = await buildCacheKey(
+    const cacheKey = buildCacheKey(
       route.id,
       version,
       fileContent,
-      artifactsMap,
-      result.consumedArtifactIds,
     );
 
     await storeCacheEntry({
       cacheStore,
       cacheKey,
       outputs: result.outputs,
-      emittedArtifacts: result.emittedArtifacts,
     });
     await context.emitTrace({ kind: "cache.store", routeId: route.id, file, version });
     await events.emit({

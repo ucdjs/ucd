@@ -11,10 +11,7 @@ export {
 } from "./dag";
 
 export type {
-  ExtractArtifactDependencies,
-  ExtractArtifactKeys,
   ExtractRouteDependencies,
-  ParsedArtifactDependency,
   ParsedDependency,
   ParseDependencyType,
   ParsedRouteDependency,
@@ -22,18 +19,12 @@ export type {
 } from "./dependencies";
 
 export {
-  createArtifactDependency,
   createRouteDependency,
-  isArtifactDependency,
   isRouteDependency,
   parseDependency,
 } from "./dependencies";
 
 export type {
-  ArtifactConsumedEvent,
-  ArtifactEndEvent,
-  ArtifactProducedEvent,
-  ArtifactStartEvent,
   CacheHitEvent,
   CacheMissEvent,
   CacheStoreEvent,
@@ -119,9 +110,6 @@ export {
 
 export type {
   AnyPipelineRouteDefinition,
-  ArtifactDefinition,
-  InferArtifactType,
-  InferEmittedArtifactsFromRoute,
   InferRoute,
   InferRoutesOutput,
   PipelineRouteDefinition,

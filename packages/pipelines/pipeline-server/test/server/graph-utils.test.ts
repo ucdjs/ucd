@@ -14,7 +14,6 @@ describe("graph-utils", () => {
       "pipeline-source",
       "pipeline-file",
       "pipeline-route",
-      "pipeline-artifact",
       "pipeline-output",
     ]);
   });
