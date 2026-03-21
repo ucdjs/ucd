@@ -16,14 +16,15 @@ describe("versionSelector", () => {
       />,
     );
 
-    expect(screen.getByText("Versions (2/3)")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Versions/i })).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "15.1.0" }));
+    await user.click(screen.getByRole("button", { name: /Versions/i }));
+    await user.click(await screen.findByRole("menuitemcheckbox", { name: "15.1.0" }));
 
     expect(onToggleVersion).toHaveBeenCalledWith("15.1.0");
   });
 
-  it("renders All and None only when handlers are provided", async () => {
+  it("renders select-all and clear-selection actions only when handlers are provided", async () => {
     const user = userEvent.setup();
     const onSelectAll = vi.fn();
     const onDeselectAll = vi.fn();
@@ -36,8 +37,9 @@ describe("versionSelector", () => {
       />,
     );
 
-    expect(screen.queryByRole("button", { name: "All" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "None" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Versions/i }));
+    expect(screen.queryByRole("menuitem", { name: "Select all" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Clear selection" })).not.toBeInTheDocument();
 
     rerender(
       <VersionSelector
@@ -49,14 +51,18 @@ describe("versionSelector", () => {
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "All" }));
-    await user.click(screen.getByRole("button", { name: "None" }));
+    await user.click(screen.getByRole("button", { name: /Versions/i }));
+    await user.click(await screen.findByRole("menuitem", { name: "Select all" }));
+    await user.click(screen.getByRole("button", { name: /Versions/i }));
+    await user.click(await screen.findByRole("menuitem", { name: "Clear selection" }));
 
     expect(onSelectAll).toHaveBeenCalledTimes(1);
     expect(onDeselectAll).toHaveBeenCalledTimes(1);
   });
 
-  it("renders repeated versions once per input item", () => {
+  it("renders repeated versions once per input item", async () => {
+    const user = userEvent.setup();
+
     render(
       <VersionSelector
         versions={["16.0.0", "16.0.0", "15.1.0"]}
@@ -65,8 +71,9 @@ describe("versionSelector", () => {
       />,
     );
 
-    expect(screen.getByText("Versions (0/3)")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: "16.0.0" })).toHaveLength(2);
-    expect(screen.getByRole("button", { name: "15.1.0" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Versions/i }));
+
+    expect(await screen.findAllByRole("menuitemcheckbox", { name: "16.0.0" })).toHaveLength(2);
+    expect(await screen.findByRole("menuitemcheckbox", { name: "15.1.0" })).toBeInTheDocument();
   });
 });

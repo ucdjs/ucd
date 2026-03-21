@@ -3,7 +3,9 @@ import { PipelineGraph } from "#components/graph/pipeline-graph";
 import { executionGraphQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({
   loader: async ({ context, params }) => {
@@ -34,50 +36,105 @@ function ExecutionGraphPage() {
     executionId,
   }));
   const graph = data.graph;
-
-  if (!graph || graph.nodes.length === 0) {
-    return (
-      <div className="flex h-full flex-col p-4 sm:p-6">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold">Execution graph</h1>
-          </div>
-          <StatusBadge status={data.status} />
-        </div>
-        <section
-          className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border bg-card/40 p-6 text-sm text-muted-foreground"
-          role="status"
-          aria-live="polite"
-        >
-          No graph recorded for this execution.
-        </section>
-      </div>
-    );
-  }
+  const shortExecutionId = executionId.slice(0, 8);
 
   return (
-    <div className="flex h-full min-h-0 flex-col p-4 sm:p-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg font-semibold">Execution graph</h1>
-        </div>
-        <StatusBadge status={data.status} />
-      </div>
+    <div className="flex h-full min-h-0 flex-col">
+      <header className="shrink-0 border-b bg-background px-4 py-4 sm:px-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0 space-y-3">
+            <Button
+              nativeButton={false}
+              variant="ghost"
+              size="sm"
+              className="-ml-2 w-fit"
+              render={(props) => (
+                <Link
+                  to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                  params={{ sourceId, sourceFileId, pipelineId, executionId }}
+                  {...props}
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  Back
+                </Link>
+              )}
+            />
 
-      <section
-        className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card/40"
-        role="tabpanel"
-        id="tabpanel-execution-graph"
-        aria-labelledby="tab-graphs"
-      >
-        <PipelineGraph
-          graph={graph}
-          showFilters
-          showDetails
-          showMinimap
-          className="h-full"
-        />
-      </section>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-lg font-semibold tracking-tight">
+                  Execution
+                  {" "}
+                  {shortExecutionId}
+                </h1>
+                <StatusBadge status={data.status} />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:justify-end">
+            <Button
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              render={(props) => (
+                <Link
+                  to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                  params={{ sourceId, sourceFileId, pipelineId, executionId }}
+                  {...props}
+                >
+                  Logs
+                </Link>
+              )}
+            />
+
+            <Button
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              render={(props) => (
+                <Link
+                  to="/s/$sourceId/$sourceFileId/$pipelineId/executions"
+                  params={{ sourceId, sourceFileId, pipelineId }}
+                  {...props}
+                >
+                  Executions
+                </Link>
+              )}
+            />
+          </div>
+        </div>
+      </header>
+
+      {!graph || graph.nodes.length === 0
+        ? (
+            <section
+              className="m-4 flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/10 p-6 text-sm text-muted-foreground sm:m-6"
+              role="status"
+              aria-live="polite"
+            >
+              No graph
+            </section>
+          )
+        : (
+            <div className="min-h-0 flex-1 p-4 sm:p-6">
+              <section
+                className="h-full min-h-[24rem] overflow-hidden rounded-2xl border border-border/70 bg-background"
+                role="region"
+                aria-label="Graph"
+              >
+                <PipelineGraph
+                  graph={graph}
+                  showFilters
+                  showDetails
+                  showMinimap
+                  className="h-full"
+                />
+              </section>
+            </div>
+          )}
     </div>
   );
 }

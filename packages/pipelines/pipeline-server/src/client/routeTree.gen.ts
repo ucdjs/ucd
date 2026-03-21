@@ -17,7 +17,6 @@ import { Route as SSourceIdSourceFileIdIndexRouteImport } from './routes/s.$sour
 import { Route as SSourceIdSourceFileIdPipelineIdRouteRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/route'
 import { Route as SSourceIdSourceFileIdPipelineIdIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/index'
 import { Route as SSourceIdSourceFileIdPipelineIdInspectRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect'
-import { Route as SSourceIdSourceFileIdPipelineIdGraphsRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/graphs'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/index'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/$executionId/index'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
@@ -67,12 +66,6 @@ const SSourceIdSourceFileIdPipelineIdInspectRoute =
     path: '/inspect',
     getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
   } as any)
-const SSourceIdSourceFileIdPipelineIdGraphsRoute =
-  SSourceIdSourceFileIdPipelineIdGraphsRouteImport.update({
-    id: '/graphs',
-    path: '/graphs',
-    getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
-  } as any)
 const SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute =
   SSourceIdSourceFileIdPipelineIdExecutionsIndexRouteImport.update({
     id: '/executions/',
@@ -99,7 +92,6 @@ export interface FileRoutesByFullPath {
   '/s/$sourceId/': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
@@ -110,7 +102,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/s/$sourceId': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
@@ -125,7 +116,6 @@ export interface FileRoutesById {
   '/s/$sourceId/': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
@@ -141,7 +131,6 @@ export interface FileRouteTypes {
     | '/s/$sourceId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
     | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
@@ -152,7 +141,6 @@ export interface FileRouteTypes {
     | '/'
     | '/s/$sourceId'
     | '/s/$sourceId/$sourceFileId'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
     | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions'
@@ -166,7 +154,6 @@ export interface FileRouteTypes {
     | '/s/$sourceId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
     | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
@@ -237,13 +224,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteImport
       parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
     }
-    '/s/$sourceId/$sourceFileId/$pipelineId/graphs': {
-      id: '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
-      path: '/graphs'
-      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
-      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdGraphsRouteImport
-      parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
-    }
     '/s/$sourceId/$sourceFileId/$pipelineId/executions/': {
       id: '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
       path: '/executions'
@@ -269,7 +249,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface SSourceIdSourceFileIdPipelineIdRouteRouteChildren {
-  SSourceIdSourceFileIdPipelineIdGraphsRoute: typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
   SSourceIdSourceFileIdPipelineIdInspectRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoute
   SSourceIdSourceFileIdPipelineIdIndexRoute: typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute: typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
@@ -279,8 +258,6 @@ interface SSourceIdSourceFileIdPipelineIdRouteRouteChildren {
 
 const SSourceIdSourceFileIdPipelineIdRouteRouteChildren: SSourceIdSourceFileIdPipelineIdRouteRouteChildren =
   {
-    SSourceIdSourceFileIdPipelineIdGraphsRoute:
-      SSourceIdSourceFileIdPipelineIdGraphsRoute,
     SSourceIdSourceFileIdPipelineIdInspectRoute:
       SSourceIdSourceFileIdPipelineIdInspectRoute,
     SSourceIdSourceFileIdPipelineIdIndexRoute:

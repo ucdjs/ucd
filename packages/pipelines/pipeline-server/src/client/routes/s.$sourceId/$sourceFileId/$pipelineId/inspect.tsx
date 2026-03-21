@@ -7,7 +7,7 @@ import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { ArrowRight, FileOutput, Filter, FolderOutput, Link2, Route as PipelineIcon, Shuffle, Spline } from "lucide-react";
+import { ArrowRight, FileOutput, Filter, FolderOutput, Link2, Workflow as PipelineIcon, Shuffle, Spline } from "lucide-react";
 import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");

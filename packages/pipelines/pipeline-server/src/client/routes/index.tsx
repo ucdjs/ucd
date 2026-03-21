@@ -7,7 +7,7 @@ import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { FileCode2, FolderTree, Route as PipelineIcon } from "lucide-react";
+import { FileCode2, FolderTree, Workflow as PipelineIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {

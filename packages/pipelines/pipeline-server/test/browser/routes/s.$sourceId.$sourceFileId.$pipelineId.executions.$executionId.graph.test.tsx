@@ -94,6 +94,19 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
           sources: [{ id: "local" }],
         },
       })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
+
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () => HttpResponse.json({
         executionId: "exec-1",
         pipelineId: "main-pipeline",
@@ -104,6 +117,11 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
 
     await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
 
+    expect(await screen.findByText("Execution exec-1 graph")).toBeInTheDocument();
+    expect(screen.getByText("Back to execution")).toHaveAttribute(
+      "href",
+      "/s/local/alpha/main-pipeline/executions/exec-1",
+    );
     expect(await screen.findByText("No graph recorded for this execution.")).toBeInTheDocument();
   });
 
@@ -160,6 +178,19 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
           sources: [{ id: "local" }],
         },
       })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
+
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () => HttpResponse.json({
         executionId: "exec-1",
         pipelineId: "main-pipeline",
@@ -202,6 +233,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
     const user = userEvent.setup();
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
 
+    expect(await screen.findByText("Execution exec-1 graph")).toBeInTheDocument();
     expect(await screen.findByTestId("pipeline-graph")).toBeInTheDocument();
     expect(screen.getByTestId("pipeline-graph-filters")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Route" })).toBeInTheDocument();

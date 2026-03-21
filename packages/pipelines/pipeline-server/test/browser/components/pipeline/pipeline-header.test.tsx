@@ -26,19 +26,26 @@ vi.mock("@tanstack/react-router", () => {
   return {
     Link: ({
       children,
+      to,
       params,
       ...props
     }: {
       children: ReactNode;
-      params: { sourceId: string; sourceFileId: string; pipelineId: string; executionId: string };
-    } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-      <a
-        href={`/s/${params.sourceId}/${params.sourceFileId}/${params.pipelineId}/executions/${params.executionId}`}
-        {...props}
-      >
-        {children}
-      </a>
-    ),
+      to: string;
+      params: Record<string, string>;
+    } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
+      const href = to
+        .replace("$sourceId", params.sourceId ?? "")
+        .replace("$sourceFileId", params.sourceFileId ?? "")
+        .replace("$pipelineId", params.pipelineId ?? "")
+        .replace("$executionId", params.executionId ?? "");
+
+      return (
+        <a href={href} {...props}>
+          {children}
+        </a>
+      );
+    },
     useNavigate: () => mockedNavigate,
     useParams: () => ({
       sourceId: "local",
@@ -73,11 +80,18 @@ describe("pipelineHeader", () => {
       <PipelineHeader
         selectedVersions={new Set()}
         pipeline={pipeline}
+        sourceLabel="Local Source"
         fileLabel="Alpha file"
+        filePath="src/alpha.ts"
+        latestExecution={null}
+        onToggleVersion={() => {}}
+        onSelectAll={() => {}}
+        onDeselectAll={() => {}}
       />,
     );
 
     expect(screen.getByRole("button", { name: "Execute" })).toBeDisabled();
+    expect(screen.getByText("Select at least one version to enable execution.")).toBeInTheDocument();
   });
 
   it("shows the running state while an execution is in progress", () => {
@@ -87,12 +101,18 @@ describe("pipelineHeader", () => {
       <PipelineHeader
         selectedVersions={new Set(["16.0.0"])}
         pipeline={pipeline}
+        sourceLabel="Local Source"
         fileLabel="Alpha file"
+        filePath="src/alpha.ts"
+        latestExecution={null}
+        onToggleVersion={() => {}}
+        onSelectAll={() => {}}
+        onDeselectAll={() => {}}
       />,
     );
 
     expect(screen.getByRole("button", { name: "Running..." })).toBeDisabled();
-    expect(screen.queryByRole("button", { name: "View Execution" })).not.toBeInTheDocument();
+    expect(screen.queryByText("View latest execution")).not.toBeInTheDocument();
   });
 
   it("navigates to the execution details page after a successful run", async () => {
@@ -107,7 +127,13 @@ describe("pipelineHeader", () => {
       <PipelineHeader
         selectedVersions={new Set(["16.0.0", "15.1.0"])}
         pipeline={pipeline}
+        sourceLabel="Local Source"
         fileLabel="Alpha file"
+        filePath="src/alpha.ts"
+        latestExecution={null}
+        onToggleVersion={() => {}}
+        onSelectAll={() => {}}
+        onDeselectAll={() => {}}
       />,
     );
 
@@ -127,43 +153,36 @@ describe("pipelineHeader", () => {
     });
   });
 
-  it("does not navigate when execution fails or returns no execution id", async () => {
-    mockedExecute.mockResolvedValueOnce({
-      success: false,
-      executionId: null,
-    });
-
-    const user = userEvent.setup();
-
+  it("renders source, file, and latest execution links", () => {
     render(
       <PipelineHeader
         selectedVersions={new Set(["16.0.0"])}
         pipeline={pipeline}
+        sourceLabel="Local Source"
         fileLabel="Alpha file"
+        filePath="src/alpha.ts"
+        latestExecution={{
+          id: "exec-existing",
+          sourceId: "local",
+          fileId: "alpha",
+          pipelineId: "main-pipeline",
+          status: "completed",
+          startedAt: "2026-03-20T10:00:00.000Z",
+          completedAt: "2026-03-20T10:01:00.000Z",
+          versions: ["16.0.0"],
+          summary: null,
+          hasGraph: false,
+          error: null,
+        }}
+        onToggleVersion={() => {}}
+        onSelectAll={() => {}}
+        onDeselectAll={() => {}}
       />,
     );
 
-    await user.click(screen.getByRole("button", { name: "Execute" }));
-
-    await waitFor(() => {
-      expect(mockedExecute).toHaveBeenCalledWith("local", "alpha", "main-pipeline", ["16.0.0"]);
-    });
-
-    expect(mockedNavigate).not.toHaveBeenCalled();
-  });
-
-  it("renders the View Execution link when a previous execution id exists", () => {
-    executeState.executionId = "exec-existing";
-
-    render(
-      <PipelineHeader
-        selectedVersions={new Set(["16.0.0"])}
-        pipeline={pipeline}
-        fileLabel="Alpha file"
-      />,
-    );
-
-    expect(screen.getByRole("button", { name: "View Execution" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Local Source" })).toHaveAttribute("href", "/s/local");
+    expect(screen.getByRole("link", { name: "Alpha file" })).toHaveAttribute("href", "/s/local/alpha");
+    expect(screen.getByText("View latest execution")).toHaveAttribute(
       "href",
       "/s/local/alpha/main-pipeline/executions/exec-existing",
     );
