@@ -11,7 +11,7 @@ import {
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ChevronRight, FileCode, Workflow } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export interface SourceFileListProps {
   sourceId: string;
@@ -110,35 +110,24 @@ function TreeNode({ node, ...props }: { node: FileTreeNode } & SourceFileListPro
   const isOpen = props.expanded[stateKey] ?? isActive;
   const hasPipelines = file.pipelines.length > 0;
 
+  const handleToggle = useCallback(() => {
+    props.toggle(stateKey, isOpen);
+  }, [props, stateKey, isOpen]);
+
   return (
     <SidebarMenuItem>
-      <div className="flex items-center">
+      <SidebarMenuButton
+        isActive={isActive}
+        size="sm"
+        className="gap-1.5 px-1"
+        onClick={handleToggle}
+      >
         {hasPipelines
-          ? (
-              <button
-                type="button"
-                className="flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors hover:text-foreground"
-                onClick={() => props.toggle(stateKey, isOpen)}
-              >
-                <ChevronRight className={`size-3 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
-              </button>
-            )
-          : <span className="w-5 shrink-0" />}
-        <SidebarMenuButton
-          isActive={isActive}
-          size="sm"
-          className="flex-1 gap-1.5 px-1"
-          render={(
-            <Link
-              to="/s/$sourceId/$sourceFileId"
-              params={{ sourceId: props.sourceId, sourceFileId: file.id }}
-            >
-              <FileCode className="size-3.5 shrink-0 opacity-60" />
-              <span className="truncate">{getFileName(file)}</span>
-            </Link>
-          )}
-        />
-      </div>
+          ? <ChevronRight className={`size-3 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
+          : <span className="w-3 shrink-0" />}
+        <FileCode className="size-3.5 shrink-0 opacity-60" />
+        <span className="truncate">{getFileName(file)}</span>
+      </SidebarMenuButton>
       {isOpen && hasPipelines && (
         <SidebarMenuSub>
           {file.pipelines.map((pipeline) => (

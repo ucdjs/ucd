@@ -19,7 +19,6 @@ import { VersionSelector } from "./version-selector";
 export interface PipelineHeaderProps {
   pipeline: PipelineDetails;
   sourceLabel: string;
-  fileLabel: string;
   filePath: string;
   latestExecution: ExecutionSummaryItem | null;
 }
@@ -27,7 +26,6 @@ export interface PipelineHeaderProps {
 export function PipelineHeader({
   pipeline,
   sourceLabel,
-  fileLabel,
   filePath,
   latestExecution,
 }: PipelineHeaderProps) {
@@ -58,10 +56,6 @@ export function PipelineHeader({
         <BreadcrumbList className="text-xs">
           <BreadcrumbItem>
             <BreadcrumbLink render={<Link to="/s/$sourceId" params={{ sourceId }}>{sourceLabel}</Link>} />
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink render={<Link to="/s/$sourceId/$sourceFileId" params={{ sourceId, sourceFileId }}>{fileLabel}</Link>} />
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>

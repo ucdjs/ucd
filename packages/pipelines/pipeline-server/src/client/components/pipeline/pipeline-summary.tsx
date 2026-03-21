@@ -7,7 +7,6 @@ export interface PipelineSummaryProps {
   sourceId: string;
   sourceLabel: string;
   sourceCount: number;
-  sourceFileId: string;
   fileLabel: string;
   filePath: string;
   include?: string | null;
@@ -18,7 +17,6 @@ export function PipelineSummary({
   sourceId,
   sourceLabel,
   sourceCount,
-  sourceFileId,
   fileLabel,
   filePath,
   include,
@@ -31,10 +29,8 @@ export function PipelineSummary({
       </CardHeader>
       <CardContent className="space-y-5 pt-5">
         <div className="grid gap-2 sm:grid-cols-2">
-          <Link
-            to="/s/$sourceId/$sourceFileId"
-            params={{ sourceId, sourceFileId }}
-            className="rounded-lg border border-border/60 px-3 py-3 transition-colors hover:bg-muted/10"
+          <div
+            className="rounded-lg border border-border/60 px-3 py-3"
           >
             <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
               <FileCode2 className="h-3.5 w-3.5" />
@@ -42,7 +38,7 @@ export function PipelineSummary({
             </div>
             <div className="text-sm font-medium text-foreground">{fileLabel}</div>
             <div className="mt-1 break-all text-xs text-muted-foreground">{filePath}</div>
-          </Link>
+          </div>
 
           <Link
             to="/s/$sourceId"

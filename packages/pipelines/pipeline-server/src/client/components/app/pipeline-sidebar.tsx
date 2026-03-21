@@ -1,5 +1,3 @@
-import { sourcesQueryOptions } from "#queries/sources";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -13,9 +11,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ChevronRight, ExternalLink, Hash, Tag } from "lucide-react";
+import { BookOpen, ExternalLink, Hash, Tag } from "lucide-react";
 import * as React from "react";
 import { SourceFileList } from "./source-file-list";
 import { SourceSwitcher } from "./source-switcher";
@@ -29,7 +26,6 @@ export function PipelineSidebar({
   workspaceId,
   version,
 }: PipelineSidebarProps) {
-  const { data: sourcesData } = useSuspenseQuery(sourcesQueryOptions());
   const params = useParams({ strict: false });
 
   const currentSourceId = "sourceId" in params && typeof params.sourceId === "string"
@@ -47,8 +43,6 @@ export function PipelineSidebar({
   const toggle = React.useCallback((key: string, isOpen: boolean) => {
     setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
   }, []);
-
-  const sources = sourcesData ?? [];
 
   return (
     <Sidebar data-testid="pipeline-sidebar">
@@ -102,69 +96,17 @@ export function PipelineSidebar({
       </div>
 
       <SidebarContent data-testid="pipeline-sidebar-content">
-        {currentSourceId
-          ? (
-              <SidebarGroup className="px-2 py-1" data-testid={`pipeline-sidebar-current-source:${currentSourceId}`}>
-                <SourceFileList
-                  sourceId={currentSourceId}
-                  currentFileId={currentFileId}
-                  currentPipelineId={currentPipelineId}
-                  expanded={expanded}
-                  toggle={toggle}
-                />
-              </SidebarGroup>
-            )
-          : (
-              sources.map((source) => {
-                const sourceKey = `source:${source.id}`;
-                const isOpen = expanded[sourceKey] ?? false;
-                const isActive = currentSourceId === source.id;
-
-                return (
-                  <SidebarGroup
-                    key={source.id}
-                    className="px-2 py-1"
-                    data-testid={`pipeline-sidebar-source-group:${source.id}`}
-                  >
-                    <SidebarMenu>
-                      <SidebarMenuItem>
-                        <SidebarMenuButton
-                          className="h-9 gap-2 px-2.5"
-                          data-testid={`pipeline-sidebar-source-toggle:${source.id}`}
-                          onClick={() => toggle(sourceKey, isOpen)}
-                        >
-                          <ChevronRight className={`size-3.5 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
-                          <SidebarGroupLabel className="h-auto min-w-0 flex-1 px-0 text-[11px] font-semibold uppercase tracking-[0.08em] text-sidebar-foreground/75">
-                            <Link
-                              to="/s/$sourceId"
-                              params={{ sourceId: source.id }}
-                              data-testid={`pipeline-sidebar-source-link:${source.id}`}
-                              className={isActive
-                                ? "block truncate text-sidebar-foreground"
-                                : "block truncate hover:text-sidebar-foreground"}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {source.label}
-                            </Link>
-                          </SidebarGroupLabel>
-                        </SidebarMenuButton>
-                        {isOpen && (
-                          <SidebarMenuSub>
-                            <SourceFileList
-                              sourceId={source.id}
-                              currentFileId={currentFileId}
-                              currentPipelineId={currentPipelineId}
-                              expanded={expanded}
-                              toggle={toggle}
-                            />
-                          </SidebarMenuSub>
-                        )}
-                      </SidebarMenuItem>
-                    </SidebarMenu>
-                  </SidebarGroup>
-                );
-              })
-            )}
+        {currentSourceId && (
+          <SidebarGroup className="px-2 py-1" data-testid={`pipeline-sidebar-current-source:${currentSourceId}`}>
+            <SourceFileList
+              sourceId={currentSourceId}
+              currentFileId={currentFileId}
+              currentPipelineId={currentPipelineId}
+              expanded={expanded}
+              toggle={toggle}
+            />
+          </SidebarGroup>
+        )}
       </SidebarContent>
 
       <SidebarFooter data-testid="pipeline-sidebar-footer">
