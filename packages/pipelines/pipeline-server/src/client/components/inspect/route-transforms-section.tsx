@@ -25,8 +25,8 @@ export function RouteTransformsSection({ route }: RouteTransformsSectionProps) {
                 return (
                   <Link
                     key={transform}
-                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$name"
-                    params={{ sourceId, sourceFileId, pipelineId, name: transform }}
+                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName"
+                    params={{ sourceId, sourceFileId, pipelineId, transformName: transform }}
                     className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                   >
                     {transform}
