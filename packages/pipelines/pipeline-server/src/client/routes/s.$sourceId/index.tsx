@@ -1,6 +1,6 @@
 import { StatusIcon } from "#components/execution/status-icon";
-import { ExecutionActivityChart } from "#components/home/activity-chart";
-import { StatusOverviewPanel } from "#components/home/status-overview-panel";
+import { ExecutionActivityChart } from "#components/overview/activity-chart";
+import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
 import { PipelineFileCard } from "#components/source/pipeline-file-card";
 import { PipelineFileRow } from "#components/source/pipeline-file-row";
 import { SourceIssuesDialog } from "#components/source/source-issues-dialog";
