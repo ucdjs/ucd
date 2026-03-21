@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { PipelineTraceRecord } from "../src/run/traces";
+import { describe, expect, it } from "vitest";
 import { buildExecutionGraphFromTraces } from "../src/run/graph";
 
 describe("buildExecutionGraphFromTraces", () => {
