@@ -85,10 +85,11 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect output
     const user = userEvent.setup();
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile&output=compile:0");
 
-    expect(await screen.findByRole("heading", { name: /compile output1/i })).toBeInTheDocument();
-    expect(screen.getByText("Focused output details for the selected route.")).toBeInTheDocument();
-    expect(screen.getByText("compile.json")).toBeInTheDocument();
-    expect(screen.getByText("dist")).toBeInTheDocument();
+    const focusedOutputSection = (await screen.findByRole("heading", { name: /compile output1/i })).closest("section");
+    expect(focusedOutputSection).not.toBeNull();
+    expect(within(focusedOutputSection!).getByText("Focused output details for the selected route.")).toBeInTheDocument();
+    expect(within(focusedOutputSection!).getAllByText("compile.json").length).toBeGreaterThan(0);
+    expect(within(focusedOutputSection!).getAllByText("dist").length).toBeGreaterThan(0);
 
     const routeOutputsSection = screen.getByRole("heading", { name: "Other outputs on this route" }).closest("section");
     expect(routeOutputsSection).not.toBeNull();

@@ -82,13 +82,14 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect transf
     const user = userEvent.setup();
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile&transform=normalize");
 
-    expect(await screen.findByRole("heading", { name: "normalize" })).toBeInTheDocument();
-    expect(screen.getByText("Focused transform usage across the pipeline.")).toBeInTheDocument();
-    expect(screen.getByText("2 routes")).toBeInTheDocument();
+    const focusedTransformSection = (await screen.findByRole("heading", { name: "normalize" })).closest("section");
+    expect(focusedTransformSection).not.toBeNull();
+    expect(within(focusedTransformSection!).getByText("Focused transform usage across the pipeline.")).toBeInTheDocument();
+    expect(within(focusedTransformSection!).getAllByText("2 routes").length).toBeGreaterThan(0);
 
-    const publishCard = screen.getByText("publish").closest("div.rounded-2xl");
+    const publishCard = within(focusedTransformSection!).getByText("publish").closest("div.rounded-2xl");
     expect(publishCard).not.toBeNull();
-    await user.click(within(publishCard!).getByRole("button", { name: "Focus here" }));
+    await user.click(within(publishCard as HTMLElement).getByRole("button", { name: "Focus here" }));
 
     await waitFor(() => {
       expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
