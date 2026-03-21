@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { PipelineTraceRecord } from "../src/run/traces";
+import { describe, expect, it } from "vitest";
 import { buildOutputManifestFromTraces } from "../src/run/traces";
 
 describe("trace projections", () => {
