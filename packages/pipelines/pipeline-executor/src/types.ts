@@ -1,8 +1,10 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
-import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph, PipelineLogLevel } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./run/traces";
 import type { PipelineExecutionRuntime } from "./runtime";
+
+export type { PipelineLogLevel } from "@ucdjs/pipelines-core";
 
 export interface PipelineSummary {
   versions: string[];
@@ -36,8 +38,6 @@ export interface PipelineExecutionResult {
   summary: PipelineSummary;
   status: ExecutionStatus;
 }
-
-export type PipelineLogLevel = "debug" | "info" | "warn" | "error";
 
 export type PipelineLogSource = "logger" | "console" | "stdio";
 

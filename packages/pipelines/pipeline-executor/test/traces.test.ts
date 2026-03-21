@@ -206,7 +206,7 @@ describe("execution traces and output manifests", () => {
         routeId: "__fallback__",
         outputId: "fallback-output",
         status: "written",
-        locator: "memory://Fallback.json",
+        locator: "memory://__fallback__/fallback-0.json",
       }),
     ]);
   });
