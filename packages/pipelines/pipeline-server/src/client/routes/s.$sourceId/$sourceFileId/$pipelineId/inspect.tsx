@@ -6,8 +6,9 @@ import { useInspectData } from "#hooks/use-inspect-data";
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { ArrowRight, FileOutput, Filter, FolderOutput, Link2, Workflow as PipelineIcon, Shuffle, Spline } from "lucide-react";
+import { ArrowRight, FileOutput, FolderOutput, Link2, Workflow as PipelineIcon, Shuffle, Spline } from "lucide-react";
 import { useMemo } from "react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
@@ -124,399 +125,357 @@ function RouteComponent() {
     : [];
 
   return (
-    <div className="p-6">
-      <div className="grid gap-6 xl:grid-cols-[24rem_minmax(0,1fr)]">
-        <aside className="space-y-4 rounded-3xl border border-border bg-muted/5 p-4 xl:sticky xl:top-6 xl:self-start">
-          <div className="space-y-4">
-            <div className="space-y-3 px-1">
+    <div className="p-4 sm:p-6">
+      <div className="grid gap-6 xl:grid-cols-[22rem_minmax(0,1fr)]">
+        <aside className="space-y-4 xl:sticky xl:top-6 xl:self-start">
+          <Card>
+            <CardHeader className="border-b border-border/60 pb-4">
               <div className="flex items-start gap-3">
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-muted/10">
                   <PipelineIcon className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Inspect</div>
-                  <h1 className="text-base font-semibold tracking-tight">Pipeline workspace</h1>
-                  <p className="text-sm text-muted-foreground">
-                    Start from a route, then drill into transforms and outputs from the page itself.
-                  </p>
+                  <CardTitle className="text-base">Routes</CardTitle>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-1.5">
-                <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-                  <Spline className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="sr-only">Routes</span>
-                  <span className="text-sm font-semibold tabular-nums">{pipeline.routes.length}</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-                  <Shuffle className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="sr-only">Transforms</span>
-                  <span className="text-sm font-semibold tabular-nums">{transformCount}</span>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg px-2 py-1.5">
-                  <FolderOutput className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="sr-only">Outputs</span>
-                  <span className="text-sm font-semibold tabular-nums">{outputCount}</span>
-                </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-5">
+              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                  <Spline className="h-3.5 w-3.5" />
+                  <span className="font-medium tabular-nums text-foreground">{pipeline.routes.length}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Shuffle className="h-3.5 w-3.5" />
+                  <span className="font-medium tabular-nums text-foreground">{transformCount}</span>
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <FolderOutput className="h-3.5 w-3.5" />
+                  <span className="font-medium tabular-nums text-foreground">{outputCount}</span>
+                </span>
               </div>
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-muted-foreground">Pipeline map</div>
-                  <div className="mt-1 text-sm font-medium">Routes</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {selectedRoute && (
-                    <Button type="button" variant="ghost" size="sm" onClick={clearRouteFocus}>
-                      Clear route
-                    </Button>
-                  )}
-                  <Badge variant="outline">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-xs text-muted-foreground">
                     {filteredRoutes.length}
                     {" "}
                     shown
-                  </Badge>
+                  </div>
+                  {selectedRoute && (
+                    <Button type="button" variant="ghost" size="sm" onClick={clearRouteFocus}>
+                      Clear
+                    </Button>
+                  )}
                 </div>
+
+                <Input
+                  value={search.q ?? ""}
+                  onChange={(event) => {
+                    setSearchQuery(event.target.value || undefined);
+                  }}
+                  placeholder="Search routes, transforms, outputs, dependencies"
+                  aria-label="Search inspect routes"
+                />
               </div>
 
-              <Input
-                value={search.q ?? ""}
-                onChange={(event) => {
-                  setSearchQuery(event.target.value || undefined);
-                }}
-                placeholder="Search routes, transforms, outputs, dependencies"
-                aria-label="Search inspect routes"
-              />
-            </div>
-          </div>
+              <div className="rounded-xl border border-border/60">
+                {filteredRoutes.length === 0
+                  ? (
+                      <div className="px-4 py-10 text-sm text-muted-foreground">
+                        No routes match the current filter.
+                      </div>
+                    )
+                  : (
+                      <div className="divide-y divide-border/60">
+                        {filteredRoutes.map((route) => {
+                          const isActiveRoute = route.id === selectedRoute?.id;
 
-          <div className="space-y-2">
-            {filteredRoutes.length === 0 && (
-              <div className="rounded-2xl border border-dashed border-border px-4 py-10 text-sm text-muted-foreground">
-                No routes match the current filter.
+                          return (
+                            <button
+                              key={route.id}
+                              type="button"
+                              onClick={() => navigateToRoute(route.id)}
+                              className={`relative flex w-full flex-col gap-2 px-4 py-3 text-left transition-colors ${isActiveRoute ? "bg-muted/20" : "hover:bg-muted/10"}`}
+                            >
+                              {isActiveRoute && <span className="absolute inset-y-2 left-0 w-0.5 rounded-full bg-foreground/80" />}
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="min-w-0">
+                                  <div className="truncate text-sm font-medium text-foreground">{route.id}</div>
+                                </div>
+                                {route.cache && <Badge variant="secondary" className="text-[10px]">Cacheable</Badge>}
+                              </div>
+                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+                                <span>{route.depends.length} depends</span>
+                                <span>{route.transforms.length} transforms</span>
+                                <span>{route.outputs.length} outputs</span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
               </div>
-            )}
-
-            {filteredRoutes.map((route) => {
-              const isActiveRoute = route.id === selectedRoute?.id;
-
-              return (
-                <div
-                  key={route.id}
-                  className={`overflow-hidden rounded-2xl border ${isActiveRoute ? "border-primary/30 bg-background shadow-sm" : "border-border/70 bg-background"}`}
-                >
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => navigateToRoute(route.id)}
-                    className={`h-auto w-full justify-start rounded-none px-4 py-4 text-left ${isActiveRoute ? "bg-muted/15" : "hover:bg-muted/15"}`}
-                  >
-                    <div className="w-full">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2">
-                          <Spline className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="font-medium">{route.id}</span>
-                        </span>
-                        {route.cache
-                          ? <Badge variant="secondary">cacheable</Badge>
-                          : <Badge variant="outline">live</Badge>}
-                      </div>
-                      <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                        <span>
-                          {route.depends.length}
-                          {" "}
-                          deps
-                        </span>
-                        <span>
-                          {route.transforms.length}
-                          {" "}
-                          transforms
-                        </span>
-                        <span>
-                          {route.outputs.length}
-                          {" "}
-                          outputs
-                        </span>
-                      </div>
-                    </div>
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
+            </CardContent>
+          </Card>
         </aside>
 
-        <main className="min-w-0 space-y-6 rounded-3xl border border-border bg-background p-6">
+        <main className="min-w-0 space-y-4">
           {!selectedRoute && (
-            <section className="flex min-h-[28rem] items-center justify-center">
-              <div className="max-w-md space-y-4 text-center">
-                <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-border bg-muted/20">
-                  <Spline className="h-6 w-6 text-muted-foreground" />
+            <Card className="flex min-h-[28rem] items-center justify-center">
+              <CardContent className="flex w-full items-center justify-center p-6">
+                <div className="max-w-md space-y-4 text-center">
+                  <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-border bg-muted/20">
+                    <Spline className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                  <div className="space-y-2">
+                    <h2 className="text-xl font-semibold tracking-tight">Pick a route to start inspecting</h2>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-xl font-semibold tracking-tight">Pick a route to start inspecting</h2>
-                  <p className="text-sm text-muted-foreground">
-                    Choose a route from the pipeline map. Transform and output details can then layer into this same workspace.
-                  </p>
-                </div>
-              </div>
-            </section>
+              </CardContent>
+            </Card>
           )}
 
           {selectedRoute && (
             <>
               {(selectedTransform || selectedOutput) && (
-                <section className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-muted/5 px-4 py-3 text-sm">
-                  <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
-                    {selectedTransform && (
-                      <span>
-                        Focused transform:
-                        {" "}
-                        <span className="font-medium text-foreground">{selectedTransform.name}</span>
-                      </span>
-                    )}
-                    {selectedOutput && (
-                      <span>
-                        Focused output:
-                        {" "}
-                        <span className="font-medium text-foreground">
-                          {selectedOutput.routeId}
+                <Card>
+                  <CardContent className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-muted-foreground">
+                      {selectedTransform && (
+                        <span>
+                          Transform:
                           {" "}
-                          output
-                          {selectedOutput.outputIndex + 1}
+                          <span className="font-medium text-foreground">{selectedTransform.name}</span>
                         </span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    {selectedTransform && (
-                      <Button type="button" variant="ghost" size="sm" onClick={clearTransformFocus}>
-                        Clear transform
-                      </Button>
-                    )}
-                    {selectedOutput && (
-                      <Button type="button" variant="ghost" size="sm" onClick={clearOutputFocus}>
-                        Clear output
-                      </Button>
-                    )}
-                  </div>
-                </section>
+                      )}
+                      {selectedOutput && (
+                        <span>
+                          Output:
+                          {" "}
+                          <span className="font-medium text-foreground">
+                            {selectedOutput.routeId}
+                            {" "}
+                            output
+                            {selectedOutput.outputIndex + 1}
+                          </span>
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {selectedTransform && (
+                        <Button type="button" variant="ghost" size="sm" onClick={clearTransformFocus}>
+                          Clear transform
+                        </Button>
+                      )}
+                      {selectedOutput && (
+                        <Button type="button" variant="ghost" size="sm" onClick={clearOutputFocus}>
+                          Clear output
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
-              <section className="space-y-5">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex size-10 items-center justify-center rounded-2xl border border-border bg-muted/10">
-                        <Spline className="h-4.5 w-4.5 text-muted-foreground" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h2 className="text-xl font-semibold tracking-tight">{selectedRoute.id}</h2>
-                          {selectedRoute.cache
-                            ? <Badge variant="secondary">cached</Badge>
-                            : <Badge variant="outline">live</Badge>}
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                          Route dependencies, transforms, outputs, and artifact flow.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="grid min-w-[15rem] grid-cols-3 gap-1.5">
-                      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/10 px-2.5 py-2">
-                        <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="sr-only">Dependencies</span>
-                        <span className="text-sm font-semibold tabular-nums">{selectedRoute.depends.length}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/10 px-2.5 py-2">
-                        <Shuffle className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="sr-only">Transforms</span>
-                        <span className="text-sm font-semibold tabular-nums">{selectedRoute.transforms.length}</span>
-                      </div>
-                      <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/10 px-2.5 py-2">
-                        <FolderOutput className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="sr-only">Outputs</span>
-                        <span className="text-sm font-semibold tabular-nums">{selectedRoute.outputs.length}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 lg:grid-cols-2">
-                  <div className="rounded-2xl border border-border bg-muted/10 p-4">
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Route filter</h3>
-                    </div>
-                    <code className="mt-3 block rounded-xl border border-border bg-background px-3 py-3 text-xs">
-                      {selectedRoute.filter ?? "Custom filter"}
-                    </code>
-                  </div>
-                  {pipeline.include && (
-                    <div className="rounded-2xl border border-border bg-muted/10 p-4">
-                      <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Pipeline include</h3>
-                      </div>
-                      <code className="mt-3 block rounded-xl border border-border bg-background px-3 py-3 text-xs">
-                        {pipeline.include}
-                      </code>
-                    </div>
-                  )}
-                </div>
-              </section>
-
-              {selectedTransform && (
-                <section className="space-y-4 rounded-2xl border border-border/70 bg-muted/5 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
+              <Card>
+                <CardContent className="space-y-5 pt-5">
+                  <div className="flex flex-wrap items-start justify-between gap-5">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <div className="flex size-10 items-center justify-center rounded-2xl border border-border bg-background">
-                          <Shuffle className="h-4.5 w-4.5 text-muted-foreground" />
+                        <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
+                          <Spline className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold tracking-tight">{selectedTransform.name}</h3>
-                            <Badge variant="secondary">
-                              {selectedTransform.routes.length}
-                              {" "}
-                              {selectedTransform.routes.length === 1 ? "route" : "routes"}
-                            </Badge>
+                            <h2 className="text-xl font-semibold tracking-tight">{selectedRoute.id}</h2>
+                            {selectedRoute.cache
+                              ? <Badge variant="secondary">Cacheable</Badge>
+                              : null}
                           </div>
-                          <p className="text-sm text-muted-foreground">Focused transform usage across the pipeline.</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="grid min-w-[15rem] grid-cols-3 gap-4">
+                        <div className="space-y-1">
+                          <Link2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div className="text-sm font-semibold tabular-nums text-foreground">{selectedRoute.depends.length}</div>
+                          <div className="text-[11px] text-muted-foreground">depends</div>
+                        </div>
+                        <div className="space-y-1">
+                          <Shuffle className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div className="text-sm font-semibold tabular-nums text-foreground">{selectedRoute.transforms.length}</div>
+                          <div className="text-[11px] text-muted-foreground">transforms</div>
+                        </div>
+                        <div className="space-y-1">
+                          <FolderOutput className="h-3.5 w-3.5 text-muted-foreground" />
+                          <div className="text-sm font-semibold tabular-nums text-foreground">{selectedRoute.outputs.length}</div>
+                          <div className="text-[11px] text-muted-foreground">outputs</div>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
-                    {selectedTransform.routes.map((routeId) => (
-                      <div key={routeId} className="rounded-2xl border border-border/70 bg-background p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-medium">{routeId}</div>
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              Open the route workspace or keep this transform focused on another route.
-                            </div>
+                  <div className="grid gap-4 border-t border-border/60 pt-4 lg:grid-cols-2">
+                    <div className="space-y-2">
+                      <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Route filter</div>
+                      <code className="block break-all rounded-lg border border-border/60 px-3 py-3 text-xs">
+                        {selectedRoute.filter ?? "Custom filter"}
+                      </code>
+                    </div>
+                    {pipeline.include && (
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Pipeline scope</div>
+                        <code className="block break-all rounded-lg border border-border/60 px-3 py-3 text-xs">
+                          {pipeline.include}
+                        </code>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {selectedTransform && (
+                <Card>
+                  <CardContent className="space-y-4 pt-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
+                            <Shuffle className="h-4 w-4 text-muted-foreground" />
                           </div>
-                          <div className="flex gap-2">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigateToTransform(selectedTransform.name, routeId)}
-                            >
-                              Focus here
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => navigateToRoute(routeId)}
-                            >
-                              Open route
-                              <ArrowRight className="h-3 w-3" />
-                            </Button>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold tracking-tight">{selectedTransform.name}</h3>
+                              <Badge variant="secondary">
+                                {selectedTransform.routes.length}
+                                {" "}
+                                {selectedTransform.routes.length === 1 ? "route" : "routes"}
+                              </Badge>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                </section>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {selectedTransform.routes.map((routeId) => (
+                        <div key={routeId} className="rounded-xl border border-border/60 p-4">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="text-sm font-medium">{routeId}</div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigateToTransform(selectedTransform.name, routeId)}
+                              >
+                                Focus here
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => navigateToRoute(routeId)}
+                              >
+                                Route
+                                <ArrowRight className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
 
               {selectedOutput && (
-                <section className="space-y-4 rounded-2xl border border-border/70 bg-muted/5 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="flex size-10 items-center justify-center rounded-2xl border border-border bg-background">
-                          <FolderOutput className="h-4.5 w-4.5 text-muted-foreground" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-lg font-semibold tracking-tight">
-                              {selectedOutput.routeId}
-                              {" "}
-                              output
-                              {selectedOutput.outputIndex + 1}
-                            </h3>
-                            <Badge variant="secondary">
-                              {routeOutputs.length}
-                              {" "}
-                              {routeOutputs.length === 1 ? "route output" : "route outputs"}
-                            </Badge>
+                <Card>
+                  <CardContent className="space-y-4 pt-5">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
+                            <FolderOutput className="h-4 w-4 text-muted-foreground" />
                           </div>
-                          <p className="text-sm text-muted-foreground">Focused output details for the selected route.</p>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="text-lg font-semibold tracking-tight">
+                                {selectedOutput.routeId}
+                                {" "}
+                                output
+                                {selectedOutput.outputIndex + 1}
+                              </h3>
+                              <Badge variant="secondary">
+                                {routeOutputs.length}
+                                {" "}
+                                {routeOutputs.length === 1 ? "route output" : "route outputs"}
+                              </Badge>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="grid gap-4 lg:grid-cols-2">
-                    <div className="rounded-2xl border border-border bg-background p-4">
-                      <div className="flex items-center gap-2">
-                        <FileOutput className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Directory</h3>
+                    <div className="grid gap-4 lg:grid-cols-2">
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Directory</div>
+                        <code className="block rounded-lg border border-border/60 px-3 py-3 text-xs">
+                          {selectedOutput.dir}
+                        </code>
                       </div>
-                      <code className="mt-3 block rounded-xl border border-border bg-muted/10 px-3 py-3 text-xs">
-                        {selectedOutput.dir}
-                      </code>
-                    </div>
-                    <div className="rounded-2xl border border-border bg-background p-4">
-                      <div className="flex items-center gap-2">
-                        <FileOutput className="h-4 w-4 text-muted-foreground" />
-                        <h3 className="text-xs uppercase tracking-[0.16em] text-muted-foreground">File name</h3>
+                      <div className="space-y-2">
+                        <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">File name</div>
+                        <code className="block rounded-lg border border-border/60 px-3 py-3 text-xs">
+                          {selectedOutput.fileName}
+                        </code>
                       </div>
-                      <code className="mt-3 block rounded-xl border border-border bg-muted/10 px-3 py-3 text-xs">
-                        {selectedOutput.fileName}
-                      </code>
                     </div>
-                  </div>
 
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <FolderOutput className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</h3>
-                    </div>
-                    <div className="grid gap-3 md:grid-cols-2">
-                      {routeOutputs.map((output) => {
-                        const active = output.key === selectedOutput.key;
-                        return (
-                          <Button
-                            key={output.key}
-                            type="button"
-                            variant={active ? "secondary" : "outline"}
-                            onClick={() => navigateToOutput(output.routeId, output.outputIndex)}
-                            className={`h-auto justify-start rounded-2xl px-4 py-4 text-left ${active ? "border-primary/40 bg-primary/5" : ""}`}
-                          >
-                            <div className="w-full">
-                              <div className="flex items-center gap-2 text-sm font-medium">
-                                <FileOutput className="h-3.5 w-3.5" />
-                                Output
-                                {" "}
-                                {output.outputIndex + 1}
+                    <div className="space-y-3">
+                      <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</div>
+                      <div className="grid gap-3 md:grid-cols-2">
+                        {routeOutputs.map((output) => {
+                          const active = output.key === selectedOutput.key;
+                          return (
+                            <Button
+                              key={output.key}
+                              type="button"
+                              variant={active ? "secondary" : "outline"}
+                              onClick={() => navigateToOutput(output.routeId, output.outputIndex)}
+                              className={`h-auto justify-start rounded-xl px-4 py-4 text-left ${active ? "border-border bg-muted/20" : ""}`}
+                            >
+                              <div className="w-full">
+                                <div className="flex items-center gap-2 text-sm font-medium">
+                                  <FileOutput className="h-3.5 w-3.5" />
+                                  Output
+                                  {" "}
+                                  {output.outputIndex + 1}
+                                </div>
+                                <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
+                                <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
                               </div>
-                              <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
-                              <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
-                            </div>
-                          </Button>
-                        );
-                      })}
+                            </Button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                </section>
+                  </CardContent>
+                </Card>
               )}
 
-              <RouteFlowSection />
-              <RouteDependenciesSection />
-              <RouteTransformsSection />
-              <RouteOutputsSection />
+              <div className="grid gap-4 xl:grid-cols-2">
+                <RouteFlowSection />
+                <RouteDependenciesSection />
+                <RouteTransformsSection />
+                <RouteOutputsSection />
+              </div>
             </>
           )}
         </main>

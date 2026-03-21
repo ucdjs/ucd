@@ -25,7 +25,7 @@ export function PipelineSummary({
   versions,
 }: PipelineSummaryProps) {
   return (
-    <Card className="xl:col-span-5">
+    <Card className="xl:col-span-5 2xl:col-span-6">
       <CardHeader className="border-b border-border/60 pb-4">
         <CardTitle>Pipeline summary</CardTitle>
       </CardHeader>

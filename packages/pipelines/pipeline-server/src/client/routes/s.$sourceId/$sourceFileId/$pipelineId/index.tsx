@@ -40,7 +40,7 @@ function RouteComponent() {
   const dependencyCount = pipeline.routes.reduce((count, route) => count + route.depends.length, 0);
   const transformCount = pipeline.routes.reduce((count, route) => count + route.transforms.length, 0);
   const outputCount = pipeline.routes.reduce((count, route) => count + route.outputs.length, 0);
-  const busiestRoutes = pipeline.routes.toSorted((left, right) => {
+  const inspectRoutes = pipeline.routes.toSorted((left, right) => {
     const leftScore = left.depends.length + left.transforms.length + left.outputs.length;
     const rightScore = right.depends.length + right.transforms.length + right.outputs.length;
 
@@ -51,13 +51,13 @@ function RouteComponent() {
       id: route.id,
       cache: route.cache,
       dependsAmount: route.depends.length,
-      transformsAmount: route.transforms.length,
+      transforms: route.transforms,
       outputsAmount: route.outputs.length,
     }));
 
   return (
     <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" className="p-4 sm:p-6">
-      <div className="grid gap-6 xl:grid-cols-12">
+      <div className="grid gap-6 xl:grid-cols-12 2xl:grid-cols-16">
         <LatestExecution
           latestExecution={latestExecution}
           latestGraphExecution={latestGraphExecution}
@@ -81,10 +81,10 @@ function RouteComponent() {
           outputs={outputCount}
           versions={pipeline.versions.length}
           cacheableRoutes={cacheableRouteCount}
-          topRoutes={busiestRoutes}
+          inspectRoutes={inspectRoutes}
         />
 
-        <Card className="xl:col-span-12">
+        <Card className="xl:col-span-12 2xl:col-span-16">
           <CardHeader className="border-b border-border/60 pb-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <CardTitle>Recent executions</CardTitle>
