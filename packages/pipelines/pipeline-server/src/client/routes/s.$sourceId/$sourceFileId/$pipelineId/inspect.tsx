@@ -173,7 +173,11 @@ function RouteComponent() {
                       Clear route
                     </Button>
                   )}
-                  <Badge variant="outline">{filteredRoutes.length} shown</Badge>
+                  <Badge variant="outline">
+                    {filteredRoutes.length}
+                    {" "}
+                    shown
+                  </Badge>
                 </div>
               </div>
 
@@ -220,9 +224,21 @@ function RouteComponent() {
                           : <Badge variant="outline">live</Badge>}
                       </div>
                       <div className="mt-2 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-                        <span>{route.depends.length} deps</span>
-                        <span>{route.transforms.length} transforms</span>
-                        <span>{route.outputs.length} outputs</span>
+                        <span>
+                          {route.depends.length}
+                          {" "}
+                          deps
+                        </span>
+                        <span>
+                          {route.transforms.length}
+                          {" "}
+                          transforms
+                        </span>
+                        <span>
+                          {route.outputs.length}
+                          {" "}
+                          outputs
+                        </span>
                       </div>
                     </div>
                   </Button>

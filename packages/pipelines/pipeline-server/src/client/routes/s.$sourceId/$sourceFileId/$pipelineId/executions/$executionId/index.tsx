@@ -1,9 +1,9 @@
 import type { ExecutionSpan } from "#lib/execution-utils";
+import { ExecutionLogsViewer } from "#components/execution/logs/execution-logs-viewer";
+import { LogsErrorBoundary } from "#components/execution/logs/logs-error-boundary";
+import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { StatusBadge } from "#components/execution/status-badge";
 import { StatusIcon } from "#components/execution/status-icon";
-import { LogsErrorBoundary } from "#components/execution/logs/logs-error-boundary";
-import { ExecutionLogsViewer } from "#components/execution/logs/execution-logs-viewer";
-import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";
 import { executionEventsQueryOptions } from "#queries/execution";
