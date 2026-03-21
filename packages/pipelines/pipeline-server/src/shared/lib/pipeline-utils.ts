@@ -28,10 +28,6 @@ export function toRouteDetails(
   route: PipelineRouteDefinition,
 ): PipelineDetails["routes"][number] {
   const depends = (route.depends ?? []).map((dep) => parseDependency(dep));
-  const emits = Object.entries(route.emits ?? {}).map(([id, def]) => {
-    const scope = def.scope === "global" ? "global" : "version";
-    return { id, scope } as const;
-  });
 
   const outputs = normalizeRouteOutputs(route).map((output) => ({
     id: output.id,
@@ -52,7 +48,6 @@ export function toRouteDetails(
     id: route.id,
     cache: route.cache !== false,
     depends,
-    emits,
     filter: route.filter ? getFilterDescription(route.filter) : undefined,
     outputs,
     transforms,

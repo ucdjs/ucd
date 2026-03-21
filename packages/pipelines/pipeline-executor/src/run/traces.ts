@@ -4,8 +4,6 @@ export type PipelineTraceKind
   = | "source.provided"
     | "file.matched"
     | "file.fallback"
-    | "artifact.emitted"
-    | "artifact.consumed"
     | "cache.hit"
     | "cache.miss"
     | "cache.store"
@@ -24,7 +22,6 @@ interface PipelineTraceBase<TKind extends PipelineTraceKind> {
 export interface SourceProvidedTraceRecord extends PipelineTraceBase<"source.provided"> {
   version: string;
   file?: FileContext;
-  artifactId?: string;
 }
 
 export interface FileMatchedTraceRecord extends PipelineTraceBase<"file.matched"> {
@@ -37,20 +34,6 @@ export interface FileFallbackTraceRecord extends PipelineTraceBase<"file.fallbac
   version: string;
   file: FileContext;
 }
-
-export interface ArtifactEmittedTraceRecord extends PipelineTraceBase<"artifact.emitted"> {
-  version: string;
-  routeId: string;
-  artifactId: string;
-}
-
-export interface ArtifactConsumedTraceRecord extends PipelineTraceBase<"artifact.consumed"> {
-  version: string;
-  routeId: string;
-  artifactId: string;
-}
-
-export type ArtifactTraceRecord = ArtifactEmittedTraceRecord | ArtifactConsumedTraceRecord;
 
 export interface CacheHitTraceRecord extends PipelineTraceBase<"cache.hit"> {
   version: string;
@@ -109,8 +92,6 @@ export type PipelineTraceRecord
   = | SourceProvidedTraceRecord
     | FileMatchedTraceRecord
     | FileFallbackTraceRecord
-    | ArtifactEmittedTraceRecord
-    | ArtifactConsumedTraceRecord
     | CacheHitTraceRecord
     | CacheMissTraceRecord
     | CacheStoreTraceRecord

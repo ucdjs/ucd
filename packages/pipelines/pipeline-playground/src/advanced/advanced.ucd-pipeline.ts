@@ -17,7 +17,7 @@ import { emojiSource, ucdSource } from "./sources";
 export const playgroundAdvancedPipeline = definePipeline({
   id: "playground-advanced",
   name: "Advanced Pipeline Playground",
-  description: "A comprehensive pipeline demonstrating all available features including dependencies, artifacts, transforms, and multiple sources",
+  description: "A comprehensive pipeline demonstrating all available features including dependencies, transforms, and multiple sources",
   versions: ["15.0.0", "15.1.0", "16.0.0"],
   inputs: [ucdSource, emojiSource],
   routes: [
@@ -88,14 +88,6 @@ export const playgroundAdvancedPipeline = definePipeline({
       case "file:skipped":
         // eslint-disable-next-line no-console
         console.log(`[File] Skipped ${event.file.path}: ${event.reason}`);
-        break;
-      case "artifact:produced":
-        // eslint-disable-next-line no-console
-        console.log(`[Artifact] Produced ${event.artifactId} from ${event.routeId}`);
-        break;
-      case "artifact:consumed":
-        // eslint-disable-next-line no-console
-        console.log(`[Artifact] Consumed ${event.artifactId} by ${event.routeId}`);
         break;
       case "error":
         console.error(`[Error] ${event.error.scope}: ${event.error.message}`);

@@ -1,7 +1,3 @@
-export type {
-  GraphBuilderOptions,
-} from "./builder";
-
 export {
   createPipelineGraphBuilder,
   PipelineGraphBuilder,
