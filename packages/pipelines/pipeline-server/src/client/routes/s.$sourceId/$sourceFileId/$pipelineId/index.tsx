@@ -67,7 +67,6 @@ function RouteComponent() {
           sourceId={sourceId}
           sourceLabel={source.label}
           sourceCount={pipeline.sourceCount}
-          sourceFileId={sourceFileId}
           fileLabel={file.label}
           filePath={file.path}
           include={pipeline.include}

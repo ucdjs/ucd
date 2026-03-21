@@ -64,7 +64,6 @@ function RouteComponent() {
         <PipelineHeader
           pipeline={pipeline}
           sourceLabel={source.label}
-          fileLabel={file.label}
           filePath={file.path}
           latestExecution={latestExecution}
         />
