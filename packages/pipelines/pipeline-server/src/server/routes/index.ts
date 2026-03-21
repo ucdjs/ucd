@@ -6,3 +6,4 @@ export { sourcesIndexRouter } from "./sources.index";
 export { sourcesLogsRouter } from "./sources.logs";
 export { sourcesPipelineRouter } from "./sources.pipeline";
 export { sourcesSourceRouter } from "./sources.source";
+export { sourcesTracesRouter } from "./sources.traces";

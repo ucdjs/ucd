@@ -33,22 +33,6 @@ describe("createPipelineExecutor", () => {
     expectTypeOf(executor.run).returns.toEqualTypeOf<Promise<PipelineExecutionResult[]>>();
   });
 
-  it("should accept pipelines and optional artifacts", () => {
-    definePipeline({
-      id: "test",
-      name: "Test",
-      versions: ["16.0.0"],
-      inputs: [createTestSource([])],
-      routes: [],
-    });
-
-    const executor = createPipelineExecutor({
-      artifacts: [],
-    });
-
-    expect(executor).toBeDefined();
-  });
-
   it("should accept optional cache store", () => {
     const cacheStore = createMemoryCacheStore();
 
@@ -303,6 +287,55 @@ describe("running single pipeline via run()", () => {
     expect(logs.every((entry) => typeof entry.spanId === "string")).toBe(true);
   });
 
+  it("should emit runtime traces with span ids when execution context is active", async () => {
+    const traceSpanIds: string[] = [];
+    const runtime = createNodeExecutionRuntime();
+
+    const route = definePipelineRoute({
+      id: "trace-route",
+      filter: () => true,
+      async* parser(ctx) {
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (_ctx, rows) => {
+        for await (const _row of rows) {
+          /* empty */
+        }
+        return [{
+          version: "16.0.0",
+          property: "Trace",
+          file: "LineBreak.txt",
+          entries: [{ codePoint: "0041", value: "AL" }],
+        }];
+      },
+    });
+
+    const ex = createPipelineExecutor({
+      runtime,
+      onTrace: (trace) => {
+        if (trace.kind === "source.provided" || trace.kind === "file.matched" || trace.kind === "output.written") {
+          traceSpanIds.push(trace.spanId ?? "");
+        }
+      },
+    });
+
+    const pipelineWithTrace = definePipeline({
+      id: "trace-test",
+      name: "Trace Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    await runtime.runWithExecutionContext(
+      { executionId: "exec-2", workspaceId: "workspace-2" },
+      () => ex.run([pipelineWithTrace]),
+    );
+
+    expect(traceSpanIds.length).toBeGreaterThan(0);
+    expect(traceSpanIds.every((spanId) => spanId.length > 0)).toBe(true);
+  });
+
   it("should capture console output through onLog when enabled", async () => {
     const logs: Array<{ source: string; message: string; executionId: string }> = [];
     const runtime = createNodeExecutionRuntime({
@@ -357,7 +390,7 @@ describe("running single pipeline via run()", () => {
   });
 
   it("should capture stdio output through onLog when enabled", async () => {
-    const logs: Array<{ source: string; stream: string; message: string }> = [];
+    const logs: Array<{ source: string; level: string; message: string }> = [];
     const runtime = createNodeExecutionRuntime({
       outputCapture: { stdio: true },
     });
@@ -383,7 +416,7 @@ describe("running single pipeline via run()", () => {
       onLog: (entry) => {
         logs.push({
           source: entry.source,
-          stream: entry.stream,
+          level: entry.level,
           message: entry.message,
         });
       },
@@ -403,8 +436,8 @@ describe("running single pipeline via run()", () => {
     );
 
     expect(logs).toEqual([
-      { source: "stdio", stream: "stdout", message: "stdout:LineBreak.txt" },
-      { source: "stdio", stream: "stderr", message: "stderr:test" },
+      { source: "stdio", level: "info", message: "stdout:LineBreak.txt" },
+      { source: "stdio", level: "error", message: "stderr:test" },
     ]);
   });
 
@@ -530,9 +563,9 @@ describe("error handling", () => {
 
     const multi = await executor.run([pipeline]);
     const result = multi.find((item) => item.id === "no-inputs")!;
-    expect(result.errors.length).toBeGreaterThan(0);
-    const firstError = result.errors[0]!;
-    expect(firstError.message).toContain("Pipeline requires at least one input source");
+    expect(result.errors).toEqual([]);
+    expect(result.data).toEqual([]);
+    expect(result.outputManifest).toEqual([]);
   });
 });
 

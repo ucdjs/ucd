@@ -5,10 +5,6 @@ export type PipelineEventType
     | "pipeline:end"
     | "version:start"
     | "version:end"
-    | "artifact:start"
-    | "artifact:end"
-    | "artifact:produced"
-    | "artifact:consumed"
     | "file:matched"
     | "file:skipped"
     | "file:fallback"
@@ -26,7 +22,6 @@ export const PIPELINE_EVENT_PHASES = [
   "Version",
   "Parse",
   "Resolve",
-  "Artifact",
   "File",
   "Cache",
   "Error",
@@ -41,7 +36,6 @@ export function getPipelineEventPhase(type: PipelineEventType | string): Pipelin
   if (type.startsWith("version:")) return "Version";
   if (type.startsWith("parse:")) return "Parse";
   if (type.startsWith("resolve:")) return "Resolve";
-  if (type.startsWith("artifact:")) return "Artifact";
   if (type.startsWith("file:")) return "File";
   if (type.startsWith("cache:")) return "Cache";
   return "Other";
@@ -76,45 +70,6 @@ export interface VersionEndEvent {
   type: "version:end";
   version: string;
   durationMs: number;
-  spanId: string;
-  timestamp: number;
-}
-
-export interface ArtifactStartEvent {
-  id: string;
-  type: "artifact:start";
-  artifactId: string;
-  version: string;
-  spanId: string;
-  timestamp: number;
-}
-
-export interface ArtifactEndEvent {
-  id: string;
-  type: "artifact:end";
-  artifactId: string;
-  version: string;
-  durationMs: number;
-  spanId: string;
-  timestamp: number;
-}
-
-export interface ArtifactProducedEvent {
-  id: string;
-  type: "artifact:produced";
-  artifactId: string;
-  routeId: string;
-  version: string;
-  spanId: string;
-  timestamp: number;
-}
-
-export interface ArtifactConsumedEvent {
-  id: string;
-  type: "artifact:consumed";
-  artifactId: string;
-  routeId: string;
-  version: string;
   spanId: string;
   timestamp: number;
 }
@@ -228,10 +183,6 @@ export type PipelineEvent
     | PipelineEndEvent
     | VersionStartEvent
     | VersionEndEvent
-    | ArtifactStartEvent
-    | ArtifactEndEvent
-    | ArtifactProducedEvent
-    | ArtifactConsumedEvent
     | FileMatchedEvent
     | FileSkippedEvent
     | FileFallbackEvent
@@ -244,7 +195,7 @@ export type PipelineEvent
     | CacheStoreEvent
     | PipelineErrorEvent;
 
-export type PipelineErrorScope = "pipeline" | "version" | "file" | "route" | "artifact";
+export type PipelineErrorScope = "pipeline" | "version" | "file" | "route";
 
 export interface PipelineError {
   scope: PipelineErrorScope;
@@ -252,20 +203,18 @@ export interface PipelineError {
   error?: unknown;
   file?: FileContext;
   routeId?: string;
-  artifactId?: string;
   version?: string;
 }
 
-export type PipelineGraphNodeType = "source" | "file" | "route" | "artifact" | "output";
+export type PipelineGraphNodeType = "source" | "file" | "route" | "output";
 
 export type PipelineGraphNode
   = | { id: string; type: "source"; version: string }
     | { id: string; type: "file"; file: FileContext }
     | { id: string; type: "route"; routeId: string }
-    | { id: string; type: "artifact"; artifactId: string }
-    | { id: string; type: "output"; outputIndex: number; property?: string };
+    | { id: string; type: "output"; outputIndex: number; property?: string; outputId?: string; locator?: string };
 
-export type PipelineGraphEdgeType = "provides" | "matched" | "parsed" | "resolved" | "uses-artifact";
+export type PipelineGraphEdgeType = "provides" | "matched" | "parsed" | "resolved";
 
 export interface PipelineGraphEdge {
   from: string;
@@ -283,10 +232,6 @@ export type PipelineEventInput
     | Omit<PipelineEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
     | Omit<VersionStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
     | Omit<VersionEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
-    | Omit<ArtifactStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
-    | Omit<ArtifactEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
-    | Omit<ArtifactProducedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
-    | Omit<ArtifactConsumedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
     | Omit<FileMatchedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
     | Omit<FileSkippedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
     | Omit<FileFallbackEvent, "id" | "spanId"> & { id?: string; spanId?: string }

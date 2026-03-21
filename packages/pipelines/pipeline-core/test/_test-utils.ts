@@ -1,11 +1,10 @@
 import type {
-  ArtifactDefinition,
   FileContext,
   ParsedRow,
   PipelineDependency,
   PipelineFilter,
   PipelineRouteDefinition,
-  RouteOutput,
+  RouteOutputDefinition,
   SourceBackend,
 } from "../src";
 import type { AnyPipelineTransformDefinition } from "../src/transform";
@@ -37,33 +36,29 @@ export async function* mockParser(): AsyncIterable<ParsedRow> {
 
 export interface MockRouteOptions<
   TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
-  TEmits extends Record<string, ArtifactDefinition> = Record<string, never>,
   TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 > {
   depends?: TDepends;
-  emits?: TEmits;
   transforms?: TTransforms;
-  out?: RouteOutput;
+  out?: RouteOutputDefinition;
   cache?: boolean;
   filter?: PipelineFilter;
   parser?: ParserFn;
-  resolver?: PipelineRouteDefinition<string, TDepends, TEmits, TTransforms, TOutput>["resolver"];
+  resolver?: PipelineRouteDefinition<string, TDepends, TTransforms, TOutput>["resolver"];
 }
 
 export function createMockRoute<
   const TId extends string,
   const TDepends extends readonly PipelineDependency[] = readonly [],
-  const TEmits extends Record<string, ArtifactDefinition> = Record<string, never>,
   const TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 >(
   id: TId,
-  options: MockRouteOptions<TDepends, TEmits, TTransforms, TOutput> = {},
-): PipelineRouteDefinition<TId, TDepends, TEmits, TTransforms, TOutput> {
+  options: MockRouteOptions<TDepends, TTransforms, TOutput> = {},
+): PipelineRouteDefinition<TId, TDepends, TTransforms, TOutput> {
   const {
     depends,
-    emits,
     transforms,
     out,
     cache,
@@ -72,7 +67,6 @@ export function createMockRoute<
     resolver = (async () => []) as unknown as PipelineRouteDefinition<
       TId,
       TDepends,
-      TEmits,
       TTransforms,
       TOutput
     >["resolver"],
@@ -84,7 +78,6 @@ export function createMockRoute<
     parser,
     resolver,
     depends,
-    emits,
     transforms,
     out,
     cache,

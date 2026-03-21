@@ -30,7 +30,6 @@ async function seedExecution(
     completedAt: options.completedAt ?? new Date("2026-01-01T00:00:05.000Z"),
     versions: options.versions ?? ["16.0.0"],
     summary: null,
-    graph: null,
     error: options.error ?? null,
   });
 

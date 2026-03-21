@@ -3,8 +3,13 @@ import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas
 import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
+import {
+  hasExecutionTracesTable,
+  isIgnorableExecutionTraceWriteError,
+} from "#server/db/execution-traces";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
+import { ensureWorkspaceExists } from "#server/workspace";
 import { toPipelineDetails } from "#shared/lib/pipeline-utils";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
@@ -74,6 +79,9 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const versions = body.versions ?? pipeline.versions;
   const cache = body.cache ?? true;
   const executionId = randomUUID();
+  const tracePersistenceEnabled = hasExecutionTracesTable(db);
+
+  await ensureWorkspaceExists(db, workspaceId);
 
   await db.insert(schema.executions).values({
     id: executionId,
@@ -105,6 +113,29 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         data: evt,
       });
     },
+    onTrace: async (trace) => {
+      if (!tracePersistenceEnabled) {
+        return;
+      }
+
+      try {
+        await db.insert(schema.executionTraces).values({
+          id: trace.id,
+          workspaceId,
+          executionId,
+          spanId: trace.spanId ?? null,
+          kind: trace.kind,
+          timestamp: new Date(trace.timestamp),
+          data: trace,
+        });
+      } catch (error) {
+        if (isIgnorableExecutionTraceWriteError(error)) {
+          return;
+        }
+
+        throw error;
+      }
+    },
     onLog: createExecutionLogStore(db),
   });
 
@@ -119,7 +150,6 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         status: pipelineResult?.status ?? "failed",
         completedAt: new Date(),
         summary: pipelineResult?.summary ?? null,
-        graph: pipelineResult?.graph ?? null,
       })
       .where(and(
         eq(schema.executions.workspaceId, workspaceId),

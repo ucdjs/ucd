@@ -20,7 +20,9 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./graph": "./dist/graph.mjs",
     "./node": "./dist/node.mjs",
+    "./traces": "./dist/traces.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -38,7 +40,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-artifacts": "workspace:*",
+    "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-graph": "workspace:*"
   },

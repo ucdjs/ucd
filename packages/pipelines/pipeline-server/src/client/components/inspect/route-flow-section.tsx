@@ -20,16 +20,11 @@ export function RouteFlowSection() {
 
   const downstreamRoutes = useMemo(() => {
     if (!selectedRoute) return [];
-    const emittedArtifactIds = new Set(selectedRoute.emits.map((emit) => emit.id));
 
     return pipeline.routes
       .filter((route) => route.id !== selectedRoute.id)
       .filter((route) => route.depends.some((dependency) => {
-        if (dependency.type === "route") {
-          return dependency.routeId === selectedRoute.id;
-        }
-
-        return dependency.routeId === selectedRoute.id || emittedArtifactIds.has(dependency.artifactName);
+        return dependency.routeId === selectedRoute.id;
       }))
       .map((route) => route.id);
   }, [pipeline.routes, selectedRoute]);

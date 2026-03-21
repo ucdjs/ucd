@@ -5,20 +5,22 @@ import type {
   PipelineExecutorOptions,
   PipelineExecutorRunOptions,
 } from "./types";
-import { createEventEmitter } from "./executor/events";
-import { runPipeline } from "./executor/run-pipeline";
+import { createEventEmitter } from "./internal/events";
+import { createTraceEmitter } from "./internal/trace-emitter";
+import { run as runPipeline } from "./run";
 import { createNoopExecutionRuntime } from "./runtime";
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
   const {
-    artifacts: globalArtifacts = [],
     cacheStore,
     onEvent,
     onLog,
+    onTrace,
     runtime = createNoopExecutionRuntime(),
   } = options;
 
   const events = createEventEmitter({ onEvent, runtime });
+  const traces = createTraceEmitter({ onTrace, runtime });
 
   const run = async (pipelinesToRun: AnyPipelineDefinition[], runOptions: PipelineExecutorRunOptions = {}): Promise<PipelineExecutionResult[]> => {
     return runtime.runWithLogHandler(onLog, async () => {
@@ -26,20 +28,25 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
       const results: PipelineExecutionResult[] = [];
 
       try {
-        for (const pipeline of pipelinesToRun) {
+        const orderedPipelines = orderPipelinesByPublishedOutputDependencies(pipelinesToRun);
+
+        for (const pipeline of orderedPipelines) {
           try {
             results.push(await runPipeline({
               pipeline,
               runOptions,
               cacheStore,
-              artifacts: globalArtifacts,
               events,
+              traces,
+              priorResults: results,
               runtime,
             }));
           } catch (err) {
             results.push({
               id: pipeline.id,
               data: [],
+              outputManifest: [],
+              traces: [],
               graph: { nodes: [], edges: [] },
               errors: [{
                 scope: "pipeline",
@@ -70,4 +77,46 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
   };
 
   return { run };
+}
+
+function orderPipelinesByPublishedOutputDependencies(
+  pipelines: AnyPipelineDefinition[],
+): AnyPipelineDefinition[] {
+  const byId = new Map(pipelines.map((pipeline) => [pipeline.id, pipeline]));
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+  const ordered: AnyPipelineDefinition[] = [];
+
+  // eslint-disable-next-line ts/explicit-function-return-type
+  function visit(pipeline: AnyPipelineDefinition) {
+    if (visited.has(pipeline.id)) {
+      return;
+    }
+
+    if (visiting.has(pipeline.id)) {
+      throw new Error(`Circular pipeline output dependency detected at "${pipeline.id}"`);
+    }
+
+    visiting.add(pipeline.id);
+    for (const input of pipeline.inputs) {
+      if (input.kind !== "pipeline-output") {
+        continue;
+      }
+
+      const dependency = byId.get(input.pipelineId);
+      if (!dependency) {
+        throw new Error(`Pipeline "${pipeline.id}" depends on missing pipeline "${input.pipelineId}"`);
+      }
+      visit(dependency);
+    }
+    visiting.delete(pipeline.id);
+    visited.add(pipeline.id);
+    ordered.push(pipeline);
+  }
+
+  for (const pipeline of pipelines) {
+    visit(pipeline);
+  }
+
+  return ordered;
 }

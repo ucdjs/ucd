@@ -8,17 +8,87 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
     const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
       seed: {
         executions: [{
-          graph: {
-            nodes: [
-              { id: "source-1", type: "source", version: "1.0.0" },
-              { id: "route-1", type: "route", routeId: "basic-route" },
-              { id: "output-1", type: "output", outputIndex: 0 },
-            ],
-            edges: [
-              { from: "source-1", to: "route-1", type: "parsed" },
-              { from: "route-1", to: "output-1", type: "resolved" },
-            ],
-          },
+          traces: [
+            {
+              kind: "source.provided",
+              data: {
+                id: "trace-1",
+                kind: "source.provided",
+                pipelineId: "simple",
+                timestamp: Date.now(),
+                version: "1.0.0",
+                file: {
+                  version: "1.0.0",
+                  dir: "ucd",
+                  path: "ucd/colors.txt",
+                  name: "colors.txt",
+                  ext: ".txt",
+                },
+              },
+            },
+            {
+              kind: "file.matched",
+              data: {
+                id: "trace-2",
+                kind: "file.matched",
+                pipelineId: "simple",
+                timestamp: Date.now(),
+                version: "1.0.0",
+                routeId: "basic-route",
+                file: {
+                  version: "1.0.0",
+                  dir: "ucd",
+                  path: "ucd/colors.txt",
+                  name: "colors.txt",
+                  ext: ".txt",
+                },
+              },
+            },
+            {
+              kind: "output.produced",
+              data: {
+                id: "trace-3",
+                kind: "output.produced",
+                pipelineId: "simple",
+                timestamp: Date.now(),
+                version: "1.0.0",
+                routeId: "basic-route",
+                file: {
+                  version: "1.0.0",
+                  dir: "ucd",
+                  path: "ucd/colors.txt",
+                  name: "colors.txt",
+                  ext: ".txt",
+                },
+                outputIndex: 0,
+                property: "Colors",
+              },
+            },
+            {
+              kind: "output.resolved",
+              data: {
+                id: "trace-4",
+                kind: "output.resolved",
+                pipelineId: "simple",
+                timestamp: Date.now(),
+                version: "1.0.0",
+                routeId: "basic-route",
+                file: {
+                  version: "1.0.0",
+                  dir: "ucd",
+                  path: "ucd/colors.txt",
+                  name: "colors.txt",
+                  ext: ".txt",
+                },
+                outputIndex: 0,
+                outputId: "filesystem-archive",
+                property: "Colors",
+                sink: "filesystem",
+                format: "json",
+                locator: "/tmp/archive/colors.json",
+              },
+            },
+          ],
         }],
       },
     });
@@ -38,22 +108,47 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       graph: {
         nodes: [
           {
-            id: "source-1",
+            id: "source:1.0.0",
             nodeType: "source",
             flowType: "pipeline-source",
             label: "v1.0.0",
             detailFields: [
-              { label: "Node ID", type: "text", value: "source-1" },
+              { label: "Node ID", type: "text", value: "source:1.0.0" },
               { label: "Version", type: "text", value: "1.0.0" },
             ],
           },
           {
-            id: "route-1",
+            id: "file:1.0.0:ucd/colors.txt",
+            nodeType: "file",
+            flowType: "pipeline-file",
+            label: "colors.txt",
+            detailFields: [
+              { label: "Node ID", type: "text", value: "file:1.0.0:ucd/colors.txt" },
+              { label: "Name", type: "text", value: "colors.txt" },
+              { label: "Path", type: "content", value: "ucd/colors.txt" },
+              { label: "Directory", type: "content", value: "ucd" },
+              { label: "Extension", type: "text", value: ".txt" },
+              { label: "Version", type: "text", value: "1.0.0" },
+              {
+                label: "File",
+                type: "json",
+                value: {
+                  version: "1.0.0",
+                  dir: "ucd",
+                  path: "ucd/colors.txt",
+                  name: "colors.txt",
+                  ext: ".txt",
+                },
+              },
+            ],
+          },
+          {
+            id: "route:1.0.0:basic-route",
             nodeType: "route",
             flowType: "pipeline-route",
             label: "basic-route",
             detailFields: [
-              { label: "Node ID", type: "text", value: "route-1" },
+              { label: "Node ID", type: "text", value: "route:1.0.0:basic-route" },
               { label: "Route ID", type: "text", value: "basic-route" },
             ],
             actions: [
@@ -72,13 +167,16 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
             ],
           },
           {
-            id: "output-1",
+            id: "output:1.0.0:filesystem-archive:/tmp/archive/colors.json",
             nodeType: "output",
             flowType: "pipeline-output",
-            label: "Output[0]",
+            label: "filesystem-archive -> colors.json",
             detailFields: [
-              { label: "Node ID", type: "text", value: "output-1" },
+              { label: "Node ID", type: "text", value: "output:1.0.0:filesystem-archive:/tmp/archive/colors.json" },
               { label: "Output Index", type: "text", value: 0 },
+              { label: "Output ID", type: "text", value: "filesystem-archive" },
+              { label: "Property", type: "text", value: "Colors" },
+              { label: "Locator", type: "content", value: "/tmp/archive/colors.json" },
             ],
             actions: [
               {
@@ -95,16 +193,23 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
         ],
         edges: [
           {
-            id: "edge-0-source-1-route-1",
-            source: "source-1",
-            target: "route-1",
-            label: "parsed",
-            edgeType: "parsed",
+            id: "edge-0-source:1.0.0-file:1.0.0:ucd/colors.txt",
+            source: "source:1.0.0",
+            target: "file:1.0.0:ucd/colors.txt",
+            label: "provides",
+            edgeType: "provides",
           },
           {
-            id: "edge-1-route-1-output-1",
-            source: "route-1",
-            target: "output-1",
+            id: "edge-1-file:1.0.0:ucd/colors.txt-route:1.0.0:basic-route",
+            source: "file:1.0.0:ucd/colors.txt",
+            target: "route:1.0.0:basic-route",
+            label: "matched",
+            edgeType: "matched",
+          },
+          {
+            id: "edge-2-route:1.0.0:basic-route-output:1.0.0:filesystem-archive:/tmp/archive/colors.json",
+            source: "route:1.0.0:basic-route",
+            target: "output:1.0.0:filesystem-archive:/tmp/archive/colors.json",
             label: "resolved",
             edgeType: "resolved",
           },
@@ -149,10 +254,6 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       seed: {
         executions: [{
           pipelineId: "other",
-          graph: {
-            nodes: [],
-            edges: [],
-          },
         }],
       },
     });
@@ -171,10 +272,6 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
         executions: [{
           sourceId: "other-source",
           fileId: "other-file",
-          graph: {
-            nodes: [],
-            edges: [],
-          },
         }],
       },
     });

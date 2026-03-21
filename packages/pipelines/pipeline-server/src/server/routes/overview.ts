@@ -1,6 +1,7 @@
 import type { OverviewResponse } from "#shared/schemas/overview";
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { schema } from "#server/db";
+import { listExecutionIdsWithTraces } from "#server/db/execution-traces";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { H3 } from "h3";
 
@@ -43,6 +44,7 @@ overviewRouter.get("/", async (event) => {
       .orderBy(desc(schema.executions.startedAt))
       .limit(20),
   ]);
+  const tracedExecutionIds = await listExecutionIdsWithTraces(db, workspaceId, recentExecutions.map((exec) => exec.id));
 
   const summaryStates = { ...EMPTY_STATE_COUNTS };
   const activity = Array.from({ length: OVERVIEW_WINDOW_DAYS }, (_, index) => {
@@ -84,7 +86,8 @@ overviewRouter.get("/", async (event) => {
         completedAt: exec.completedAt?.toISOString() ?? null,
         versions: exec.versions,
         summary: exec.summary ?? null,
-        hasGraph: Boolean(exec.graph),
+        hasGraph: tracedExecutionIds.has(exec.id),
+        hasTraces: tracedExecutionIds.has(exec.id),
         error: exec.error ?? null,
       };
     }),
