@@ -1,19 +1,20 @@
-import { useInspectData } from "#hooks/use-inspect-data";
+import type { PipelineDetails } from "#shared/schemas/pipeline";
+import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Link2, Package, Spline } from "lucide-react";
 import { useMemo } from "react";
 
-export function RouteDependenciesSection() {
-  const { selectedRoute, navigateToRoute } = useInspectData();
+export interface RouteDependenciesSectionProps {
+  route: PipelineDetails["routes"][number];
+}
+
+export function RouteDependenciesSection({ route }: RouteDependenciesSectionProps) {
+  const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
 
   const artifactDependencies = useMemo(() => {
-    if (!selectedRoute) return [];
-    return selectedRoute.depends.filter((dependency) => dependency.type === "artifact");
-  }, [selectedRoute]);
-
-  if (!selectedRoute) return null;
+    return route.depends.filter((dependency) => dependency.type === "artifact");
+  }, [route]);
 
   return (
     <Card>
@@ -25,22 +26,21 @@ export function RouteDependenciesSection() {
       </CardHeader>
       <CardContent className="space-y-5 pt-5">
         <div className="flex flex-wrap gap-2">
-          {selectedRoute.depends.length
-            ? selectedRoute.depends.map((dependency) => (
+          {route.depends.length
+            ? route.depends.map((dependency) => (
                 dependency.type === "route"
                   ? (
-                      <Button
+                      <Link
                         key={`${dependency.type}-${dependency.routeId}`}
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => navigateToRoute(dependency.routeId)}
+                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
+                        params={{ sourceId, sourceFileId, pipelineId, routeId: dependency.routeId }}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                       >
                         <Spline className="h-3 w-3" />
                         route:
                         {" "}
                         {dependency.routeId}
-                      </Button>
+                      </Link>
                     )
                   : (
                       <Badge key={`${dependency.type}-${dependency.routeId}-${dependency.artifactName}`} variant="outline">
@@ -52,7 +52,7 @@ export function RouteDependenciesSection() {
                         {dependency.artifactName}
                       </Badge>
                     )
-              ))
+            ))
             : <span className="text-sm text-muted-foreground">No dependencies.</span>}
         </div>
         {artifactDependencies.length > 0 && (
@@ -72,8 +72,8 @@ export function RouteDependenciesSection() {
             <h3 className="text-sm font-medium">Emits</h3>
           </div>
           <div className="flex flex-wrap gap-2">
-            {selectedRoute.emits.length
-              ? selectedRoute.emits.map((emit) => (
+            {route.emits.length
+              ? route.emits.map((emit) => (
                   <Badge key={emit.id} variant="secondary">
                     <Package className="h-3 w-3" />
                     {emit.id}
