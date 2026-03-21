@@ -1,10 +1,8 @@
 import { PipelineHeader } from "#components/pipeline/pipeline-header";
-import { PipelineTabs } from "#components/pipeline/pipeline-tabs";
 import { executionsQueryOptions } from "#queries/execution";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { sourceQueryOptions } from "#queries/source";
 import { isNotFoundError } from "#queries/utils";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
@@ -47,16 +45,8 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
 });
 
 function RouteComponent() {
-  const { sourceId, sourceFileId, pipelineId } = Route.useParams();
   const { file, source, pipelineResponse } = Route.useLoaderData();
   const pipeline = pipelineResponse.pipeline;
-  const { data: latestExecutionData } = useSuspenseQuery(executionsQueryOptions({
-    sourceId,
-    fileId: sourceFileId,
-    pipelineId,
-    limit: 1,
-  }));
-  const latestExecution = latestExecutionData.executions[0] ?? null;
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -65,9 +55,7 @@ function RouteComponent() {
           pipeline={pipeline}
           sourceLabel={source.label}
           filePath={file.path}
-          latestExecution={latestExecution}
         />
-        <PipelineTabs />
       </div>
       <div className="flex-1 overflow-auto min-h-0">
         <Outlet />
