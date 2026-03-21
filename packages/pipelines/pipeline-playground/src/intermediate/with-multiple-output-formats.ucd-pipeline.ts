@@ -15,7 +15,7 @@ const flatColorsRoute = definePipelineRoute({
   filter: byName("colors.txt"),
   parser: standardParser,
   resolver: propertyJsonResolver,
-  outputs: [{ dir: "flat" }],
+  outputs: [{ path: "flat/{property:kebab}.json" }],
 });
 
 /**
@@ -31,8 +31,7 @@ const summaryPlanetsRoute = definePipelineRoute({
   parser: standardParser,
   resolver: summaryResolver,
   outputs: [{
-    dir: "with-meta",
-    fileName: (pj) => `${pj.property.toLowerCase()}.json`,
+    path: "with-meta/{property:lower}.json",
   }],
 });
 
@@ -69,8 +68,7 @@ const arrayValuesSizesRoute = definePipelineRoute({
     }];
   },
   outputs: [{
-    dir: "array-values",
-    fileName: (pj) => `${pj.property}.json`,
+    path: "array-values/{property}.json",
   }],
 });
 
@@ -86,7 +84,7 @@ const sequencesRoute = definePipelineRoute({
   filter: byName("sequences.txt"),
   parser: sequenceParser,
   resolver: propertyJsonResolver,
-  outputs: [{ dir: "sequences" }],
+  outputs: [{ path: "sequences/{property:kebab}.json" }],
 });
 
 /**
@@ -103,8 +101,7 @@ const groupedColorsRoute = definePipelineRoute({
   parser: standardParser,
   resolver: groupByInitialResolver,
   outputs: [{
-    dir: "grouped",
-    fileName: (pj) => `${pj.property}.json`,
+    path: "grouped/{property}.json",
   }],
 });
 

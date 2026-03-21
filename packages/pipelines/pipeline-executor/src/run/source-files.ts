@@ -10,8 +10,8 @@ import type {
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { PipelineExecutionResult } from "../types";
 import { isPipelineOutputSource, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
+import { serializeOutputValue } from "@ucdjs/pipelines-core/outputs";
 import { createPipelineLogger } from "../internal/logger";
-import { serializeOutputValue } from "./outputs";
 import { basename, extname } from "./path-utils";
 
 const LINE_SPLIT_RE = /\r?\n/;

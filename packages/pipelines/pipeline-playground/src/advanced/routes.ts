@@ -1,4 +1,4 @@
-import type { PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { ResolvedEntry } from "@ucdjs/pipelines-core";
 import { and, byDir, byExt, byName, definePipelineRoute } from "@ucdjs/pipelines-core";
 import {
   createDeduplicateTransform,
@@ -14,8 +14,6 @@ import {
 } from "@ucdjs/pipelines-presets";
 import { addMetadata, filterEmptyValues } from "./transforms";
 
-const UNDERSCORE_RE = /_/g;
-
 export const unicodeDataRoute = definePipelineRoute({
   id: "unicode-data",
   filter: byName("UnicodeData.txt"),
@@ -26,7 +24,7 @@ export const unicodeDataRoute = definePipelineRoute({
   ],
   resolver: propertyJsonResolver,
   outputs: [{
-    fileName: (pj: PropertyJson) => `properties/${pj.property.toLowerCase().replace(UNDERSCORE_RE, "-")}.json`,
+    path: "properties/{property:kebab}.json",
   }],
 });
 

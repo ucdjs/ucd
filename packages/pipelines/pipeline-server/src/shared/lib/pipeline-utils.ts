@@ -40,8 +40,6 @@ export function toRouteDetails(
     path: typeof output.path === "string" ? output.path : undefined,
     dynamicPath: typeof output.path === "function",
     pathSource: typeof output.path === "function" ? formatFunctionPreview(output.path) : undefined,
-    dir: output.dir,
-    fileName: typeof output.fileName === "function" ? "[fn]" : output.fileName,
   }));
 
   const transformList = (route.transforms ?? []) as { id?: string }[];
