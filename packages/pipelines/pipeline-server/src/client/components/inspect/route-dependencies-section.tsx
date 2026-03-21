@@ -52,7 +52,7 @@ export function RouteDependenciesSection({ route }: RouteDependenciesSectionProp
                         {dependency.artifactName}
                       </Badge>
                     )
-            ))
+              ))
             : <span className="text-sm text-muted-foreground">No dependencies.</span>}
         </div>
         {artifactDependencies.length > 0 && (

@@ -146,7 +146,9 @@ export function SourceSwitcher() {
                 })}
                 {filtered.length === 0 && search && (
                   <div className="px-2 py-3 text-center text-xs text-muted-foreground">
-                    No sources match "{search}"
+                    No sources match "
+                    {search}
+                    "
                   </div>
                 )}
               </div>
