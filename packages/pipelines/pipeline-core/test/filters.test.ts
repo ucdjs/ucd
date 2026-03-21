@@ -1,5 +1,4 @@
-import type { PipelineLogger } from "../src/logger";
-import type { FileContext, FilterContext } from "../src/types";
+import type { FileContext, FilterContext, PipelineLogger } from "../src/types";
 import { describe, expect, it } from "vitest";
 import {
   always,

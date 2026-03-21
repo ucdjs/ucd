@@ -1,4 +1,4 @@
-import type { PipelineLogger } from "../src/logger";
+import type { PipelineLogger } from "../src/types";
 import type {
   ArtifactDefinition,
   InferRoute,

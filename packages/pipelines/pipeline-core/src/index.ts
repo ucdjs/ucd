@@ -85,8 +85,6 @@ export {
   or,
 } from "./filters";
 
-export type { PipelineLogger, PipelineLogLevel } from "./logger";
-
 export type {
   FilesystemOutputSinkDefinition,
   NormalizedRouteOutputDefinition,
@@ -173,6 +171,8 @@ export type {
   ParsedRow,
   ParserFn,
   PipelineFilter,
+  PipelineLogger,
+  PipelineLogLevel,
   PropertyJson,
   ResolveContext,
   ResolvedEntry,
