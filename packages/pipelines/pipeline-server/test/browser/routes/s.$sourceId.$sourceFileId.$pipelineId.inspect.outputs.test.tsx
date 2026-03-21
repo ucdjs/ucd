@@ -4,8 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
-describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs", () => {
-  it("selects outputs from search params, expands route groups, and links back to inspect", async () => {
+describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect output focus", () => {
+  it("selects outputs from search params and switches between outputs on the same route", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -83,38 +83,32 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
     ]);
 
     const user = userEvent.setup();
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect/outputs?output=publish:0");
+    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile&output=compile:0");
 
-    expect(await screen.findByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.replace(/\s+/g, " ").trim() === "publish output1",
-    )).toBeInTheDocument();
-    expect(screen.getByText("Output definition for where this route writes artifacts.")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: /compile output1/i })).toBeInTheDocument();
+    expect(screen.getByText("Focused output details for the selected route.")).toBeInTheDocument();
+    expect(screen.getByText("compile.json")).toBeInTheDocument();
+    expect(screen.getByText("dist")).toBeInTheDocument();
 
-    const outputsSection = screen.getByRole("heading", { name: "Pipeline outputs" }).closest("section");
-    expect(outputsSection).not.toBeNull();
+    const routeOutputsSection = screen.getByRole("heading", { name: "Other outputs on this route" }).closest("section");
+    expect(routeOutputsSection).not.toBeNull();
 
-    const compileGroup = within(outputsSection!).getAllByRole("button").find((button) =>
-      button.textContent?.replace(/\s+/g, " ").trim().includes("compile")
-      && button.textContent.includes("2 outputs"),
+    const secondOutputButton = within(routeOutputsSection!).getAllByRole("button").find((button) =>
+      button.textContent?.replace(/\s+/g, " ").trim().includes("Output 2")
+      && button.textContent.includes("compile.txt"),
     );
-    expect(compileGroup).not.toBeNull();
-    await user.click(compileGroup!);
-    expect(within(outputsSection!).getAllByRole("button").some((button) => button.textContent?.includes("compile.json"))).toBe(true);
-    expect(within(outputsSection!).getAllByRole("button").some((button) => button.textContent?.includes("compile.txt"))).toBe(true);
-
-    await user.click(compileGroup!);
-    expect(screen.queryByText("compile.json")).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("link", { name: "Open publish" }));
+    expect(secondOutputButton).not.toBeNull();
+    await user.click(secondOutputButton!);
 
     await waitFor(() => {
       expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
-      expect(history.location.search).toContain("route=publish");
+      expect(history.location.search).toContain("route=compile");
+      expect(history.location.search).toContain("output=compile%3A1");
+      expect(screen.getByRole("heading", { name: /compile output2/i })).toBeInTheDocument();
     });
   });
 
-  it("renders the empty outputs state when the pipeline has no outputs", async () => {
+  it("renders the empty outputs state when the selected route has no outputs", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -179,8 +173,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
       })],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/inspect/outputs");
+    await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile");
 
-    expect(await screen.findByText("No outputs defined")).toBeInTheDocument();
+    expect(await screen.findByText("No output definitions for this route.")).toBeInTheDocument();
   });
 });
