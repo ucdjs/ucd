@@ -17,7 +17,7 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ChevronRight, ExternalLink, Hash, Tag } from "lucide-react";
 import * as React from "react";
-import { SourceFileList } from "./pipeline-sidebar-source-file-list";
+import { SourceFileList } from "./source-file-list";
 import { SourceSwitcher } from "./source-switcher";
 
 export interface PipelineSidebarProps {

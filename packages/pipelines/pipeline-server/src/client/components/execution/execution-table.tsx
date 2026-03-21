@@ -1,5 +1,5 @@
 import type { ExecutionSummaryItem } from "#shared/schemas/execution";
-import { StatusIcon } from "#components/execution/execution-status";
+import { StatusIcon } from "#components/execution/status-icon";
 import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";

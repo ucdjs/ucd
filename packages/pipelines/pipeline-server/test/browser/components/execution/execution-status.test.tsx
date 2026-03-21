@@ -1,4 +1,4 @@
-import { StatusBadge } from "#components/execution/execution-status";
+import { StatusBadge } from "#components/execution/status-badge";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 

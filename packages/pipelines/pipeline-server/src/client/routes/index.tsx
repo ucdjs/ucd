@@ -7,7 +7,7 @@ import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { FileCode2, FolderTree, Route as PipelineIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -32,16 +32,19 @@ function HomePage() {
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             <Badge variant="outline">
+              <FolderTree className="h-3 w-3" />
               {sourceCount}
               {" "}
               sources
             </Badge>
             <Badge variant="outline">
+              <FileCode2 className="h-3 w-3" />
               {fileCount}
               {" "}
               files
             </Badge>
             <Badge variant="outline">
+              <PipelineIcon className="h-3 w-3" />
               {pipelineCount}
               {" "}
               pipelines
@@ -58,18 +61,16 @@ function HomePage() {
             summaryStates={overview.summary}
             total={overview.summary.total}
           />
-          <Card className="xl:col-span-8">
-            <CardHeader className="border-b border-border/60 pb-3">
-              <CardTitle className="text-base">Recent executions</CardTitle>
-              <CardDescription>Latest activity across the workspace.</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <ExecutionTable
-                executions={overview.recentExecutions}
-                emptyTitle="No executions recorded yet."
-              />
-            </CardContent>
-          </Card>
+          <section className="xl:col-span-8 rounded-xl border border-border/60 bg-background">
+            <header className="border-b border-border/60 px-5 py-4">
+              <h2 className="text-base font-semibold tracking-tight">Recent executions</h2>
+              <p className="text-sm text-muted-foreground">Latest activity across the workspace.</p>
+            </header>
+            <ExecutionTable
+              executions={overview.recentExecutions}
+              emptyTitle="No executions recorded yet."
+            />
+          </section>
           <SourcesPanel sources={sources} />
         </div>
       </div>

@@ -113,17 +113,14 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
 
     const { history } = await renderFileRoute("/s/local/alpha/main-pipeline");
 
-    expect(await screen.findByText((_, element) =>
-      element?.getAttribute("data-slot") === "card-title"
-      && element.textContent?.trim() === "Recent executions",
-    )).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Recent executions" })).toBeInTheDocument();
     expect(screen.getByText("Pipeline at a glance")).toBeInTheDocument();
     expect(screen.getByText("Versions (2/2)")).toBeInTheDocument();
     expect(screen.getByText("Busiest routes")).toBeInTheDocument();
     expect(screen.getByText("compile")).toBeInTheDocument();
     expect(screen.getByText("publish")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Execute pipeline" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View executions" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "View executions" })).toHaveAttribute(
       "href",
       "/s/local/alpha/main-pipeline/executions",
     );

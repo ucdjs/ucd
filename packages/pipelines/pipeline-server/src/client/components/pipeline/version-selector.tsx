@@ -1,5 +1,5 @@
 import { cn } from "@ucdjs-internal/shared-ui";
-import { useMemo } from "react";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 
 export interface VersionSelectorProps {
   versions: string[];
@@ -18,14 +18,6 @@ export function VersionSelector({
   onDeselectAll,
   className,
 }: VersionSelectorProps) {
-  const versionToggles = useMemo(() => {
-    const map = new Map<string, () => void>();
-    for (const v of versions) {
-      map.set(v, () => onToggleVersion(v));
-    }
-    return map;
-  }, [versions, onToggleVersion]);
-
   return (
     <div className={className}>
       <div className="flex items-center justify-between mb-2">
@@ -39,61 +31,45 @@ export function VersionSelector({
         {(onSelectAll || onDeselectAll) && (
           <div className="flex gap-2 text-xs">
             {onSelectAll && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onSelectAll}
-                className="text-muted-foreground hover:text-foreground"
+                className="h-auto px-0 text-muted-foreground hover:text-foreground"
               >
                 All
-              </button>
+              </Button>
             )}
             {onDeselectAll && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onDeselectAll}
-                className="text-muted-foreground hover:text-foreground"
+                className="h-auto px-0 text-muted-foreground hover:text-foreground"
               >
                 None
-              </button>
+              </Button>
             )}
           </div>
         )}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {versions.map((version, index) => (
-          <VersionTag
+          <Button
             key={`${version}-${index}`}
-            version={version}
-            selected={selectedVersions.has(version)}
-            onToggle={versionToggles.get(version)}
-          />
+            type="button"
+            size="sm"
+            variant={selectedVersions.has(version) ? "default" : "secondary"}
+            onClick={() => onToggleVersion(version)}
+            className={cn(
+              "rounded text-xs",
+              !selectedVersions.has(version) && "hover:bg-secondary/80",
+            )}
+          >
+            {version}
+          </Button>
         ))}
       </div>
     </div>
-  );
-}
-
-function VersionTag({
-  version,
-  selected,
-  onToggle,
-}: {
-  version: string;
-  selected: boolean;
-  onToggle?: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className={cn(
-        "px-2.5 py-1 text-xs rounded transition-colors",
-        selected
-          ? "bg-primary text-primary-foreground"
-          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-      )}
-    >
-      {version}
-    </button>
   );
 }
