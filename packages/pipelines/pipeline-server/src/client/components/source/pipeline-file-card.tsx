@@ -1,7 +1,13 @@
 import type { SourceFileInfo } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { FileCode2, FolderTree, Layers3, Workflow as PipelineIcon, Spline } from "lucide-react";
+import {
+  FileCode2,
+  FolderTree,
+  Layers3,
+  Workflow as PipelineIcon,
+  Spline,
+} from "lucide-react";
 
 interface PipelineFileCardProps {
   file: SourceFileInfo;
@@ -11,7 +17,6 @@ interface PipelineFileCardProps {
 export function PipelineFileCard({ file, sourceId }: PipelineFileCardProps) {
   return (
     <div className="rounded-lg border border-border/60 bg-background">
-      {/* Card header */}
       <div className="flex items-start gap-3 px-5 py-4">
         <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/40">
           <FileCode2 className="h-5 w-5 text-muted-foreground" />
@@ -27,7 +32,6 @@ export function PipelineFileCard({ file, sourceId }: PipelineFileCardProps) {
         </Badge>
       </div>
 
-      {/* Pipeline list */}
       {file.pipelines.length > 0 && (
         <div className="border-t border-border/60">
           {file.pipelines.map((pipeline, idx) => (

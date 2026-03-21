@@ -10,6 +10,7 @@ import { sourceOverviewQueryOptions } from "#queries/source-overview";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { AlertTriangle, FileCode2, LayoutGrid, LayoutList, Workflow as PipelineIcon, Play, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -108,63 +109,65 @@ function RouteComponent() {
             total={overview.summary.total}
             compact
           />
-          <section className="rounded-xl border border-border/60 bg-background">
-            <header className="border-b border-border/60 px-4 py-3">
-              <h2 className="text-sm font-semibold tracking-tight">Recent executions</h2>
-            </header>
-            {overview.recentExecutions.length === 0
-              ? (
-                  <div className="px-4 py-8 text-center">
-                    <Play className="mx-auto mb-2 h-6 w-6 text-muted-foreground/50" />
-                    <p className="text-xs text-muted-foreground">No executions yet</p>
-                  </div>
-                )
-              : (
-                  <div>
-                    {overview.recentExecutions.map((execution, idx) => {
-                      const canView = execution.sourceId != null && execution.fileId != null && execution.pipelineId != null;
-                      const content = (
-                        <div className={`flex items-center gap-3 px-4 py-2.5${idx > 0 ? " border-t border-border/30" : ""}`}>
-                          <StatusIcon status={execution.status} />
-                          <div className="min-w-0 flex-1">
-                            <div className="truncate text-xs font-medium">{execution.pipelineId}</div>
-                            <div className="text-[11px] text-muted-foreground">
-                              {formatStartedAt(execution.startedAt)}
-                              {" · "}
-                              {formatExecutionDuration(execution.startedAt, execution.completedAt)}
+          <Card>
+            <CardHeader className="border-b border-border/60 pb-2 pt-3 px-4">
+              <CardTitle className="text-sm">Recent executions</CardTitle>
+            </CardHeader>
+            <CardContent className="px-0 pt-0">
+              {overview.recentExecutions.length === 0
+                ? (
+                    <div className="px-4 py-8 text-center">
+                      <Play className="mx-auto mb-2 h-6 w-6 text-muted-foreground/50" />
+                      <p className="text-xs text-muted-foreground">No executions yet</p>
+                    </div>
+                  )
+                : (
+                    <div>
+                      {overview.recentExecutions.map((execution, idx) => {
+                        const canView = execution.sourceId != null && execution.fileId != null && execution.pipelineId != null;
+                        const content = (
+                          <div className={`flex items-center gap-3 px-4 py-2.5${idx > 0 ? " border-t border-border/30" : ""}`}>
+                            <StatusIcon status={execution.status} />
+                            <div className="min-w-0 flex-1">
+                              <div className="truncate text-xs font-medium">{execution.pipelineId}</div>
+                              <div className="text-[11px] text-muted-foreground">
+                                {formatStartedAt(execution.startedAt)}
+                                {" · "}
+                                {formatExecutionDuration(execution.startedAt, execution.completedAt)}
+                              </div>
                             </div>
+                            {execution.versions && execution.versions.length > 0 && (
+                              <Badge variant="secondary" className="shrink-0 text-[10px]">
+                                {execution.versions[0]}
+                              </Badge>
+                            )}
                           </div>
-                          {execution.versions && execution.versions.length > 0 && (
-                            <Badge variant="secondary" className="shrink-0 text-[10px]">
-                              {execution.versions[0]}
-                            </Badge>
-                          )}
-                        </div>
-                      );
-
-                      if (canView) {
-                        return (
-                          <Link
-                            key={execution.id}
-                            to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
-                            params={{
-                              sourceId: execution.sourceId!,
-                              sourceFileId: execution.fileId!,
-                              pipelineId: execution.pipelineId,
-                              executionId: execution.id,
-                            }}
-                            className="block transition-colors hover:bg-muted/30"
-                          >
-                            {content}
-                          </Link>
                         );
-                      }
 
-                      return <div key={execution.id}>{content}</div>;
-                    })}
-                  </div>
-                )}
-          </section>
+                        if (canView) {
+                          return (
+                            <Link
+                              key={execution.id}
+                              to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                              params={{
+                                sourceId: execution.sourceId!,
+                                sourceFileId: execution.fileId!,
+                                pipelineId: execution.pipelineId,
+                                executionId: execution.id,
+                              }}
+                              className="block transition-colors hover:bg-muted/30"
+                            >
+                              {content}
+                            </Link>
+                          );
+                        }
+
+                        return <div key={execution.id}>{content}</div>;
+                      })}
+                    </div>
+                  )}
+            </CardContent>
+          </Card>
         </div>
 
         <div className="min-w-0 flex-1">

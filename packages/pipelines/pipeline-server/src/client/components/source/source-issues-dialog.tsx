@@ -88,7 +88,7 @@ export function SourceIssuesDialog({
         View details
       </DialogTrigger>
       <DialogContent
-        className="grid-rows-[auto_auto_minmax(0,1fr)_auto] h-[90vh] !w-[72rem] !max-w-[calc(100vw-2rem)] overflow-hidden p-0"
+        className="grid-rows-[auto_auto_minmax(0,1fr)_auto] h-[90vh] w-6xl! max-w-[calc(100vw-2rem)]! overflow-hidden p-0"
         data-testid="source-issues-dialog"
         showCloseButton
       >
