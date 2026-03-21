@@ -37,14 +37,14 @@ function RoutesIndexPage() {
   }
 
   return (
-    <Card className="min-h-[28rem] overflow-hidden">
-      <CardContent className="h-full min-h-[28rem] p-0">
+    <Card className="min-h-112 overflow-hidden">
+      <CardContent className="h-full min-h-112 p-0">
         <DefinitionGraph
           pipeline={pipeline}
           selectedRouteId={undefined}
           onRouteSelect={handleRouteSelect}
           mode="full"
-          className="min-h-[28rem]"
+          className="min-h-112"
         />
       </CardContent>
     </Card>
