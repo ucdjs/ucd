@@ -45,6 +45,24 @@ Tests live in apps/api/test/routes for worker endpoints, apps/api/test/unit for 
 
 Pipelines are the internal extraction/build path that powers data production. Most consumers will use published data packages rather than running pipelines directly. Prefer updating shared presets instead of duplicating pipeline definitions. If a pipeline change impacts artifacts, update tests and snapshots for affected packages. When adding new pipeline behavior, check existing presets before introducing a new one.
 
+## Pipeline Server Database
+
+The pipeline server uses Drizzle ORM with SQLite. Schema is defined in `packages/pipelines/pipeline-server/src/server/db/schema.ts`.
+
+After modifying the schema, generate a migration with:
+
+```sh
+pnpm --filter @ucdjs/pipelines-server db:generate
+```
+
+Other useful database commands:
+
+- `pnpm --filter @ucdjs/pipelines-server db:push` — push schema changes directly (dev only)
+- `pnpm --filter @ucdjs/pipelines-server db:migrate` — apply pending migrations
+- `pnpm --filter @ucdjs/pipelines-server db:studio` — open Drizzle Studio
+
+Migrations live in `packages/pipelines/pipeline-server/src/server/db/migrations/` and are applied automatically in tests and at server startup via `runMigrations()`. Never create migration files manually — always use `db:generate`.
+
 ## CLI Development
 
 Run the CLI from repo root with a relative path (for example: `./packages/cli/bin/ucd.js <command>`). If the API is needed locally, run `pnpm dev:apps` first and keep it running.
