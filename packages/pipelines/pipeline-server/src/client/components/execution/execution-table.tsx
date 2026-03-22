@@ -86,8 +86,8 @@ export function ExecutionTable({
                   ? (
                       <ExecutionTableActions
                         execution={execution}
-                        sourceId={execution.sourceId}
-                        fileId={execution.fileId}
+                        sourceId={execution.sourceId!}
+                        fileId={execution.fileId!}
                         pipelineId={execution.pipelineId}
                         showGraphLink={showGraphLink}
                       />
@@ -196,8 +196,8 @@ export function ExecutionTable({
                           <div className="flex justify-end">
                             <ExecutionTableActions
                               execution={execution}
-                              sourceId={execution.sourceId}
-                              fileId={execution.fileId}
+                              sourceId={execution.sourceId!}
+                              fileId={execution.fileId!}
                               pipelineId={execution.pipelineId}
                               showGraphLink={showGraphLink}
                               alignEnd

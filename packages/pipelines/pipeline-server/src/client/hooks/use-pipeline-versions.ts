@@ -112,7 +112,7 @@ export function usePipelineVersions(
       try {
         const parsed = JSON.parse(snapshot) as string[];
         if (parsed.length === 0) {
-          return new Set();
+          return new Set<string>();
         }
 
         return sanitizeVersions(parsed, allVersions);
@@ -139,7 +139,7 @@ export function usePipelineVersions(
   }, [allVersions, storageKey]);
 
   const deselectAll = useCallback(() => {
-    saveVersionsToStorage(storageKey, new Set());
+    saveVersionsToStorage(storageKey, new Set<string>());
   }, [storageKey]);
 
   return {

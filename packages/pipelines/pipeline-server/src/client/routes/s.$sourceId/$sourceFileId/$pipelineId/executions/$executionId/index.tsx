@@ -91,7 +91,14 @@ function ExecutionDetailPage() {
                 {" "}
                 events
                 {" · "}
-                {selectedSpanId ? "Filtered" : formatExecutionDuration(executionData.startedAt, executionData.completedAt)}
+                {selectedSpanId
+                  ? "Filtered"
+                  : executionData.events.length > 0
+                    ? formatExecutionDuration(
+                        executionData.events[0]!.timestamp,
+                        executionData.events.at(-1)?.timestamp ?? null,
+                      )
+                    : "No events"}
               </div>
             </div>
           </div>
