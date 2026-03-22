@@ -1,5 +1,6 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowLeft, ArrowRight, FileOutput, FolderOutput } from "lucide-react";
 import { useMemo } from "react";
@@ -79,7 +80,7 @@ function OutputDetailPage() {
             <Link
               to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
               params={{ sourceId, sourceFileId, pipelineId, routeId: selectedOutput.routeId }}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+              className={buttonVariants({ variant: "outline" })}
             >
               Go to route
               <ArrowRight className="h-3 w-3" />
@@ -113,7 +114,7 @@ function OutputDetailPage() {
                     key={output.key}
                     to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
                     params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
-                    className={`flex h-auto justify-start rounded-xl border px-4 py-4 text-left ${active ? "border-border bg-muted/20" : "border-input hover:bg-accent hover:text-accent-foreground"}`}
+                    className={buttonVariants({ variant: active ? "outline" : "ghost", size: "sm" })}
                   >
                     <div className="w-full">
                       <div className="flex items-center gap-2 text-sm font-medium">
