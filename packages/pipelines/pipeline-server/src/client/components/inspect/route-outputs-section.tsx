@@ -22,7 +22,6 @@ export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
         {route.outputs.length
           ? (
               <div className="grid gap-3">
-                {/* Outputs are positional — index is the canonical key (used as outputKey param) */}
                 {route.outputs.map((output, index) => (
                   // eslint-disable-next-line react/no-array-index-key
                   <div key={index} className="rounded-lg border border-border/60 p-4">

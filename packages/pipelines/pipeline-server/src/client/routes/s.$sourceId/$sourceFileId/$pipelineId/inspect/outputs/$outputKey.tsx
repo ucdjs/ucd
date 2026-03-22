@@ -52,9 +52,9 @@ function OutputDetailPage() {
   const routeOutputs = allOutputs.filter((o) => o.routeId === selectedOutput.routeId);
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardContent className="space-y-4 pt-5">
+    <Card>
+      <CardContent className="divide-y divide-border/60 p-0">
+        <div className="space-y-4 bg-muted/5 px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
@@ -89,49 +89,49 @@ function OutputDetailPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
               <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Directory</div>
-              <code className="block rounded-lg border border-border/60 px-3 py-3 text-xs">
+              <code className="block rounded-lg border border-border/60 bg-muted/10 px-3 py-3 text-xs">
                 {selectedOutput.dir}
               </code>
             </div>
             <div className="space-y-2">
               <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">File name</div>
-              <code className="block rounded-lg border border-border/60 px-3 py-3 text-xs">
+              <code className="block rounded-lg border border-border/60 bg-muted/10 px-3 py-3 text-xs">
                 {selectedOutput.fileName}
               </code>
             </div>
           </div>
+        </div>
 
-          {routeOutputs.length > 1 && (
-            <div className="space-y-3">
-              <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</div>
-              <div className="grid gap-3 md:grid-cols-2">
-                {routeOutputs.map((output) => {
-                  const active = output.key === selectedOutput.key;
-                  return (
-                    <Link
-                      key={output.key}
-                      to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
-                      params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
-                      className={`flex h-auto justify-start rounded-xl border px-4 py-4 text-left ${active ? "border-border bg-muted/20" : "border-input hover:bg-accent hover:text-accent-foreground"}`}
-                    >
-                      <div className="w-full">
-                        <div className="flex items-center gap-2 text-sm font-medium">
-                          <FileOutput className="h-3.5 w-3.5" />
-                          Output
-                          {" "}
-                          {output.outputIndex + 1}
-                        </div>
-                        <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
-                        <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
+        {routeOutputs.length > 1 && (
+          <div className="space-y-3 px-6 py-5">
+            <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Other outputs on this route</div>
+            <div className="grid gap-3 md:grid-cols-2">
+              {routeOutputs.map((output) => {
+                const active = output.key === selectedOutput.key;
+                return (
+                  <Link
+                    key={output.key}
+                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
+                    params={{ sourceId, sourceFileId, pipelineId, outputKey: output.key }}
+                    className={`flex h-auto justify-start rounded-xl border px-4 py-4 text-left ${active ? "border-border bg-muted/20" : "border-input hover:bg-accent hover:text-accent-foreground"}`}
+                  >
+                    <div className="w-full">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <FileOutput className="h-3.5 w-3.5" />
+                        Output
+                        {" "}
+                        {output.outputIndex + 1}
                       </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                      <div className="mt-2 text-xs text-muted-foreground">{output.fileName}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">{output.dir}</div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
