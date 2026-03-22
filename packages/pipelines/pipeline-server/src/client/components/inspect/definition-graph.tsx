@@ -1,15 +1,16 @@
+import type { FlowNode, FlowNodeData } from "#lib/graph-utils";
 import type { PipelineDetails } from "#shared/schemas/pipeline";
 import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflow/react";
-import type { DefinitionFlowNode } from "./definition-graph-utils";
+import { applyDefinitionLayout, definitionGraphToFlow, filterToNeighbors } from "#lib/graph-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { applyDefinitionLayout, filterToNeighbors, pipelineDefinitionToFlow } from "./definition-graph-utils";
-import { DefinitionRouteNodeRenderer } from "./definition-node";
+import { DefinitionOutputNodeRenderer, DefinitionRouteNodeRenderer } from "./definition-node";
 import "@xyflow/react/dist/style.css";
 
 const nodeTypes: NodeTypes = {
   "definition-route": DefinitionRouteNodeRenderer,
+  "definition-output": DefinitionOutputNodeRenderer,
 };
 
 const fitViewOptions = { padding: 0.2 } as const;
@@ -20,6 +21,8 @@ export interface DefinitionGraphProps {
   pipeline: PipelineDetails;
   selectedRouteId?: string;
   onRouteSelect: (routeId: string) => void;
+  onOutputSelect?: (outputKey: string) => void;
+  includeOutputs?: boolean;
   mode?: "full" | "neighbors";
   className?: string;
 }
@@ -28,13 +31,15 @@ export function DefinitionGraph({
   pipeline,
   selectedRouteId,
   onRouteSelect,
+  onOutputSelect,
+  includeOutputs = false,
   mode = "full",
   className,
 }: DefinitionGraphProps) {
   const { allNodes, allEdges } = useMemo(() => {
-    const { nodes, edges } = pipelineDefinitionToFlow(pipeline);
+    const { nodes, edges } = definitionGraphToFlow(pipeline, { includeOutputs });
     return { allNodes: nodes, allEdges: edges };
-  }, [pipeline]);
+  }, [pipeline, includeOutputs]);
 
   const { initialNodes, initialEdges } = useMemo(() => {
     let layoutNodes = allNodes;
@@ -58,14 +63,19 @@ export function DefinitionGraph({
     setEdges(initialEdges);
   }, [initialNodes, initialEdges]);
 
-  const handleNodeClick: NodeMouseHandler<DefinitionFlowNode> = useCallback(
+  const handleNodeClick: NodeMouseHandler<FlowNode> = useCallback(
     (_event, node) => {
-      onRouteSelect(node.data.routeId);
+      const data = node.data as FlowNodeData;
+      if (data.kind === "definition-output") {
+        onOutputSelect?.(data.outputKey);
+      } else if (data.kind === "definition-route") {
+        onRouteSelect(data.routeId);
+      }
     },
-    [onRouteSelect],
+    [onRouteSelect, onOutputSelect],
   );
 
-  const handleNodesChange = useCallback((changes: NodeChange<DefinitionFlowNode>[]) => {
+  const handleNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
     setNodes((current) => applyNodeChanges(changes, current));
   }, []);
 
