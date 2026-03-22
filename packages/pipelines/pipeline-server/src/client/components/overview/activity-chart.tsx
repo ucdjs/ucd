@@ -1,4 +1,4 @@
-import type { OverviewActivityDay, OverviewExecutionSummary } from "#queries/overview";
+import type { OverviewActivityDay, OverviewExecutionSummary } from "#shared/schemas/overview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { PlayCircle } from "lucide-react";
@@ -8,11 +8,13 @@ import { formatDayLabel, getStateCount, overviewStates } from "./shared";
 interface ExecutionActivityChartProps {
   activity: OverviewActivityDay[];
   summaryStates: OverviewExecutionSummary;
+  compact?: boolean;
 }
 
 export function ExecutionActivityChart({
   activity,
   summaryStates,
+  compact = false,
 }: ExecutionActivityChartProps) {
   const availableStates = overviewStates.filter((state) => {
     const knownStatus = state.statuses.some((status) => EXECUTION_STATUSES.includes(status));
@@ -54,12 +56,12 @@ export function ExecutionActivityChart({
   }
 
   return (
-    <Card className="xl:col-span-8">
-      <CardHeader className="border-b border-border/60 pb-3">
+    <Card className={compact ? "" : "xl:col-span-8"}>
+      <CardHeader className={compact ? "border-b border-border/60 pb-2 pt-3 px-4" : "border-b border-border/60 pb-3"}>
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-1">
             <CardTitle className="text-base">Execution activity</CardTitle>
-            <CardDescription>Global execution states over the last seven days.</CardDescription>
+            {!compact && <CardDescription>Global execution states over the last seven days.</CardDescription>}
           </div>
           <div className="flex flex-wrap gap-2">
             {availableStates.map((state) => {
@@ -86,7 +88,7 @@ export function ExecutionActivityChart({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="pt-4">
+      <CardContent className={compact ? "pt-3 px-4 pb-3" : "pt-4"}>
         {!hasActivity
           ? (
               <div className="rounded-md border border-dashed border-border/70 bg-muted/30 px-4 py-10 text-center">
@@ -101,7 +103,7 @@ export function ExecutionActivityChart({
                     <div className="text-center text-xs font-medium tabular-nums text-muted-foreground">
                       {day.total}
                     </div>
-                    <div className="flex h-36 items-end justify-center p-1">
+                    <div className={`flex ${compact ? "h-24" : "h-36"} items-end justify-center p-1`}>
                       <div
                         role="img"
                         aria-label={`${formatDayLabel(day.date)}: ${day.total} visible executions`}

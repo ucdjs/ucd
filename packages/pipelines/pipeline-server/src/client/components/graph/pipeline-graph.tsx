@@ -1,21 +1,16 @@
+import type { FlowEdge, FlowNode } from "#lib/graph-utils";
 import type { ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
 import type {
   PipelineGraphNodeType,
 } from "@ucdjs/pipelines-core";
 import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflow/react";
-import type { PipelineFlowEdge, PipelineFlowNode } from "./graph-utils";
+import { applyExecutionLayout, executionGraphToFlow, filterNodesByType, getNodeColor } from "#lib/graph-utils";
 import { getFlowNodeType, graphNodeTypes } from "#shared/lib/graph";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./graph-details";
 import { PipelineGraphFilters } from "./graph-filters";
-import {
-  applyLayout,
-  filterNodesByType,
-  getNodeColor,
-  pipelineGraphToFlow,
-} from "./graph-utils";
 import { PipelineNodeRenderer } from "./nodes";
 import "@xyflow/react/dist/style.css";
 
@@ -47,7 +42,7 @@ export function PipelineGraph({
 }: PipelineGraphProps) {
   // Convert the persisted pipeline graph into React Flow primitives once per graph payload.
   const { allNodes, allEdges } = useMemo(() => {
-    const { nodes, edges } = pipelineGraphToFlow(graph);
+    const { nodes, edges } = executionGraphToFlow(graph);
     return { allNodes: nodes, allEdges: edges };
   }, [graph]);
 
@@ -62,11 +57,11 @@ export function PipelineGraph({
       allEdges,
       visibleTypes,
     );
-    const positioned = applyLayout(filteredNodes, filteredEdges);
+    const positioned = applyExecutionLayout(filteredNodes, filteredEdges);
     return { initialNodes: positioned, initialEdges: filteredEdges };
   }, [allNodes, allEdges, visibleTypes]);
 
-  const [nodes, setNodes] = useState<PipelineFlowNode[]>(initialNodes);
+  const [nodes, setNodes] = useState<FlowNode[]>(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
 
   useEffect(() => {
@@ -88,20 +83,20 @@ export function PipelineGraph({
     });
   }, []);
 
-  const handleNodeClick: NodeMouseHandler<PipelineFlowNode> = useCallback(
+  const handleNodeClick: NodeMouseHandler<FlowNode> = useCallback(
     (_event, node) => {
-      const selectedGraphNode = node.data?.graphNode ?? null;
+      const selectedGraphNode = node.data.kind === "execution" ? node.data.graphNode : null;
       setSelectedNode(selectedGraphNode);
       onNodeSelect?.(selectedGraphNode);
     },
     [onNodeSelect],
   );
 
-  const handleNodesChange = useCallback((changes: NodeChange<PipelineFlowNode>[]) => {
+  const handleNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
     setNodes((current) => applyNodeChanges(changes, current));
   }, []);
 
-  const handleEdgesChange = useCallback((changes: EdgeChange<PipelineFlowEdge>[]) => {
+  const handleEdgesChange = useCallback((changes: EdgeChange<FlowEdge>[]) => {
     setEdges((current) => applyEdgeChanges(changes, current));
   }, []);
 

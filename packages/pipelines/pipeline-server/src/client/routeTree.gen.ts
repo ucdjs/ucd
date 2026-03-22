@@ -16,10 +16,16 @@ import { Route as SSourceIdSourceFileIdRouteRouteImport } from './routes/s.$sour
 import { Route as SSourceIdSourceFileIdIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/index'
 import { Route as SSourceIdSourceFileIdPipelineIdRouteRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/route'
 import { Route as SSourceIdSourceFileIdPipelineIdIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/index'
-import { Route as SSourceIdSourceFileIdPipelineIdInspectRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect'
-import { Route as SSourceIdSourceFileIdPipelineIdGraphsRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/graphs'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectRouteRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/route'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/index'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/index'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/transforms/index'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/routes/index'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/outputs/index'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/$executionId/index'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+import { Route as SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
 import { Route as SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRouteImport } from './routes/s.$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
 
 const IndexRoute = IndexRouteImport.update({
@@ -61,17 +67,17 @@ const SSourceIdSourceFileIdPipelineIdIndexRoute =
     path: '/',
     getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
   } as any)
-const SSourceIdSourceFileIdPipelineIdInspectRoute =
-  SSourceIdSourceFileIdPipelineIdInspectRouteImport.update({
+const SSourceIdSourceFileIdPipelineIdInspectRouteRoute =
+  SSourceIdSourceFileIdPipelineIdInspectRouteRouteImport.update({
     id: '/inspect',
     path: '/inspect',
     getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
   } as any)
-const SSourceIdSourceFileIdPipelineIdGraphsRoute =
-  SSourceIdSourceFileIdPipelineIdGraphsRouteImport.update({
-    id: '/graphs',
-    path: '/graphs',
-    getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
+const SSourceIdSourceFileIdPipelineIdInspectIndexRoute =
+  SSourceIdSourceFileIdPipelineIdInspectIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
   } as any)
 const SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute =
   SSourceIdSourceFileIdPipelineIdExecutionsIndexRouteImport.update({
@@ -79,11 +85,49 @@ const SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute =
     path: '/executions/',
     getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
   } as any)
+const SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute =
+  SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRouteImport.update({
+    id: '/transforms/',
+    path: '/transforms/',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
+  } as any)
+const SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute =
+  SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRouteImport.update({
+    id: '/routes/',
+    path: '/routes/',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
+  } as any)
+const SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute =
+  SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRouteImport.update({
+    id: '/outputs/',
+    path: '/outputs/',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
+  } as any)
 const SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRoute =
   SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRouteImport.update({
     id: '/executions/$executionId/',
     path: '/executions/$executionId/',
     getParentRoute: () => SSourceIdSourceFileIdPipelineIdRouteRoute,
+  } as any)
+const SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute =
+  SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRouteImport.update(
+    {
+      id: '/transforms/$transformName',
+      path: '/transforms/$transformName',
+      getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
+    } as any,
+  )
+const SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute =
+  SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRouteImport.update({
+    id: '/routes/$routeId',
+    path: '/routes/$routeId',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
+  } as any)
+const SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute =
+  SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRouteImport.update({
+    id: '/outputs/$outputKey',
+    path: '/outputs/$outputKey',
+    getParentRoute: () => SSourceIdSourceFileIdPipelineIdInspectRouteRoute,
   } as any)
 const SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute =
   SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRouteImport.update({
@@ -99,23 +143,34 @@ export interface FileRoutesByFullPath {
   '/s/$sourceId/': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/$pipelineId/': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/': typeof SSourceIdSourceFileIdPipelineIdInspectIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/s/$sourceId': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -125,12 +180,18 @@ export interface FileRoutesById {
   '/s/$sourceId/': typeof SSourceIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId': typeof SSourceIdSourceFileIdPipelineIdRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/': typeof SSourceIdSourceFileIdIndexRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/graphs': typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
-  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect': typeof SSourceIdSourceFileIdPipelineIdInspectRouteRouteWithChildren
   '/s/$sourceId/$sourceFileId/$pipelineId/': typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/': typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/': typeof SSourceIdSourceFileIdPipelineIdInspectIndexRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute
   '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/': typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/': typeof SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/': typeof SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute
+  '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/': typeof SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -141,23 +202,34 @@ export interface FileRouteTypes {
     | '/s/$sourceId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
     | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/s/$sourceId'
     | '/s/$sourceId/$sourceFileId'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms'
   id:
     | '__root__'
     | '/'
@@ -166,12 +238,18 @@ export interface FileRouteTypes {
     | '/s/$sourceId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId'
     | '/s/$sourceId/$sourceFileId/'
-    | '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
     | '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
     | '/s/$sourceId/$sourceFileId/$pipelineId/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
     | '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/'
+    | '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -234,15 +312,15 @@ declare module '@tanstack/react-router' {
       id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
       path: '/inspect'
       fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect'
-      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteImport
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRouteImport
       parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
     }
-    '/s/$sourceId/$sourceFileId/$pipelineId/graphs': {
-      id: '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
-      path: '/graphs'
-      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/graphs'
-      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdGraphsRouteImport
-      parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/'
+      path: '/'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectIndexRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
     }
     '/s/$sourceId/$sourceFileId/$pipelineId/executions/': {
       id: '/s/$sourceId/$sourceFileId/$pipelineId/executions/'
@@ -251,12 +329,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRouteImport
       parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
     }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/'
+      path: '/transforms'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
+    }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/'
+      path: '/routes'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
+    }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/'
+      path: '/outputs'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
+    }
     '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/': {
       id: '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/'
       path: '/executions/$executionId'
       fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/'
       preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdIndexRouteImport
       parentRoute: typeof SSourceIdSourceFileIdPipelineIdRouteRoute
+    }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
+      path: '/transforms/$transformName'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
+    }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+      path: '/routes/$routeId'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
+    }
+    '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey': {
+      id: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
+      path: '/outputs/$outputKey'
+      fullPath: '/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey'
+      preLoaderRoute: typeof SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRouteImport
+      parentRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRoute
     }
     '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph': {
       id: '/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph'
@@ -268,9 +388,41 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SSourceIdSourceFileIdPipelineIdInspectRouteRouteChildren {
+  SSourceIdSourceFileIdPipelineIdInspectIndexRoute: typeof SSourceIdSourceFileIdPipelineIdInspectIndexRoute
+  SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute: typeof SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute
+  SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute
+  SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute: typeof SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute
+  SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute: typeof SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute
+  SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute
+  SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute: typeof SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute
+}
+
+const SSourceIdSourceFileIdPipelineIdInspectRouteRouteChildren: SSourceIdSourceFileIdPipelineIdInspectRouteRouteChildren =
+  {
+    SSourceIdSourceFileIdPipelineIdInspectIndexRoute:
+      SSourceIdSourceFileIdPipelineIdInspectIndexRoute,
+    SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute:
+      SSourceIdSourceFileIdPipelineIdInspectOutputsOutputKeyRoute,
+    SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute:
+      SSourceIdSourceFileIdPipelineIdInspectRoutesRouteIdRoute,
+    SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute:
+      SSourceIdSourceFileIdPipelineIdInspectTransformsTransformNameRoute,
+    SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute:
+      SSourceIdSourceFileIdPipelineIdInspectOutputsIndexRoute,
+    SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute:
+      SSourceIdSourceFileIdPipelineIdInspectRoutesIndexRoute,
+    SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute:
+      SSourceIdSourceFileIdPipelineIdInspectTransformsIndexRoute,
+  }
+
+const SSourceIdSourceFileIdPipelineIdInspectRouteRouteWithChildren =
+  SSourceIdSourceFileIdPipelineIdInspectRouteRoute._addFileChildren(
+    SSourceIdSourceFileIdPipelineIdInspectRouteRouteChildren,
+  )
+
 interface SSourceIdSourceFileIdPipelineIdRouteRouteChildren {
-  SSourceIdSourceFileIdPipelineIdGraphsRoute: typeof SSourceIdSourceFileIdPipelineIdGraphsRoute
-  SSourceIdSourceFileIdPipelineIdInspectRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRoute
+  SSourceIdSourceFileIdPipelineIdInspectRouteRoute: typeof SSourceIdSourceFileIdPipelineIdInspectRouteRouteWithChildren
   SSourceIdSourceFileIdPipelineIdIndexRoute: typeof SSourceIdSourceFileIdPipelineIdIndexRoute
   SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute: typeof SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute
   SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute: typeof SSourceIdSourceFileIdPipelineIdExecutionsExecutionIdGraphRoute
@@ -279,10 +431,8 @@ interface SSourceIdSourceFileIdPipelineIdRouteRouteChildren {
 
 const SSourceIdSourceFileIdPipelineIdRouteRouteChildren: SSourceIdSourceFileIdPipelineIdRouteRouteChildren =
   {
-    SSourceIdSourceFileIdPipelineIdGraphsRoute:
-      SSourceIdSourceFileIdPipelineIdGraphsRoute,
-    SSourceIdSourceFileIdPipelineIdInspectRoute:
-      SSourceIdSourceFileIdPipelineIdInspectRoute,
+    SSourceIdSourceFileIdPipelineIdInspectRouteRoute:
+      SSourceIdSourceFileIdPipelineIdInspectRouteRouteWithChildren,
     SSourceIdSourceFileIdPipelineIdIndexRoute:
       SSourceIdSourceFileIdPipelineIdIndexRoute,
     SSourceIdSourceFileIdPipelineIdExecutionsIndexRoute:
