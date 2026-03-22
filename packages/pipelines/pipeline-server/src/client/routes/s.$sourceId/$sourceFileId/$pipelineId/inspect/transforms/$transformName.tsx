@@ -1,5 +1,6 @@
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, FolderOutput, Link2, Package, Shuffle, Spline } from "lucide-react";
 
@@ -74,7 +75,7 @@ function TransformDetailPage() {
                     key={name}
                     to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName"
                     params={{ sourceId, sourceFileId, pipelineId, transformName: name }}
-                    className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    className={buttonVariants({ variant: "outline", size: "sm" })}
                   >
                     <Shuffle className="h-3 w-3" />
                     {name}
@@ -116,7 +117,7 @@ function TransformDetailPage() {
                 <Link
                   to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
                   params={{ sourceId, sourceFileId, pipelineId, routeId: route.id }}
-                  className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md px-3 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                  className={buttonVariants({ variant: "outline" })}
                 >
                   Route
                   <ArrowRight className="h-3 w-3" />
