@@ -134,7 +134,7 @@ describe("pipeline command palette", () => {
 
     const { renderFileRoute } = await import("../route-test-utils");
 
-    await renderFileRoute("/s/local/alpha/main-pipeline");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
 
     await waitFor(() => {
       expect(hotkeys.has("Mod+K")).toBe(true);
@@ -230,7 +230,7 @@ describe("pipeline command palette", () => {
     const user = userEvent.setup();
     const { renderFileRoute } = await import("../route-test-utils");
 
-    await renderFileRoute("/");
+    await renderFileRoute(<div />, { initialLocation: "/" });
 
     await waitFor(() => {
       expect(hotkeys.has("Mod+K")).toBe(true);

@@ -34,7 +34,7 @@ describe("root route error handling", () => {
       },
     });
 
-    await renderFileRoute("/", { queryClient });
+    await renderFileRoute(<div />, { initialLocation: "/", queryClient });
 
     expect(await screen.findByRole("heading", { name: "Something went wrong" })).toBeInTheDocument();
     expect(screen.getByText("The application encountered an unexpected error.")).toBeInTheDocument();

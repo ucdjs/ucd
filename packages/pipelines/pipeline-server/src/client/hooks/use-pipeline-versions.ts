@@ -1,16 +1,29 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 const STORAGE_KEY_PREFIX = "ucd-versions-";
+const STORAGE_EVENT_NAME = "ucd:pipeline-versions";
 
 export interface UsePipelineVersionsReturn {
   selectedVersions: Set<string>;
   toggleVersion: (version: string) => void;
-  selectAll: (versions: string[]) => void;
+  selectAll: () => void;
   deselectAll: () => void;
 }
 
 function getStorageKey(storageKey: string): string {
   return `${STORAGE_KEY_PREFIX}${storageKey}`;
+}
+
+function readVersionsSnapshot(storageKey: string): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return localStorage.getItem(getStorageKey(storageKey));
+  } catch {
+    return null;
+  }
 }
 
 function loadVersionsFromStorage(storageKey: string, allVersions: string[]): Set<string> {
@@ -19,11 +32,13 @@ function loadVersionsFromStorage(storageKey: string, allVersions: string[]): Set
   }
 
   try {
-    const stored = localStorage.getItem(getStorageKey(storageKey));
+    const stored = readVersionsSnapshot(storageKey);
     if (stored) {
       const parsed = JSON.parse(stored) as string[];
-      // Filter to only valid versions
       const validVersions = parsed.filter((v) => allVersions.includes(v));
+      if (parsed.length === 0) {
+        return new Set();
+      }
       if (validVersions.length > 0) {
         return new Set(validVersions);
       }
@@ -40,6 +55,7 @@ function saveVersionsToStorage(storageKey: string, versions: Set<string>): void 
 
   try {
     localStorage.setItem(getStorageKey(storageKey), JSON.stringify([...versions]));
+    window.dispatchEvent(new CustomEvent(STORAGE_EVENT_NAME, { detail: { storageKey } }));
   } catch {
     // Ignore storage errors
   }
@@ -47,69 +63,87 @@ function saveVersionsToStorage(storageKey: string, versions: Set<string>): void 
 
 function sanitizeVersions(versions: Iterable<string>, allVersions: string[]): Set<string> {
   const valid = [...versions].filter((v) => allVersions.includes(v));
-  return new Set(valid.length > 0 ? valid : allVersions);
+  return new Set(valid);
+}
+
+function subscribeToVersionChanges(storageKey: string, onStoreChange: () => void): () => void {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === getStorageKey(storageKey)) {
+      onStoreChange();
+    }
+  };
+
+  const handleCustomEvent = (event: Event) => {
+    const detail = (event as CustomEvent<{ storageKey?: string }>).detail;
+    if (detail?.storageKey === storageKey) {
+      onStoreChange();
+    }
+  };
+
+  window.addEventListener("storage", handleStorage);
+  window.addEventListener(STORAGE_EVENT_NAME, handleCustomEvent);
+
+  return () => {
+    window.removeEventListener("storage", handleStorage);
+    window.removeEventListener(STORAGE_EVENT_NAME, handleCustomEvent);
+  };
 }
 
 export function usePipelineVersions(
-  pipelineId: string,
+  storageKey: string,
   allVersions: string[],
-  storageKeyOverride?: string,
 ): UsePipelineVersionsReturn {
-  const [overridesByPipeline, setOverridesByPipeline] = useState<Record<string, string[]>>({});
-  const storageKey = storageKeyOverride ?? pipelineId;
-
-  const baseSelection = useMemo(
-    () => loadVersionsFromStorage(storageKey, allVersions),
-    [storageKey, allVersions],
+  const snapshot = useSyncExternalStore(
+    (onStoreChange) => subscribeToVersionChanges(storageKey, onStoreChange),
+    () => readVersionsSnapshot(storageKey),
+    () => null,
   );
 
-  const selectedVersions = useMemo(() => {
-    const override = overridesByPipeline[pipelineId];
-    const source = override ? new Set(override) : baseSelection;
-    return sanitizeVersions(source, allVersions);
-  }, [allVersions, baseSelection, overridesByPipeline, pipelineId]);
+  const sanitizedSelectedVersions = useMemo(
+    () => {
+      if (snapshot == null) {
+        return new Set(allVersions);
+      }
+
+      try {
+        const parsed = JSON.parse(snapshot) as string[];
+        if (parsed.length === 0) {
+          return new Set<string>();
+        }
+
+        return sanitizeVersions(parsed, allVersions);
+      } catch {
+        return loadVersionsFromStorage(storageKey, allVersions);
+      }
+    },
+    [allVersions, snapshot, storageKey],
+  );
 
   const toggleVersion = useCallback((version: string) => {
-    setOverridesByPipeline((prev) => {
-      const current = prev[pipelineId] ? new Set(prev[pipelineId]) : selectedVersions;
-      const next = new Set(current);
-      if (next.has(version)) {
-        next.delete(version);
-      } else {
-        next.add(version);
-      }
-      const sanitized = sanitizeVersions(next, allVersions);
-      saveVersionsToStorage(storageKey, sanitized);
-      return {
-        ...prev,
-        [pipelineId]: [...sanitized],
-      };
-    });
-  }, [allVersions, pipelineId, selectedVersions, storageKey]);
+    const next = new Set(sanitizedSelectedVersions);
+    if (next.has(version)) {
+      next.delete(version);
+    } else {
+      next.add(version);
+    }
 
-  const selectAll = useCallback(
-    (versions: string[]) => {
-      const sanitized = sanitizeVersions(versions, allVersions);
-      saveVersionsToStorage(storageKey, sanitized);
-      setOverridesByPipeline((prev) => ({
-        ...prev,
-        [pipelineId]: [...sanitized],
-      }));
-    },
-    [allVersions, pipelineId, storageKey],
-  );
+    saveVersionsToStorage(storageKey, sanitizeVersions(next, allVersions));
+  }, [allVersions, sanitizedSelectedVersions, storageKey]);
+
+  const selectAll = useCallback(() => {
+    saveVersionsToStorage(storageKey, sanitizeVersions(allVersions, allVersions));
+  }, [allVersions, storageKey]);
 
   const deselectAll = useCallback(() => {
-    const sanitized = sanitizeVersions([], allVersions);
-    saveVersionsToStorage(storageKey, sanitized);
-    setOverridesByPipeline((prev) => ({
-      ...prev,
-      [pipelineId]: [...sanitized],
-    }));
-  }, [allVersions, pipelineId, storageKey]);
+    saveVersionsToStorage(storageKey, new Set<string>());
+  }, [storageKey]);
 
   return {
-    selectedVersions,
+    selectedVersions: sanitizedSelectedVersions,
     toggleVersion,
     selectAll,
     deselectAll,
