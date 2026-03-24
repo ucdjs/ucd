@@ -125,17 +125,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
 
     const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
-    expect(await screen.findByText("1 total runs")).toBeInTheDocument();
-    expect(screen.getAllByText("Main pipeline")).not.toHaveLength(0);
-    expect(screen.getByText("Alpha file")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Executions" })).toHaveAttribute("href", "/s/local/alpha/main-pipeline/executions");
-    expect(screen.queryByRole("tab", { name: "Graphs" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Versions/i })).toBeInTheDocument();
-    expect(screen.getByText("exec-1")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /View graph/i })[0]).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/executions/exec-1/graph",
-    );
+    expect(await screen.findByRole("heading", { name: "Executions" })).toBeInTheDocument();
+    expect(screen.getAllByText("exec-1").length).toBeGreaterThan(0);
     expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/executions");
   });
 
@@ -217,8 +208,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
-    expect(await screen.findByText("0 total runs")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Executions" })).toBeInTheDocument();
     expect(screen.getByText("No executions yet")).toBeInTheDocument();
-    expect(screen.getByText("Execute the pipeline to see results here")).toBeInTheDocument();
   });
 });

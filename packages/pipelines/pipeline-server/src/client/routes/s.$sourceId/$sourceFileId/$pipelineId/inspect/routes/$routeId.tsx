@@ -1,4 +1,3 @@
-import type { PipelineDetails } from "#shared/schemas/pipeline";
 import { DefinitionGraph } from "#components/inspect/definition-graph";
 import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";

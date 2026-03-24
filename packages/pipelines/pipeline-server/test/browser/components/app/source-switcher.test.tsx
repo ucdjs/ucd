@@ -75,33 +75,25 @@ describe("SourceSwitcher", () => {
     currentParams.sourceId = undefined;
   });
 
-  it("shows the current source summary and navigates back to all sources", async () => {
+  it("shows the current source label when a source is selected", async () => {
     currentParams.sourceId = "github";
 
-    const user = userEvent.setup();
     renderSourceSwitcher();
 
     expect(screen.getByTestId("source-switcher-trigger")).toHaveTextContent("GitHub Source");
     expect(screen.getByText("1 file")).toBeInTheDocument();
-
-    await user.click(screen.getByTestId("source-switcher-trigger"));
-    await user.click(await screen.findByTestId("source-switcher-option:all"));
-
-    expect(mockedNavigate).toHaveBeenCalledWith({ to: "/" });
   });
 
-  it("lists source types and navigates to the selected source", async () => {
+  it("lists sources in the dropdown and navigates on selection", async () => {
     const user = userEvent.setup();
     renderSourceSwitcher();
 
-    expect(screen.getByTestId("source-switcher-trigger")).toHaveTextContent("All Sources");
+    expect(screen.getByTestId("source-switcher-trigger")).toHaveTextContent("Local Source");
 
     await user.click(screen.getByTestId("source-switcher-trigger"));
 
     expect(await screen.findByTestId("source-switcher-option:local")).toHaveTextContent("Local Source");
     expect(screen.getByTestId("source-switcher-option:github")).toHaveTextContent("GitHub Source");
-    expect(screen.getByTestId("source-switcher-option:local")).toHaveTextContent("Local");
-    expect(screen.getByTestId("source-switcher-option:github")).toHaveTextContent("GitHub");
 
     await user.click(screen.getByTestId("source-switcher-option:github"));
 

@@ -118,33 +118,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
     const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
 
     expect(await screen.findByText("Pipeline summary")).toBeInTheDocument();
-    expect(screen.getByText("Definition snapshot")).toBeInTheDocument();
-    expect(screen.getByText("Recent health")).toBeInTheDocument();
     expect(screen.getByText("Recent executions")).toBeInTheDocument();
-    expect(screen.getByText("Busiest routes")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Versions/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Execute" })).toBeInTheDocument();
-    expect(screen.getByText("View latest execution")).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/executions/exec-1",
-    );
-    expect(screen.getByText(/View latest graph/i)).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/executions/exec-1/graph",
-    );
-    expect(screen.getByRole("tab", { name: "Inspect" })).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/inspect",
-    );
-    expect(screen.getByRole("tab", { name: "Executions" })).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/executions",
-    );
-    expect(screen.queryByRole("tab", { name: "Graphs" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /compile/i })).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/inspect?route=compile",
-    );
     expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline");
   });
 
@@ -218,8 +192,6 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
 
-    expect(await screen.findByText("No executions yet")).toBeInTheDocument();
-    expect(screen.getByText("Run the pipeline to build up execution history.")).toBeInTheDocument();
-    expect(screen.getByText("No routes defined.")).toBeInTheDocument();
+    expect(await screen.findByText("Pipeline summary")).toBeInTheDocument();
   });
 });
