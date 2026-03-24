@@ -102,13 +102,6 @@ export function definitionGraphToFlow(
           target: route.id,
           style: { strokeWidth: 2 },
         });
-      } else if (dep.type === "artifact" && routeIds.has(dep.routeId)) {
-        edges.push({
-          id: `${dep.routeId}:${dep.artifactName}->${route.id}`,
-          source: dep.routeId,
-          target: route.id,
-          style: { strokeWidth: 2, strokeDasharray: "6 3" },
-        });
       }
     }
   }

@@ -77,7 +77,6 @@ function defaultRoutes() {
       id: "compile",
       cache: true,
       depends: [],
-      emits: [],
       filter: "compile-filter",
       outputs: [
         { dir: "dist", fileName: "compile.json" },
@@ -89,7 +88,6 @@ function defaultRoutes() {
       id: "publish",
       cache: false,
       depends: [{ type: "route", routeId: "compile" }],
-      emits: [],
       filter: "publish-filter",
       outputs: [{ dir: "release", fileName: "bundle.txt" }],
       transforms: [],
@@ -150,7 +148,6 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
         id: "compile",
         cache: true,
         depends: [],
-        emits: [],
         filter: "compile-filter",
         outputs: [],
         transforms: [],

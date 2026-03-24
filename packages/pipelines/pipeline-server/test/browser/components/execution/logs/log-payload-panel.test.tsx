@@ -38,10 +38,9 @@ describe("logPayloadPanel", () => {
             meta: { routeId: "compile" },
             event: {
               id: "event-1",
-              type: "artifact:produced",
-              artifactId: "bundle",
+              type: "file:matched",
+              file: { version: "16.0.0", dir: "ucd", path: "ucd/data.txt", name: "data.txt", ext: ".txt" },
               routeId: "compile",
-              version: "16.0.0",
               spanId: "span-1",
               timestamp: 1,
             },
