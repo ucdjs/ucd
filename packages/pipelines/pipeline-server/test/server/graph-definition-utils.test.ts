@@ -48,7 +48,7 @@ const samplePipeline = makePipeline([
 
 describe("definitionGraphToFlow", () => {
   it("creates a route node per pipeline route", () => {
-    const { nodes, edges } = definitionGraphToFlow(samplePipeline);
+    const { nodes } = definitionGraphToFlow(samplePipeline);
 
     expect(nodes).toHaveLength(3);
     expect(nodes.map((n) => n.id)).toEqual(["compile", "publish", "archive"]);

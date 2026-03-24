@@ -80,31 +80,37 @@ export function SourceFileList(props: SourceFileListProps) {
 
 function TreeNode({ node, ...props }: { node: FileTreeNode } & SourceFileListProps) {
   if (node.type === "folder") {
-    const stateKey = `${props.sourceId}:dir:${node.path}`;
-    const isOpen = props.expanded[stateKey] ?? true;
-
-    return (
-      <SidebarMenuItem>
-        <SidebarMenuButton
-          size="sm"
-          className="gap-1.5 px-1 text-muted-foreground hover:text-foreground"
-          onClick={() => props.toggle(stateKey, isOpen)}
-        >
-          <ChevronRight className={`size-3 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
-          <span className="truncate text-xs font-medium">{node.name}</span>
-        </SidebarMenuButton>
-        {isOpen && (
-          <SidebarMenuSub>
-            {node.children.map((child) => (
-              <TreeNode key={nodeKey(child)} node={child} {...props} />
-            ))}
-          </SidebarMenuSub>
-        )}
-      </SidebarMenuItem>
-    );
+    return <FolderNode node={node} {...props} />;
   }
+  return <FileNode file={node.file} {...props} />;
+}
 
-  const { file } = node;
+function FolderNode({ node, ...props }: { node: FileTreeNode & { type: "folder" } } & SourceFileListProps) {
+  const stateKey = `${props.sourceId}:dir:${node.path}`;
+  const isOpen = props.expanded[stateKey] ?? true;
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        size="sm"
+        className="gap-1.5 px-1 text-muted-foreground hover:text-foreground"
+        onClick={() => props.toggle(stateKey, isOpen)}
+      >
+        <ChevronRight className={`size-3 shrink-0 transition-transform duration-150 ${isOpen ? "rotate-90" : ""}`} />
+        <span className="truncate text-xs font-medium">{node.name}</span>
+      </SidebarMenuButton>
+      {isOpen && (
+        <SidebarMenuSub>
+          {node.children.map((child) => (
+            <TreeNode key={nodeKey(child)} node={child} {...props} />
+          ))}
+        </SidebarMenuSub>
+      )}
+    </SidebarMenuItem>
+  );
+}
+
+function FileNode({ file, ...props }: { file: SourceFileInfo } & SourceFileListProps) {
   const stateKey = `${props.sourceId}:${file.id}`;
   const isActive = props.currentFileId === file.id;
   const isOpen = props.expanded[stateKey] ?? isActive;

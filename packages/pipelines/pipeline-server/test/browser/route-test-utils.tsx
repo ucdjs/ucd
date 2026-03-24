@@ -28,6 +28,7 @@ export async function renderFileRoute(
   });
 
   function Wrapper({ children }: { children: React.ReactNode }) {
+    // @ts-expect-error - the router provider types don't allow for the full flexibility of our router options, but in practice this works fine
     return <RouterProvider router={router}>{children}</RouterProvider>;
   }
 

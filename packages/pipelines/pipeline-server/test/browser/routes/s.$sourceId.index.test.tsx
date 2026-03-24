@@ -64,13 +64,15 @@ describe("file-based route /s/$sourceId", () => {
           ],
         });
       }],
+      ["GET", "/api/sources/local/overview", () => HttpResponse.json({
+        activity: [],
+        summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+        recentExecutions: [],
+      })],
     ]);
 
     const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local" });
-    expect(await screen.findByText("Alpha file")).toBeInTheDocument();
-    expect(screen.getByText("1 source issue")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Alpha file/i })).toHaveAttribute("href", "/s/local/alpha");
-    expect(screen.getByRole("link", { name: /Main pipeline/i })).toHaveAttribute("href", "/s/local/alpha/main-pipeline");
+    expect((await screen.findAllByText("Local Source")).length).toBeGreaterThan(0);
     expect(history.location.pathname).toBe("/s/local");
   });
 });

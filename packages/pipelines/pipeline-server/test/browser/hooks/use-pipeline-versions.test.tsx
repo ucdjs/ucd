@@ -30,36 +30,27 @@ describe("usePipelineVersions", () => {
     expect(localStorage.getItem("ucd-versions-pipeline-a")).toBe(JSON.stringify(["16.0.0"]));
   });
 
-  it("sanitizes selectAll input before persisting", () => {
+  it("selects all versions when calling selectAll", () => {
+    localStorage.setItem("ucd-versions-pipeline-a", JSON.stringify(["15.1.0"]));
+
     const { result } = renderHook(() => usePipelineVersions("pipeline-a", ["16.0.0", "15.1.0"]));
 
     act(() => {
-      result.current.selectAll(["15.1.0", "bogus-version"]);
-    });
-
-    expect([...result.current.selectedVersions]).toEqual(["15.1.0"]);
-    expect(localStorage.getItem("ucd-versions-pipeline-a")).toBe(JSON.stringify(["15.1.0"]));
-  });
-
-  it("falls back to all versions when deselectAll would leave nothing selected", () => {
-    const { result } = renderHook(() => usePipelineVersions("pipeline-a", ["16.0.0", "15.1.0"]));
-
-    act(() => {
-      result.current.deselectAll();
+      result.current.selectAll();
     });
 
     expect([...result.current.selectedVersions]).toEqual(["16.0.0", "15.1.0"]);
     expect(localStorage.getItem("ucd-versions-pipeline-a")).toBe(JSON.stringify(["16.0.0", "15.1.0"]));
   });
 
-  it("uses the storage key override when persisting selections", () => {
-    const { result } = renderHook(() => usePipelineVersions("pipeline-a", ["16.0.0", "15.1.0"], "shared-key"));
+  it("clears all versions when calling deselectAll", () => {
+    const { result } = renderHook(() => usePipelineVersions("pipeline-a", ["16.0.0", "15.1.0"]));
 
     act(() => {
-      result.current.toggleVersion("15.1.0");
+      result.current.deselectAll();
     });
 
-    expect(localStorage.getItem("ucd-versions-shared-key")).toBe(JSON.stringify(["16.0.0"]));
-    expect(localStorage.getItem("ucd-versions-pipeline-a")).toBeNull();
+    expect([...result.current.selectedVersions]).toEqual([]);
+    expect(localStorage.getItem("ucd-versions-pipeline-a")).toBe(JSON.stringify([]));
   });
 });

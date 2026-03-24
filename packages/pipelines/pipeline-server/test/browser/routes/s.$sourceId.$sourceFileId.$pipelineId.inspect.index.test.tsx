@@ -19,19 +19,30 @@ function mockInspectApi() {
       { id: "local", type: "local", label: "Local Source", fileCount: 1, pipelineCount: 1, errors: [] },
     ])],
     ["GET", "/api/sources/local", () => HttpResponse.json({
-      id: "local", type: "local", label: "Local Source", errors: [],
+      id: "local",
+      type: "local",
+      label: "Local Source",
+      errors: [],
       files: [{
-        id: "alpha", path: "src/alpha.ts", label: "Alpha file",
+        id: "alpha",
+        path: "src/alpha.ts",
+        label: "Alpha file",
         pipelines: [{ id: "main-pipeline", name: "Main pipeline", description: "Build and publish", versions: ["16.0.0"], routeCount: 3, sourceCount: 1, sourceId: "local" }],
       }],
     })],
     ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => HttpResponse.json({
-      executions: [], pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
+      executions: [],
+      pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
     })],
     ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
       pipeline: {
-        id: "main-pipeline", name: "Main pipeline", description: "Build and publish", include: "**/*.txt",
-        versions: ["16.0.0"], routeCount: 3, sourceCount: 1,
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: "**/*.txt",
+        versions: ["16.0.0"],
+        routeCount: 3,
+        sourceCount: 1,
         routes: [
           { id: "compile", cache: true, depends: [], emits: [{ id: "parsed-data", scope: "version" }], filter: "compile-filter", outputs: [{ dir: "dist", fileName: "compile.json" }], transforms: ["normalize", "dedupe"] },
           { id: "publish", cache: false, depends: [{ type: "route", routeId: "compile" }], emits: [{ id: "bundle", scope: "version" }], filter: "publish-filter", outputs: [{ dir: "dist", fileName: "bundle.txt" }], transforms: ["ship"] },
