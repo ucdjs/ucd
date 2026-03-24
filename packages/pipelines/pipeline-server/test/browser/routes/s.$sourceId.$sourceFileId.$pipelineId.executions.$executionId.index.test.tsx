@@ -60,7 +60,6 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
               id: "compile",
               cache: true,
               depends: [],
-              emits: [],
               filter: undefined,
               outputs: [],
               transforms: [],

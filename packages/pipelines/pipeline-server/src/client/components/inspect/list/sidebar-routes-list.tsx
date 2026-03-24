@@ -21,12 +21,7 @@ export function SidebarRoutesList({ routes, filter, sourceId, sourceFileId, pipe
           (o.dir ?? "").toLowerCase().includes(normalizedFilter)
           || (o.fileName ?? "").toLowerCase().includes(normalizedFilter),
         )) return true;
-        return route.emits.some((e) => e.id.toLowerCase().includes(normalizedFilter))
-          || route.depends.some((d) =>
-            d.type === "route"
-              ? d.routeId.toLowerCase().includes(normalizedFilter)
-              : `${d.routeId}:${d.artifactName}`.toLowerCase().includes(normalizedFilter),
-          );
+        return route.depends.some((d) => d.routeId.toLowerCase().includes(normalizedFilter));
       })
     : routes;
 

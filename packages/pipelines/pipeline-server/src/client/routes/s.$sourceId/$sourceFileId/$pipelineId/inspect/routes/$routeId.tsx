@@ -3,7 +3,7 @@ import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button, buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { ArrowRight, FileOutput, FolderOutput, Link2, Package, Shuffle, Spline } from "lucide-react";
+import { ArrowRight, FileOutput, FolderOutput, Link2, Shuffle, Spline } from "lucide-react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
@@ -42,8 +42,6 @@ function RouteDetailPage() {
       params: { sourceId, sourceFileId, pipelineId, outputKey },
     });
   }
-
-  const artifactDependencies = selectedRoute.depends.filter((d) => d.type === "artifact");
 
   return (
     <Card>
@@ -126,61 +124,19 @@ function RouteDetailPage() {
           <div className="flex flex-wrap gap-2">
             {selectedRoute.depends.length
               ? selectedRoute.depends.map((dependency) => (
-                  dependency.type === "route"
-                    ? (
-                        <Link
-                          key={`${dependency.type}-${dependency.routeId}`}
-                          to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
-                          params={{ sourceId, sourceFileId, pipelineId, routeId: dependency.routeId }}
-                          className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
-                        >
-                          <Spline className="h-3 w-3" />
-                          route:
-                          {" "}
-                          {dependency.routeId}
-                        </Link>
-                      )
-                    : (
-                        <Badge key={`${dependency.type}-${dependency.routeId}-${dependency.artifactName}`} variant="outline">
-                          <Package className="h-3 w-3" />
-                          artifact:
-                          {" "}
-                          {dependency.routeId}
-                          :
-                          {dependency.artifactName}
-                        </Badge>
-                      )
+                  <Link
+                    key={`${dependency.type}-${dependency.routeId}`}
+                    to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
+                    params={{ sourceId, sourceFileId, pipelineId, routeId: dependency.routeId }}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Spline className="h-3 w-3" />
+                    route:
+                    {" "}
+                    {dependency.routeId}
+                  </Link>
                 ))
               : <span className="text-sm text-muted-foreground">No dependencies.</span>}
-          </div>
-          {artifactDependencies.length > 0 && (
-            <div className="text-xs text-muted-foreground">
-              {artifactDependencies.length}
-              {" "}
-              artifact dependenc
-              {artifactDependencies.length === 1 ? "y" : "ies"}
-              {" "}
-              reference emitted artifacts rather than direct route-to-route edges.
-            </div>
-          )}
-
-          <div className="space-y-3 border-t border-border/60 pt-4">
-            <div className="flex items-center gap-2">
-              <Package className="h-4 w-4 text-muted-foreground" />
-              <h3 className="text-sm font-medium">Emits</h3>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedRoute.emits.length
-                ? selectedRoute.emits.map((emit) => (
-                    <Badge key={emit.id} variant="secondary">
-                      <Package className="h-3 w-3" />
-                      {emit.id}
-                      {" "}
-                      <span className="text-[10px] opacity-70">{emit.scope}</span>
-                    </Badge>
-                  ))
-                : <span className="text-sm text-muted-foreground">No emitted artifacts.</span>}
-            </div>
           </div>
         </div>
 
