@@ -1,4 +1,4 @@
-import { StatusOverviewPanel } from "#components/home/status-overview-panel";
+import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 

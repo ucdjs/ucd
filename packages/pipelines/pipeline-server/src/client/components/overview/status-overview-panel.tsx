@@ -1,21 +1,46 @@
-import type { OverviewExecutionSummary } from "#queries/overview";
+import type { OverviewExecutionSummary } from "#shared/schemas/overview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { getStateCount, overviewStates } from "./shared";
 
 interface StatusOverviewPanelProps {
   summaryStates: OverviewExecutionSummary;
   total: number;
+  compact?: boolean;
 }
 
 export function StatusOverviewPanel({
   summaryStates,
   total,
+  compact = false,
 }: StatusOverviewPanelProps) {
   const items = overviewStates.filter((state) => {
     return getStateCount(summaryStates, state) > 0
       || state.key === "completed"
       || state.key === "failed";
   });
+
+  if (compact) {
+    return (
+      <Card>
+        <CardContent className="flex flex-wrap items-center gap-4 px-4 py-3">
+          <div className="flex items-center gap-2 border-r border-border/60 pr-4">
+            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Total</div>
+            <div className="text-lg font-semibold tabular-nums">{total}</div>
+          </div>
+          {items.map((state) => {
+            const Icon = state.icon;
+            return (
+              <div key={state.key} className="flex items-center gap-1.5">
+                <span className={`h-2 w-2 rounded-full ${state.markerClassName}`} />
+                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-medium tabular-nums">{getStateCount(summaryStates, state)}</span>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="xl:col-span-4">

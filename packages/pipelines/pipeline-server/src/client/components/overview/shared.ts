@@ -1,4 +1,4 @@
-import type { OverviewActivityDay, OverviewExecutionSummary } from "#queries/overview";
+import type { OverviewActivityDay, OverviewExecutionSummary } from "#shared/schemas/overview";
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { AlertTriangle, CheckCircle2, PlayCircle, XCircle } from "lucide-react";
 

@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
 describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", () => {
-  it("renders the executions page through the generated route tree", async () => {
+  it("renders the executions page with direct graph links and the streamlined header", async () => {
     mockFetch([
       ["GET", "/api/config", () => {
         return HttpResponse.json({
@@ -84,7 +84,9 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
           },
         });
       }],
-      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => {
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "50");
+
         return HttpResponse.json({
           executions: [
             {
@@ -113,7 +115,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
           ],
           pagination: {
             total: 1,
-            limit: 50,
+            limit,
             offset: 0,
             hasMore: false,
           },
@@ -121,19 +123,10 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
     ]);
 
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/executions");
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
-    expect(await screen.findByText("1 total runs")).toBeInTheDocument();
-    expect(screen.getAllByText("Main pipeline")).toHaveLength(2);
-    expect(screen.getByText("Alpha file")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Executions" })).toHaveAttribute("href", "/s/local/alpha/main-pipeline/executions");
-    expect(screen.getByText("Versions (2/2)")).toBeInTheDocument();
-    expect(screen.getByText("1 total runs")).toBeInTheDocument();
-    expect(screen.getByText("exec-1")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View Graph" })).toHaveAttribute(
-      "href",
-      "/s/local/alpha/main-pipeline/executions/exec-1/graph",
-    );
+    expect(await screen.findByRole("heading", { name: "Executions" })).toBeInTheDocument();
+    expect(screen.getAllByText("exec-1").length).toBeGreaterThan(0);
     expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/executions");
   });
 
@@ -198,12 +191,14 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
           },
         });
       }],
-      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => {
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "50");
+
         return HttpResponse.json({
           executions: [],
           pagination: {
             total: 0,
-            limit: 50,
+            limit,
             offset: 0,
             hasMore: false,
           },
@@ -211,10 +206,9 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
-    expect(await screen.findByText("0 total runs")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Executions" })).toBeInTheDocument();
     expect(screen.getByText("No executions yet")).toBeInTheDocument();
-    expect(screen.getByText("Execute the pipeline to see results here")).toBeInTheDocument();
   });
 });

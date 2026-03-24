@@ -1,10 +1,10 @@
+import type { ExecutionNodeData, FlowNode } from "#lib/graph-utils";
 import type { NodeProps } from "@xyflow/react";
 import type { CSSProperties } from "react";
-import type { PipelineFlowNode } from "./graph-utils";
+import { EXECUTION_NODE_HEIGHT, EXECUTION_NODE_WIDTH } from "#lib/graph-utils";
 import { getGraphNodeConfig } from "#shared/lib/graph";
 import { Handle, Position } from "@xyflow/react";
 import { memo } from "react";
-import { NODE_HEIGHT, NODE_WIDTH } from "./graph-utils";
 
 // Shared style fragments keep node rendering cheap because React Flow mounts many nodes.
 const flexCenterStyle: CSSProperties = {
@@ -53,8 +53,8 @@ function getContainerStyle(
       border: `2px solid ${styles.border}`,
       borderRadius: "10px",
       padding: "10px 14px",
-      width: `${NODE_WIDTH}px`,
-      minHeight: `${NODE_HEIGHT}px`,
+      width: `${EXECUTION_NODE_WIDTH}px`,
+      minHeight: `${EXECUTION_NODE_HEIGHT}px`,
       boxSizing: "border-box",
       boxShadow: selected
         ? `0 0 0 2px #3b82f6, 0 1px 3px rgba(0,0,0,0.1)`
@@ -105,15 +105,16 @@ function getHandleStyle(border: string): CSSProperties {
 function BaseNode({
   data,
   selected = false,
-}: NodeProps<PipelineFlowNode>) {
-  const nodeConfig = getGraphNodeConfig(data.graphNode.nodeType);
+}: NodeProps<FlowNode>) {
+  const { graphNode } = data as ExecutionNodeData;
+  const nodeConfig = getGraphNodeConfig(graphNode.nodeType);
   const { visual } = nodeConfig;
 
   return (
     <div
       style={getContainerStyle(visual, selected)}
-      data-node-id={data.graphNode.id}
-      data-node-type={data.graphNode.nodeType}
+      data-node-id={graphNode.id}
+      data-node-type={graphNode.nodeType}
     >
       <Handle
         type="target"
@@ -129,8 +130,8 @@ function BaseNode({
           <span style={typeStyle}>
             {nodeConfig.label}
           </span>
-          <span style={labelStyle} title={data.graphNode.label}>
-            {data.graphNode.label}
+          <span style={labelStyle} title={graphNode.label}>
+            {graphNode.label}
           </span>
         </div>
       </div>

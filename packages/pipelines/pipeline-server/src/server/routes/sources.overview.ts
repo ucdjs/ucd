@@ -2,9 +2,9 @@ import type { OverviewResponse } from "#shared/schemas/overview";
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { schema } from "#server/db";
 import { and, desc, eq, gte } from "drizzle-orm";
-import { H3 } from "h3";
+import { H3, HTTPError } from "h3";
 
-export const overviewRouter: H3 = new H3();
+export const sourcesOverviewRouter: H3 = new H3();
 
 const OVERVIEW_WINDOW_DAYS = 7;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -21,8 +21,13 @@ function startOfUtcDay(date: Date) {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
-overviewRouter.get("/", async (event) => {
+sourcesOverviewRouter.get("/:sourceId/overview", async (event) => {
   const { db, workspaceId } = event.context;
+  const sourceId = event.context.params?.sourceId;
+  if (!sourceId) {
+    throw HTTPError.status(400, "Source ID is required");
+  }
+
   const today = startOfUtcDay(new Date());
   const weekStart = new Date(today);
   weekStart.setUTCDate(weekStart.getUTCDate() - (OVERVIEW_WINDOW_DAYS - 1));
@@ -33,13 +38,17 @@ overviewRouter.get("/", async (event) => {
       .from(schema.executions)
       .where(and(
         eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.sourceId, sourceId),
         gte(schema.executions.startedAt, weekStart),
       ))
       .orderBy(desc(schema.executions.startedAt)),
     db
       .select()
       .from(schema.executions)
-      .where(eq(schema.executions.workspaceId, workspaceId))
+      .where(and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.sourceId, sourceId),
+      ))
       .orderBy(desc(schema.executions.startedAt))
       .limit(20),
   ]);
