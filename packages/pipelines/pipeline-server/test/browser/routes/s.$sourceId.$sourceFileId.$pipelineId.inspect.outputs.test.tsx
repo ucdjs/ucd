@@ -1,181 +1,164 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { screen, waitFor } from "@testing-library/react";
+import { beforeAll, describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 
-describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect output focus", () => {
-  it("selects outputs from search params and switches between outputs on the same route", async () => {
-    mockFetch([
-      ["GET", "/api/config", () => HttpResponse.json({
-        workspaceId: "workspace-123",
-        version: "16.0.0",
-      })],
-      ["GET", "/api/sources", () => HttpResponse.json([
-        {
-          id: "local",
-          type: "local",
-          label: "Local Source",
-          fileCount: 1,
-          pipelineCount: 1,
-          errors: [],
-        },
-      ])],
-      ["GET", "/api/sources/local", () => HttpResponse.json({
+beforeAll(() => {
+  globalThis.ResizeObserver ??= class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  } as unknown as typeof ResizeObserver;
+});
+
+function mockPipelineApi(routes = defaultRoutes()) {
+  mockFetch([
+    ["GET", "/api/config", () => HttpResponse.json({
+      workspaceId: "workspace-123",
+      version: "16.0.0",
+    })],
+    ["GET", "/api/sources", () => HttpResponse.json([
+      {
         id: "local",
         type: "local",
         label: "Local Source",
+        fileCount: 1,
+        pipelineCount: 1,
         errors: [],
-        files: [
-          {
-            id: "alpha",
-            path: "src/alpha.ts",
-            label: "Alpha file",
-            pipelines: [
-              {
-                id: "main-pipeline",
-                name: "Main pipeline",
-                description: "Build and publish",
-                versions: ["16.0.0"],
-                routeCount: 2,
-                sourceCount: 1,
-                sourceId: "local",
-              },
-            ],
-          },
-        ],
-      })],
-      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: 2,
-          sourceCount: 1,
-          routes: [
+      },
+    ])],
+    ["GET", "/api/sources/local", () => HttpResponse.json({
+      id: "local",
+      type: "local",
+      label: "Local Source",
+      errors: [],
+      files: [
+        {
+          id: "alpha",
+          path: "src/alpha.ts",
+          label: "Alpha file",
+          pipelines: [
             {
-              id: "compile",
-              cache: true,
-              depends: [],
-              emits: [],
-              filter: "compile-filter",
-              outputs: [
-                { dir: "dist", fileName: "compile.json" },
-                { dir: "reports", fileName: "compile.txt" },
-              ],
-              transforms: [],
-            },
-            {
-              id: "publish",
-              cache: false,
-              depends: [{ type: "route", routeId: "compile" }],
-              emits: [],
-              filter: "publish-filter",
-              outputs: [{ dir: "release", fileName: "bundle.txt" }],
-              transforms: [],
+              id: "main-pipeline",
+              name: "Main pipeline",
+              description: "Build and publish",
+              versions: ["16.0.0"],
+              routeCount: routes.length,
+              sourceCount: 1,
+              sourceId: "local",
             },
           ],
-          sources: [{ id: "local" }],
         },
-      })],
-    ]);
+      ],
+    })],
+    ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => HttpResponse.json({
+      executions: [],
+      pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
+    })],
+    ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
+      pipeline: {
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: routes.length,
+        sourceCount: 1,
+        routes,
+        sources: [{ id: "local" }],
+      },
+    })],
+  ]);
+}
 
-    const user = userEvent.setup();
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile&output=compile:0");
+function defaultRoutes() {
+  return [
+    {
+      id: "compile",
+      cache: true,
+      depends: [],
+      emits: [],
+      filter: "compile-filter",
+      outputs: [
+        { dir: "dist", fileName: "compile.json" },
+        { dir: "reports", fileName: "compile.txt" },
+      ],
+      transforms: [],
+    },
+    {
+      id: "publish",
+      cache: false,
+      depends: [{ type: "route", routeId: "compile" }],
+      emits: [],
+      filter: "publish-filter",
+      outputs: [{ dir: "release", fileName: "bundle.txt" }],
+      transforms: [],
+    },
+  ];
+}
 
-    const focusedOutputSection = (await screen.findByRole("heading", { name: /compile output1/i })).closest("section");
-    expect(focusedOutputSection).not.toBeNull();
-    expect(within(focusedOutputSection!).getByText("Focused output details for the selected route.")).toBeInTheDocument();
-    expect(within(focusedOutputSection!).getAllByText("compile.json").length).toBeGreaterThan(0);
-    expect(within(focusedOutputSection!).getAllByText("dist").length).toBeGreaterThan(0);
-
-    const routeOutputsSection = screen.getByRole("heading", { name: "Other outputs on this route" }).closest("section");
-    expect(routeOutputsSection).not.toBeNull();
-
-    const secondOutputButton = within(routeOutputsSection!).getAllByRole("button").find((button) =>
-      button.textContent?.replace(/\s+/g, " ").trim().includes("Output 2")
-      && button.textContent.includes("compile.txt"),
-    );
-    expect(secondOutputButton).not.toBeNull();
-    await user.click(secondOutputButton!);
+describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs", () => {
+  it("auto-redirects from /inspect/outputs to the first output", async () => {
+    mockPipelineApi();
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs" });
 
     await waitFor(() => {
-      expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
-      expect(history.location.search).toContain("route=compile");
-      expect(history.location.search).toContain("output=compile%3A1");
-      expect(screen.getByRole("heading", { name: /compile output2/i })).toBeInTheDocument();
+      expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect/outputs/compile%3A0");
     });
   });
 
-  it("renders the empty outputs state when the selected route has no outputs", async () => {
-    mockFetch([
-      ["GET", "/api/config", () => HttpResponse.json({
-        workspaceId: "workspace-123",
-        version: "16.0.0",
-      })],
-      ["GET", "/api/sources", () => HttpResponse.json([
-        {
-          id: "local",
-          type: "local",
-          label: "Local Source",
-          fileCount: 1,
-          pipelineCount: 1,
-          errors: [],
-        },
-      ])],
-      ["GET", "/api/sources/local", () => HttpResponse.json({
-        id: "local",
-        type: "local",
-        label: "Local Source",
-        errors: [],
-        files: [
-          {
-            id: "alpha",
-            path: "src/alpha.ts",
-            label: "Alpha file",
-            pipelines: [
-              {
-                id: "main-pipeline",
-                name: "Main pipeline",
-                description: "Build and publish",
-                versions: ["16.0.0"],
-                routeCount: 1,
-                sourceCount: 1,
-                sourceId: "local",
-              },
-            ],
-          },
-        ],
-      })],
-      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: 1,
-          sourceCount: 1,
-          routes: [
-            {
-              id: "compile",
-              cache: true,
-              depends: [],
-              emits: [],
-              filter: "compile-filter",
-              outputs: [],
-              transforms: [],
-            },
-          ],
-          sources: [{ id: "local" }],
-        },
-      })],
+  it("renders the output detail page with directory and file name", async () => {
+    mockPipelineApi();
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs/compile%3A0" });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("compile.json").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("shows the go-to-route link", async () => {
+    mockPipelineApi();
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs/compile%3A0" });
+
+    await waitFor(() => {
+      expect(screen.getByText("Go to route")).toBeInTheDocument();
+    });
+  });
+
+  it("shows other outputs section when the route has multiple outputs", async () => {
+    mockPipelineApi();
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs/compile%3A0" });
+
+    await waitFor(() => {
+      expect(screen.getByText("Other outputs on this route")).toBeInTheDocument();
+    });
+  });
+
+  it("hides other outputs section when the route has only one output", async () => {
+    mockPipelineApi();
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs/publish%3A0" });
+
+    await waitFor(() => {
+      expect(screen.getAllByText("bundle.txt").length).toBeGreaterThan(0);
+    });
+    expect(screen.queryByText("Other outputs on this route")).not.toBeInTheDocument();
+  });
+
+  it("renders the empty outputs fallback when no outputs exist", async () => {
+    mockPipelineApi([
+      {
+        id: "compile",
+        cache: true,
+        depends: [],
+        emits: [],
+        filter: "compile-filter",
+        outputs: [],
+        transforms: [],
+      },
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/inspect?route=compile");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/outputs" });
 
-    expect(await screen.findByText("No output definitions for this route.")).toBeInTheDocument();
+    expect(await screen.findByText("No outputs defined in this pipeline.")).toBeInTheDocument();
   });
 });

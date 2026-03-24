@@ -177,7 +177,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
 
     const user = userEvent.setup();
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1" });
 
     expect(await screen.findByText("Logs truncated")).toBeInTheDocument();
     expect(screen.getByText("4 events · Pipeline: main-pipeline")).toBeInTheDocument();
@@ -271,7 +271,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       },
     });
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1", { queryClient });
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1" }, { queryClient });
 
     expect(await screen.findByText("No spans recorded for this execution.")).toBeInTheDocument();
     expect(await screen.findByText((content) => content.includes("Failed to load logs:"))).toBeInTheDocument();

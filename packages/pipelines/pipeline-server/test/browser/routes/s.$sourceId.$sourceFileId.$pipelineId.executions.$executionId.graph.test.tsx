@@ -115,7 +115,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       })],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
 
     expect(await screen.findByText("Execution exec-1 graph")).toBeInTheDocument();
     expect(screen.getByText("Back to execution")).toHaveAttribute(
@@ -231,7 +231,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
     ]);
 
     const user = userEvent.setup();
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
 
     expect(await screen.findByText("Execution exec-1 graph")).toBeInTheDocument();
     expect(await screen.findByTestId("pipeline-graph")).toBeInTheDocument();

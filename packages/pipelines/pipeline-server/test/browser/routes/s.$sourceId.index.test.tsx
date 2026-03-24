@@ -66,7 +66,7 @@ describe("file-based route /s/$sourceId", () => {
       }],
     ]);
 
-    const { history } = await renderFileRoute("/s/local");
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local" });
     expect(await screen.findByText("Alpha file")).toBeInTheDocument();
     expect(screen.getByText("1 source issue")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Alpha file/i })).toHaveAttribute("href", "/s/local/alpha");
