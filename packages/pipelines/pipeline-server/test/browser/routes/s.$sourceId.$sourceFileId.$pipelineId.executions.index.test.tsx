@@ -123,7 +123,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
     ]);
 
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/executions");
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
     expect(await screen.findByText("1 total runs")).toBeInTheDocument();
     expect(screen.getAllByText("Main pipeline")).not.toHaveLength(0);
@@ -215,7 +215,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions" });
 
     expect(await screen.findByText("0 total runs")).toBeInTheDocument();
     expect(screen.getByText("No executions yet")).toBeInTheDocument();

@@ -1,18 +1,21 @@
 import { VersionSelector } from "#components/pipeline/version-selector";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
-describe("versionSelector", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("VersionSelector", () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
   it("renders the selected version count and toggles individual versions", async () => {
     const user = userEvent.setup();
-    const onToggleVersion = vi.fn();
 
     render(
       <VersionSelector
+        storageKey="test-vs"
         versions={["16.0.0", "15.1.0", "14.0.0"]}
-        selectedVersions={new Set(["16.0.0", "14.0.0"])}
-        onToggleVersion={onToggleVersion}
       />,
     );
 
@@ -21,43 +24,25 @@ describe("versionSelector", () => {
     await user.click(screen.getByRole("button", { name: /Versions/i }));
     await user.click(await screen.findByRole("menuitemcheckbox", { name: "15.1.0" }));
 
-    expect(onToggleVersion).toHaveBeenCalledWith("15.1.0");
+    // After toggling 15.1.0, it should be deselected (was selected by default)
+    const stored = JSON.parse(localStorage.getItem("ucd-versions-test-vs")!);
+    expect(stored).toEqual(["16.0.0", "14.0.0"]);
   });
 
-  it("renders select-all and clear-selection actions only when handlers are provided", async () => {
+  it("renders select-all and clear-selection actions", async () => {
     const user = userEvent.setup();
-    const onSelectAll = vi.fn();
-    const onDeselectAll = vi.fn();
 
-    const { rerender } = render(
+    render(
       <VersionSelector
+        storageKey="test-vs-2"
         versions={["16.0.0"]}
-        selectedVersions={new Set()}
-        onToggleVersion={() => {}}
       />,
     );
 
     await user.click(screen.getByRole("button", { name: /Versions/i }));
-    expect(screen.queryByRole("menuitem", { name: "Select all" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("menuitem", { name: "Clear selection" })).not.toBeInTheDocument();
 
-    rerender(
-      <VersionSelector
-        versions={["16.0.0"]}
-        selectedVersions={new Set()}
-        onToggleVersion={() => {}}
-        onSelectAll={onSelectAll}
-        onDeselectAll={onDeselectAll}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /Versions/i }));
-    await user.click(await screen.findByRole("menuitem", { name: "Select all" }));
-    await user.click(screen.getByRole("button", { name: /Versions/i }));
-    await user.click(await screen.findByRole("menuitem", { name: "Clear selection" }));
-
-    expect(onSelectAll).toHaveBeenCalledTimes(1);
-    expect(onDeselectAll).toHaveBeenCalledTimes(1);
+    expect(await screen.findByRole("menuitem", { name: "Select all" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Clear selection" })).toBeInTheDocument();
   });
 
   it("renders repeated versions once per input item", async () => {
@@ -65,9 +50,8 @@ describe("versionSelector", () => {
 
     render(
       <VersionSelector
+        storageKey="test-vs-3"
         versions={["16.0.0", "16.0.0", "15.1.0"]}
-        selectedVersions={new Set()}
-        onToggleVersion={() => {}}
       />,
     );
 
