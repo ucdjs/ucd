@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "8b00c496-a414-4a32-aa1c-27ce3bcc65bc",
+  "id": "153490f8-6383-496a-bd14-ca8d75775f2a",
   "prevIds": [
-    "e8166732-05e8-4f37-a072-c0b6268791e9"
+    "5676d08f-b0bc-44dc-a528-d36d9280ee26"
   ],
   "ddl": [
     {
@@ -128,7 +128,7 @@
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -333,16 +333,6 @@
       "default": null,
       "generated": null,
       "name": "summary",
-      "entityType": "columns",
-      "table": "executions"
-    },
-    {
-      "type": "text",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "graph",
       "entityType": "columns",
       "table": "executions"
     },

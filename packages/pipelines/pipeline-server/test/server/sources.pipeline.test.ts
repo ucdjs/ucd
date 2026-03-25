@@ -101,7 +101,7 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
 
     await db.delete(schema.workspaces).where(eq(schema.workspaces.id, "test"));
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
+    const res = await app.fetch(new Request(`http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ versions: ["16.0.0"] }),
@@ -121,7 +121,7 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
 
     db.$client.exec("drop table execution_traces");
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
+    const res = await app.fetch(new Request(`http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ versions: ["16.0.0"] }),
