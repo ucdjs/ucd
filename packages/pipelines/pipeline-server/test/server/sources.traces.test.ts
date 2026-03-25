@@ -2,7 +2,8 @@ import { sourcesTracesRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
 import { createTestRoutesApp } from "./helpers";
 
-describe("gET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces", () => {
   it("returns traces and a derived output manifest", async () => {
     const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
       seed: {
