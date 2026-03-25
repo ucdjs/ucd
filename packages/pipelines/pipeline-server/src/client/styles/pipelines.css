@@ -2,6 +2,16 @@
 
 @source "../components/**/*.{ts,js,mjs,jsx,tsx}";
 
+/* Override shared-ui theme to match Vercel's near-black dark palette.
+   globals.css dark: --background oklch(0.145) ~#171717, --card oklch(0.205) ~#242424.
+   Vercel dark:      background ~#0a0a0a, card ~#111111 — very dark with minimal elevation. */
+.dark {
+  --background: oklch(0.07 0 0);
+  --card:       oklch(0.10 0 0);
+  --popover:    oklch(0.10 0 0);
+  --sidebar:    oklch(0.10 0 0);
+}
+
 :root {
   --execution-phase-pipeline-dot:          rgb(56 189 248 / 0.75);
   --execution-phase-pipeline-chip-border:  rgb(14 165 233 / 0.3);
