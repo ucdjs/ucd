@@ -2,14 +2,24 @@
 
 @source "../components/**/*.{ts,js,mjs,jsx,tsx}";
 
-/* Override shared-ui theme to match Vercel's near-black dark palette.
-   globals.css dark: --background oklch(0.145) ~#171717, --card oklch(0.205) ~#242424.
-   Vercel dark:      background ~#0a0a0a, card ~#111111 — very dark with minimal elevation. */
+:root {
+  --background:     oklch(0.978 0 0); /* ~#fafafa */
+  --card:           oklch(1 0 0);
+  --popover:        oklch(1 0 0);
+  --sidebar:        oklch(0.978 0 0); /* ~#fafafa */
+  --border:         oklch(0.908 0 0); /* ~#e5e5e5 */
+  --input:          oklch(0.908 0 0); /* ~#e5e5e5 */
+  --sidebar-border: oklch(0.908 0 0); /* ~#e5e5e5 */
+}
+
 .dark {
-  --background: oklch(0.07 0 0);
-  --card:       oklch(0.10 0 0);
-  --popover:    oklch(0.10 0 0);
-  --sidebar:    oklch(0.10 0 0);
+  --background:     oklch(0% 0 0);
+  --card:           oklch(14.479% 0.00002 271.152);
+  --popover:        oklch(14.479% 0.00002 271.152);
+  --sidebar:        oklch(0% 0 0);
+  --border:         oklch(0.22 0 0); /* #292929 */
+  --input:          oklch(0.22 0 0); /* #292929 */
+  --sidebar-border: oklch(0.22 0 0); /* #292929 */
 }
 
 :root {

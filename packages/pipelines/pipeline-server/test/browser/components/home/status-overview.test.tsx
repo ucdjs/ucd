@@ -1,12 +1,12 @@
-import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
+import { StatusOverview } from "#components/overview/status-overview";
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 // eslint-disable-next-line test/prefer-lowercase-title
-describe("StatusOverviewPanel", () => {
+describe("StatusOverview", () => {
   it("renders totals and hides zero-value optional states", () => {
     render(
-      <StatusOverviewPanel
+      <StatusOverview
         total={8}
         summaryStates={{
           total: 8,
