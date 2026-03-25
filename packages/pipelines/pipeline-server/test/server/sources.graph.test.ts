@@ -181,11 +181,14 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
             actions: [
               {
                 label: "Open outputs",
-                to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+                to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
                 params: {
                   sourceId: "local",
                   sourceFileId: "simple",
                   pipelineId: "simple",
+                },
+                search: {
+                  view: "outputs",
                 },
               },
             ],
