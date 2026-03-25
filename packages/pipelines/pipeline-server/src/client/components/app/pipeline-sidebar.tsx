@@ -1,9 +1,8 @@
-import type { PipelineDetails } from "#queries/pipeline";
 import { useExecute } from "#hooks/use-execute";
 import { usePipelineVersions } from "#hooks/use-pipeline-versions";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { sourceQueryOptions } from "#queries/source";
-import { useHotkey, useHotkeySequence } from "@tanstack/react-hotkeys";
+import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
@@ -209,7 +208,7 @@ function PipelineView({ sourceId, fileId, pipelineId }: PipelineViewProps) {
 
   useHotkey("Mod+E", () => {
     const now = Date.now();
-    if (executing || now - lastHotkeyExecuteAtRef.current < HOTKEY_EXECUTE_COOLDOWN_MS) {
+    if (now - lastHotkeyExecuteAtRef.current < HOTKEY_EXECUTE_COOLDOWN_MS) {
       return;
     }
 
@@ -217,6 +216,7 @@ function PipelineView({ sourceId, fileId, pipelineId }: PipelineViewProps) {
     void handleExecute();
   }, {
     preventDefault: true,
+    enabled: !executing && selectedVersions.size > 0,
   });
 
   return (
