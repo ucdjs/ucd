@@ -103,16 +103,6 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
 
   const executor = createPipelineExecutor({
     runtime,
-    onEvent: async (evt) => {
-      await db.insert(schema.events).values({
-        id: randomUUID(),
-        workspaceId,
-        executionId,
-        type: evt.type,
-        timestamp: new Date(evt.timestamp),
-        data: evt,
-      });
-    },
     onTrace: async (trace) => {
       if (!tracePersistenceEnabled) {
         return;
@@ -123,7 +113,9 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
           id: trace.id,
           workspaceId,
           executionId,
+          traceId: trace.traceId ?? null,
           spanId: trace.spanId ?? null,
+          parentSpanId: trace.parentSpanId ?? null,
           kind: trace.kind,
           timestamp: new Date(trace.timestamp),
           data: trace,
@@ -140,7 +132,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   });
 
   try {
-    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId }, () =>
+    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId, traceId: executionId }, () =>
       executor.run([pipeline], { versions, cache }));
 
     const pipelineResult = execResult.find((r) => r.id === pipelineId);

@@ -183,7 +183,7 @@ export function createExecutionLogStore(db: Database) {
       level: entry.level,
       source: entry.source,
       meta: entry.meta,
-      event: entry.event,
+      traceKind: entry.traceKind,
     };
 
     let executionState = stateByExecution.get(entry.executionId);

@@ -1,4 +1,3 @@
-export { sourcesEventsRouter } from "./sources.events";
 export { sourcesExecutionsRouter } from "./sources.executions";
 export { sourcesGraphRouter } from "./sources.graph";
 export { sourcesIndexRouter } from "./sources.index";

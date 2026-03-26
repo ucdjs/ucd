@@ -1,4 +1,3 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import z from "zod";
 import { ExecutionGraphViewSchema } from "./graph";
@@ -49,19 +48,14 @@ export const ExecutionsResponseSchema = z.object({
   pagination: PaginationSchema,
 });
 
-export const ExecutionEventItemSchema = z.object({
+export const ExecutionTraceItemSchema = z.object({
   id: z.string(),
-  type: z.string(),
+  kind: z.string(),
+  traceId: z.string().nullable(),
+  spanId: z.string().nullable(),
+  parentSpanId: z.string().nullable(),
   timestamp: z.string(),
-  data: z.custom<PipelineEvent>(() => true).nullable(),
-});
-
-export const ExecutionEventsResponseSchema = z.object({
-  executionId: z.string(),
-  pipelineId: z.string(),
-  status: ExecutionStatusSchema,
-  events: z.array(ExecutionEventItemSchema),
-  pagination: PaginationSchema,
+  data: z.unknown(),
 });
 
 export const ExecutionLogPayloadSchema = z.object({
@@ -73,7 +67,7 @@ export const ExecutionLogPayloadSchema = z.object({
   truncated: z.boolean().optional(),
   originalSize: z.number().optional(),
   isBanner: z.boolean().optional(),
-  event: z.custom<PipelineEvent>(() => true).optional(),
+  traceKind: z.string().optional(),
 }).nullable();
 
 export const ExecutionLogItemSchema = z.object({
@@ -102,14 +96,6 @@ export const ExecutionGraphResponseSchema = z.object({
   graph: ExecutionGraphViewSchema.nullable(),
 });
 
-export const ExecutionTraceItemSchema = z.object({
-  id: z.string(),
-  kind: z.string(),
-  spanId: z.string().nullable(),
-  timestamp: z.string(),
-  data: z.unknown(),
-});
-
 export const OutputManifestItemSchema = z.object({
   outputIndex: z.number(),
   outputId: z.string(),
@@ -136,8 +122,6 @@ export const ExecutionTracesResponseSchema = z.object({
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
 export type ExecutionSummaryItem = z.infer<typeof ExecutionSummaryItemSchema>;
 export type ExecutionsResponse = z.infer<typeof ExecutionsResponseSchema>;
-export type ExecutionEventItem = z.infer<typeof ExecutionEventItemSchema>;
-export type ExecutionEventsResponse = z.infer<typeof ExecutionEventsResponseSchema>;
 export type ExecutionLogPayload = z.infer<typeof ExecutionLogPayloadSchema>;
 export type ExecutionLogItem = z.infer<typeof ExecutionLogItemSchema>;
 export type ExecutionLogsResponse = z.infer<typeof ExecutionLogsResponseSchema>;

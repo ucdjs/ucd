@@ -1,18 +1,10 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
 import { describe, expect, it } from "vitest";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
 
 describe("node execution runtime", () => {
-  it("keeps span and event context aligned across nested scopes", async () => {
+  it("keeps span context aligned across nested scopes", async () => {
     const runtime = createNodeExecutionRuntime({});
-    const event = {
-      id: "event-1",
-      type: "pipeline:start",
-      versions: ["16.0.0"],
-      spanId: "event-span",
-      timestamp: Date.now(),
-    } satisfies PipelineEvent;
 
     await runtime.runWithExecutionContext({
       executionId: "exec-1",
@@ -26,9 +18,9 @@ describe("node execution runtime", () => {
       await runtime.withSpan("span-1", async () => {
         expect(runtime.getExecutionContext()?.spanId).toBe("span-1");
 
-        await runtime.withEvent(event, async () => {
-          expect(runtime.getExecutionContext()?.spanId).toBe("event-span");
-          expect(runtime.getExecutionContext()?.event).toEqual(event);
+        await runtime.withSpan("span-2", async () => {
+          expect(runtime.getExecutionContext()?.spanId).toBe("span-2");
+          expect(runtime.getExecutionContext()?.parentSpanId).toBe("span-1");
         });
 
         expect(runtime.getExecutionContext()?.spanId).toBe("span-1");

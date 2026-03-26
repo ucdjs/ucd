@@ -1,22 +1,51 @@
-import type { FileContext } from "@ucdjs/pipelines-core";
+import type { FileContext, PipelineError } from "@ucdjs/pipelines-core";
 
 export type PipelineTraceKind
-  = | "source.provided"
+  = | "pipeline.start"
+    | "pipeline.end"
+    | "version.start"
+    | "version.end"
+    | "source.provided"
     | "file.matched"
     | "file.fallback"
+    | "file.skipped"
+    | "parse.start"
+    | "parse.end"
+    | "resolve.start"
+    | "resolve.end"
     | "cache.hit"
     | "cache.miss"
     | "cache.store"
     | "output.produced"
     | "output.resolved"
-    | "output.written";
+    | "output.written"
+    | "error";
 
 interface PipelineTraceBase<TKind extends PipelineTraceKind> {
   id: string;
   kind: TKind;
   pipelineId: string;
+  traceId: string;
   spanId?: string;
+  parentSpanId?: string;
   timestamp: number;
+}
+
+export interface PipelineStartTraceRecord extends PipelineTraceBase<"pipeline.start"> {
+  versions: string[];
+}
+
+export interface PipelineEndTraceRecord extends PipelineTraceBase<"pipeline.end"> {
+  durationMs: number;
+}
+
+export interface VersionStartTraceRecord extends PipelineTraceBase<"version.start"> {
+  version: string;
+}
+
+export interface VersionEndTraceRecord extends PipelineTraceBase<"version.end"> {
+  version: string;
+  durationMs: number;
 }
 
 export interface SourceProvidedTraceRecord extends PipelineTraceBase<"source.provided"> {
@@ -33,6 +62,40 @@ export interface FileMatchedTraceRecord extends PipelineTraceBase<"file.matched"
 export interface FileFallbackTraceRecord extends PipelineTraceBase<"file.fallback"> {
   version: string;
   file: FileContext;
+}
+
+export interface FileSkippedTraceRecord extends PipelineTraceBase<"file.skipped"> {
+  version: string;
+  file: FileContext;
+  reason: "no-match" | "filtered";
+}
+
+export interface ParseStartTraceRecord extends PipelineTraceBase<"parse.start"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+}
+
+export interface ParseEndTraceRecord extends PipelineTraceBase<"parse.end"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+  rowCount: number;
+  durationMs: number;
+}
+
+export interface ResolveStartTraceRecord extends PipelineTraceBase<"resolve.start"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+}
+
+export interface ResolveEndTraceRecord extends PipelineTraceBase<"resolve.end"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+  outputCount: number;
+  durationMs: number;
 }
 
 export interface CacheHitTraceRecord extends PipelineTraceBase<"cache.hit"> {
@@ -88,26 +151,40 @@ export interface OutputWrittenTraceRecord extends PipelineTraceBase<"output.writ
   error?: string;
 }
 
+export interface ErrorTraceRecord extends PipelineTraceBase<"error"> {
+  error: PipelineError;
+}
+
 export type PipelineTraceRecord
-  = | SourceProvidedTraceRecord
+  = | PipelineStartTraceRecord
+    | PipelineEndTraceRecord
+    | VersionStartTraceRecord
+    | VersionEndTraceRecord
+    | SourceProvidedTraceRecord
     | FileMatchedTraceRecord
     | FileFallbackTraceRecord
+    | FileSkippedTraceRecord
+    | ParseStartTraceRecord
+    | ParseEndTraceRecord
+    | ResolveStartTraceRecord
+    | ResolveEndTraceRecord
     | CacheHitTraceRecord
     | CacheMissTraceRecord
     | CacheStoreTraceRecord
     | OutputProducedTraceRecord
     | OutputResolvedTraceRecord
-    | OutputWrittenTraceRecord;
+    | OutputWrittenTraceRecord
+    | ErrorTraceRecord;
 
 export type PipelineTraceRecordByKind<TKind extends PipelineTraceKind>
   = Extract<PipelineTraceRecord, { kind: TKind }>;
 
 export type PipelineTraceInput = {
-  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "timestamp" | "spanId">;
+  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "traceId" | "spanId" | "parentSpanId" | "timestamp">;
 }[PipelineTraceKind];
 
 export type PipelineTraceEmitInput = {
-  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "timestamp" | "spanId" | "pipelineId">;
+  [K in PipelineTraceKind]: Omit<PipelineTraceRecordByKind<K>, "id" | "traceId" | "spanId" | "parentSpanId" | "timestamp" | "pipelineId">;
 }[PipelineTraceKind];
 
 export interface PipelineOutputManifestEntry {

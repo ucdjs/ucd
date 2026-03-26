@@ -1,6 +1,5 @@
 import type {
   ExecutePipelineResponse,
-  ExecutionEventsResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
   ExecutionsResponse,
@@ -11,7 +10,6 @@ import type { ExecuteResult } from "#shared/types";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   ExecutePipelineResponseSchema,
-  ExecutionEventsResponseSchema,
   ExecutionGraphResponseSchema,
   ExecutionLogsResponseSchema,
   ExecutionsResponseSchema,
@@ -23,7 +21,6 @@ import { refetchWhileExecutionActive } from "./utils";
 
 export type {
   ExecutePipelineResponse,
-  ExecutionEventsResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
   ExecutionsResponse,
@@ -48,15 +45,6 @@ export interface ExecutionsParams extends FetchExecutionsOptions {
   sourceId: string;
   fileId: string;
   pipelineId: string;
-}
-
-export interface ExecutionEventsParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  limit?: number;
-  offset?: number;
 }
 
 export interface ExecutionLogsParams {
@@ -167,48 +155,6 @@ export function executionsQueryOptions({
     queryFn: () => fetchExecutions({ sourceId, fileId, pipelineId, limit, offset }),
     staleTime: 5_000,
     refetchOnWindowFocus: true,
-  });
-}
-
-export async function fetchExecutionEvents({
-  sourceId,
-  fileId,
-  pipelineId,
-  executionId,
-  limit,
-  offset,
-}: ExecutionEventsParams): Promise<ExecutionEventsResponse> {
-  const params = new URLSearchParams();
-  if (limit != null) params.set("limit", String(limit));
-  if (offset != null) params.set("offset", String(offset));
-  const qs = params.toString();
-
-  return (
-    await customFetch<ExecutionEventsResponse>(
-      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/events${qs ? `?${qs}` : ""}`,
-      {
-        schema: ExecutionEventsResponseSchema,
-      },
-    )
-  ).data!;
-}
-
-export function executionEventsQueryOptions({
-  sourceId,
-  fileId,
-  pipelineId,
-  executionId,
-  limit,
-  offset,
-}: ExecutionEventsParams) {
-  const opts = { limit, offset };
-
-  return queryOptions({
-    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "events", opts],
-    queryFn: () => fetchExecutionEvents({ sourceId, fileId, pipelineId, executionId, limit, offset }),
-    staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchInterval: (query) => refetchWhileExecutionActive(query),
   });
 }
 
