@@ -21,8 +21,12 @@ export async function writeOutputToSink(
   format: "json" | "text",
   runtime?: PipelineExecutionRuntime,
 ): Promise<void> {
-  if (!sink || !runtime?.writeOutput) {
+  if (!sink) {
     return;
+  }
+
+  if (!runtime?.writeOutput) {
+    throw new Error(`Output sink "${sink.type}" is configured, but this runtime does not support output writes.`);
   }
 
   const content = serializeOutputValue(value, format);

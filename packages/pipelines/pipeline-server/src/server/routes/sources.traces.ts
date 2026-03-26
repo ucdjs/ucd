@@ -2,7 +2,7 @@ import type { ExecutionTracesResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-executor/traces";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 
 export const sourcesTracesRouter: H3 = new H3();
@@ -24,8 +24,8 @@ sourcesTracesRouter.get(
     const query = getQuery(event);
     const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 200;
     const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
-    const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 200, 1000);
-    const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
+    const limit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 200, 1), 1000);
+    const offset = Math.max(Number.isFinite(parsedOffset) ? parsedOffset : 0, 0);
 
     const [execution] = await db
       .select({
@@ -73,14 +73,14 @@ sourcesTracesRouter.get(
         .select()
         .from(schema.executionTraces)
         .where(traceWhere)
-        .orderBy(schema.executionTraces.timestamp)
+        .orderBy(asc(schema.executionTraces.timestamp), asc(schema.executionTraces.id))
         .limit(limit)
         .offset(offset),
       db
         .select()
         .from(schema.executionTraces)
         .where(traceWhere)
-        .orderBy(schema.executionTraces.timestamp),
+        .orderBy(asc(schema.executionTraces.timestamp), asc(schema.executionTraces.id)),
       db
         .select({ count: sql<number>`count(*)` })
         .from(schema.executionTraces)

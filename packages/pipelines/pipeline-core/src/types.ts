@@ -231,7 +231,7 @@ export interface ResolveContext {
   /**
    * Read output data from a previously executed route.
    */
-  getRouteData: (routeId: string) => unknown[];
+  getRouteData: (routeId: string) => readonly unknown[];
 
   /**
    * Normalize and sort entries by code point range.

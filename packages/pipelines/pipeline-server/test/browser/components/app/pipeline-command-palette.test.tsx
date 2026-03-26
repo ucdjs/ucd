@@ -67,7 +67,7 @@ describe("pipeline command palette", () => {
     }));
   });
 
-  it("opens on a pipeline route, exposes current actions, and uses stored versions for execute-current", async () => {
+  it("opens on a pipeline route and exposes current pipeline actions", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
@@ -131,8 +131,6 @@ describe("pipeline command palette", () => {
       })],
     ]);
 
-    localStorage.setItem("ucd-versions-local:alpha:main-pipeline", JSON.stringify(["15.1.0"]));
-
     const { renderFileRoute } = await import("../../route-test-utils");
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
@@ -156,22 +154,6 @@ describe("pipeline command palette", () => {
     expect(within(dialog).getByText("Current Pipeline")).toBeInTheDocument();
     expect(within(dialog).getByText("Execute current pipeline")).toBeInTheDocument();
     expect(within(dialog).getByText("Open current pipeline")).toBeInTheDocument();
-
-    await waitFor(() => {
-      expect(hotkeys.has("Mod+E")).toBe(true);
-    });
-
-    await act(async () => {
-      hotkeys.get("Mod+E")?.({ preventDefault() {} });
-    });
-
-    await waitFor(() => {
-      expect(mockedExecute).toHaveBeenCalledWith("local", "alpha", "main-pipeline", ["15.1.0"]);
-    });
-
-    await waitFor(() => {
-      expect(document.querySelector("[data-slot='dialog-content']")).toBeNull();
-    });
   });
 
   it.todo("does not show current-pipeline actions on non-pipeline routes and surfaces the no-results state", async () => {

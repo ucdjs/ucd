@@ -60,9 +60,17 @@ export function createSourceAdapter(
 
       const outputFiles = pipeline.inputs
         .filter(isPipelineOutputSource)
-        .flatMap((input) => publishedOutputFiles.get(input.id) ?? [])
-        .filter((entry) => entry.file.version === version)
-        .map((entry) => entry.file);
+        .flatMap((input) =>
+          (publishedOutputFiles.get(input.id) ?? [])
+            .filter((entry) => entry.file.version === version)
+            .map((entry) => entry.file)
+            .filter((file) => {
+              const ctx = { file, logger };
+              if (input.includes && !input.includes(ctx)) return false;
+              if (input.excludes && input.excludes(ctx)) return false;
+              return true;
+            }),
+        );
 
       const filesByPath = new Map<string, FileContext>();
       for (const file of [...standardFiles, ...outputFiles]) {
@@ -122,7 +130,7 @@ function buildPublishedOutputFiles(
         file: {
           version: entry.version,
           dir: "pipeline-output",
-          path: `pipeline-output/${entry.pipelineId}/${entry.outputId}/${name}`,
+          path: `pipeline-output/${entry.pipelineId}/${entry.outputId}/${entry.outputIndex}/${name}`,
           name,
           ext,
           source: { id: input.id },

@@ -13,8 +13,9 @@ export const DEFAULT_FALLBACK_OUTPUTS: readonly NormalizedRouteOutputDefinition[
 const UNDERSCORE_RE = /_/g;
 const NON_WORD_RE = /[^a-z0-9]+/g;
 const LEADING_SLASHES_RE = /^\/+/;
-const TEMPLATE_TOKEN_RE = /\{([^}]+)\}/g;
-const KEBAB_TRIM_RE = /^-+|-+$/g;
+const TEMPLATE_TOKEN_RE = /\{([^{}]+)\}/g;
+const KEBAB_LEADING_DASHES_RE = /^-+/;
+const KEBAB_TRAILING_DASHES_RE = /-+$/;
 
 export function getOutputProperty(output: unknown): string | undefined {
   if (typeof output !== "object" || output == null) {
@@ -51,10 +52,19 @@ function createDestination(
   relativeLocator: string,
   resolvePath?: (base: string, relative: string) => string,
 ): ResolvedOutputDestination {
+  const normalizedRelative = relativeLocator.replaceAll("\\", "/");
+
+  if (
+    normalizedRelative.startsWith("/")
+    || normalizedRelative.split("/").includes("..")
+  ) {
+    throw new Error(`Output path must stay within the configured sink: "${relativeLocator}"`);
+  }
+
   if (sink?.type === "filesystem") {
     const resolved = sink.baseDir
-      ? resolvePath?.(sink.baseDir, relativeLocator) ?? `${sink.baseDir}/${relativeLocator}`
-      : resolvePath?.("", relativeLocator) ?? relativeLocator;
+      ? resolvePath?.(sink.baseDir, normalizedRelative) ?? `${sink.baseDir}/${normalizedRelative}`
+      : resolvePath?.("", normalizedRelative) ?? normalizedRelative;
 
     return {
       locator: resolved,
@@ -62,10 +72,10 @@ function createDestination(
     };
   }
 
-  const normalized = relativeLocator.replace(LEADING_SLASHES_RE, "");
+  const stripped = normalizedRelative.replace(LEADING_SLASHES_RE, "");
   return {
-    locator: `memory://${normalized}`,
-    displayLocator: `memory://${normalized}`,
+    locator: `memory://${stripped}`,
+    displayLocator: `memory://${stripped}`,
   };
 }
 
@@ -113,5 +123,6 @@ export function propertyToKebab(value: string): string {
     .replace(UNDERSCORE_RE, "-")
     .toLowerCase()
     .replace(NON_WORD_RE, "-")
-    .replace(KEBAB_TRIM_RE, "");
+    .replace(KEBAB_LEADING_DASHES_RE, "")
+    .replace(KEBAB_TRAILING_DASHES_RE, "");
 }

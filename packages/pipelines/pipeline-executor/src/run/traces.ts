@@ -131,7 +131,7 @@ export function buildOutputManifestFromTraces(
 
   for (const trace of traces) {
     if (trace.kind === "output.resolved") {
-      const key = getOutputManifestKey(trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
+      const key = getOutputManifestKey(trace.pipelineId, trace.version, trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
       manifest.set(key, {
         outputIndex: trace.outputIndex,
         outputId: trace.outputId,
@@ -148,7 +148,7 @@ export function buildOutputManifestFromTraces(
     }
 
     if (trace.kind === "output.written") {
-      const key = getOutputManifestKey(trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
+      const key = getOutputManifestKey(trace.pipelineId, trace.version, trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
       const entry = manifest.get(key);
       if (entry) {
         manifest.set(key, {
@@ -161,7 +161,9 @@ export function buildOutputManifestFromTraces(
   }
 
   return [...manifest.values()].toSorted((left, right) => {
-    return left.outputIndex - right.outputIndex
+    return left.pipelineId.localeCompare(right.pipelineId)
+      || left.version.localeCompare(right.version)
+      || left.outputIndex - right.outputIndex
       || left.routeId.localeCompare(right.routeId)
       || left.outputId.localeCompare(right.outputId)
       || left.locator.localeCompare(right.locator);
@@ -169,10 +171,12 @@ export function buildOutputManifestFromTraces(
 }
 
 function getOutputManifestKey(
+  pipelineId: string,
+  version: string,
   routeId: string,
   outputIndex: number,
   outputId: string,
   locator: string,
 ): string {
-  return `${routeId}:${outputIndex}:${outputId}:${locator}`;
+  return `${pipelineId}:${version}:${routeId}:${outputIndex}:${outputId}:${locator}`;
 }
