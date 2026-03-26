@@ -74,7 +74,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
                 cache: false,
                 depends: [{ type: "route", routeId: "compile" }],
                 filter: undefined,
-                outputs: [{ dir: "dist", fileName: "bundle.txt" }],
+                outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }],
                 transforms: [],
               },
             ],

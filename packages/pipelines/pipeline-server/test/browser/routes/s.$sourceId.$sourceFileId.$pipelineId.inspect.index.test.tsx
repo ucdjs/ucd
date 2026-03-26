@@ -44,8 +44,8 @@ function mockInspectApi() {
         routeCount: 3,
         sourceCount: 1,
         routes: [
-          { id: "compile", cache: true, depends: [], filter: "compile-filter", outputs: [{ dir: "dist", fileName: "compile.json" }], transforms: ["normalize", "dedupe"] },
-          { id: "publish", cache: false, depends: [{ type: "route", routeId: "compile" }], filter: "publish-filter", outputs: [{ dir: "dist", fileName: "bundle.txt" }], transforms: ["ship"] },
+          { id: "compile", cache: true, depends: [], filter: "compile-filter", outputs: [{ id: "compile-out", sink: "file", format: "json", dir: "dist", fileName: "compile.json" }], transforms: ["normalize", "dedupe"] },
+          { id: "publish", cache: false, depends: [{ type: "route", routeId: "compile" }], filter: "publish-filter", outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }], transforms: ["ship"] },
           { id: "archive", cache: false, depends: [{ type: "route", routeId: "publish" }], filter: "archive-filter", outputs: [], transforms: [] },
         ],
         sources: [{ id: "local" }],

@@ -40,7 +40,8 @@ const span: ExecutionSpan = {
   isError: false,
 };
 
-describe("executionSpanDrawer", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("ExecutionSpanDrawer", () => {
   it("stays closed when no span is selected", () => {
     render(
       <ExecutionSpanDrawer
