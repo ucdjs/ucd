@@ -47,11 +47,11 @@ export function createRouteResolveContext(
     version,
     file,
     logger,
-    getRouteData: (targetRouteId: string): unknown[] => {
+    getRouteData: (targetRouteId: string) => {
       if (!(targetRouteId in routeDataMap)) {
         throw new Error(`Route data for "${targetRouteId}" not found. Make sure route "${targetRouteId}" runs before route "${routeId}" by declaring it as a dependency.`);
       }
-      return routeDataMap[targetRouteId]!;
+      return Object.freeze(routeDataMap[targetRouteId]!);
     },
     normalizeEntries: (entries) => {
       return entries.sort((a, b) => {
@@ -105,17 +105,7 @@ async function executeParseResolve(options: ExecuteParseResolveOptions): Promise
     ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRows, transforms)
     : filteredRows;
 
-  await emitInSpan(runtime, parseSpanId, emit, {
-    type: "parse:end",
-    file,
-    routeId,
-    rowCount: collectedRows.length,
-    durationMs: performance.now() - parseStartTime,
-    spanId: parseSpanId,
-    timestamp: performance.now(),
-  });
-
-  // Resolve phase
+  // Resolve phase (parse:end is emitted after resolver consumes the lazy iterables)
   const resolveStartTime = performance.now();
   const resolveSpanId = spanId();
   await emitInSpan(runtime, resolveSpanId, emit, {
@@ -128,6 +118,16 @@ async function executeParseResolve(options: ExecuteParseResolveOptions): Promise
 
   const outputs = await resolver(resolveContext, resolverRows as AsyncIterable<ParsedRow>);
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
+
+  await emitInSpan(runtime, parseSpanId, emit, {
+    type: "parse:end",
+    file,
+    routeId,
+    rowCount: collectedRows.length,
+    durationMs: performance.now() - parseStartTime,
+    spanId: parseSpanId,
+    timestamp: performance.now(),
+  });
 
   await emitInSpan(runtime, resolveSpanId, emit, {
     type: "resolve:end",

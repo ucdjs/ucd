@@ -170,7 +170,11 @@ async function runVersion(context: RunContext, version: string): Promise<void> {
 
   const files = await versionContext.listFiles();
   const includedFiles = context.config.pipeline.include
-    ? files.filter((file) => context.config.pipeline.include!({ file, logger: context.config.logger }))
+    ? files.filter((file) => context.config.pipeline.include!({
+        file,
+        logger: context.config.logger,
+        source: isSourceFileContext(file) ? file.source : undefined,
+      }))
     : files;
 
   const processedFiles = new Set<string>();
@@ -307,7 +311,7 @@ async function executeUnmatchedFile(
     return;
   }
 
-  if (pipeline.fallback.filter && !pipeline.fallback.filter({ file, logger })) {
+  if (pipeline.fallback.filter && !pipeline.fallback.filter({ file, logger, source: isSourceFileContext(file) ? file.source : undefined })) {
     context.data.summary.skippedFiles++;
     await emitEvent(context, versionSpanId, {
       type: "file:skipped",
@@ -392,6 +396,8 @@ async function loadRouteResult(
       routeId: route.id,
       version,
       fileContent,
+      routeDataMap,
+      depends: route.depends ?? [],
     });
 
     await recordCacheHitOrMiss(context, version, route.id, file, spanId, cached.hit);
@@ -417,6 +423,8 @@ async function loadRouteResult(
       route.id,
       version,
       fileContent,
+      routeDataMap,
+      route.depends ?? [],
     );
 
     await storeCacheEntry({

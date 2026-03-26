@@ -6,7 +6,7 @@ export function buildExecutionGraphFromTraces(
   traces: readonly PipelineTraceRecord[],
 ): PipelineGraph {
   const builder = new PipelineGraphBuilder();
-  const producedOutputs = new Map<string, { routeId: string; version: string; property?: string }>();
+  const producedOutputs = new Map<string, { routeId: string; version: string; outputIndex: number; property?: string }>();
   const resolvedProducedOutputs = new Set<string>();
 
   for (const trace of traces) {
@@ -26,15 +26,16 @@ export function buildExecutionGraphFromTraces(
         break;
       }
       case "output.produced": {
-        producedOutputs.set(`${trace.routeId}:${trace.outputIndex}`, {
+        producedOutputs.set(`${trace.version}:${trace.routeId}:${trace.outputIndex}`, {
           routeId: trace.routeId,
           version: trace.version,
+          outputIndex: trace.outputIndex,
           property: trace.property,
         });
         break;
       }
       case "output.resolved": {
-        resolvedProducedOutputs.add(`${trace.routeId}:${trace.outputIndex}`);
+        resolvedProducedOutputs.add(`${trace.version}:${trace.routeId}:${trace.outputIndex}`);
         const routeNodeId = builder.addRouteNode(trace.routeId, trace.version);
         const outputNodeId = builder.addOutputNode(
           trace.outputIndex,
@@ -70,10 +71,8 @@ export function buildExecutionGraphFromTraces(
       continue;
     }
 
-    const [, outputIndexText] = key.split(":");
-    const outputIndex = Number.parseInt(outputIndexText ?? "", 10);
     const routeNodeId = builder.addRouteNode(output.routeId, output.version);
-    const outputNodeId = builder.addOutputNode(outputIndex, output.version, output.property);
+    const outputNodeId = builder.addOutputNode(output.outputIndex, output.version, output.property);
     builder.addEdge(routeNodeId, outputNodeId, "resolved");
   }
 

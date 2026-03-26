@@ -15,7 +15,7 @@ export interface RouteResolveContext {
   version: string;
   file: FileContext;
   logger: PipelineLogger;
-  getRouteData: (routeId: string) => unknown[];
+  getRouteData: (routeId: string) => readonly unknown[];
   normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
   now: () => string;
 }

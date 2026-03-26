@@ -17,8 +17,10 @@ export interface TraceHandlerOptions {
 export function createTraceEmitter(options: TraceHandlerOptions): TraceEmitter {
   const { onTrace, runtime } = options;
   let traceCounter = 0;
+  const emitterId = globalThis.crypto?.randomUUID?.()
+    ?? `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
-  const nextTraceId = (): string => `trace_${Date.now()}_${++traceCounter}`;
+  const nextTraceId = (): string => `trace_${emitterId}_${++traceCounter}`;
 
   const emit = async (trace: PipelineTraceInput): Promise<PipelineTraceRecord> => {
     const context = runtime.getExecutionContext();

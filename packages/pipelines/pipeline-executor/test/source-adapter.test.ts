@@ -57,7 +57,7 @@ describe("source adapter", () => {
 
     expect(files).toEqual([
       expect.objectContaining({
-        path: "pipeline-output/upstream/json/script.json",
+        path: "pipeline-output/upstream/json/0/script.json",
         name: "script.json",
       }),
     ]);
