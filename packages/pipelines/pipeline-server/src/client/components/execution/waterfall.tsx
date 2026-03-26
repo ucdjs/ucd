@@ -1,7 +1,7 @@
-import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
 import type { ExecutionSpan } from "../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
+import { PIPELINE_TRACE_PHASES } from "@ucdjs/pipelines-core";
 import { useMemo, useState } from "react";
 import { ExecutionWaterfallAxis } from "./waterfall/axis";
 import { ExecutionWaterfallRow } from "./waterfall/row";
@@ -26,8 +26,8 @@ export function ExecutionWaterfall({
   const end = hasSpans ? Math.max(...spans.map((span) => span.end)) : 0;
   const duration = Math.max(end - start, 1);
 
-  const availablePhases = useMemo(() => PIPELINE_EVENT_PHASES.filter((phase) => spans.some((span) => span.phase === phase)), [spans]);
-  const [activePhases, setActivePhases] = useState<Set<PipelineEventPhase>>(
+  const availablePhases = useMemo(() => PIPELINE_TRACE_PHASES.filter((phase) => spans.some((span) => span.phase === phase)), [spans]);
+  const [activePhases, setActivePhases] = useState<Set<PipelineTracePhase>>(
     () => new Set(availablePhases),
   );
 
@@ -46,7 +46,7 @@ export function ExecutionWaterfall({
   );
   const ticks = buildTicks(duration, 5);
 
-  function handleTogglePhase(phase: PipelineEventPhase) {
+  function handleTogglePhase(phase: PipelineTracePhase) {
     setActivePhases((current) => {
       const next = new Set(availablePhases.filter((item) => current.has(item)));
       if (next.has(phase)) {

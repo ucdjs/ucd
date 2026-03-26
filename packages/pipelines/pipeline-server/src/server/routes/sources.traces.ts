@@ -89,7 +89,9 @@ sourcesTracesRouter.get(
     const traces = traceRows.map((trace) => ({
       id: trace.id,
       kind: trace.kind,
+      traceId: trace.traceId ?? null,
       spanId: trace.spanId ?? null,
+      parentSpanId: trace.parentSpanId ?? null,
       timestamp: trace.timestamp.toISOString(),
       data: trace.data,
     }));

@@ -1,5 +1,6 @@
-import type { FileContext, PipelineEvent } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
+import type { PipelineTraceRecord } from "../src/run/traces";
 import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -43,11 +44,11 @@ describe("createPipelineExecutor", () => {
     expect(executor).toBeDefined();
   });
 
-  it("should accept optional event handler", () => {
-    const onEvent = vi.fn();
+  it("should accept optional trace handler", () => {
+    const onTrace = vi.fn();
 
     const executor = createPipelineExecutor({
-      onEvent,
+      onTrace,
     });
 
     expect(executor).toBeDefined();
@@ -517,8 +518,8 @@ describe("error handling", () => {
     expect(firstError.message).toContain("Route failed");
   });
 
-  it("should emit error events", async () => {
-    const events: PipelineEvent[] = [];
+  it("should emit error traces", async () => {
+    const traces: PipelineTraceRecord[] = [];
 
     const failingRoute = definePipelineRoute({
       id: "failing",
@@ -530,24 +531,23 @@ describe("error handling", () => {
     });
 
     const pipeline = definePipeline({
-      id: "error-events",
-      name: "Error Events",
+      id: "error-traces",
+      name: "Error Traces",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [failingRoute],
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => {
-        events.push(event);
-        return undefined;
+      onTrace: (trace) => {
+        traces.push(trace);
       },
     });
 
     await executor.run([pipeline]);
 
-    const errorEvents = events.filter((e) => e.type === "error");
-    expect(errorEvents.length).toBeGreaterThan(0);
+    const errorTraces = traces.filter((t) => t.kind === "error");
+    expect(errorTraces.length).toBeGreaterThan(0);
   });
 
   it("should handle pipeline without inputs gracefully", async () => {

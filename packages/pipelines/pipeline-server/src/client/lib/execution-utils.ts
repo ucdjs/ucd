@@ -1,5 +1,6 @@
-import type { PipelineEvent, PipelineEventPhase } from "@ucdjs/pipelines-core";
-import { getPipelineEventPhase } from "@ucdjs/pipelines-core";
+import type { ExecutionTraceItem } from "#shared/schemas/execution";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
+import { getTracePhase } from "@ucdjs/pipelines-core";
 
 export interface ExecutionSpan {
   spanId: string;
@@ -7,61 +8,67 @@ export interface ExecutionSpan {
   start: number;
   end: number;
   durationMs: number;
-  phase: PipelineEventPhase;
+  phase: PipelineTracePhase;
   isError?: boolean;
 }
 
-function buildSpanLabel(event: PipelineEvent): string {
-  if ("version" in event && event.version) {
-    return `${event.type} v${event.version}`;
+function buildSpanLabel(trace: ExecutionTraceItem): string {
+  const data = trace.data as Record<string, unknown> | null;
+  if (data && "version" in data && data.version) {
+    return `${trace.kind} v${data.version}`;
   }
-  if ("routeId" in event && event.routeId) {
-    return `${event.type} ${event.routeId}`;
+  if (data && "routeId" in data && data.routeId) {
+    return `${trace.kind} ${data.routeId}`;
   }
-  if ("file" in event && event.file) {
-    return `${event.type} ${event.file.name}`;
+  if (data && "file" in data && data.file && typeof data.file === "object" && "name" in (data.file as Record<string, unknown>)) {
+    return `${trace.kind} ${(data.file as Record<string, unknown>).name}`;
   }
-  return event.type;
+  return trace.kind;
 }
 
-export function buildExecutionSpans(events: PipelineEvent[]): ExecutionSpan[] {
-  const startMap = new Map<string, PipelineEvent>();
+export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan[] {
+  const startMap = new Map<string, ExecutionTraceItem>();
   const spans: ExecutionSpan[] = [];
 
-  const sorted = events.toSorted((a, b) => a.timestamp - b.timestamp);
-  for (const event of sorted) {
-    if (event.type.endsWith(":start")) {
-      startMap.set(event.spanId, event);
+  const sorted = traces.toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  for (const trace of sorted) {
+    if (trace.kind.endsWith(".start")) {
+      startMap.set(trace.spanId ?? trace.id, trace);
       continue;
     }
 
-    if (event.type.endsWith(":end")) {
-      const startEvent = startMap.get(event.spanId);
-      if (!startEvent) continue;
+    if (trace.kind.endsWith(".end")) {
+      const key = trace.spanId ?? trace.id;
+      const startTrace = startMap.get(key);
+      if (!startTrace) continue;
 
-      const durationMs = "durationMs" in event && typeof event.durationMs === "number"
-        ? event.durationMs
-        : Math.max(0, event.timestamp - startEvent.timestamp);
+      const startTime = new Date(startTrace.timestamp).getTime();
+      const endTime = new Date(trace.timestamp).getTime();
+      const data = trace.data as Record<string, unknown> | null;
+      const durationMs = data && "durationMs" in data && typeof data.durationMs === "number"
+        ? data.durationMs
+        : Math.max(0, endTime - startTime);
 
       spans.push({
-        spanId: event.spanId,
-        label: buildSpanLabel(startEvent),
-        start: startEvent.timestamp,
-        end: event.timestamp,
+        spanId: key,
+        label: buildSpanLabel(startTrace),
+        start: startTime,
+        end: endTime,
         durationMs,
-        phase: getPipelineEventPhase(startEvent.type),
+        phase: getTracePhase(startTrace.kind),
       });
-      startMap.delete(event.spanId);
+      startMap.delete(key);
     }
 
-    if (event.type === "error") {
+    if (trace.kind === "error") {
+      const ts = new Date(trace.timestamp).getTime();
       spans.push({
-        spanId: event.spanId,
-        label: buildSpanLabel(event),
-        start: event.timestamp,
-        end: event.timestamp + 1,
+        spanId: trace.spanId ?? trace.id,
+        label: buildSpanLabel(trace),
+        start: ts,
+        end: ts + 1,
         durationMs: 0,
-        phase: getPipelineEventPhase(event.type),
+        phase: getTracePhase(trace.kind),
         isError: true,
       });
     }

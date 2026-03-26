@@ -25,37 +25,19 @@ export {
 } from "./dependencies";
 
 export type {
-  CacheHitEvent,
-  CacheMissEvent,
-  CacheStoreEvent,
-  FileFallbackEvent,
-  FileMatchedEvent,
-  FileSkippedEvent,
-  ParseEndEvent,
-  ParseStartEvent,
-  PipelineEndEvent,
   PipelineError,
-  PipelineErrorEvent,
   PipelineErrorScope,
-  PipelineEvent,
-  PipelineEventInput,
-  PipelineEventPhase,
-  PipelineEventType,
   PipelineGraph,
   PipelineGraphEdge,
   PipelineGraphEdgeType,
   PipelineGraphNode,
   PipelineGraphNodeType,
-  PipelineStartEvent,
-  ResolveEndEvent,
-  ResolveStartEvent,
-  VersionEndEvent,
-  VersionStartEvent,
+  PipelineTracePhase,
 } from "./events";
 
 export {
-  getPipelineEventPhase,
-  PIPELINE_EVENT_PHASES,
+  getTracePhase,
+  PIPELINE_TRACE_PHASES,
 } from "./events";
 
 export {

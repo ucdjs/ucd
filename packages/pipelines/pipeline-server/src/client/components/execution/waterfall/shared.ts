@@ -1,9 +1,9 @@
-import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
 import { formatDuration } from "#lib/format";
 
 export const timelineColumns = 100;
 
-export const phaseLabels: Record<PipelineEventPhase, string> = {
+export const phaseLabels: Record<PipelineTracePhase, string> = {
   Pipeline: "Pipeline",
   Version: "Version",
   Parse: "Parse",

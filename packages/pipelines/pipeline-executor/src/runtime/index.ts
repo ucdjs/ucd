@@ -1,4 +1,3 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type {
   PipelineLogEntry,
   PipelineLogLevel,
@@ -8,8 +7,9 @@ import type {
 export interface PipelineExecutionContext {
   executionId: string;
   workspaceId: string;
+  traceId: string;
   spanId?: string;
-  event?: PipelineEvent;
+  parentSpanId?: string;
 }
 
 export interface PipelineExecutionLogInput {
@@ -28,7 +28,6 @@ export interface PipelineExecutionRuntime {
     fn: () => T | Promise<T>,
   ) => T | Promise<T>;
   withSpan: <T>(spanId: string, fn: () => T | Promise<T>) => T | Promise<T>;
-  withEvent: <T>(event: PipelineEvent, fn: () => T | Promise<T>) => T | Promise<T>;
   runWithLogHandler: <T>(
     onLog: ((entry: PipelineLogEntry) => void | Promise<void>) | undefined,
     fn: () => T | Promise<T>,
@@ -47,7 +46,6 @@ export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
     getExecutionContext: () => undefined,
     runWithExecutionContext: (_context, fn) => fn(),
     withSpan: (_spanId, fn) => fn(),
-    withEvent: (_event, fn) => fn(),
     runWithLogHandler: (_onLog, fn) => fn(),
     emitLog: () => {},
     startOutputCapture: () => noopStop,

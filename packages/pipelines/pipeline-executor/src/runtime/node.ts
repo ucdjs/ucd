@@ -1,5 +1,4 @@
 import type { FileSystemBackend } from "@ucdjs/fs-backend";
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineLogEntry, PipelineLogLevel } from "../types";
 import type {
   PipelineExecutionContext,
@@ -84,16 +83,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       return fn();
     }
 
-    return this.#contextStorage.run({ ...current, spanId }, fn);
-  }
-
-  withEvent<T>(event: PipelineEvent, fn: () => T | Promise<T>): T | Promise<T> {
-    const current = this.#contextStorage.getStore();
-    if (!current) {
-      return fn();
-    }
-
-    return this.#contextStorage.run({ ...current, spanId: event.spanId, event }, fn);
+    return this.#contextStorage.run({ ...current, parentSpanId: current.spanId, spanId }, fn);
   }
 
   runWithLogHandler<T>(
@@ -119,7 +109,6 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       executionId: context.executionId,
       workspaceId: context.workspaceId,
       spanId: context.spanId,
-      event: context.event,
       level: entry.level,
       source: entry.source,
       message: entry.message,

@@ -1,5 +1,4 @@
 import type { DAG } from "./dag";
-import type { PipelineEvent } from "./events";
 import type { AnyPipelineRouteDefinition, InferRoutesOutput, PipelineRouteDefinition } from "./route";
 import type { InferSourceIds, PipelineSourceDefinition } from "./source";
 import type { ParseContext, ParsedRow, PipelineFilter, ResolveContext } from "./types";
@@ -85,13 +84,6 @@ export interface PipelineDefinitionSpec<
    * Fallback handler for files that don't match any route.
    */
   fallback?: TFallback;
-
-  /**
-   * Event handler for pipeline events.
-   * Note: This is stored but not invoked by the definition itself.
-   * The executor is responsible for calling this.
-   */
-  onEvent?: (event: PipelineEvent) => void | Promise<void>;
 }
 
 export type PipelineDefinitionOptions<
@@ -210,7 +202,6 @@ export function definePipeline<
     strict: options.strict ?? false,
     concurrency: options.concurrency ?? 4,
     fallback: options.fallback,
-    onEvent: options.onEvent,
     dag: dagResult.dag!,
     tags: options.tags ?? [],
   };
