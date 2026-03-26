@@ -1,7 +1,8 @@
 import type { ComponentProps, ReactNode } from "react";
 import { ExecutionTable } from "#components/execution/execution-table";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { renderComponent } from "../../route-test-utils";
 
 const execution = {
@@ -30,6 +31,12 @@ const execution = {
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("ExecutionTable", () => {
+  beforeEach(() => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({ workspaceId: "workspace-123", version: "16.0.0" })],
+      ["GET", "/api/sources", () => HttpResponse.json([])],
+    ]);
+  });
   it("renders the empty state messaging when there are no executions", async () => {
     await renderComponent(
       <ExecutionTable

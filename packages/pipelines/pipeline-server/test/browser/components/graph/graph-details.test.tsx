@@ -1,8 +1,9 @@
 import type { ExecutionGraphNodeView } from "#shared/schemas/graph";
 import { PipelineGraphDetails } from "#components/graph/graph-details";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderComponent } from "../../route-test-utils";
 
 const node: ExecutionGraphNodeView = {
@@ -43,7 +44,14 @@ const node: ExecutionGraphNodeView = {
   ],
 };
 
-describe("pipelineGraphDetails", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("PipelineGraphDetails", () => {
+  beforeEach(() => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({ workspaceId: "workspace-123", version: "16.0.0" })],
+      ["GET", "/api/sources", () => HttpResponse.json([])],
+    ]);
+  });
   it("does not render when no node is selected", async () => {
     await renderComponent(<PipelineGraphDetails node={null} onClose={() => {}} />);
 
