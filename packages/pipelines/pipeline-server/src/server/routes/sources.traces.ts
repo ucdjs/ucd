@@ -2,7 +2,7 @@ import type { ExecutionTracesResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-executor/traces";
-import { and, asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 
 export const sourcesTracesRouter: H3 = new H3();
@@ -79,8 +79,7 @@ sourcesTracesRouter.get(
       db
         .select()
         .from(schema.executionTraces)
-        .where(traceWhere)
-        .orderBy(asc(schema.executionTraces.timestamp), asc(schema.executionTraces.id)),
+        .where(and(traceWhere, inArray(schema.executionTraces.kind, ["output.resolved", "output.written"]))),
       db
         .select({ count: sql<number>`count(*)` })
         .from(schema.executionTraces)
