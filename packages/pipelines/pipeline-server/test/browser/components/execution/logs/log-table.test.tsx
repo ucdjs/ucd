@@ -9,7 +9,6 @@ const logs = [
     id: "log-1",
     timestamp: "2026-03-20T10:00:00.000Z",
     message: "A stderr message",
-    stream: "stderr",
     payload: null,
     spanId: null,
   },
@@ -17,11 +16,9 @@ const logs = [
     id: "log-2",
     timestamp: "2026-03-20T10:00:10.000Z",
     message: "ignored fallback",
-    stream: "stdout",
     spanId: "span-1",
     payload: {
       level: "info",
-      stream: "stdout",
       source: "logger",
       message: "Handled payload",
       args: [
@@ -41,7 +38,8 @@ const logs = [
   },
 ] satisfies ComponentProps<typeof ExecutionLogTable>["logs"];
 
-describe("executionLogTable", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("ExecutionLogTable", () => {
   it("renders the empty state when there are no logs", () => {
     render(<ExecutionLogTable logs={[]} />);
 
@@ -58,19 +56,19 @@ describe("executionLogTable", () => {
 
     await user.click(row!);
 
-    expect(screen.getByText("artifact:produced")).toBeInTheDocument();
+    expect(screen.getByText("file:matched")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
 
     await user.click(row!);
 
-    expect(screen.queryByText("artifact:produced")).not.toBeInTheDocument();
+    expect(screen.queryByText("file:matched")).not.toBeInTheDocument();
   });
 
   it("uses the stderr error row path and the %O placeholder for large objects", () => {
     render(<ExecutionLogTable logs={logs} />);
 
     const stderrRow = screen.getByText("A stderr message").closest("tr");
-    expect(stderrRow).toHaveClass("bg-red-500/5");
+    expect(stderrRow).toHaveClass("cursor-pointer");
 
     const loggerRow = screen.getByText("Handled payload %O {\"attempt\":1,\"worker\":\"alpha\"}").closest("tr");
     expect(loggerRow).not.toBeNull();

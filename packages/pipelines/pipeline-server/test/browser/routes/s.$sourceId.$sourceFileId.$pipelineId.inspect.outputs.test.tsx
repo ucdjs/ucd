@@ -79,8 +79,8 @@ function defaultRoutes() {
       depends: [],
       filter: "compile-filter",
       outputs: [
-        { dir: "dist", fileName: "compile.json" },
-        { dir: "reports", fileName: "compile.txt" },
+        { id: "compile-out-1", sink: "file", format: "json", dir: "dist", fileName: "compile.json" },
+        { id: "compile-out-2", sink: "file", format: "text", dir: "reports", fileName: "compile.txt" },
       ],
       transforms: [],
     },
@@ -89,7 +89,7 @@ function defaultRoutes() {
       cache: false,
       depends: [{ type: "route", routeId: "compile" }],
       filter: "publish-filter",
-      outputs: [{ dir: "release", fileName: "bundle.txt" }],
+      outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "release", fileName: "bundle.txt" }],
       transforms: [],
     },
   ];

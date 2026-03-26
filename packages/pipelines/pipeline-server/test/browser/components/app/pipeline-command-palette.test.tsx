@@ -133,7 +133,7 @@ describe("pipeline command palette", () => {
 
     localStorage.setItem("ucd-versions-local:alpha:main-pipeline", JSON.stringify(["15.1.0"]));
 
-    const { renderFileRoute } = await import("../route-test-utils");
+    const { renderFileRoute } = await import("../../route-test-utils");
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
 
@@ -190,7 +190,7 @@ describe("pipeline command palette", () => {
           errors: [],
         },
       ])],
-      ["GET", "/api/overview", () => HttpResponse.json({
+      ["GET", "/api/sources/local/overview", () => HttpResponse.json({
         activity: [],
         summary: {
           total: 0,
@@ -229,7 +229,7 @@ describe("pipeline command palette", () => {
     ]);
 
     const user = userEvent.setup();
-    const { renderFileRoute } = await import("../route-test-utils");
+    const { renderFileRoute } = await import("../../route-test-utils");
 
     await renderFileRoute(<div />, { initialLocation: "/" });
 

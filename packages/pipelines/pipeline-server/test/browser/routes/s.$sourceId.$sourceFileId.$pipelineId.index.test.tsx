@@ -59,7 +59,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
               cache: true,
               depends: [],
               filter: "compile-filter",
-              outputs: [{ dir: "dist", fileName: "compile.json" }],
+              outputs: [{ id: "compile-out", sink: "file", format: "json", dir: "dist", fileName: "compile.json" }],
               transforms: ["normalize", "dedupe"],
             },
             {
@@ -67,7 +67,7 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId", () => {
               cache: false,
               depends: [{ type: "route", routeId: "compile" }],
               filter: "publish-filter",
-              outputs: [{ dir: "dist", fileName: "bundle.txt" }],
+              outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }],
               transforms: ["ship"],
             },
           ],
