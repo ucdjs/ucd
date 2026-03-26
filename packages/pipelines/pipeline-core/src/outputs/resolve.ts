@@ -12,6 +12,8 @@ export const DEFAULT_FALLBACK_OUTPUTS: readonly NormalizedRouteOutputDefinition[
 
 const UNDERSCORE_RE = /_/g;
 const NON_WORD_RE = /[^a-z0-9]+/g;
+const KEBAB_LEADING_DASHES_RE = /^-+/;
+const KEBAB_TRAILING_DASHES_RE = /-+$/;
 const LEADING_SLASHES_RE = /^\/+/;
 const TEMPLATE_TOKEN_RE = /\{([^{}]+)\}/g;
 
@@ -117,14 +119,10 @@ function resolveTemplateValue(key: string, ctx: RouteOutputPathContext): string 
 }
 
 export function propertyToKebab(value: string): string {
-  const kebab = value
+  return value
     .replace(UNDERSCORE_RE, "-")
     .toLowerCase()
-    .replace(NON_WORD_RE, "-");
-
-  let start = 0;
-  while (start < kebab.length && kebab[start] === "-") start++;
-  let end = kebab.length;
-  while (end > start && kebab[end - 1] === "-") end--;
-  return kebab.slice(start, end);
+    .replace(NON_WORD_RE, "-")
+    .replace(KEBAB_LEADING_DASHES_RE, "")
+    .replace(KEBAB_TRAILING_DASHES_RE, "");
 }
