@@ -74,4 +74,30 @@ describe("buildExecutionGraphFromTraces", () => {
       }),
     ]));
   });
+
+  it("creates an output node for a produced output with no resolved sink", () => {
+    const traces: PipelineTraceRecord[] = [
+      {
+        id: "trace-1",
+        kind: "output.produced",
+        pipelineId: "demo",
+        timestamp: Date.now(),
+        version: "1.0.0",
+        routeId: "colors",
+        outputIndex: 0,
+        property: "Colors",
+      },
+    ];
+
+    const graph = buildExecutionGraphFromTraces(traces);
+    const outputNodes = graph.nodes.filter((node) => node.type === "output");
+
+    expect(outputNodes).toHaveLength(1);
+    expect(outputNodes[0]).toEqual(expect.objectContaining({
+      type: "output",
+      outputIndex: 0,
+      property: "Colors",
+    }));
+    expect(graph.edges.some((e) => e.type === "resolved")).toBe(true);
+  });
 });

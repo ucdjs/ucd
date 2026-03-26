@@ -114,6 +114,9 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
       success: true,
       executionId: expect.any(String),
     }));
+
+    const [workspace] = await db.select().from(schema.workspaces).where(eq(schema.workspaces.id, "test")).limit(1);
+    expect(workspace).toBeDefined();
   });
 
   it("still executes when the trace table is unavailable", async () => {

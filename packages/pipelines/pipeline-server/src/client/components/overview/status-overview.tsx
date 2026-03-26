@@ -28,9 +28,9 @@ export function StatusOverview({
         {items.map((state) => {
           const Icon = state.icon;
           return (
-            <div key={state.key} className="flex items-center gap-1.5">
-              <span className={cn("h-2 w-2 rounded-full", state.markerClassName)} />
-              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+            <div key={state.key} className="flex items-center gap-1.5" aria-label={`${state.label}: ${getStateCount(summaryStates, state)}`}>
+              <span className={cn("h-2 w-2 rounded-full", state.markerClassName)} aria-hidden="true" />
+              <Icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <span className="text-sm font-medium tabular-nums">{getStateCount(summaryStates, state)}</span>
             </div>
           );
