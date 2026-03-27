@@ -73,7 +73,7 @@ env:
 jobs:
   get-apps:
     name: get deployable apps
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: inputs.repository-condition
     outputs:
       apps: ${{ steps.filter-apps.outputs.apps }}
@@ -122,7 +122,7 @@ jobs:
 
   deploy:
     name: deploy ${{ matrix.app }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: get-apps
     if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
     environment: apps-deploy
