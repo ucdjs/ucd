@@ -211,4 +211,3 @@ export interface PropertyJson {
    */
   meta?: Record<string, unknown>;
 }
-
