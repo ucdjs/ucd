@@ -8,9 +8,22 @@ import type {
   SourceBackend,
 } from "../src";
 import type { AnyPipelineTransformDefinition } from "../src/transform";
-import type { ParserFn, PropertyJson } from "../src/types";
+import type { ParserFn, PipelineLogger, PropertyJson } from "../src/types";
 import { vi } from "vitest";
 import { always, definePipelineRoute } from "../src";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
+
+type DeepPartial<T>
+  = T extends (...args: any[]) => any ? T
+    : T extends readonly (infer U)[] ? readonly DeepPartial<U>[]
+      : T extends object ? { [K in keyof T]?: DeepPartial<T[K]> }
+        : T;
 
 export function createMockBackend(files: FileContext[]): SourceBackend {
   return {
@@ -79,7 +92,24 @@ export function createMockRoute<
     resolver,
     depends,
     transforms,
-    out,
+    outputs: out ? [out] : undefined,
     cache,
   });
+}
+
+export function createMockFilterContext(
+  overrides: DeepPartial<Parameters<PipelineFilter>[0]> = {},
+): Parameters<PipelineFilter>[0] {
+  const { file, logger, row, source, ...rest } = overrides;
+
+  return {
+    logger: {
+      ...noopLogger,
+      ...logger,
+    },
+    row: row ? { ...row } : undefined,
+    source: source ? { id: source.id ?? "test-source" } : undefined,
+    file: createFile(file as Partial<FileContext>),
+    ...rest,
+  };
 }
