@@ -1,4 +1,4 @@
-import type { ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolvedEntry, ResolveContext } from "@ucdjs/pipelines-core";
 
 const TXT_EXTENSION_RE = /\.txt$/;
 
@@ -39,7 +39,7 @@ function rowToResolvedEntry(row: ParsedRow): ResolvedEntry | null {
 
 export function createPropertyJsonResolver(options: PropertyJsonResolverOptions = {}) {
   return async function propertyJsonResolver(
-    ctx: RouteResolveContext,
+    ctx: ResolveContext,
     rows: AsyncIterable<ParsedRow>,
   ): Promise<PropertyJson[]> {
     const entries: ResolvedEntry[] = [];

@@ -1,6 +1,6 @@
 import type {
   InferRoute,
-  RouteResolveContext,
+  ResolveContext,
 } from "../src/route";
 import type { FileContext, ParsedRow, PipelineLogger, PropertyJson } from "../src/types";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
@@ -31,7 +31,7 @@ async function* mockParser(): AsyncIterable<ParsedRow> {
   yield { sourceFile: "test.txt", kind: "point", codePoint: "0042", value: "B" };
 }
 
-function createMockResolveContext(): RouteResolveContext {
+function createMockResolveContext(): ResolveContext {
   return {
     version: "16.0.0",
     file: createFileContext(),
@@ -263,7 +263,7 @@ describe("route context methods", () => {
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
       getRouteData,
     };
@@ -287,7 +287,7 @@ describe("route context methods", () => {
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
       normalizeEntries,
     };
@@ -310,7 +310,7 @@ describe("route context methods", () => {
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
       now,
     };

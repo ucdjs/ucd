@@ -1,4 +1,4 @@
-import type { PipelineDependency } from "./dependencies";
+import type { ExtractRouteDependencies, PipelineDependency } from "./dependencies";
 import type { RouteOutputDefinition } from "./output";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
@@ -11,20 +11,31 @@ import type {
   ResolvedEntry,
 } from "./types";
 
-export interface RouteResolveContext {
+export interface ResolveContext<
+  TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
+> {
   version: string;
   file: FileContext;
   logger: PipelineLogger;
-  getRouteData: (routeId: string) => readonly unknown[];
+  getRouteData: <T = unknown>(routeId: ExtractRouteDependencies<TDepends>) => readonly T[];
   normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
   now: () => string;
 }
 
+export type ResolverFn<
+  TOutput = PropertyJson[],
+  TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
+> = (
+  ctx: ResolveContext<TDepends>,
+  rows: AsyncIterable<ParsedRow>,
+) => Promise<TOutput>;
+
 type PipelineRouteResolver<
+  TDepends extends readonly PipelineDependency[],
   TTransforms extends readonly AnyPipelineTransformDefinition[],
   TOutput,
 > = (
-  ctx: RouteResolveContext,
+  ctx: ResolveContext<TDepends>,
   rows: AsyncIterable<TTransforms extends readonly [] ? ParsedRow : ChainTransforms<ParsedRow, TTransforms>>,
 ) => Promise<TOutput>;
 
@@ -39,7 +50,7 @@ export interface PipelineRouteDefinition<
   depends?: TDepends;
   parser: ParserFn;
   transforms?: TTransforms;
-  resolver: PipelineRouteResolver<TTransforms, TOutput>;
+  resolver: PipelineRouteResolver<TDepends, TTransforms, TOutput>;
   outputs?: RouteOutputDefinition[];
   cache?: boolean;
 }
