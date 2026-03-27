@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import type { ReactNode } from "react";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { act, waitFor, within } from "@testing-library/react";

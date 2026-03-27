@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import { SourceSwitcher } from "#components/app/source-switcher";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
