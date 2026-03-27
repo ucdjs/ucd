@@ -49,12 +49,12 @@ export type {
   RouteOutputDefinition,
   RouteOutputPathContext,
   RouteOutputPathResolver,
-} from "./output";
+} from "./outputs/types";
 
 export {
   filesystemSink,
   normalizeRouteOutputs,
-} from "./output";
+} from "./outputs/types";
 
 export type {
   AnyPipelineDefinition,

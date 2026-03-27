@@ -18,6 +18,9 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "imports": {
+    "#builtin-transforms/*": "./src/transforms/*.ts"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./outputs": "./dist/outputs/index.mjs",
