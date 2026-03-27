@@ -1,6 +1,5 @@
-import type { FileContext } from "@ucdjs/pipelines-core";
+import type { FileContext, PipelineTraceRecord } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
-import type { PipelineTraceRecord } from "../src/run/traces";
 import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";

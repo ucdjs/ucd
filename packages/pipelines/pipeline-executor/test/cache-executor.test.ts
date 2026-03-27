@@ -1,4 +1,4 @@
-import type { PipelineTraceRecord } from "../src/run/traces";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core";
 import { definePipeline } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";

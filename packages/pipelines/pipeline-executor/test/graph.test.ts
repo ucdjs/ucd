@@ -1,4 +1,4 @@
-import type { PipelineTraceRecord } from "../src/run/traces";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { describe, expect, it } from "vitest";
 import { buildExecutionGraphFromTraces } from "../src/run/graph";
 
@@ -14,6 +14,7 @@ describe("buildExecutionGraphFromTraces", () => {
         routeId: "colors",
         outputIndex: 0,
         property: "Colors",
+        traceId: "trace-1",
       },
       {
         id: "trace-2",
@@ -35,6 +36,7 @@ describe("buildExecutionGraphFromTraces", () => {
         sink: "memory",
         format: "json",
         locator: "memory://preview/1.0.0/colors.json",
+        traceId: "trace-2",
       },
       {
         id: "trace-3",
@@ -56,6 +58,7 @@ describe("buildExecutionGraphFromTraces", () => {
         sink: "filesystem",
         format: "json",
         locator: "/tmp/archive/colors.json",
+        traceId: "trace-3",
       },
     ];
 
@@ -86,6 +89,7 @@ describe("buildExecutionGraphFromTraces", () => {
         routeId: "colors",
         outputIndex: 0,
         property: "Colors",
+        traceId: "trace-1",
       },
     ];
 
