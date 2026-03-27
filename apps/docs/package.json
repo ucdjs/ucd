@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "fumadocs-mdx && eslint .",
-    "typecheck": "fumadocs-mdx && tsc --noEmit"
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
+    "clean": "git clean -xdf node_modules .wrangler"
   },
   "dependencies": {
     "@tailwindcss/vite": "catalog:build",

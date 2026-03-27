@@ -14,7 +14,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "clean": "git clean -xdf node_modules .wrangler"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
