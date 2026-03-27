@@ -42,7 +42,6 @@ function useSyncExternalStoreClient<TSnapshot>(
   const inst = state.inst;
 
   React.useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
     inst.value = value;
     inst.getSnapshot = getSnapshot;
     if (checkIfSnapshotChanged(inst)) {
@@ -85,11 +84,11 @@ export function useSyncExternalStore<TSnapshot>(
   getServerSnapshot?: () => TSnapshot,
 ): TSnapshot {
   if (typeof React.useSyncExternalStore === "function") {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // eslint-disable-next-line react/rules-of-hooks
     return React.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   }
 
-  // eslint-disable-next-line react-hooks/rules-of-hooks
+  // eslint-disable-next-line react/rules-of-hooks
   return useSyncExternalStoreShim(subscribe, getSnapshot);
 }
 
@@ -119,7 +118,6 @@ export function useSyncExternalStoreWithSelector<TSnapshot, TSelection>(
 
     const memoizedSelector = (nextSnapshot: TSnapshot) => {
       if (!hasMemo) {
-        // eslint-disable-next-line react-hooks/immutability
         hasMemo = true;
         memoizedSnapshot = nextSnapshot;
         const nextSelection = selector(nextSnapshot);
