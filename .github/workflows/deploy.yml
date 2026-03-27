@@ -35,7 +35,7 @@ env:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: github.repository == 'ucdjs/ucd' && github.event_name == 'push'
     outputs:
       has-changes: ${{ steps.detect.outputs.has-changes }}
@@ -99,7 +99,7 @@ jobs:
           fi
 
   production-approval:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [detect-changes]
     timeout-minutes: 10
     if: |
