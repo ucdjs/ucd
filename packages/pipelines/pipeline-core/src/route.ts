@@ -1,5 +1,5 @@
 import type { ExtractRouteDependencies, PipelineDependency } from "./dependencies";
-import type { RouteOutputDefinition } from "./output";
+import type { RouteOutputDefinition } from "./outputs/types";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
   FileContext,
