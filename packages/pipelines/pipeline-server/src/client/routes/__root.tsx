@@ -3,7 +3,7 @@ import { PipelineSidebar } from "#components/app/pipeline-sidebar";
 import { configQueryOptions } from "#queries/config";
 import { sourcesQueryOptions } from "#queries/sources";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
+import { hotkeysDevtoolsPlugin } from "@tanstack/react-hotkeys-devtools";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
@@ -83,10 +83,7 @@ function RootLayout() {
             name: "Tanstack Query",
             render: <ReactQueryDevtoolsPanel />,
           },
-          {
-            name: "Tanstack Hotkeys",
-            render: <HotkeysDevtoolsPanel />,
-          },
+          hotkeysDevtoolsPlugin(),
         ]}
       />
     </>
