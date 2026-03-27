@@ -22,6 +22,7 @@
     ".": "./dist/index.mjs",
     "./outputs": "./dist/outputs/index.mjs",
     "./sources": "./dist/sources/index.mjs",
+    "./tracing": "./dist/tracing/index.mjs",
     "./transforms": "./dist/transforms/index.mjs",
     "./package.json": "./package.json"
   },

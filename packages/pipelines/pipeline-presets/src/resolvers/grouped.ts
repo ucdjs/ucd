@@ -1,8 +1,8 @@
-import type { ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolvedEntry, ResolveContext } from "@ucdjs/pipelines-core";
 
 export interface GroupedResolverOptions {
   groupBy: "property" | "value" | ((row: ParsedRow) => string);
-  propertyNameFn?: (groupKey: string, ctx: RouteResolveContext) => string;
+  propertyNameFn?: (groupKey: string, ctx: ResolveContext) => string;
 }
 
 function rowToResolvedEntry(row: ParsedRow): ResolvedEntry | null {
@@ -39,7 +39,7 @@ export function createGroupedResolver(options: GroupedResolverOptions) {
         };
 
   return async function groupedResolver(
-    ctx: RouteResolveContext,
+    ctx: ResolveContext,
     rows: AsyncIterable<ParsedRow>,
   ): Promise<PropertyJson[]> {
     const groups = new Map<string, ResolvedEntry[]>();
