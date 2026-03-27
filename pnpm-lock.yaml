@@ -1716,6 +1716,15 @@ importers:
       '@rollup/plugin-babel':
         specifier: catalog:build
         version: 7.0.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.57.1)
+      '@testing-library/jest-dom':
+        specifier: catalog:test
+        version: 6.9.1
+      '@testing-library/react':
+        specifier: catalog:test
+        version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@19.2.3(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@testing-library/user-event':
+        specifier: catalog:test
+        version: 14.6.1(@testing-library/dom@10.4.1)
       '@types/react':
         specifier: catalog:types
         version: 19.2.14
@@ -1743,6 +1752,9 @@ importers:
       eslint-plugin-react-refresh:
         specifier: catalog:lint
         version: 0.5.2(eslint@10.0.3(jiti@2.6.1))
+      jsdom:
+        specifier: catalog:test
+        version: 29.0.0
       publint:
         specifier: catalog:build
         version: 0.3.18
@@ -1752,6 +1764,9 @@ importers:
       typescript:
         specifier: catalog:build
         version: 5.9.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.0(@opentelemetry/api@1.9.0)(@types/node@25.5.0)(@vitest/ui@4.1.0)(jsdom@29.0.0)(msw@2.12.10(@types/node@25.5.0)(typescript@5.9.3))(vite@8.0.0(@types/node@25.5.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
 
   packages/test-utils:
     dependencies:
@@ -8129,10 +8144,6 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lru-cache@11.2.5:
-    resolution: {integrity: sha512-vFrFJkWtJvJnD5hg+hJvVE8Lh/TcMzKnTgCWmtBipwI5yLX/iX+5UB2tfuyODF5E7k9xEzMdYgGqaSb1c0c5Yw==}
-    engines: {node: 20 || >=22}
-
   lru-cache@11.2.7:
     resolution: {integrity: sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==}
     engines: {node: 20 || >=22}
@@ -9839,10 +9850,6 @@ packages:
     resolution: {integrity: sha512-y+8YjDFzWdQlSE9N5nzKMT3g4a5UBX1HKowfdXh0uvAnTaqqwqB92Jt4UXBAeKekDs5IaDKyJFR4X1gYVCgXcw==}
     engines: {node: '>=20.18.1'}
 
-  undici@7.21.0:
-    resolution: {integrity: sha512-Hn2tCQpoDt1wv23a68Ctc8Cr/BHpUSfaPYrkajTXOS9IKpxVRx/X5m1K2YkbK2ipgZgxXSgsUinl3x+2YdSSfg==}
-    engines: {node: '>=20.18.1'}
-
   undici@7.24.4:
     resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
     engines: {node: '>=20.18.1'}
@@ -10571,7 +10578,7 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.6.0
-      tinyexec: 1.0.2
+      tinyexec: 1.0.4
 
   '@asamuzakjp/css-color@5.0.1':
     dependencies:
@@ -14767,7 +14774,7 @@ snapshots:
       parse5: 7.3.0
       parse5-htmlparser2-tree-adapter: 7.1.0
       parse5-parser-stream: 7.1.2
-      undici: 7.21.0
+      undici: 7.24.4
       whatwg-mimetype: 4.0.0
 
   chevrotain-allstar@0.3.1(chevrotain@11.1.2):
@@ -17149,8 +17156,6 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lru-cache@11.2.5: {}
-
   lru-cache@11.2.7: {}
 
   lru-cache@5.1.1:
@@ -18174,7 +18179,7 @@ snapshots:
 
   path-scurry@2.0.1:
     dependencies:
-      lru-cache: 11.2.5
+      lru-cache: 11.2.7
       minipass: 7.1.2
 
   path-to-regexp@6.3.0: {}
@@ -19428,8 +19433,6 @@ snapshots:
 
   undici@7.18.2: {}
 
-  undici@7.21.0: {}
-
   undici@7.24.4: {}
 
   unenv@2.0.0-rc.24:
@@ -19700,7 +19703,7 @@ snapshots:
       picomatch: 4.0.3
       std-env: 4.0.0-rc.1
       tinybench: 2.9.0
-      tinyexec: 1.0.2
+      tinyexec: 1.0.4
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
       vite: 8.0.0(@types/node@22.19.15)(@vitejs/devtools@0.1.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
@@ -19730,7 +19733,7 @@ snapshots:
       picomatch: 4.0.3
       std-env: 4.0.0-rc.1
       tinybench: 2.9.0
-      tinyexec: 1.0.2
+      tinyexec: 1.0.4
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
       vite: 8.0.0(@types/node@25.5.0)(@vitejs/devtools@0.1.0)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
