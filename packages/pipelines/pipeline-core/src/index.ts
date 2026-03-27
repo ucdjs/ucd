@@ -106,52 +106,6 @@ export {
 } from "./source";
 
 export type {
-  PipelineError,
-  PipelineErrorScope,
-  PipelineGraph,
-  PipelineGraphEdge,
-  PipelineGraphEdgeType,
-  PipelineGraphNode,
-  PipelineGraphNodeType,
-  PipelineTracePhase,
-} from "./tracing";
-
-export {
-  getTracePhase,
-  PIPELINE_TRACE_PHASES,
-} from "./tracing";
-
-export type {
-  CacheTraceRecord,
-  ErrorTraceRecord,
-  FileFallbackTraceRecord,
-  FileMatchedTraceRecord,
-  FileSkippedTraceRecord,
-  OutputProducedTraceRecord,
-  OutputResolvedTraceRecord,
-  OutputWrittenTraceRecord,
-  ParseEndTraceRecord,
-  ParseStartTraceRecord,
-  PipelineEndTraceRecord,
-  PipelineOutputManifestEntry,
-  PipelineStartTraceRecord,
-  PipelineTraceEmitInput,
-  PipelineTraceInput,
-  PipelineTraceKind,
-  PipelineTraceRecord,
-  PipelineTraceRecordByKind,
-  ResolveEndTraceRecord,
-  ResolveStartTraceRecord,
-  SourceProvidedTraceRecord,
-  VersionEndTraceRecord,
-  VersionStartTraceRecord,
-} from "./tracing";
-
-export {
-  buildOutputManifestFromTraces,
-} from "./tracing";
-
-export type {
   ChainTransforms,
   InferTransformInput,
   InferTransformOutput,
