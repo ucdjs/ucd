@@ -1,6 +1,6 @@
 import type { ExecutionTraceItem } from "#shared/schemas/execution";
-import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
-import { getTracePhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core/tracing";
+import { getTracePhase } from "@ucdjs/pipelines-core/tracing";
 
 export interface ExecutionSpan {
   spanId: string;

@@ -1,7 +1,7 @@
-import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core/tracing";
 import type { ExecutionSpan } from "../../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { PIPELINE_TRACE_PHASES } from "@ucdjs/pipelines-core";
+import { PIPELINE_TRACE_PHASES } from "@ucdjs/pipelines-core/tracing";
 import { phaseLabels } from "./shared";
 
 export interface ExecutionWaterfallToolbarProps {
