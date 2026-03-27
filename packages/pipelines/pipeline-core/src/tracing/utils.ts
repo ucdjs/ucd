@@ -1,4 +1,4 @@
-import type { PipelineOutputManifestEntry, PipelineTraceRecord } from "./types";
+import type { PipelineOutputManifestEntry, PipelineTraceKind, PipelineTraceRecord } from "./types";
 
 export function buildOutputManifestFromTraces(
   traces: readonly PipelineTraceRecord[],
@@ -55,4 +55,29 @@ function getOutputManifestKey(
   locator: string,
 ): string {
   return `${pipelineId}:${version}:${routeId}:${outputIndex}:${outputId}:${locator}`;
+}
+
+export const PIPELINE_TRACE_PHASES = [
+  "Pipeline",
+  "Version",
+  "Parse",
+  "Resolve",
+  "File",
+  "Cache",
+  "Error",
+  "Other",
+] as const;
+
+export type PipelineTracePhase = typeof PIPELINE_TRACE_PHASES[number];
+
+export function getTracePhase(kind: PipelineTraceKind): PipelineTracePhase {
+  if (kind === "error") return "Error";
+  if (kind.startsWith("pipeline.")) return "Pipeline";
+  if (kind.startsWith("version.")) return "Version";
+  if (kind.startsWith("parse.")) return "Parse";
+  if (kind.startsWith("resolve.")) return "Resolve";
+  if (kind.startsWith("file.") || kind.startsWith("source.")) return "File";
+  if (kind.startsWith("cache.")) return "Cache";
+  if (kind.startsWith("output.")) return "Other";
+  return "Other";
 }

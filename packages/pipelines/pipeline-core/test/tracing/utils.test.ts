@@ -1,8 +1,22 @@
-import type { PipelineTraceRecord } from "@ucdjs/pipelines-core";
-import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core";
+import type { PipelineTraceRecord } from "../../src/tracing/types";
 import { describe, expect, it } from "vitest";
+import { buildOutputManifestFromTraces, getTracePhase } from "../../src/tracing/utils";
 
-describe("trace projections", () => {
+describe("getTracePhase", () => {
+  it.each([
+    ["pipeline.start", "Pipeline"],
+    ["version.start", "Version"],
+    ["parse.start", "Parse"],
+    ["resolve.start", "Resolve"],
+    ["file.matched", "File"],
+    ["cache.hit", "Cache"],
+    ["error", "Error"],
+  ])("maps trace kind '%s' to phase '%s'", (kind, expectedPhase) => {
+    expect(getTracePhase(kind)).toBe(expectedPhase);
+  });
+});
+
+describe("buildOutputManifestFromTraces", () => {
   it("upgrades resolved outputs to failed or written manifest entries by locator key", () => {
     const traces: PipelineTraceRecord[] = [
       {
