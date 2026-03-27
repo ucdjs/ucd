@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import type { ComponentProps, ReactNode } from "react";
 import { ExecutionTable } from "#components/execution/execution-table";
 import { render, screen } from "@testing-library/react";

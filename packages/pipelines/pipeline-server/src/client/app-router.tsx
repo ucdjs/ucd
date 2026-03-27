@@ -36,6 +36,7 @@ export function createAppRouter({
     },
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    // eslint-disable-next-line react/component-hook-factories
     Wrap(props) {
       return (
         <HotkeysProvider>
