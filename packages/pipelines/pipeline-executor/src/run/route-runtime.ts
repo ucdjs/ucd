@@ -48,11 +48,11 @@ export function createResolveContext(
     version,
     file,
     logger,
-    getRouteData: (targetRouteId: string) => {
+    getRouteData: <T = unknown>(targetRouteId: string) => {
       if (!(targetRouteId in routeDataMap)) {
         throw new Error(`Route data for "${targetRouteId}" not found. Make sure route "${targetRouteId}" runs before route "${routeId}" by declaring it as a dependency.`);
       }
-      return Object.freeze(routeDataMap[targetRouteId]!);
+      return Object.freeze(routeDataMap[targetRouteId]!) as readonly T[];
     },
     normalizeEntries: (entries) => {
       return entries.sort((a, b) => {

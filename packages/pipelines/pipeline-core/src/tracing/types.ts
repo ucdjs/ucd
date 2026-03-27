@@ -20,7 +20,8 @@ export type PipelineTraceKind
     | "output.produced"
     | "output.resolved"
     | "output.written"
-    | "error";
+    | "error"
+    | (string & {});
 
 interface PipelineTraceBase<TKind extends PipelineTraceKind> {
   id: string;
