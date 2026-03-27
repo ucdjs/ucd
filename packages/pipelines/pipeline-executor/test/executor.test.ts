@@ -1,4 +1,5 @@
-import type { FileContext, PipelineTraceRecord } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipelines-core";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
 import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";

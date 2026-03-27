@@ -1,9 +1,11 @@
 import type {
   FileContext,
+} from "@ucdjs/pipelines-core";
+import type {
   PipelineGraph,
   PipelineGraphEdge,
   PipelineGraphNode,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipelines-core/tracing";
 
 export class PipelineGraphBuilder {
   #nodes: Map<string, PipelineGraphNode> = new Map();

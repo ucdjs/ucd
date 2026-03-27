@@ -1,4 +1,5 @@
-import type { AnyPipelineDefinition, PipelineError, PipelineGraph, PipelineLogLevel, PipelineOutputManifestEntry, PipelineTraceRecord } from "@ucdjs/pipelines-core";
+import type { AnyPipelineDefinition, PipelineLogLevel } from "@ucdjs/pipelines-core";
+import type { PipelineError, PipelineGraph, PipelineOutputManifestEntry, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import type { CacheStore } from "./cache";
 import type { PipelineExecutionRuntime } from "./runtime";
 

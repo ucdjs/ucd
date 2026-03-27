@@ -3,16 +3,18 @@ import type {
   AnyPipelineRouteDefinition,
   FileContext,
   NormalizedRouteOutputDefinition,
-  PipelineError,
   PipelineLogger,
+} from "@ucdjs/pipelines-core";
+import type {
+  PipelineError,
   PipelineOutputManifestEntry,
   PipelineTraceEmitInput,
   PipelineTraceRecord,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipelines-core/tracing";
 import type { CacheStore } from "./cache";
 import type { TraceEmitter } from "./internal/trace-emitter";
-import type { SourceAdapter } from "./run/source-files";
 
+import type { SourceAdapter } from "./run/source-files";
 import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   ExecutionStatus,
@@ -20,7 +22,7 @@ import type {
   PipelineExecutorRunOptions,
   PipelineSummary,
 } from "./types";
-import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core";
+import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
 import { createPipelineLogger } from "./internal/logger";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
 import { buildExecutionGraphFromTraces } from "./run/graph";
