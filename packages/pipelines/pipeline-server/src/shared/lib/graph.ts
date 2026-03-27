@@ -9,7 +9,7 @@ import type {
   PipelineGraphEdge,
   PipelineGraphNode,
   PipelineGraphNodeType,
-} from "@ucdjs/pipelines-core/tracing";
+} from "@ucdjs/pipelines-core";
 
 export type PipelineFlowNodeType = `pipeline-${PipelineGraphNodeType}`;
 
