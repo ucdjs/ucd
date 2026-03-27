@@ -24,22 +24,6 @@ export {
   parseDependency,
 } from "./dependencies";
 
-export type {
-  PipelineError,
-  PipelineErrorScope,
-  PipelineGraph,
-  PipelineGraphEdge,
-  PipelineGraphEdgeType,
-  PipelineGraphNode,
-  PipelineGraphNodeType,
-  PipelineTracePhase,
-} from "./events";
-
-export {
-  getTracePhase,
-  PIPELINE_TRACE_PHASES,
-} from "./events";
-
 export {
   always,
   and,
@@ -95,7 +79,8 @@ export type {
   InferRoute,
   InferRoutesOutput,
   PipelineRouteDefinition,
-  RouteResolveContext,
+  ResolveContext,
+  ResolverFn,
 } from "./route";
 
 export { definePipelineRoute } from "./route";
@@ -121,6 +106,52 @@ export {
 } from "./source";
 
 export type {
+  PipelineError,
+  PipelineErrorScope,
+  PipelineGraph,
+  PipelineGraphEdge,
+  PipelineGraphEdgeType,
+  PipelineGraphNode,
+  PipelineGraphNodeType,
+  PipelineTracePhase,
+} from "./tracing";
+
+export {
+  getTracePhase,
+  PIPELINE_TRACE_PHASES,
+} from "./tracing";
+
+export type {
+  CacheTraceRecord,
+  ErrorTraceRecord,
+  FileFallbackTraceRecord,
+  FileMatchedTraceRecord,
+  FileSkippedTraceRecord,
+  OutputProducedTraceRecord,
+  OutputResolvedTraceRecord,
+  OutputWrittenTraceRecord,
+  ParseEndTraceRecord,
+  ParseStartTraceRecord,
+  PipelineEndTraceRecord,
+  PipelineOutputManifestEntry,
+  PipelineStartTraceRecord,
+  PipelineTraceEmitInput,
+  PipelineTraceInput,
+  PipelineTraceKind,
+  PipelineTraceRecord,
+  PipelineTraceRecordByKind,
+  ResolveEndTraceRecord,
+  ResolveStartTraceRecord,
+  SourceProvidedTraceRecord,
+  VersionEndTraceRecord,
+  VersionStartTraceRecord,
+} from "./tracing";
+
+export {
+  buildOutputManifestFromTraces,
+} from "./tracing";
+
+export type {
   ChainTransforms,
   InferTransformInput,
   InferTransformOutput,
@@ -144,9 +175,7 @@ export type {
   PipelineLogger,
   PipelineLogLevel,
   PropertyJson,
-  ResolveContext,
   ResolvedEntry,
-  ResolverFn,
   RowContext,
 } from "./types";
 
