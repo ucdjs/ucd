@@ -495,7 +495,7 @@ describe("fallback route", () => {
       raw: string;
     }
 
-    const fallback: FallbackRouteDefinition<Record<string, never>, CustomOutput> = {
+    const fallback: FallbackRouteDefinition<CustomOutput> = {
       parser: mockParser,
       resolver: async () => ({ raw: "data" }),
     };

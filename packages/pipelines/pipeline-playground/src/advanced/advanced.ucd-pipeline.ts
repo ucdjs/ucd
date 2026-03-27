@@ -63,35 +63,4 @@ export const playgroundAdvancedPipeline = definePipeline({
       }];
     },
   },
-  onEvent: (event) => {
-    switch (event.type) {
-      case "pipeline:start":
-        // eslint-disable-next-line no-console
-        console.log(`[Pipeline] Started: ${event.id}`);
-        break;
-      case "pipeline:end":
-        // eslint-disable-next-line no-console
-        console.log(`[Pipeline] Completed in ${event.durationMs}ms`);
-        break;
-      case "version:start":
-        // eslint-disable-next-line no-console
-        console.log(`[Version] Processing ${event.version}`);
-        break;
-      case "version:end":
-        // eslint-disable-next-line no-console
-        console.log(`[Version] ${event.version} completed in ${event.durationMs}ms`);
-        break;
-      case "file:matched":
-        // eslint-disable-next-line no-console
-        console.log(`[File] Matched ${event.file.path} -> ${event.routeId}`);
-        break;
-      case "file:skipped":
-        // eslint-disable-next-line no-console
-        console.log(`[File] Skipped ${event.file.path}: ${event.reason}`);
-        break;
-      case "error":
-        console.error(`[Error] ${event.error.scope}: ${event.error.message}`);
-        break;
-    }
-  },
 });

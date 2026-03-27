@@ -83,21 +83,4 @@ export const withLoggingPipeline = definePipeline({
   versions: ["1.0.0"],
   inputs: [planetsSource],
   routes: [planetsRoute],
-  onEvent: (event) => {
-    if (event.type === "pipeline:start") {
-      // eslint-disable-next-line no-console
-      console.log(`[onEvent] Pipeline "${event.id}" started`);
-    }
-    if (event.type === "pipeline:end") {
-      // eslint-disable-next-line no-console
-      console.log(`[onEvent] Pipeline finished in ${event.durationMs}ms`);
-    }
-    if (event.type === "file:matched") {
-      // eslint-disable-next-line no-console
-      console.log(`[onEvent] File matched: ${event.file.path} → route:${event.routeId}`);
-    }
-    if (event.type === "error") {
-      console.error(`[onEvent] Error in ${event.error.scope}: ${event.error.message}`);
-    }
-  },
 });

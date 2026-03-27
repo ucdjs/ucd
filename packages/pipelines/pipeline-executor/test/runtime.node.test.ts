@@ -9,10 +9,12 @@ describe("node execution runtime", () => {
     await runtime.runWithExecutionContext({
       executionId: "exec-1",
       workspaceId: "workspace-1",
+      traceId: "exec-1",
     }, async () => {
       expect(runtime.getExecutionContext()).toEqual({
         executionId: "exec-1",
         workspaceId: "workspace-1",
+        traceId: "exec-1",
       });
 
       await runtime.withSpan("span-1", async () => {
@@ -40,7 +42,6 @@ describe("node execution runtime", () => {
         executionId: entry.executionId,
         spanId: entry.spanId,
         source: entry.source,
-
       });
     }, async () => {
       const stopCapture = runtime.startOutputCapture?.() ?? (() => {});
@@ -49,6 +50,7 @@ describe("node execution runtime", () => {
         await runtime.runWithExecutionContext({
           executionId: "exec-1",
           workspaceId: "workspace-1",
+          traceId: "exec-1",
           spanId: "span-1",
         }, async () => {
           // eslint-disable-next-line no-console
