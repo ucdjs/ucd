@@ -4,12 +4,13 @@ import type {
   FileContext,
   ParsedRow,
   PipelineFilter,
+  PipelineTraceEmitInput,
+  PipelineTraceRecord,
   PipelineTransformDefinition,
-  RouteResolveContext,
+  ResolveContext,
 } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
-import type { PipelineTraceEmitInput, PipelineTraceRecord } from "./traces";
 import { applyTransforms } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "../internal/logger";
 import { createParseContext } from "./source-files";
@@ -37,9 +38,9 @@ interface ResolveContextOptions {
   routeDataMap: Record<string, unknown[]>;
 }
 
-export function createRouteResolveContext(
+export function createResolveContext(
   options: ResolveContextOptions,
-): RouteResolveContext {
+): ResolveContext {
   const { version, file, routeId, runtime, routeDataMap } = options;
   const logger = createPipelineLogger(runtime);
 
@@ -70,8 +71,8 @@ interface ExecuteParseResolveOptions {
   parser: (ctx: ReturnType<typeof createParseContext>) => AsyncIterable<ParsedRow>;
   filter?: PipelineFilter;
   transforms?: readonly PipelineTransformDefinition<any, any>[];
-  resolveContext: RouteResolveContext;
-  resolver: (ctx: RouteResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
+  resolveContext: ResolveContext;
+  resolver: (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
@@ -148,7 +149,7 @@ async function emitInSpan(
 export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
   const { file, route, routeDataMap, runtime, source, version, emitTrace } = options;
 
-  const resolveContext = createRouteResolveContext({
+  const resolveContext = createResolveContext({
     version,
     file,
     routeId: route.id,
@@ -190,7 +191,7 @@ export interface ProcessFallbackOptions {
 export async function processFallback(options: ProcessFallbackOptions): Promise<unknown[]> {
   const { file, fallback, routeDataMap, runtime, source, version, emitTrace, spanId } = options;
 
-  const resolveContext = createRouteResolveContext({
+  const resolveContext = createResolveContext({
     version,
     file,
     routeId: "__fallback__",

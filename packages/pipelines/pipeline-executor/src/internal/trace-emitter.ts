@@ -1,7 +1,7 @@
 import type {
   PipelineTraceInput,
   PipelineTraceRecord,
-} from "../run/traces";
+} from "@ucdjs/pipelines-core";
 import type { PipelineExecutionRuntime } from "../runtime";
 
 export interface TraceEmitter {
