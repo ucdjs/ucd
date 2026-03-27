@@ -3,7 +3,7 @@ import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 const LINE_HASH_RE = /^#L(\d+)(?:-L?(\d+))?$/;
 const HTML_LINE_CLASS_RE = /class="line"/g;
@@ -57,79 +57,38 @@ function countLinesFromHtml(html: string) {
   return matches ? matches.length : 0;
 }
 
-export function FileViewer({ html, fileUrl }: FileViewerProps) {
-  const lineCount = useMemo(() => countLinesFromHtml(html), [html]);
-  const contentRef = useRef<HTMLDivElement | null>(null);
-  const lineElementsRef = useRef<HTMLElement[]>([]);
-  const shouldAutoScrollRef = useRef(false);
+function getInitialSelection(lineCount: number): LineSelection | null {
+  if (typeof window === "undefined") return null;
 
-  // Parse initial selection from URL hash (only on mount)
-  const [selection, setSelection] = useState<LineSelection | null>(null);
-  const [lastClickedLine, setLastClickedLine] = useState<number | null>(null);
+  const parsed = parseLineHash(window.location.hash);
+  if (!parsed) return null;
+
+  return parsed.start <= lineCount && parsed.end <= lineCount
+    ? parsed
+    : null;
+}
+
+export function FileViewer({ html, fileUrl }: FileViewerProps) {
+  const lineCount = countLinesFromHtml(html);
+  const initialSelection = getInitialSelection(lineCount);
+  const shouldAutoScrollRef = useRef(initialSelection !== null);
+  const lastClickedLineRef = useRef<number | null>(initialSelection?.start ?? null);
+
+  const [selection, setSelection] = useState<LineSelection | null>(() => initialSelection);
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    const container = contentRef.current;
-    if (!container) return;
-
-    const lines = [...container.querySelectorAll<HTMLElement>(".line")];
-    lineElementsRef.current = lines;
-    lines.forEach((line, index) => {
-      line.dataset.line = String(index + 1);
-      line.classList.add("file-viewer-line");
-    });
-  }, [html]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const parsed = parseLineHash(window.location.hash);
-    if (parsed && parsed.start <= lineCount && parsed.end <= lineCount) {
-      shouldAutoScrollRef.current = true;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelection(parsed);
-      setLastClickedLine(parsed.start);
-    } else {
-      shouldAutoScrollRef.current = false;
-      setSelection(null);
-      setLastClickedLine(null);
-    }
-  }, [html, lineCount]);
-
-  useEffect(() => {
-    const lines = lineElementsRef.current;
-    if (!lines.length) return;
-
-    const selectionStart = selection?.start ?? -1;
-    const selectionEnd = selection?.end ?? -1;
-
-    lines.forEach((line, index) => {
-      const lineNum = index + 1;
-      const isSelected = lineNum >= selectionStart && lineNum <= selectionEnd;
-      line.classList.toggle("is-selected", isSelected);
-    });
-  }, [selection]);
-
-  useEffect(() => {
-    if (!selection || !shouldAutoScrollRef.current) return;
-    const lineElement = lineElementsRef.current[selection.start - 1];
-    if (lineElement) {
-      lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-    shouldAutoScrollRef.current = false;
-  }, [selection]);
-
-  const handleLineClick = useCallback((lineNum: number, event: React.MouseEvent) => {
+  function handleLineClick(lineNum: number, event: React.MouseEvent) {
     let nextSelection: LineSelection;
-    if (event.shiftKey && lastClickedLine !== null) {
+    if (event.shiftKey && lastClickedLineRef.current !== null) {
       // Range selection with shift+click
       nextSelection = {
-        start: Math.min(lastClickedLine, lineNum),
-        end: Math.max(lastClickedLine, lineNum),
+        start: Math.min(lastClickedLineRef.current, lineNum),
+        end: Math.max(lastClickedLineRef.current, lineNum),
       };
     } else {
       // Single line selection
       nextSelection = { start: lineNum, end: lineNum };
-      setLastClickedLine(lineNum);
+      lastClickedLineRef.current = lineNum;
     }
     setSelection(nextSelection);
     if (typeof window !== "undefined") {
@@ -137,20 +96,55 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
       window.history.replaceState(null, "", nextUrl);
     }
     shouldAutoScrollRef.current = false;
-  }, [lastClickedLine]);
+  }
 
   // Memoize selection bounds for O(1) check in render
   const selectionStart = selection?.start ?? -1;
   const selectionEnd = selection?.end ?? -1;
+  const renderedHtml = useMemo(() => {
+    const segments = html.split(`class="line"`);
+    if (segments.length === 1) {
+      return `<pre>${html}</pre>`;
+    }
 
-  const handleCopyLink = useCallback(async () => {
+    const nextHtml = segments.map((segment, index) => {
+      if (index === 0) {
+        return segment;
+      }
+
+      const lineNum = index;
+      const classNames = ["line", "file-viewer-line"];
+
+      if (lineNum >= selectionStart && lineNum <= selectionEnd) {
+        classNames.push("is-selected");
+      }
+
+      return `class="${classNames.join(" ")}" data-line="${lineNum}"${segment}`;
+    }).join("");
+
+    return `<pre>${nextHtml}</pre>`;
+  }, [html, selectionEnd, selectionStart]);
+  function setContentRef(node: HTMLDivElement | null) {
+    if (!node || !selection || !shouldAutoScrollRef.current) {
+      return;
+    }
+
+    const lineElement = node.querySelector<HTMLElement>(`[data-line="${selection.start}"]`);
+    if (lineElement) {
+      lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    shouldAutoScrollRef.current = false;
+  }
+
+  async function handleCopyLink() {
     if (!selection) return;
 
     const url = `${window.location.origin}${window.location.pathname}${generateLineHash(selection)}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(setCopied, 2000, false);
-  }, [selection]);
+  }
 
   return (
     <Card>
@@ -229,9 +223,9 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
             {/* Content */}
             <div className="flex-1 overflow-x-auto text-sm font-mono px-3">
               <div
-                ref={contentRef}
+                ref={setContentRef}
                 className="file-viewer-shiki"
-                dangerouslySetInnerHTML={{ __html: `<pre>${html}</pre>` }}
+                dangerouslySetInnerHTML={{ __html: renderedHtml }}
               />
             </div>
           </div>

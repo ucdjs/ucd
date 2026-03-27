@@ -76,14 +76,15 @@ function Node({ name, path, isDirectory, versionType, depth }: NodeProps) {
   // Each node manages its own expansion - only re-renders this node when toggled
   const shouldAutoExpand = currentPath.startsWith(`${path}/`) || currentPath === path;
   const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
-  const showChildren = isDirectory && isExpanded && !query;
+  const expanded = shouldAutoExpand || isExpanded;
+  const showChildren = isDirectory && expanded && !query;
 
   return (
     <div>
       <ExplorerTreeEntry
         name={name}
         isDirectory={isDirectory}
-        isExpanded={isExpanded}
+        isExpanded={expanded}
         active={currentPath === path || currentPath.startsWith(`${path}/`)}
         indent={depth * 14 + 8}
         onSelect={() => navigate({ to: isDirectory ? "/file-explorer/$" : "/file-explorer/v/$", params: { _splat: path } })}
@@ -95,10 +96,10 @@ function Node({ name, path, isDirectory, versionType, depth }: NodeProps) {
                   className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsExpanded(!isExpanded);
+                    setIsExpanded((prev) => !prev);
                   }}
                 >
-                  {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+                  {expanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
                 </button>
               )
             : (

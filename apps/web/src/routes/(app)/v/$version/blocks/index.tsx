@@ -7,7 +7,7 @@ import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { Grid3X3, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/(app)/v/$version/blocks/")({
   component: BlocksPage,
@@ -20,16 +20,14 @@ function BlocksPage() {
   const { version } = Route.useParams();
   const { data: blocks } = useSuspenseQuery(blocksQueryOptions(version));
   const [searchQuery, setSearchQuery] = useState("");
-
-  const filteredBlocks = useMemo(() => {
-    if (!searchQuery.trim()) return blocks;
-    const query = searchQuery.toLowerCase();
-    return blocks.filter((block) =>
-      block.name.toLowerCase().includes(query)
-      || block.start.toLowerCase().includes(query)
-      || block.end.toLowerCase().includes(query),
-    );
-  }, [blocks, searchQuery]);
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const filteredBlocks = normalizedQuery
+    ? blocks.filter((block) =>
+        block.name.toLowerCase().includes(normalizedQuery)
+        || block.start.toLowerCase().includes(normalizedQuery)
+        || block.end.toLowerCase().includes(normalizedQuery),
+      )
+    : blocks;
 
   return (
     <>

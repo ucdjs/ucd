@@ -14,6 +14,13 @@ import { useState } from "react";
 import { UVersion } from "../../u-version";
 
 const DEFAULT_VISIBLE_VERSIONS = 5;
+const VERSION_SKELETON_ROWS = [
+  "version-skeleton-0",
+  "version-skeleton-1",
+  "version-skeleton-2",
+  "version-skeleton-3",
+  "version-skeleton-4",
+];
 
 function getBadgeLabel(v: UnicodeVersion): { label: string; cls: string } {
   const year = v.date ? Number.parseInt(String(v.date), 10) : undefined;
@@ -82,14 +89,12 @@ export function VersionsList() {
 }
 
 VersionsList.Skeleton = function VersionsListSkeleton() {
-  const skeletonRows = useState(() => Array.from({ length: 5 }, (_, index) => `version-skeleton-${index}`))[0];
-
   return (
     <SidebarGroup className="mt-auto animate-pulse">
       <div className="h-4 bg-muted rounded w-16 mb-4" />
       <SidebarMenu>
         <div className="overflow-auto" style={{ height: "10rem" }}>
-          {skeletonRows.map((key) => (
+          {VERSION_SKELETON_ROWS.map((key) => (
             <SidebarMenuItem key={key}>
               <div className="flex items-center justify-between gap-2 py-2 px-2">
                 <div className="flex items-center gap-2 flex-1">
