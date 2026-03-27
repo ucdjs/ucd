@@ -278,7 +278,7 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-1", workspaceId: "workspace-1" },
+      { executionId: "exec-1", workspaceId: "workspace-1", traceId: "exec-1" },
       () => ex.run([pipelineWithLogger]),
     );
 
@@ -288,8 +288,8 @@ describe("running single pipeline via run()", () => {
     expect(logs.every((entry) => typeof entry.spanId === "string")).toBe(true);
   });
 
-  it("should emit runtime traces with span ids when execution context is active", async () => {
-    const traceSpanIds: string[] = [];
+  it("should emit runtime traces with execution trace ids and span ids when execution context is active", async () => {
+    const observedTraces: PipelineTraceRecord[] = [];
     const runtime = createNodeExecutionRuntime();
 
     const route = definePipelineRoute({
@@ -315,7 +315,7 @@ describe("running single pipeline via run()", () => {
       runtime,
       onTrace: (trace) => {
         if (trace.kind === "source.provided" || trace.kind === "file.matched" || trace.kind === "output.written") {
-          traceSpanIds.push(trace.spanId ?? "");
+          observedTraces.push(trace);
         }
       },
     });
@@ -329,12 +329,13 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-2", workspaceId: "workspace-2" },
+      { executionId: "exec-2", workspaceId: "workspace-2", traceId: "exec-2" },
       () => ex.run([pipelineWithTrace]),
     );
 
-    expect(traceSpanIds.length).toBeGreaterThan(0);
-    expect(traceSpanIds.every((spanId) => spanId.length > 0)).toBe(true);
+    expect(observedTraces.length).toBeGreaterThan(0);
+    expect(observedTraces.every((trace) => trace.traceId === "exec-2")).toBe(true);
+    expect(observedTraces.every((trace) => typeof trace.spanId === "string" && trace.spanId.length > 0)).toBe(true);
   });
 
   it("should capture console output through onLog when enabled", async () => {
@@ -380,7 +381,7 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-2", workspaceId: "workspace-1" },
+      { executionId: "exec-2", workspaceId: "workspace-1", traceId: "exec-2" },
       () => ex.run([pipelineWithConsole]),
     );
 
@@ -432,7 +433,7 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-3", workspaceId: "workspace-1" },
+      { executionId: "exec-3", workspaceId: "workspace-1", traceId: "exec-3" },
       () => ex.run([pipelineWithStdio]),
     );
 
@@ -548,6 +549,13 @@ describe("error handling", () => {
 
     const errorTraces = traces.filter((t) => t.kind === "error");
     expect(errorTraces.length).toBeGreaterThan(0);
+    expect(errorTraces[0]).toMatchObject({
+      pipelineId: "error-traces",
+      error: expect.objectContaining({
+        scope: "route",
+        message: expect.stringContaining("Test error"),
+      }),
+    });
   });
 
   it("should handle pipeline without inputs gracefully", async () => {
