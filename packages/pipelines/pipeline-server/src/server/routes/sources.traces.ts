@@ -1,7 +1,7 @@
 import type { ExecutionTracesResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { hasExecutionTracesTable } from "#server/db/execution-traces";
-import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-executor/traces";
+import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 

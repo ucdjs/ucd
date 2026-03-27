@@ -1,7 +1,7 @@
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { byName, definePipelineRoute, filesystemSink, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
+import { buildOutputManifestFromTraces, byName, definePipelineRoute, filesystemSink, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   materializeOutputs,
@@ -10,7 +10,6 @@ import {
   serializeOutputValue,
   writeOutputToSink,
 } from "../src/run/outputs";
-import { buildOutputManifestFromTraces } from "../src/run/traces";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
 import { createMockFile } from "./helpers";
 

@@ -1,6 +1,6 @@
-import type { PipelineTraceRecord } from "../src/run/traces";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core";
+import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
-import { buildOutputManifestFromTraces } from "../src/run/traces";
 
 describe("trace projections", () => {
   it("upgrades resolved outputs to failed or written manifest entries by locator key", () => {
@@ -25,6 +25,7 @@ describe("trace projections", () => {
         sink: "filesystem",
         format: "json",
         locator: "/tmp/script.json",
+        traceId: "trace-1",
       },
       {
         id: "trace-2",
@@ -47,6 +48,7 @@ describe("trace projections", () => {
         locator: "/tmp/script.json",
         status: "failed",
         error: "disk full",
+        traceId: "trace-2",
       },
       {
         id: "trace-3",
@@ -68,6 +70,7 @@ describe("trace projections", () => {
         sink: "memory",
         format: "json",
         locator: "memory://preview/script.json",
+        traceId: "trace-3",
       },
       {
         id: "trace-4",
@@ -89,6 +92,7 @@ describe("trace projections", () => {
         sink: "memory",
         locator: "memory://preview/script.json",
         status: "written",
+        traceId: "trace-4",
       },
     ];
 

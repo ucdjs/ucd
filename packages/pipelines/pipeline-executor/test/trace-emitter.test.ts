@@ -17,6 +17,7 @@ describe("trace emitter", () => {
     await runtime.runWithExecutionContext({
       executionId: "exec-1",
       workspaceId: "workspace-1",
+      traceId: "exec-1",
     }, async () => {
       await runtime.withSpan("span-1", async () => {
         await emitter.emit({
@@ -45,6 +46,7 @@ describe("trace emitter", () => {
     await runtime.runWithExecutionContext({
       executionId: "exec-1",
       workspaceId: "workspace-1",
+      traceId: "exec-1",
     }, async () => {
       await emitter.emit({
         kind: "cache.miss",

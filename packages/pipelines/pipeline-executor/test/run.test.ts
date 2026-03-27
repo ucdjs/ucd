@@ -159,6 +159,7 @@ describe("getRouteData", () => {
       filter: byName("Test.txt"),
       parser: mockParser,
       resolver: async (ctx) => {
+        // @ts-expect-error - testing error handling for unknown route
         ctx.getRouteData("nonexistent");
         return [];
       },

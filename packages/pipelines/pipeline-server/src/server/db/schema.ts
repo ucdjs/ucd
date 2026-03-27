@@ -1,13 +1,13 @@
 import type {
+  PipelineTraceKind,
+  PipelineTraceRecord,
+} from "@ucdjs/pipelines-core";
+import type {
   ExecutionStatus,
   PipelineLogLevel,
   PipelineLogSource,
   PipelineSummary,
 } from "@ucdjs/pipelines-executor";
-import type {
-  PipelineTraceKind,
-  PipelineTraceRecord,
-} from "@ucdjs/pipelines-executor/traces";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export interface ExecutionLogPayload {
