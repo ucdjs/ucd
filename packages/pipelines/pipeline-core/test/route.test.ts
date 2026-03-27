@@ -366,4 +366,81 @@ describe("type inference", () => {
       expectTypeOf<Output>().toEqualTypeOf<PropertyJson[]>();
     });
   });
+
+  describe("getRouteData type constraints", () => {
+    it("should constrain routeId to the declared dependency ID", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toEqualTypeOf<"source">();
+          return [];
+        },
+      });
+    });
+
+    it("should accept a union of IDs when multiple deps are declared", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:a", "route:b"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toEqualTypeOf<"a" | "b">();
+          return [];
+        },
+      });
+    });
+
+    it("should make routeId never when no deps are declared", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toBeNever();
+          return [];
+        },
+      });
+    });
+
+    it("should return readonly unknown[] by default", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          const data = ctx.getRouteData("source");
+          expectTypeOf(data).toEqualTypeOf<readonly unknown[]>();
+          return [];
+        },
+      });
+    });
+
+    it("should return readonly T[] when a type parameter is provided", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          const data = ctx.getRouteData<PropertyJson>("source");
+          expectTypeOf(data).toEqualTypeOf<readonly PropertyJson[]>();
+          return [];
+        },
+      });
+    });
+  });
 });
