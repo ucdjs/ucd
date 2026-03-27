@@ -36,7 +36,7 @@ env:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: github.repository == 'ucdjs/ucd' && github.event_name == 'pull_request'
     outputs:
       has-changes: ${{ steps.detect.outputs.has-changes }}
@@ -105,7 +105,7 @@ jobs:
 
   upsert-deployment-comment:
     name: upsert deployment comment
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [detect-changes]
     if: |
       always() && (
@@ -165,7 +165,7 @@ jobs:
           edit-mode: replace
 
   preview-approval:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [detect-changes, upsert-deployment-comment]
     timeout-minutes: 10
     if: |
@@ -224,7 +224,7 @@ jobs:
 
   update-deployment-comment:
     name: update deployment comment
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs:
       - deploy
     if: |
