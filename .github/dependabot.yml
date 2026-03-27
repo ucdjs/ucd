@@ -1,0 +1,176 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /apps/api
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /apps/docs
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /apps/store
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /apps/web
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/cli
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/client
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/env
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/fs-backend
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/fs-bridge
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/lockfile
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/path-utils
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-artifacts
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-core
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-executor
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-graph
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-loader
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-playground
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-presets
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/pipelines/pipeline-server
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/schema-gen
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/schemas
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/shared-ui
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/shared
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/test-utils
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/ucd-store
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/ucdjs-scripts
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/utils
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /packages/worker-utils
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /tooling/eslint-plugin
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /tooling/moonbeam
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /tooling/tsconfig
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /tooling/tsdown-config
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /vscode
+    schedule:
+      interval: daily
