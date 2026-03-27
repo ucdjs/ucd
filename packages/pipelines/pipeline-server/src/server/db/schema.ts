@@ -1,7 +1,7 @@
 import type {
   PipelineTraceKind,
   PipelineTraceRecord,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipelines-core/tracing";
 import type {
   ExecutionStatus,
   PipelineLogLevel,
