@@ -43,6 +43,14 @@ export {
 } from "./filters";
 
 export type {
+  PipelineGraph,
+  PipelineGraphEdge,
+  PipelineGraphEdgeType,
+  PipelineGraphNode,
+  PipelineGraphNodeType,
+} from "./graph";
+
+export type {
   FilesystemOutputSinkDefinition,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
