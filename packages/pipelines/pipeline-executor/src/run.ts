@@ -5,15 +5,14 @@ import type {
   NormalizedRouteOutputDefinition,
   PipelineError,
   PipelineLogger,
+  PipelineOutputManifestEntry,
+  PipelineTraceEmitInput,
+  PipelineTraceRecord,
 } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
 import type { TraceEmitter } from "./internal/trace-emitter";
 import type { SourceAdapter } from "./run/source-files";
-import type {
-  PipelineOutputManifestEntry,
-  PipelineTraceEmitInput,
-  PipelineTraceRecord,
-} from "./run/traces";
+
 import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   ExecutionStatus,
@@ -21,6 +20,7 @@ import type {
   PipelineExecutorRunOptions,
   PipelineSummary,
 } from "./types";
+import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "./internal/logger";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
 import { buildExecutionGraphFromTraces } from "./run/graph";
@@ -29,7 +29,6 @@ import { createProcessingQueue } from "./run/processing-queue";
 import { processFallback, processRoute } from "./run/route-runtime";
 import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
 import { createSourceAdapter, isSourceFileContext } from "./run/source-files";
-import { buildOutputManifestFromTraces } from "./run/traces";
 
 type RouteDef = AnyPipelineRouteDefinition;
 
