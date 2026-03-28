@@ -1,4 +1,4 @@
-import type { PipelineTracePhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core/tracing";
 import { formatDuration } from "#lib/format";
 
 export const timelineColumns = 100;
