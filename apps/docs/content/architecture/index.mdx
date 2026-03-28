@@ -1,11 +1,9 @@
 ---
 title: Architecture
-description: System overview of the UCD.js package ecosystem
+description: Overview of the main systems and package layers in UCD.js
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
-
-# Architecture
 
 UCD.js is a monorepo of TypeScript packages for ingesting, storing, processing, serving, and consuming Unicode Character Database (UCD) files. Packages are organized into six layers, each building on the one below it.
 
@@ -17,7 +15,7 @@ graph TD
   end
 
   subgraph L2["Layer 2 — Infrastructure"]
-    FB["@ucdjs/fs-bridge"]
+    FB["@ucdjs/fs-backend"]
     PU["@ucdjs/path-utils"]
     SH["@ucdjs-internal/shared"]
   end
@@ -50,5 +48,5 @@ graph TD
 <Cards>
   <Card title="Data Flow" href="/architecture/data-flow" description="End-to-end flow from raw UCD files to client consumption" />
   <Card title="Package Layers" href="/architecture/package-layers" description="Detailed package dependency graph organized by layer" />
-  <Card title="UCD Store" href="/packages/ucd-store" description="Store internals: bridges, lockfile, and sync operations" />
+  <Card title="UCD Store" href="/packages/ucd-store" description="Store internals: backends, lockfile, and sync operations" />
 </Cards>

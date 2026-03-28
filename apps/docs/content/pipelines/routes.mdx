@@ -1,15 +1,22 @@
 ---
 title: Routes
-description: Processing files in pipelines
+description: Define filters, parsers, transforms, route data, caching, and outputs
 ---
 
-# Routes
+Routes are the main unit of pipeline work. A route matches files, parses them into rows, optionally transforms those rows, and resolves the result into route data and outputs.
 
-Routes define how specific files are processed. They are the heart of a pipeline, responsible for parsing raw data, transforming it, and resolving it into artifacts.
+## Route shape
 
-## Defining a Route
+A route definition can include:
 
-A route is defined using `definePipelineRoute`. It requires a `filter` to match specific files, a `parser` to extract data from those files, and a `resolver` to transform the parsed data into the final artifact.
+- `id`
+- `filter`
+- `depends`
+- `parser`
+- `transforms`
+- `resolver`
+- `outputs`
+- `cache`
 
 ```ts
 import { definePipelineRoute, byName } from "@ucdjs/pipelines-core";
@@ -17,35 +24,78 @@ import { definePipelineRoute, byName } from "@ucdjs/pipelines-core";
 const myRoute = definePipelineRoute({
   id: "unicode-data",
   filter: byName("UnicodeData.txt"),
-  parser: async function* (ctx) {
-    // Parse the file content into rows
-    yield { code: "0041", name: "LATIN CAPITAL LETTER A" };
-    yield { code: "0042", name: "LATIN CAPITAL LETTER B" };
-  },
+  parser: standardParser,
   resolver: async (ctx, rows) => {
-    // Transform rows into the final output
     const result = [];
     for await (const row of rows) {
       result.push(row);
     }
     return result;
-  }
+  },
 });
 ```
 
 ### Filters
 
-Filters determine which files from the sources should be processed by this route. `@ucdjs/pipelines-core` provides utility functions like `byName`, `byExtension`, or you can write a custom filter function.
+Filters determine which files the route should process.
 
 ```ts
-// Example: Match only the Blocks.txt file
 filter: byName("Blocks.txt")
 ```
 
+See [/pipelines/filters](/pipelines/filters) for the full helper set, including `byDir`, `byExt`, `byGlob`, `byPath`, `bySource`, `byProp`, and the filter combinators.
+
 ### Parser
 
-The `parser` is an async generator function that yields individual records (rows) from the matched files. It receives a context object `ctx` which contains the file content and metadata.
+The parser is an async generator that turns file content into rows. Preset parsers such as `standardParser`, `sequenceParser`, and `unicodeDataParser` cover the common UCD formats.
+
+### Transforms
+
+Transforms run after parsing and before resolution:
+
+```ts
+transforms: [
+  createSortTransform({ direction: "desc" }),
+  uppercaseValues,
+]
+```
+
+Each transform receives the previous transform's output stream.
+
+### Route dependencies and route data
+
+Routes depend on other routes through `depends`:
+
+```ts
+depends: ["route:colors"]
+```
+
+A dependent resolver then consumes upstream route data with `ctx.getRouteData(...)`:
+
+```ts
+resolver: async (ctx, rows) => {
+  const colorData = ctx.getRouteData("colors");
+  // ...
+}
+```
 
 ### Resolver
 
-The `resolver` takes the parsed rows and transforms them into the final output format. This is where you can apply business logic, map data to specific schemas, or aggregate information. It receives the `ctx` and the async iterable of `rows`.
+The resolver turns rows into final route data. It receives the current version, file metadata, logger, clock helpers, and any declared upstream route data.
+
+### Cache
+
+Set `cache: true` when the route work is deterministic and worth reusing across runs.
+
+### Outputs
+
+Use `outputs` when the route should publish stable, inspectable results or persist files:
+
+```ts
+outputs: [{
+  id: "colors-json",
+  path: "data/colors/colors.json",
+}]
+```
+
+See [/pipelines/outputs](/pipelines/outputs) for the runtime output model.
