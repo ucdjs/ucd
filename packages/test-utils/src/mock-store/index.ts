@@ -182,7 +182,7 @@ function toMSWPath(endpoint: string): string {
 /**
  * Sets up mock handlers for the store subdomain (ucd-store.ucdjs.dev).
  *
- * This is used for the HTTP fs-bridge which directly accesses files via the store subdomain
+ * This is used for the HTTP fs-backend which directly accesses files via the store subdomain
  * rather than through the API. The store subdomain handles paths like /:version/:filepath
  * without the /ucd/ prefix (it's handled internally by the subdomain).
  *

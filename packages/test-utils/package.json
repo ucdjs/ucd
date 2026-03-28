@@ -56,7 +56,6 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-backend": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
