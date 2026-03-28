@@ -1,7 +1,4 @@
-import {
-  badRequest,
-  notFound,
-} from "@ucdjs-internal/worker-utils";
+import { notFound } from "@ucdjs-internal/worker-utils";
 import {
   h3ErrorHandler,
   setupH3Cors,
@@ -35,12 +32,6 @@ app.get("/", () => {
     },
     documentation: "https://docs.ucdjs.dev",
   };
-});
-
-app.all("/:version", () => {
-  return badRequest({
-    message: "A file path is required after the Unicode version.",
-  });
 });
 
 app.all("/**", () => {

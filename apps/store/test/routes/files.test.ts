@@ -45,6 +45,41 @@ describe("store files route", () => {
     });
   });
 
+  it("delegates bare version paths to the version root directory", async () => {
+    const filesMock = vi.fn(async () => {
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        kind: "directory",
+        body: JSON.stringify([{ name: "emoji/" }]),
+      };
+    });
+
+    const { response, json } = await executeRequest(
+      new Request("https://ucd-store.ucdjs.dev/17.0.0"),
+      {
+        ...env,
+        UCDJS_API: {
+          files: filesMock,
+        },
+      } as unknown as Cloudflare.Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await json()).toEqual([{ name: "emoji/" }]);
+    expect(filesMock).toHaveBeenCalledWith("17.0.0/ucd", {
+      query: undefined,
+      pattern: undefined,
+      type: undefined,
+      sort: undefined,
+      order: undefined,
+      isHeadRequest: false,
+      stripUCDPrefix: true,
+    });
+  });
+
   it("handles HEAD requests through the H3 route", async () => {
     const filesMock = vi.fn(async () => {
       return {

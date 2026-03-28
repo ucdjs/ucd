@@ -19,10 +19,10 @@ export function transformPathForUnicodeOrg(version: string, filepath: string): s
   const needsUCD = hasUCDFolderPath(version);
 
   if (needsUCD) {
-    return `${version}/ucd/${cleanPath}`;
+    return cleanPath ? `${version}/ucd/${cleanPath}` : `${version}/ucd`;
   }
 
-  return `${version}/${cleanPath}`;
+  return cleanPath ? `${version}/${cleanPath}` : version;
 }
 
 /**
