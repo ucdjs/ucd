@@ -1,6 +1,5 @@
 import type { ExecutionTracesResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
-import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
@@ -47,22 +46,6 @@ sourcesTracesRouter.get(
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
     }
 
-    if (!hasExecutionTracesTable(db)) {
-      return {
-        executionId: execution.id,
-        pipelineId: execution.pipelineId,
-        status: execution.status,
-        traces: [],
-        outputManifest: [],
-        pagination: {
-          total: 0,
-          limit,
-          offset,
-          hasMore: false,
-        },
-      } satisfies ExecutionTracesResponse;
-    }
-
     const traceWhere = and(
       eq(schema.executionTraces.workspaceId, workspaceId),
       eq(schema.executionTraces.executionId, executionId),
@@ -73,7 +56,11 @@ sourcesTracesRouter.get(
         .select()
         .from(schema.executionTraces)
         .where(traceWhere)
-        .orderBy(asc(schema.executionTraces.timestamp), asc(schema.executionTraces.id))
+        .orderBy(
+          sql`json_extract(${schema.executionTraces.data}, '$.startTimestamp') ASC NULLS LAST`,
+          asc(schema.executionTraces.timestamp),
+          asc(schema.executionTraces.id),
+        )
         .limit(limit)
         .offset(offset),
       db

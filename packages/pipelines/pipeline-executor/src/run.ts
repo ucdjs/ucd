@@ -54,6 +54,7 @@ export interface RunConfig {
   versions: string[];
   routesByLayer: RouteDef[][];
   routeOutputs: Map<string, readonly NormalizedRouteOutputDefinition[]>;
+  hrNow: () => number;
 }
 
 export interface RunData {
@@ -76,31 +77,35 @@ interface VersionContext {
 }
 
 export async function run(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
-  const startTime = performance.now();
   const context = createRunContext(options);
-  const spanId = context.config.traces.nextSpanId();
+  const pipelineSpanId = context.config.traces.nextSpanId();
 
-  await emitTraceInSpan(context, spanId, {
-    kind: "pipeline.start",
-    versions: context.config.versions,
+  return context.config.runtime.withSpan(pipelineSpanId, async () => {
+    const startTimestamp = context.config.hrNow();
+    const startPerf = performance.now();
+
+    for (const version of context.config.versions) {
+      await runVersion(context, version);
+    }
+
+    const durationMs = performance.now() - startPerf;
+    await context.emitTrace({
+      kind: "pipeline",
+      versions: context.config.versions,
+      startTimestamp,
+      durationMs,
+    });
+
+    return finalizeResult(context, startPerf);
   });
-
-  for (const version of context.config.versions) {
-    await runVersion(context, version);
-  }
-
-  await emitTraceInSpan(context, spanId, {
-    kind: "pipeline.end",
-    durationMs: performance.now() - startTime,
-  });
-
-  return finalizeResult(context, startTime);
 }
 
 function createRunContext(options: RunPipelineOptions): RunContext {
   const { pipeline, runOptions = {}, cacheStore, traces, priorResults = [], runtime } = options;
   const versions = resolveVersions(pipeline, runOptions);
   const logger = createPipelineLogger(runtime);
+  const epochAnchor = Date.now();
+  const perfAnchor = performance.now();
 
   const config: RunConfig = {
     pipeline,
@@ -113,6 +118,7 @@ function createRunContext(options: RunPipelineOptions): RunContext {
     versions,
     routesByLayer: buildRoutesByLayer(pipeline),
     routeOutputs: buildRouteOutputs(pipeline),
+    hrNow: () => epochAnchor + (performance.now() - perfAnchor),
   };
 
   const data: RunData = {
@@ -141,58 +147,83 @@ function createVersionContext(
     version,
     routeDataMap: {},
     listFiles: async () => {
-      files ??= await _context.config.source.listFiles(version);
+      if (files !== null) {
+        return files;
+      }
+      const listingSpanId = _context.config.traces.nextSpanId();
+      const startTimestamp = _context.config.hrNow();
+      const startPerf = performance.now();
+      files = await _context.config.runtime.withSpan(listingSpanId, () =>
+        _context.config.source.listFiles(version));
+      await _context.config.runtime.withSpan(listingSpanId, () => _context.emitTrace({
+        kind: "source.listing",
+        version,
+        fileCount: files!.length,
+        startTimestamp,
+        durationMs: performance.now() - startPerf,
+      }));
       return files;
     },
   };
 }
 
 async function runVersion(context: RunContext, version: string): Promise<void> {
-  const startTime = performance.now();
-  const spanId = context.config.traces.nextSpanId();
-  const versionContext = createVersionContext(context, version);
+  const versionSpanId = context.config.traces.nextSpanId();
 
-  await emitTraceInSpan(context, spanId, {
-    kind: "version.start",
-    version,
-  });
+  await context.config.runtime.withSpan(versionSpanId, async () => {
+    const startTimestamp = context.config.hrNow();
+    const startPerf = performance.now();
 
-  const files = await versionContext.listFiles();
-  const includedFiles = context.config.pipeline.include
-    ? files.filter((file) => context.config.pipeline.include!({
-        file,
-        logger: context.config.logger,
-        source: isSourceFileContext(file) ? file.source : undefined,
-      }))
-    : files;
+    const versionContext = createVersionContext(context, version);
+    const files = await versionContext.listFiles();
+    const includedFiles = context.config.pipeline.include
+      ? files.filter((file) => context.config.pipeline.include!({
+          file,
+          logger: context.config.logger,
+          source: isSourceFileContext(file) ? file.source : undefined,
+        }))
+      : files;
 
-  const processedFiles = new Set<string>();
-  context.data.summary.totalFiles += files.length;
+    const processedFiles = new Set<string>();
+    context.data.summary.totalFiles += files.length;
 
-  for (const routes of context.config.routesByLayer) {
-    const queue = createProcessingQueue(context.config.pipeline.concurrency);
+    for (const routes of context.config.routesByLayer) {
+      const queue = createProcessingQueue(context.config.pipeline.concurrency);
 
-    for (const route of routes) {
-      for (const file of selectMatchingFiles(context, route, includedFiles)) {
-        processedFiles.add(file.path);
-        context.data.summary.totalRoutes++;
-        await queue.add(() => executeMatchedFile(context, versionContext, version, route, file));
+      for (const route of routes) {
+        for (const file of selectMatchingFiles(context, route, includedFiles)) {
+          processedFiles.add(file.path);
+          context.data.summary.totalRoutes++;
+          const queuedAt = performance.now();
+          await context.emitTrace({ kind: "file.queued", version, file, routeId: route.id });
+          await queue.add(async () => {
+            await context.emitTrace({
+              kind: "file.dequeued",
+              version,
+              file,
+              routeId: route.id,
+              waitDurationMs: performance.now() - queuedAt,
+            });
+            await executeMatchedFile(context, versionContext, version, route, file);
+          });
+        }
+      }
+
+      await queue.drain();
+    }
+
+    for (const file of includedFiles) {
+      if (!processedFiles.has(file.path)) {
+        await executeUnmatchedFile(context, versionContext, version, file);
       }
     }
 
-    await queue.drain();
-  }
-
-  for (const file of includedFiles) {
-    if (!processedFiles.has(file.path)) {
-      await executeUnmatchedFile(context, versionContext, version, spanId, file);
-    }
-  }
-
-  await emitTraceInSpan(context, spanId, {
-    kind: "version.end",
-    version,
-    durationMs: performance.now() - startTime,
+    await context.emitTrace({
+      kind: "version",
+      version,
+      startTimestamp,
+      durationMs: performance.now() - startPerf,
+    });
   });
 }
 
@@ -220,17 +251,19 @@ async function executeMatchedFile(
   const spanId = context.config.traces.nextSpanId();
   context.data.summary.matchedFiles++;
 
-  await emitTraceInSpan(context, spanId, { kind: "source.provided", version, file });
-  await emitTraceInSpan(context, spanId, { kind: "file.matched", version, file, routeId: route.id });
-
   await context.config.runtime.withSpan(spanId, async () => {
+    const startTimestamp = context.config.hrNow();
+    const startPerf = performance.now();
+
+    await context.emitTrace({ kind: "source.provided", version, file });
+    await context.emitTrace({ kind: "file.matched", version, file, routeId: route.id });
+
     try {
       const result = await loadRouteResult(
         context,
         version,
         route,
         file,
-        spanId,
         versionContext.routeDataMap,
       );
 
@@ -257,6 +290,15 @@ async function executeMatchedFile(
         version,
       });
     }
+
+    await context.emitTrace({
+      kind: "file.route",
+      version,
+      file,
+      routeId: route.id,
+      startTimestamp,
+      durationMs: performance.now() - startPerf,
+    });
   });
 }
 
@@ -264,7 +306,6 @@ async function executeUnmatchedFile(
   context: RunContext,
   versionContext: VersionContext,
   version: string,
-  versionSpanId: string,
   file: FileContext,
 ): Promise<void> {
   const { pipeline, logger } = context.config;
@@ -281,7 +322,7 @@ async function executeUnmatchedFile(
       return;
     }
 
-    await emitTraceInSpan(context, versionSpanId, {
+    await context.emitTrace({
       kind: "file.skipped",
       file,
       reason: "no-match",
@@ -292,7 +333,7 @@ async function executeUnmatchedFile(
 
   if (pipeline.fallback.filter && !pipeline.fallback.filter({ file, logger, source: isSourceFileContext(file) ? file.source : undefined })) {
     context.data.summary.skippedFiles++;
-    await emitTraceInSpan(context, versionSpanId, {
+    await context.emitTrace({
       kind: "file.skipped",
       file,
       reason: "filtered",
@@ -313,40 +354,55 @@ async function executeFallbackFile(
 ): Promise<void> {
   const spanId = context.config.traces.nextSpanId();
 
-  await emitTraceInSpan(context, spanId, { kind: "source.provided", version, file });
-  await emitTraceInSpan(context, spanId, { kind: "file.fallback", version, file });
+  await context.config.runtime.withSpan(spanId, async () => {
+    const startTimestamp = context.config.hrNow();
+    const startPerf = performance.now();
 
-  try {
-    const outputs = await context.config.runtime.withSpan(spanId, () => processFallback({
+    await context.emitTrace({ kind: "source.provided", version, file });
+    await context.emitTrace({ kind: "file.fallback", version, file });
+
+    try {
+      const outputs = await processFallback({
+        file,
+        fallback: context.config.pipeline.fallback!,
+        routeDataMap: versionContext.routeDataMap,
+        runtime: context.config.runtime,
+        source: context.config.source,
+        version,
+        emitTrace: (trace: PipelineTraceEmitInput) => context.emitTrace(trace),
+        spanId: context.config.traces.nextSpanId,
+        hrNow: context.config.hrNow,
+      });
+
+      await materializeOutputs({
+        outputs: context.data.outputs,
+        version,
+        routeId: "__fallback__",
+        file,
+        values: outputs,
+        emitTrace: context.emitTrace,
+        definitions: DEFAULT_FALLBACK_OUTPUTS,
+        runtime: context.config.runtime,
+      });
+    } catch (error) {
+      await emitPipelineError(context, {
+        scope: "file",
+        message: error instanceof Error ? error.message : String(error),
+        error,
+        file,
+        version,
+      });
+    }
+
+    await context.emitTrace({
+      kind: "file.route",
+      version,
       file,
-      fallback: context.config.pipeline.fallback!,
-      routeDataMap: versionContext.routeDataMap,
-      runtime: context.config.runtime,
-      source: context.config.source,
-      version,
-      emitTrace: (trace: PipelineTraceEmitInput) => context.emitTrace(trace),
-      spanId: context.config.traces.nextSpanId,
-    }));
-
-    await materializeOutputs({
-      outputs: context.data.outputs,
-      version,
       routeId: "__fallback__",
-      file,
-      values: outputs,
-      emitTrace: context.emitTrace,
-      definitions: DEFAULT_FALLBACK_OUTPUTS,
-      runtime: context.config.runtime,
+      startTimestamp,
+      durationMs: performance.now() - startPerf,
     });
-  } catch (error) {
-    await emitPipelineError(context, {
-      scope: "file",
-      message: error instanceof Error ? error.message : String(error),
-      error,
-      file,
-      version,
-    });
-  }
+  });
 }
 
 async function loadRouteResult(
@@ -354,7 +410,6 @@ async function loadRouteResult(
   version: string,
   route: RouteDef,
   file: FileContext,
-  spanId: string,
   routeDataMap: Record<string, unknown[]>,
 ): Promise<{ outputs: unknown[] }> {
   const { cacheStore, runtime, source, traces, useCache } = context.config;
@@ -387,6 +442,7 @@ async function loadRouteResult(
     version,
     emitTrace: (trace: PipelineTraceEmitInput) => context.emitTrace(trace),
     spanId: traces.nextSpanId,
+    hrNow: context.config.hrNow,
   });
 
   if (routeCacheEnabled && cacheStore) {
@@ -449,13 +505,6 @@ async function emitPipelineError(
   error: PipelineError,
 ): Promise<void> {
   context.data.errors.push(error);
-  await context.emitTrace({ kind: "error", error });
-}
-
-async function emitTraceInSpan(
-  context: RunContext,
-  spanId: string,
-  trace: PipelineTraceEmitInput,
-): Promise<PipelineTraceRecord> {
-  return context.config.runtime.withSpan(spanId, () => context.emitTrace(trace));
+  const stack = error.error instanceof Error ? error.error.stack : undefined;
+  await context.emitTrace({ kind: "error", error, stack });
 }

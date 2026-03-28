@@ -34,7 +34,7 @@ export function ExecutionWaterfallRow({
       style={{ gridTemplateColumns: "15rem minmax(0, 1fr)" }}
     >
       <div className="min-w-0 border-r border-border/35 pr-4">
-        <div className="flex min-w-0 gap-1.5">
+        <div className="flex min-w-0 gap-1.5" style={span.depth > 0 ? { paddingLeft: `${span.depth * 12}px` } : undefined}>
           <span className="execution-phase-dot mt-1 h-2 w-2 shrink-0 rounded-full" />
           <div className="min-w-0 space-y-0.5">
             <div className="truncate text-sm font-medium leading-tight" title={span.label}>

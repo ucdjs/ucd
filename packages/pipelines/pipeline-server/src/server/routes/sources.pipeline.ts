@@ -1,12 +1,7 @@
 import type { ExecutePipelineResponse } from "#shared/schemas/execution";
 import type { PipelineDetails } from "#shared/schemas/pipeline";
 import type { H3Event } from "h3";
-import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
-import {
-  hasExecutionTracesTable,
-  isIgnorableExecutionTraceWriteError,
-} from "#server/db/execution-traces";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
 import { ensureWorkspaceExists } from "#server/workspace";
@@ -65,7 +60,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
-  const { db } = event.context;
+  const { db, otlpExporter } = event.context;
   const workspaceId = event.context.workspaceId;
   const { file, pipeline, pipelineId, source } = await resolvePipelineRoute(event);
 
@@ -76,8 +71,10 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
 
   const versions = body.versions ?? pipeline.versions;
   const cache = body.cache ?? true;
-  const executionId = randomUUID();
-  const tracePersistenceEnabled = hasExecutionTracesTable(db);
+  const executionId = Array.from(
+    crypto.getRandomValues(new Uint8Array(16)),
+    b => b.toString(16).padStart(2, "0"),
+  ).join("");
 
   await ensureWorkspaceExists(db, workspaceId);
 
@@ -102,29 +99,19 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const executor = createPipelineExecutor({
     runtime,
     onTrace: async (trace) => {
-      if (!tracePersistenceEnabled) {
-        return;
-      }
+      await db.insert(schema.executionTraces).values({
+        id: trace.id,
+        workspaceId,
+        executionId,
+        traceId: trace.traceId ?? null,
+        spanId: trace.spanId ?? null,
+        parentSpanId: trace.parentSpanId ?? null,
+        kind: trace.kind,
+        timestamp: new Date(trace.timestamp),
+        data: trace,
+      });
 
-      try {
-        await db.insert(schema.executionTraces).values({
-          id: trace.id,
-          workspaceId,
-          executionId,
-          traceId: trace.traceId ?? null,
-          spanId: trace.spanId ?? null,
-          parentSpanId: trace.parentSpanId ?? null,
-          kind: trace.kind,
-          timestamp: new Date(trace.timestamp),
-          data: trace,
-        });
-      } catch (error) {
-        if (isIgnorableExecutionTraceWriteError(error)) {
-          return;
-        }
-
-        throw error;
-      }
+      await otlpExporter?.(trace);
     },
     onLog: createExecutionLogStore(db),
   });

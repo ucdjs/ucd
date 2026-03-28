@@ -27,9 +27,8 @@ describe("executor traces", () => {
 
     await executor.run([pipeline]);
 
-    expect(traces.some((trace) => trace.kind === "pipeline.start")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "pipeline.end")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "version.start")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "version.end")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "pipeline")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "version")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "source.listing")).toBe(true);
   });
 });

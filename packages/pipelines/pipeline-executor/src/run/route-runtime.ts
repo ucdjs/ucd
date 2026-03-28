@@ -7,7 +7,10 @@ import type {
   PipelineTransformDefinition,
   ResolveContext,
 } from "@ucdjs/pipelines-core";
-import type { PipelineTraceEmitInput, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type {
+  PipelineTraceEmitInput,
+  PipelineTraceRecord,
+} from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
 import { applyTransforms } from "@ucdjs/pipelines-core";
@@ -27,6 +30,7 @@ export interface ProcessRouteOptions {
   version: string;
   emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
   spanId: () => string;
+  hrNow: () => number;
 }
 
 interface ResolveContextOptions {
@@ -35,20 +39,36 @@ interface ResolveContextOptions {
   routeId: string;
   runtime: PipelineExecutionRuntime;
   routeDataMap: Record<string, unknown[]>;
+  emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
 }
 
-export function createResolveContext(
-  options: ResolveContextOptions,
-): ResolveContext {
-  const { version, file, routeId, runtime, routeDataMap } = options;
-  const logger = createPipelineLogger(runtime);
+interface ResolveContextResult {
+  ctx: ResolveContext;
+  /** Awaits all dependency.resolve traces queued by synchronous getRouteData calls. */
+  flushDependencyTraces: () => Promise<void>;
+}
 
-  return {
+export function createResolveContext(options: ResolveContextOptions): ResolveContextResult {
+  const { version, file, routeId, routeDataMap, emitTrace } = options;
+  const logger = createPipelineLogger(options.runtime);
+  const pending: Promise<PipelineTraceRecord>[] = [];
+
+  const ctx: ResolveContext = {
     version,
     file,
     logger,
     getRouteData: <T = unknown>(targetRouteId: string) => {
-      if (!(targetRouteId in routeDataMap)) {
+      const exists = targetRouteId in routeDataMap;
+      // getRouteData is synchronous — buffer the promise and flush after the resolver awaits.
+      pending.push(emitTrace({
+        kind: "dependency.resolve",
+        version,
+        file,
+        routeId,
+        dependsOnRouteId: targetRouteId,
+        status: exists ? "resolved" : "missing",
+      }));
+      if (!exists) {
         throw new Error(`Route data for "${targetRouteId}" not found. Make sure route "${targetRouteId}" runs before route "${routeId}" by declaring it as a dependency.`);
       }
       return Object.freeze(routeDataMap[targetRouteId]!) as readonly T[];
@@ -62,6 +82,11 @@ export function createResolveContext(
     },
     now: () => new Date().toISOString(),
   };
+
+  return {
+    ctx,
+    flushDependencyTraces: () => Promise.all(pending).then(() => {}),
+  };
 }
 
 interface ExecuteParseResolveOptions {
@@ -70,83 +95,74 @@ interface ExecuteParseResolveOptions {
   parser: (ctx: ReturnType<typeof createParseContext>) => AsyncIterable<ParsedRow>;
   filter?: PipelineFilter;
   transforms?: readonly PipelineTransformDefinition<any, any>[];
-  resolveContext: ResolveContext;
+  resolveContext: ResolveContextResult;
   resolver: (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
   emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
   spanId: () => string;
+  hrNow: () => number;
 }
 
 async function executeParseResolve(options: ExecuteParseResolveOptions): Promise<unknown[]> {
-  const { file, routeId, parser, filter, transforms, resolveContext, resolver, runtime, source, version, emitTrace, spanId } = options;
+  const { file, routeId, parser, filter, transforms, resolveContext, resolver, runtime, source, version, emitTrace, spanId, hrNow } = options;
 
-  // Parse phase
-  const parseStartTime = performance.now();
   const parseSpanId = spanId();
-  await emitInSpan(runtime, parseSpanId, emitTrace, {
-    kind: "parse.start",
-    file,
-    routeId,
-    version,
-  });
+  const resolveSpanId = spanId();
+
+  const parseStartTimestamp = hrNow();
+  const parseStartPerf = performance.now();
 
   const parseCtx = createParseContext(file, source, runtime);
   const parsedRows = parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(parsedRows, file, filter, runtime, collectedRows);
+  const filteredRows: ParsedRow[] = [];
+  const filteredRowsIter = filterRows(parsedRows, file, filter, runtime, collectedRows, filteredRows);
 
   const resolverRows = (transforms && transforms.length > 0)
-    ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRows, transforms)
-    : filteredRows;
+    ? applyTransforms({ version, file, logger: createPipelineLogger(runtime) }, filteredRowsIter, transforms)
+    : filteredRowsIter;
 
-  // Resolve phase (parse:end is emitted after resolver consumes the lazy iterables)
-  const resolveStartTime = performance.now();
-  const resolveSpanId = spanId();
-  await emitInSpan(runtime, resolveSpanId, emitTrace, {
-    kind: "resolve.start",
-    file,
-    routeId,
-    version,
-  });
+  // Note both start timestamps before running the resolver, which lazily consumes parsedRows.
+  const resolveStartTimestamp = hrNow();
+  const resolveStartPerf = performance.now();
 
-  const outputs = await resolver(resolveContext, resolverRows as AsyncIterable<ParsedRow>);
+  const outputs = await runtime.withSpan(resolveSpanId, () =>
+    resolver(resolveContext.ctx, resolverRows as AsyncIterable<ParsedRow>));
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
 
-  await emitInSpan(runtime, parseSpanId, emitTrace, {
-    kind: "parse.end",
+  // Flush dependency.resolve traces collected synchronously during resolver execution.
+  await runtime.withSpan(resolveSpanId, resolveContext.flushDependencyTraces);
+
+  // Emit parse span after resolver has consumed the lazy iterable (row counts are now final).
+  await runtime.withSpan(parseSpanId, () => emitTrace({
+    kind: "parse",
     file,
     routeId,
     rowCount: collectedRows.length,
-    durationMs: performance.now() - parseStartTime,
+    filteredRowCount: filteredRows.length,
+    startTimestamp: parseStartTimestamp,
+    durationMs: performance.now() - parseStartPerf,
     version,
-  });
+  }));
 
-  await emitInSpan(runtime, resolveSpanId, emitTrace, {
-    kind: "resolve.end",
+  await runtime.withSpan(resolveSpanId, () => emitTrace({
+    kind: "resolve",
     file,
     routeId,
     outputCount: outputArray.length,
-    durationMs: performance.now() - resolveStartTime,
+    startTimestamp: resolveStartTimestamp,
+    durationMs: performance.now() - resolveStartPerf,
     version,
-  });
+  }));
 
   return outputArray;
 }
 
-async function emitInSpan(
-  runtime: PipelineExecutionRuntime,
-  spanId: string,
-  emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>,
-  trace: PipelineTraceEmitInput,
-): Promise<void> {
-  await runtime.withSpan(spanId, () => emitTrace(trace));
-}
-
 export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
-  const { file, route, routeDataMap, runtime, source, version, emitTrace } = options;
+  const { file, route, routeDataMap, runtime, source, version, emitTrace, hrNow } = options;
 
   const resolveContext = createResolveContext({
     version,
@@ -154,6 +170,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     routeId: route.id,
     runtime,
     routeDataMap,
+    emitTrace,
   });
 
   const outputs = await executeParseResolve({
@@ -168,9 +185,8 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     source,
     version,
     emitTrace,
-    spanId: () => {
-      return options.spanId();
-    },
+    spanId: () => options.spanId(),
+    hrNow,
   });
 
   return { outputs };
@@ -185,10 +201,11 @@ export interface ProcessFallbackOptions {
   version: string;
   emitTrace: (trace: PipelineTraceEmitInput) => Promise<PipelineTraceRecord>;
   spanId: () => string;
+  hrNow: () => number;
 }
 
 export async function processFallback(options: ProcessFallbackOptions): Promise<unknown[]> {
-  const { file, fallback, routeDataMap, runtime, source, version, emitTrace, spanId } = options;
+  const { file, fallback, routeDataMap, runtime, source, version, emitTrace, spanId, hrNow } = options;
 
   const resolveContext = createResolveContext({
     version,
@@ -196,6 +213,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
     routeId: "__fallback__",
     runtime,
     routeDataMap,
+    emitTrace,
   });
 
   return executeParseResolve({
@@ -210,6 +228,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
     version,
     emitTrace,
     spanId,
+    hrNow,
   });
 }
 
@@ -219,6 +238,7 @@ export async function* filterRows(
   filter: PipelineFilter | undefined,
   runtime: PipelineExecutionRuntime,
   collector: ParsedRow[],
+  filteredCollector?: ParsedRow[],
 ): AsyncIterable<ParsedRow> {
   const logger = createPipelineLogger(runtime);
 
@@ -226,6 +246,7 @@ export async function* filterRows(
     collector.push(row);
 
     if (!filter) {
+      filteredCollector?.push(row);
       yield row;
       continue;
     }
@@ -237,6 +258,7 @@ export async function* filterRows(
     });
 
     if (shouldInclude) {
+      filteredCollector?.push(row);
       yield row;
     }
   }

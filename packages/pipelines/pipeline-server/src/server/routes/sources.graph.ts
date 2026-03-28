@@ -1,6 +1,5 @@
 import type { ExecutionGraphResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
-import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildExecutionGraphView } from "#shared/lib/graph";
 import { buildExecutionGraphFromTraces } from "@ucdjs/pipelines-executor/graph";
 import { and, eq } from "drizzle-orm";
@@ -39,15 +38,6 @@ sourcesGraphRouter.get(
 
     if (!execution) {
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
-    }
-
-    if (!hasExecutionTracesTable(db)) {
-      return {
-        executionId: execution.id,
-        pipelineId: execution.pipelineId,
-        status: execution.status,
-        graph: null,
-      } satisfies ExecutionGraphResponse;
     }
 
     const traceRows = await db

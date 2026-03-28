@@ -1,0 +1,26 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  # The "Nothing" receiver
+  nop:
+
+exporters:
+  debug:
+    verbosity: detailed
+  # The "Void" exporter
+  nop:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [debug]
+    metrics:
+      # We give it a receiver so it doesn't error,
+      # but it's the nop receiver so it sends nothing.
+      receivers: [nop]
+      exporters: [nop]
