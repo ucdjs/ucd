@@ -1,11 +1,9 @@
 ---
 title: Package Layers
-description: Detailed package dependency graph organized by layer
+description: Package dependency layers across the UCD.js monorepo
 ---
 
 import { TypeTable } from 'fumadocs-ui/components/type-table';
-
-# Package Layers
 
 The monorepo is organized into six dependency layers. Packages in a higher layer depend on packages in lower layers — never the other way around. This keeps the dependency graph acyclic and makes individual packages testable in isolation.
 
