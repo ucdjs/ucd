@@ -16,7 +16,7 @@ graph BT
 
   subgraph L2["Layer 2 — Infrastructure"]
     SH["@ucdjs-internal/shared"]
-    FB["@ucdjs/fs-bridge"]
+    FB["@ucdjs/fs-backend"]
     PU["@ucdjs/path-utils"]
   end
 
@@ -73,21 +73,21 @@ Low-level utilities with no business logic.
 | Package | Purpose |
 |---|---|
 | `@ucdjs-internal/shared` | Internal helpers: async utilities, fetch wrappers, path filters, API guards |
-| `@ucdjs/fs-bridge` | Filesystem abstraction — swap between Node.js disk I/O and HTTP read access |
+| `@ucdjs/fs-backend` | Filesystem abstraction for Node.js, HTTP, and custom backends |
 | `@ucdjs/path-utils` | Path manipulation utilities built on top of `pathe` |
 
 `@ucdjs-internal/shared` is intentionally marked internal — it may ship breaking changes in patch releases. Consumer packages should use `@ucdjs/utils` instead.
 
-### fs-bridge bridges
+### fs-backend implementations
 
 ```mermaid
 graph LR
-  APP["Application"] --> FB["fs-bridge interface\nread / write / listdir / stat / rm"]
-  FB --> N["NodeFSBridge\n(local disk)"]
-  FB --> H["HTTPFSBridge\n(read-only HTTP)"]
+  APP["Application"] --> FB["fs-backend interface\nread / write / list / stat / copy"]
+  FB --> N["Node backend\n(local disk)"]
+  FB --> H["HTTP backend\n(read-only HTTP)"]
 ```
 
-The bridge abstraction means storage code is environment-agnostic. The same `lockfile` and `ucd-store` code runs against a local filesystem in development and against a remote HTTP endpoint in read-only contexts.
+The backend abstraction keeps storage code environment-agnostic. The same `lockfile` and `ucd-store` code can run against a local filesystem in development or a remote HTTP endpoint in read-only contexts.
 
 ## Layer 3 — Persistence
 

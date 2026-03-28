@@ -31,16 +31,12 @@ A store is a directory on disk containing UCD files organized by version. The st
   All of these operations are available through the [`ucd store`](/packages/cli/store) CLI commands without writing any code.
 </Callout>
 
-## File System Bridges
+## File System Backends
 
-The store can operate over different file system backends via `@ucdjs/fs-bridge`:
+The store works with filesystem-style backends for local disk access, remote HTTP access, and testing-friendly in-memory implementations. In the public docs, the backend model is documented through [`@ucdjs/fs-backend`](/packages/fs-backend).
 
-- **Node.js** — reads and writes to the local file system using `node:fs`
-- **HTTP** — read-only access to a remote UCD store over HTTP
-- **In-memory** — ephemeral store for testing and pipeline workloads
-
-<Callout type="warn">
-  `@ucdjs/fs-bridge` is deprecated. If you are building new storage integrations around the store ecosystem, prefer <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a> and use the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> for existing bridge-based code.
+<Callout type="info">
+  If you are building tooling around store-style file access, start with <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a>.
 </Callout>
 
 ## Lockfile
