@@ -12,8 +12,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/ins
 });
 
 function RouteDetailPage() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
+  const { pipeline } = PipelineRoute.useLoaderData();
   const { sourceId, sourceFileId, pipelineId, routeId } = Route.useParams();
   const navigate = useNavigate();
 

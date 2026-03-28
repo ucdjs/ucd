@@ -83,17 +83,15 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
         pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
       })],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: routes.length,
-          sourceCount: 1,
-          routes,
-          sources: [{ id: "local" }],
-        },
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: routes.length,
+        sourceCount: 1,
+        routes,
+        sources: [{ id: "local" }],
       })],
     ]);
   });
@@ -184,26 +182,24 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect/output
         pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
       })],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: 1,
-          sourceCount: 1,
-          routes: [
-            {
-              id: "compile",
-              cache: true,
-              depends: [],
-              filter: "compile-filter",
-              outputs: [],
-              transforms: [],
-            },
-          ],
-          sources: [{ id: "local" }],
-        },
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: 1,
+        sourceCount: 1,
+        routes: [
+          {
+            id: "compile",
+            cache: true,
+            depends: [],
+            filter: "compile-filter",
+            outputs: [],
+            transforms: [],
+          },
+        ],
+        sources: [{ id: "local" }],
       })],
     ]);
 

@@ -4,12 +4,12 @@ import { Shuffle } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/")({
   loader: async ({ context, params }) => {
-    const pipelineResponse = await context.queryClient.ensureQueryData(pipelineQueryOptions({
+    const pipeline = await context.queryClient.ensureQueryData(pipelineQueryOptions({
       sourceId: params.sourceId,
       fileId: params.sourceFileId,
       pipelineId: params.pipelineId,
     }));
-    const allTransforms = new Set(pipelineResponse.pipeline.routes.flatMap((route) => route.transforms));
+    const allTransforms = new Set(pipeline.routes.flatMap((route) => route.transforms));
     const sorted = [...allTransforms].toSorted((a, b) => a.localeCompare(b));
     const firstName = sorted[0];
     if (firstName) {

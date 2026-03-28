@@ -33,11 +33,9 @@ describe("PipelineSidebar", () => {
         recentExecutions: [],
       })],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          versions: ["16.0.0", "15.1.0"],
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        versions: ["16.0.0", "15.1.0"],
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {
@@ -83,11 +81,9 @@ describe("PipelineSidebar", () => {
         recentExecutions: [],
       })],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          versions: ["16.0.0", "15.1.0"],
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        versions: ["16.0.0", "15.1.0"],
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {
@@ -134,11 +130,9 @@ describe("PipelineSidebar", () => {
         recentExecutions: [],
       })],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          versions: ["16.0.0", "15.1.0"],
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        versions: ["16.0.0", "15.1.0"],
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {

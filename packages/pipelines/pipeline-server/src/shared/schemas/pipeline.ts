@@ -48,10 +48,5 @@ export const PipelineDetailsSchema = z.object({
   sources: z.array(z.object({ id: z.string() })),
 });
 
-export const PipelineResponseSchema = z.object({
-  pipeline: PipelineDetailsSchema,
-});
-
 export type PipelineInfo = z.infer<typeof PipelineInfoSchema>;
 export type PipelineDetails = z.infer<typeof PipelineDetailsSchema>;
-export type PipelineResponse = z.infer<typeof PipelineResponseSchema>;
