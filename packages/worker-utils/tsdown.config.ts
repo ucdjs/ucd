@@ -6,6 +6,7 @@ export default createTsdownConfig({
     "./src/tasks.ts",
     "./src/environment.ts",
     "./src/constants.ts",
+    "./src/h3.ts",
 
     // setups
     "./src/setups.ts",
