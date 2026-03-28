@@ -6,7 +6,6 @@
     "specification",
     "bridges",
     "hooks",
-    "http-compat",
-    "migration-from-fs-bridge"
+    "http-compat"
   ]
 }

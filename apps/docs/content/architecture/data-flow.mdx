@@ -19,7 +19,7 @@ flowchart TD
   end
 
   subgraph Storage["Storage Layer"]
-    FB["fs-bridge\n(Node.js / HTTP)"]
+    FB["fs-backend\n(Node.js / HTTP / memory)"]
     LF["lockfile\n(.ucd-store.lock + snapshots)"]
     ST["ucd-store\n(mirror, sync, analyze)"]
     FB --> LF --> ST
@@ -62,12 +62,13 @@ Routes form a **directed acyclic graph (DAG)**. The executor resolves the depend
 
 ### 2. Storage
 
-Processed outputs and derived data packages are persisted via `@ucdjs/ucd-store`, which delegates all I/O to an `fs-bridge` implementation. Two bridges exist out of the box:
+Processed outputs and derived data packages are persisted via `@ucdjs/ucd-store`, which works with backend-style filesystem access. Common backend patterns include:
 
-| Bridge | Usage |
+| Backend pattern | Usage |
 |---|---|
-| `NodeFSBridge` | Read/write local disk (server-side) |
-| `HTTPFSBridge` | Read-only access over HTTP |
+| Node backend | Read/write local disk (server-side) |
+| HTTP backend | Read-only access over HTTP |
+| In-memory backend | Tests and ephemeral execution |
 
 State is tracked in two lockfile files written by `@ucdjs/lockfile`:
 
