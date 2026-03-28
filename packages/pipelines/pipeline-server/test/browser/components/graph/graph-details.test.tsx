@@ -8,6 +8,7 @@ const mockedNavigate = vi.hoisted(() => vi.fn());
 
 vi.mock("@tanstack/react-router", () => {
   return {
+    // eslint-disable-next-line react/component-hook-factories
     useNavigate: () => mockedNavigate,
   };
 });

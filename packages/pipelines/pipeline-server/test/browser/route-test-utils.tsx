@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import type { QueryClient } from "@tanstack/react-query";
 import type { RenderOptions } from "@testing-library/react";
 import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";

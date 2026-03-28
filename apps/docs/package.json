@@ -2,13 +2,14 @@
   "name": "@ucdjs/docs",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite dev --port 3001",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "fumadocs-mdx && eslint .",
-    "typecheck": "fumadocs-mdx && tsc --noEmit"
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
+    "clean": "git clean -xdf node_modules .wrangler"
   },
   "dependencies": {
     "@tailwindcss/vite": "catalog:build",

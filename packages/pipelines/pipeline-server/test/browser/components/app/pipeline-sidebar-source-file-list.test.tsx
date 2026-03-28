@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import { SourceFileList } from "#components/app/source-file-list";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";

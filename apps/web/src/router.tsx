@@ -17,6 +17,7 @@ export function getRouter() {
       docsUrl: UCDJS_DOCS_URL,
     },
     defaultPreload: "intent",
+    // eslint-disable-next-line react/component-hook-factories
     Wrap: (props: { children: React.ReactNode }) => {
       return (
         <QueryClientProvider client={queryClient}>
