@@ -9,8 +9,11 @@
     "definitions",
     "sources",
     "routes",
-    "artifacts",
-    "---Execution---",
+    "outputs",
+    "---Guides---",
+    "guides",
+    "---Reference---",
+    "api",
     "running",
     "ui"
   ]

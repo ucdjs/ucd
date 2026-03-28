@@ -1,23 +1,55 @@
 ---
 title: Introduction
-description: Data processing pipelines for UCD files
+description: Accurate mental model and entrypoint for the UCD.js pipeline system
 ---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Cards, Card } from 'fumadocs-ui/components/card';
 
 # Pipelines
 
-The `@ucdjs/pipelines-*` packages provide a powerful, graph-based system for defining and running data processing pipelines on Unicode Character Database (UCD) files.
+The `@ucdjs/pipelines-*` packages provide the internal extraction and data-production path for UCD.js. A pipeline definition describes:
 
-Pipelines are used to transform raw UCD files (like `UnicodeData.txt` or `Blocks.txt`) into structured data, artifacts, or TypeScript code.
+- which versions to process
+- which sources provide files
+- which routes should match those files
+- which transforms and dependencies should shape execution order
+- which outputs should be emitted or published
 
-## Architecture
+These docs focus on the **live authoring model** used in the repo today. That means route dependencies are modeled with `depends` and `ctx.getRouteData(...)`, execution is handled by `@ucdjs/pipelines-executor`, and published results are configured through route outputs.
 
-The pipeline system is split into several modular packages, each handling a specific part of the data processing workflow:
+## Mental model
 
-- **`@ucdjs/pipelines-core`**: The heart of the pipeline system. It contains the core definitions, DAG (Directed Acyclic Graph) execution logic, event system, and fundamental types used across the pipeline ecosystem.
-- **`@ucdjs/pipelines-artifacts`**: Schema definitions and artifact management for pipeline outputs. It defines how data produced by a route is typed and validated.
-- **`@ucdjs/pipelines-graph`**: Utilities for building and analyzing pipeline execution graphs, ensuring dependencies are resolved in the correct order.
-- **`@ucdjs/pipelines-loader`**: Utilities for loading pipeline definitions from configuration files or remote sources dynamically.
-- **`@ucdjs/pipelines-presets`**: A collection of pre-built pipeline routes and transformations for common UCD files, ready to use out-of-the-box.
-- **`@ucdjs/pipelines-server`**: The deployable pipeline application and server, including the built-in web UI for exploring execution, viewing DAGs, inspecting artifacts, and debugging pipeline runs.
+At a high level, pipeline authoring works like this:
 
-By separating these concerns, the pipeline system remains flexible, allowing you to use only the components necessary for your specific UCD processing needs.
+1. Define a pipeline in a `*.ucd-pipeline.ts` file.
+2. Add one or more sources that expose versioned files.
+3. Add routes with filters, parsers, optional transforms, and resolvers.
+4. Express route dependencies with `depends`.
+5. Run the definition through the CLI or `@ucdjs/pipelines-executor`.
+6. Inspect results in the Pipeline Server when you need execution-level debugging.
+
+## Package roles
+
+The pipeline system is split across focused packages:
+
+- **`@ucdjs/pipelines-core`**: definitions, filters, route/source/output types, transforms, and helpers
+- **`@ucdjs/pipelines-executor`**: runtime execution, logging hooks, traces, caching, and pipeline ordering
+- **`@ucdjs/pipelines-loader`**: discovery and loading of `*.ucd-pipeline.ts` files from local or remote sources
+- **`@ucdjs/pipelines-presets`**: shared parsers, resolvers, routes, and pipeline factories
+- **`@ucdjs/pipelines-server`**: local UI and server for inspection, execution history, logs, traces, and graphs
+
+## Start where you need to start
+
+<Cards>
+  <Card title="Definitions" href="/pipelines/definitions" description="Learn the fields on a pipeline definition and how DAG validation works." />
+  <Card title="Sources" href="/pipelines/sources" description="Understand backends, source helpers, includes/excludes, and pipeline output sources." />
+  <Card title="Routes" href="/pipelines/routes" description="See how filters, parsers, transforms, dependencies, resolvers, cache, and outputs fit together." />
+  <Card title="Outputs" href="/pipelines/outputs" description="Learn how emitted and published route results are declared and consumed." />
+  <Card title="Write Your First Pipeline" href="/pipelines/guides/write-your-first-pipeline" description="Start from the smallest runnable pipeline in the playground." />
+  <Card title="Debug Pipelines" href="/pipelines/guides/debug-pipelines" description="Use the CLI and Pipeline Server to inspect discovery, execution, logs, and graphs." />
+</Cards>
+
+<Callout type="warn">
+  These packages are powerful and heavily used inside the monorepo, but they should still be treated as advanced infrastructure. Prefer the documented helpers and playground patterns over ad-hoc experimentation.
+</Callout>

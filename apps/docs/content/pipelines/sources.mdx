@@ -1,33 +1,102 @@
 ---
 title: Sources
-description: Pipeline inputs and data providers
+description: Backends, helper constructors, and pipeline input providers
 ---
 
 # Sources
 
-Sources define where the raw Unicode Character Database (UCD) files come from. They provide the initial inputs to the pipeline execution.
+Sources define where versioned files come from. A pipeline definition lists sources in `inputs`, and the executor resolves those sources before any route runs.
 
-A source can be local files, HTTP URLs, in-memory data, or any other source that yields file contents.
+## Source definitions are backend-driven
 
-## Defining a Source
-
-You can create a custom source using `definePipelineSource` from `@ucdjs/pipelines-core`.
+A source definition wraps a backend:
 
 ```ts
 import { definePipelineSource } from "@ucdjs/pipelines-core";
 
 const mySource = definePipelineSource({
-  id: "local-files",
-  resolve: async (ctx) => {
-    // Return a list of files to process
-    return [
-      { path: "UnicodeData.txt", content: "..." },
-      { path: "Blocks.txt", content: "..." }
-    ];
-  }
+  id: "custom-source",
+  backend: {
+    async listFiles(version) {
+      return [];
+    },
+    async readFile(file) {
+      return "";
+    },
+  },
 });
 ```
 
-A source must return an array of files, each containing a `path` (the logical identifier or filename) and the `content` of the file.
+A backend can implement:
 
-When a pipeline executes, all of its assigned sources are resolved first, and the resulting files are passed down to the pipeline routes for processing.
+- `listFiles(version)` to enumerate available files
+- `readFile(file)` to read content
+- `readFileStream(file, options)` when streaming is needed
+- `getMetadata(file)` when metadata is available
+
+Source definitions can also add:
+
+- `includes` to keep only matching files
+- `excludes` to drop matching files
+- `kind: "pipeline-output"` for synthetic sources built from another pipeline's outputs
+
+## Use helpers when possible
+
+### `createMemorySource(...)`
+
+This is the best authoring helper for examples, tests, and playground pipelines:
+
+```ts
+import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+
+const colorsSource = createMemorySource({
+  id: "colors",
+  files: {
+    "1.0.0": [{
+      path: "data/colors.txt",
+      content: "FF0000; Red",
+    }],
+  },
+});
+```
+
+### `createHttpSource(...)` and `createUnicodeOrgSource(...)`
+
+These helpers create HTTP-backed sources:
+
+```ts
+import { createUnicodeOrgSource } from "@ucdjs/pipelines-core/sources";
+
+const unicodeOrgSource = createUnicodeOrgSource();
+```
+
+Use them when HTTP transport is the right abstraction for your environment. They are lower-level than the in-memory helper, and they are best suited to setups where file enumeration is controlled intentionally.
+
+## Filter files at the source boundary
+
+Source-level `includes` and `excludes` run before route matching. That makes them useful for broad source shaping, such as limiting a large source to one directory or excluding generated files.
+
+```ts
+import { byGlob, definePipelineSource } from "@ucdjs/pipelines-core";
+
+const source = definePipelineSource({
+  id: "custom-source",
+  backend,
+  includes: byGlob("**/*.txt"),
+});
+```
+
+## Consume outputs from another pipeline
+
+`pipelineOutputSource(...)` creates a synthetic source backed by outputs from an upstream pipeline:
+
+```ts
+import { pipelineOutputSource } from "@ucdjs/pipelines-core";
+
+const publishedColorsInput = pipelineOutputSource({
+  pipelineId: "traced-outputs",
+  outputId: "filesystem-archive",
+});
+```
+
+Use this when one pipeline should read a published output from another pipeline in the same executor batch.

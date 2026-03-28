@@ -1,0 +1,96 @@
+---
+title: Debug Pipelines
+description: Discover, run, inspect, and troubleshoot pipeline definitions
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Debug Pipelines
+
+Use this workflow when a pipeline does not load, does not match files, produces unexpected route data, or needs execution-level inspection.
+
+## 1. Confirm discovery first
+
+Start with `list` so you know the loader can find your pipeline files:
+
+```bash
+./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground
+```
+
+Useful variations:
+
+```bash
+./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground --path src/simple
+```
+
+```bash
+./packages/cli/bin/ucd.js pipelines list --github owner/repo --ref main
+```
+
+If the pipeline does not appear here, fix discovery before debugging execution.
+
+## 2. Run one pipeline in isolation
+
+```bash
+./packages/cli/bin/ucd.js pipelines run with-logging --cwd packages/pipelines/pipeline-playground
+```
+
+Use selectors so you do not mix unrelated output with the pipeline you are debugging.
+
+## 3. Launch the Pipeline Server
+
+The quickest way to inspect a run is the built-in UI:
+
+```bash
+./packages/cli/bin/ucd.js pipelines run --ui --cwd packages/pipelines/pipeline-playground
+```
+
+Or choose a specific port:
+
+```bash
+./packages/cli/bin/ucd.js pipelines run --ui --port 4040 --cwd packages/pipelines/pipeline-playground
+```
+
+## 4. Use the right view for the problem
+
+The Pipeline Server exposes several debugging views:
+
+- **Overview**: versions, source count, include filter, route count, transforms, outputs, and recent executions
+- **Inspect → Routes**: route graph, dependencies, transforms, cache settings, and output declarations
+- **Inspect → Outputs**: output IDs, sink metadata, format, and resolved path behavior
+- **Inspect → Transforms**: where a transform is reused across routes
+- **Executions**: execution history for one pipeline
+- **Execution details**: timeline, traces, logs, and graph links
+- **Execution graph**: runtime graph for a specific execution
+
+## 5. Add structured logs inside pipeline code
+
+The executor and Pipeline Server surface `ctx.logger` output:
+
+```ts
+resolver: async (ctx, rows) => {
+  ctx.logger.info("Resolver started", { file: ctx.file.name, version: ctx.version });
+
+  const entries = [];
+  for await (const row of rows) {
+    entries.push(row);
+  }
+
+  ctx.logger.info("Resolver finished", { entriesCount: entries.length });
+  return entries;
+}
+```
+
+The `with-logging` playground example also shows `console.log(...)` and filter/parser/transform logging in context.
+
+## What to check when it fails
+
+- If discovery fails, check the file name pattern and export shape.
+- If no files match, check the route filter and the source-provided file names.
+- If dependency data is missing, check `depends` and the route ID passed to `ctx.getRouteData(...)`.
+- If outputs do not appear, check route `outputs`, sink configuration, and output IDs.
+- If the UI looks empty, make sure you actually launched with `--ui` and then executed a pipeline from the server.
+
+<Callout type="warn">
+  The UI helps you inspect execution, but the first debugging win is usually simpler: list the pipeline, run one selector, and verify that the route filters match the files you think they match.
+</Callout>

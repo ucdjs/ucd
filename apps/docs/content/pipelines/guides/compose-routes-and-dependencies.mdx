@@ -1,0 +1,117 @@
+---
+title: Compose Routes And Dependencies
+description: Combine transforms, route dependencies, concurrency, and cacheable routes
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Compose Routes And Dependencies
+
+Use this pattern when a pipeline needs more than independent one-file routes. The playground examples `dependent-routes` and `with-transforms` show how the live system composes route ordering, transforms, and pipeline-level concurrency.
+
+## Declare route dependencies explicitly
+
+Route dependencies are declared with `depends` and consumed with `ctx.getRouteData(...)`:
+
+```ts
+const sizesAfterColorsRoute = definePipelineRoute({
+  id: "sizes-after-colors",
+  filter: byName("sizes.txt"),
+  depends: ["route:colors"],
+  parser: standardParser,
+  resolver: async (ctx, rows) => {
+    const colorData = ctx.getRouteData("colors");
+
+    const entries = [];
+    for await (const row of rows) {
+      entries.push({
+        codePoint: row.codePoint,
+        value: row.value ?? "",
+      });
+    }
+
+    return [{
+      version: ctx.version,
+      property: "Sizes",
+      file: ctx.file.name,
+      entries,
+      meta: {
+        colorOutputCount: colorData.length,
+      },
+    }];
+  },
+});
+```
+
+The dependency string is what drives DAG validation and execution order. If the dependency graph is invalid, `definePipeline(...)` throws when the pipeline definition is created.
+
+## Insert transforms between parser and resolver
+
+Transforms run after parsing and before resolution:
+
+```ts
+const uppercaseValues = definePipelineTransform({
+  id: "uppercase-values",
+  async* fn(_ctx, rows) {
+    for await (const row of rows) {
+      yield {
+        ...row,
+        value: typeof row.value === "string" ? row.value.toUpperCase() : row.value,
+      };
+    }
+  },
+});
+
+definePipelineRoute({
+  id: "colors-sorted",
+  filter: byName("colors.txt"),
+  parser: standardParser,
+  transforms: [
+    createSortTransform({ direction: "desc" }),
+    uppercaseValues,
+  ],
+  resolver: propertyJsonResolver,
+});
+```
+
+## Use pipeline-level concurrency intentionally
+
+`concurrency` is configured on the pipeline definition, not the route:
+
+```ts
+export const multiRoutePipeline = definePipeline({
+  id: "multi-route",
+  name: "Multi Route",
+  versions: ["1.0.0"],
+  inputs: [colorsSource, sizesSource, planetsSource],
+  routes: [colorsRoute, sizesRoute, planetsRoute],
+  concurrency: 3,
+});
+```
+
+Independent routes can run in parallel up to that limit. Dependent routes still wait for their upstream route data.
+
+## Cache route work when it is safe
+
+Set `cache: true` on a route when its output can be reused for the same input and dependency state. The executor uses route inputs plus dependency hashes to decide whether cached data is still valid.
+
+## Run the playground examples
+
+```bash
+./packages/cli/bin/ucd.js pipelines run dependent-routes --cwd packages/pipelines/pipeline-playground
+```
+
+```bash
+./packages/cli/bin/ucd.js pipelines run with-transforms --cwd packages/pipelines/pipeline-playground
+```
+
+## What to check when it fails
+
+- Make sure every `depends` entry points to a real route ID.
+- Make sure you call `ctx.getRouteData(...)` with the same route ID that appears in `depends`.
+- Make sure transform order is intentional, because each transform receives the previous transform's output.
+- Make sure caching is only enabled for deterministic route work.
+
+<Callout type="warn">
+  Route dependencies are version-scoped within a run. If a resolver expects data from another version, model that explicitly instead of assuming cross-version access.
+</Callout>

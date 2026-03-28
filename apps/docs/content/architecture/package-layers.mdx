@@ -30,7 +30,6 @@ graph BT
   subgraph L4["Layer 4 — Processing"]
     PC["@ucdjs/pipelines-core"]
     PG["@ucdjs/pipelines-graph"]
-    PA["@ucdjs/pipelines-artifacts"]
     PL["@ucdjs/pipelines-loader"]
     PE["@ucdjs/pipelines-executor"]
     PP["@ucdjs/pipelines-presets"]
@@ -49,8 +48,8 @@ graph BT
   SH & FB & PU --> LF
   LF --> US
   SH --> PC
-  PC --> PG & PA & PP
-  PA & PG --> PE
+  PC --> PG & PP
+  PG --> PE
   PC --> PL
   PE --> PS
   ENV & PU & SCH --> CL
@@ -99,18 +98,17 @@ The bridge abstraction means storage code is environment-agnostic. The same `loc
 | `@ucdjs/lockfile` | Manages `.ucd-store.lock` (version index) and `{version}/snapshot.json` (per-version file hashes) |
 | `@ucdjs/ucd-store` | High-level store operations: mirror, sync, compare, analyze, validate |
 
-The lockfile is the canonical record of what has been mirrored. It is the only mutable artifact that both the write path (pipelines/sync) and the read path (client/API) agree on.
+The lockfile is the canonical record of what has been mirrored. It is the only mutable output that both the write path (pipelines/sync) and the read path (client/API) agree on.
 
 ## Layer 4 — Processing (Pipelines)
 
 | Package | Purpose |
 |---|---|
-| `@ucdjs/pipelines-core` | Pipeline DSL: `definePipeline()`, sources, routes, transforms, filters, events |
+| `@ucdjs/pipelines-core` | Pipeline DSL: `definePipeline()`, sources, routes, transforms, filters, and outputs |
 | `@ucdjs/pipelines-graph` | DAG representation of pipeline route dependencies |
-| `@ucdjs/pipelines-artifacts` | Artifact validation and lifecycle |
 | `@ucdjs/pipelines-loader` | Discover and load pipeline definitions from the filesystem |
-| `@ucdjs/pipelines-executor` | Execute pipelines with concurrency, caching, and event emission |
-| `@ucdjs/pipelines-presets` | Built-in pipeline definitions for common UCD processing tasks |
+| `@ucdjs/pipelines-executor` | Execute pipelines with concurrency, caching, logs, traces, and published-output ordering |
+| `@ucdjs/pipelines-presets` | Shared parsers, resolvers, routes, and pipeline factories for common UCD processing tasks |
 
 Routes inside a pipeline form a directed acyclic graph. The executor uses `pipelines-graph` to resolve the dependency order and run routes concurrently where the graph allows it.
 
@@ -120,7 +118,7 @@ Routes inside a pipeline form a directed acyclic graph. The executor uses `pipel
 flowchart LR
   DEF["Pipeline Definition\n(pipelines-core)"] --> LDR["Loader\n(discover & bundle)"]
   LDR --> EXE["Executor\n(DAG resolution + concurrency)"]
-  EXE --> ART["Artifacts"]
+  EXE --> OUT["Outputs / Route Data"]
   EXE -->|"events"| SRV["pipelines-server\n(UI + WebSocket)"]
 ```
 

@@ -1,19 +1,27 @@
 ---
 title: pipelines
-description: Run and manage UCD data processing pipelines
+description: Command reference for discovering, running, and caching pipelines
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
 
 # ucd pipelines
 
-Run and manage UCD data processing pipelines. Pipelines can be loaded from local files or directly from remote GitHub/GitLab repositories.
+Run and manage pipeline definitions from the command line. This page is the command reference.
+
+For the authoring model, route dependencies, outputs, and debugging workflow, start with:
+
+- [/pipelines](/pipelines)
+- [/pipelines/api](/pipelines/api)
+- [/pipelines/guides/debug-pipelines](/pipelines/guides/debug-pipelines)
 
 ```bash
 ucd pipelines <subcommand> [...flags]
 ```
 
----
+<Callout type="info">
+  Pipeline discovery uses the file pattern `**/*.ucd-pipeline.ts`. During monorepo development, run the CLI from the repo root with `./packages/cli/bin/ucd.js`.
+</Callout>
 
 ## run
 
@@ -53,8 +61,6 @@ ucd pipelines run --github ucdjs/pipelines --ref main
 ucd pipelines run --ui --port 4000
 ```
 
----
-
 ## list
 
 List all available pipelines.
@@ -79,8 +85,6 @@ ucd pipelines list [...flags]
 ucd pipelines list
 ucd pipelines list --github ucdjs/pipelines --ref main
 ```
-
----
 
 ## cache
 
