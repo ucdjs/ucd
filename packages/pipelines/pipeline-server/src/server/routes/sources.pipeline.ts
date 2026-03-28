@@ -1,11 +1,17 @@
 import type { ExecutePipelineResponse } from "#shared/schemas/execution";
-import type { PipelineDetails } from "#shared/schemas/pipeline";
+import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas/pipeline";
+import type { SpanProcessor } from "@opentelemetry/sdk-trace-node";
 import type { H3Event } from "h3";
 import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
+import { createPipelineSpanExporter } from "#server/pipeline/span-exporter";
 import { ensureWorkspaceExists } from "#server/workspace";
 import { toPipelineDetails } from "#shared/lib/pipeline-utils";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { resourceFromAttributes } from "@opentelemetry/resources";
+import { BatchSpanProcessor, NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
+import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
 import { and, eq } from "drizzle-orm";
@@ -60,7 +66,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
-  const { db, otlpExporter } = event.context;
+  const { db } = event.context;
   const workspaceId = event.context.workspaceId;
   const { file, pipeline, pipelineId, source } = await resolvePipelineRoute(event);
 
@@ -73,7 +79,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const cache = body.cache ?? true;
   const executionId = Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
-    b => b.toString(16).padStart(2, "0"),
+    (b) => b.toString(16).padStart(2, "0"),
   ).join("");
 
   await ensureWorkspaceExists(db, workspaceId);
@@ -89,36 +95,52 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     versions,
   });
 
+  // Create a per-execution tracer provider with a SpanExporter that writes to the DB.
+  // Each execution gets its own isolated provider to avoid cross-contamination.
+  const spanProcessors: SpanProcessor[] = [
+    new BatchSpanProcessor(createPipelineSpanExporter({ db, workspaceId, executionId })),
+  ];
+
+  // eslint-disable-next-line node/prefer-global/process
+  if (process.env.OTLP_ENDPOINT) {
+    // eslint-disable-next-line node/prefer-global/process
+    spanProcessors.push(new BatchSpanProcessor(new OTLPTraceExporter({ url: `${process.env.OTLP_ENDPOINT}/v1/traces` })));
+  }
+
+  const resource = resourceFromAttributes({
+    [ATTR_SERVICE_NAME]: "ucdjs-pipeline-server",
+    "pipeline.execution_id": executionId,
+    "pipeline.pipeline_id": pipelineId,
+    "pipeline.file_id": file.id,
+    "pipeline.source_id": source.id,
+    "pipeline.workspace_id": workspaceId,
+  });
+
+  const tracerProvider = new NodeTracerProvider({
+    spanProcessors,
+    resource,
+  });
+  const tracer = tracerProvider.getTracer("pipeline-executor");
+
   const runtime = createNodeExecutionRuntime({
     outputCapture: {
       console: true,
       stdio: true,
     },
+    tracer,
   });
 
   const executor = createPipelineExecutor({
     runtime,
-    onTrace: async (trace) => {
-      await db.insert(schema.executionTraces).values({
-        id: trace.id,
-        workspaceId,
-        executionId,
-        traceId: trace.traceId ?? null,
-        spanId: trace.spanId ?? null,
-        parentSpanId: trace.parentSpanId ?? null,
-        kind: trace.kind,
-        timestamp: new Date(trace.timestamp),
-        data: trace,
-      });
-
-      await otlpExporter?.(trace);
-    },
     onLog: createExecutionLogStore(db),
   });
 
   try {
-    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId, traceId: executionId }, () =>
+    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId }, () =>
       executor.run([pipeline], { versions, cache }));
+
+    // Flush any buffered spans before updating execution status
+    await tracerProvider.forceFlush();
 
     const pipelineResult = execResult.find((r) => r.id === pipelineId);
 
@@ -136,6 +158,8 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     return { success: true, executionId } satisfies ExecutePipelineResponse;
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
+
+    await tracerProvider.forceFlush().catch(() => {});
 
     await db.update(schema.executions)
       .set({ status: "failed", completedAt: new Date(), error: errorMessage })
