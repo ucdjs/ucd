@@ -1,5 +1,4 @@
 import type { Database } from "#server/db";
-import type { OtlpExporterOptions } from "@ucdjs/pipelines-executor";
 import type { PipelineLocator } from "@ucdjs/pipelines-loader";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -17,10 +16,13 @@ import {
   sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
+import { context } from "@opentelemetry/api";
+import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { getUcdConfigDir } from "@ucdjs/env";
-import { createOtlpExporter } from "@ucdjs/pipelines-executor";
 import { H3, serve, serveStatic } from "h3";
 import { version } from "../../package.json" with { type: "json" };
+
+context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
 
 export type PipelineSource = PipelineLocator & { id: string };
 
@@ -28,7 +30,6 @@ export interface AppOptions {
   sources?: PipelineSource[];
   db?: Database;
   workspaceId?: string;
-  otlp?: OtlpExporterOptions;
 }
 
 export interface ServerOptions extends AppOptions {
@@ -41,7 +42,6 @@ declare module "h3" {
     sources: PipelineSource[];
     db: Database;
     workspaceId: string;
-    otlpExporter: ReturnType<typeof createOtlpExporter> | null;
   }
 }
 
@@ -67,18 +67,7 @@ export function resolvePipelineSources(sources: PipelineSource[] = []): Pipeline
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { sources = [], db, workspaceId, otlp } = options;
-
-  const resolvedOtlp: OtlpExporterOptions | null = otlp ?? (
-    process.env.OTLP_ENDPOINT
-      ? {
-          endpoint: process.env.OTLP_ENDPOINT,
-          headers: process.env.OTLP_HEADERS ? JSON.parse(process.env.OTLP_HEADERS) as Record<string, string> : undefined,
-          resource: { "service.name": "ucdjs-pipeline-server" },
-        }
-      : null
-  );
-  const otlpExporter = resolvedOtlp ? createOtlpExporter(resolvedOtlp) : null;
+  const { sources = [], db, workspaceId } = options;
 
   if (!db) {
     throw new Error("Database is required. Pass db to createApp() or use startServer()");
@@ -91,7 +80,6 @@ export function createApp(options: AppOptions = {}): H3 {
     event.context.sources = resolvedSources;
     event.context.db = db;
     event.context.workspaceId = workspaceId ?? "default";
-    event.context.otlpExporter = otlpExporter;
     next();
   });
 
@@ -118,7 +106,7 @@ export function createApp(options: AppOptions = {}): H3 {
 }
 
 export async function startServer(options: ServerOptions = {}): Promise<void> {
-  const { port = 3030, sources, workspaceId, workspaceRoot, otlp } = options;
+  const { port = 3030, sources, workspaceId, workspaceRoot } = options;
 
   // Initialize database with auto-migration
   // NOTE: This will CRASH the server if database initialization fails
@@ -147,7 +135,6 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     sources: resolvedSources,
     db,
     workspaceId: resolvedWorkspace.workspaceId,
-    otlp,
   });
 
   const live = setupLiveUpdates(app, {

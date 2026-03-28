@@ -6,6 +6,7 @@ export interface ExecutionSpan {
   spanId: string;
   parentSpanId?: string;
   depth: number;
+  kind: string;
   label: string;
   start: number;
   end: number;
@@ -60,6 +61,7 @@ function computeDepths(spans: Omit<ExecutionSpan, "depth">[]): ExecutionSpan[] {
   return spans.map(s => ({ ...s, depth: getDepth(s.spanId) }));
 }
 
+
 export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan[] {
   const raw: Omit<ExecutionSpan, "depth">[] = [];
 
@@ -76,6 +78,7 @@ export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan
       raw.push({
         spanId: trace.spanId ?? trace.id,
         parentSpanId: trace.parentSpanId ?? undefined,
+        kind: trace.kind,
         label: buildSpanLabel(trace),
         start: startTimestamp,
         end: endTimestamp,
@@ -90,6 +93,7 @@ export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan
       raw.push({
         spanId: trace.spanId ?? trace.id,
         parentSpanId: trace.parentSpanId ?? undefined,
+        kind: trace.kind,
         label: buildSpanLabel(trace),
         start: ts,
         end: ts + 1,

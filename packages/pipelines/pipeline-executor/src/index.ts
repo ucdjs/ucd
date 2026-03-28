@@ -14,9 +14,6 @@ export {
 
 export { createPipelineExecutor } from "./executor";
 
-export { createOtlpExporter } from "./exporters/otlp";
-
-export type { OtlpExporterOptions } from "./exporters/otlp";
 export type {
   PipelineExecutionContext,
   PipelineExecutionLogInput,

@@ -56,6 +56,12 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:runtime",
+    "@opentelemetry/context-async-hooks": "catalog:runtime",
+    "@opentelemetry/exporter-trace-otlp-http": "catalog:runtime",
+    "@opentelemetry/resources": "catalog:runtime",
+    "@opentelemetry/sdk-trace-node": "catalog:runtime",
+    "@opentelemetry/semantic-conventions": "catalog:runtime",
     "@tanstack/react-devtools": "catalog:frontend",
     "@tanstack/react-hotkeys": "catalog:frontend",
     "@tanstack/react-hotkeys-devtools": "catalog:frontend",

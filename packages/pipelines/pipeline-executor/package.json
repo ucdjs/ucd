@@ -39,6 +39,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@opentelemetry/api": "catalog:runtime",
     "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-graph": "workspace:*"

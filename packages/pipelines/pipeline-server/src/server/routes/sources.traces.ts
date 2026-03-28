@@ -57,8 +57,8 @@ sourcesTracesRouter.get(
         .from(schema.executionTraces)
         .where(traceWhere)
         .orderBy(
-          sql`json_extract(${schema.executionTraces.data}, '$.startTimestamp') ASC NULLS LAST`,
-          asc(schema.executionTraces.timestamp),
+          sql`start_timestamp ASC NULLS LAST`,
+          asc(schema.executionTraces.endTimestamp),
           asc(schema.executionTraces.id),
         )
         .limit(limit)
@@ -79,7 +79,7 @@ sourcesTracesRouter.get(
       traceId: trace.traceId ?? null,
       spanId: trace.spanId ?? null,
       parentSpanId: trace.parentSpanId ?? null,
-      timestamp: trace.timestamp.toISOString(),
+      timestamp: trace.endTimestamp.toISOString(),
       data: trace.data,
     }));
 

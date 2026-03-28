@@ -8,7 +8,7 @@ import type {
   PipelineLogSource,
   PipelineSummary,
 } from "@ucdjs/pipelines-executor";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export interface ExecutionLogPayload {
   message: string;
@@ -57,11 +57,12 @@ export const executionTraces = sqliteTable("execution_traces", {
   spanId: text("span_id"),
   parentSpanId: text("parent_span_id"),
   kind: text("kind").$type<PipelineTraceKind>().notNull(),
-  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+  startTimestamp: real("start_timestamp"),
+  endTimestamp: integer("end_timestamp", { mode: "timestamp_ms" }).notNull(),
   data: text("data", { mode: "json" }).$type<PipelineTraceRecord>().notNull(),
 }, (table) => [
   index("execution_traces_workspace_execution_idx").on(table.workspaceId, table.executionId),
-  index("execution_traces_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
+  index("execution_traces_execution_start_idx").on(table.executionId, table.startTimestamp),
 ]);
 
 export const executionLogs = sqliteTable("execution_logs", {

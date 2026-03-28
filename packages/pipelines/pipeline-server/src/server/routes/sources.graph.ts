@@ -47,7 +47,7 @@ sourcesGraphRouter.get(
         eq(schema.executionTraces.workspaceId, workspaceId),
         eq(schema.executionTraces.executionId, executionId),
       ))
-      .orderBy(schema.executionTraces.timestamp);
+      .orderBy(schema.executionTraces.endTimestamp);
 
     const graph = traceRows.length > 0
       ? buildExecutionGraphFromTraces(traceRows.map((trace) => trace.data))
