@@ -34,7 +34,7 @@ permissions: {}
 
 jobs:
   test:
-    name: ${{ matrix.runs.name }}
+    name: test (${{ matrix.runs.name }})
     runs-on: ${{ matrix.runs.os }}
     strategy:
       fail-fast: false
