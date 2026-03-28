@@ -1,27 +1,63 @@
 ---
 title: UI
-description: Visualizing pipeline execution
+description: Inspect definitions, executions, logs, traces, and graphs with the Pipeline Server
 ---
 
-# Visualizing Pipelines
+# Pipeline Server UI
 
-The pipeline UI now ships as part of `@ucdjs/pipelines-server`. It provides a web-based interface for visualizing pipeline execution, inspecting logs, and debugging route dependencies.
+The pipeline UI ships as part of `@ucdjs/pipelines-server`. The CLI starts it with `ucd pipelines run --ui`, and the server gives you a focused interface for debugging pipeline definitions and individual executions.
 
-This provides a clear visual representation of the Directed Acyclic Graph (DAG) created by the route dependencies, making it easier to understand complex data processing flows.
-
-## Starting the UI
-
-You can start the pipeline visualization UI via the CLI by appending the `--ui` flag when running a pipeline.
+## Start the server
 
 ```bash
-ucd pipelines run my-pipeline --ui
+./packages/cli/bin/ucd.js pipelines run --ui --cwd packages/pipelines/pipeline-playground
 ```
 
-This command will open a local web server displaying the UI. The interface provides several views and tools:
+You can also choose a port:
 
-- **DAG Visualization**: A visual graph showing the dependencies and execution order of the defined routes.
-- **Execution Timings**: Information about the execution duration for each route and the entire pipeline.
-- **Artifact Inspection**: The ability to inspect the structured artifacts emitted by each completed route.
-- **Logs**: Detailed execution logs and error messages associated with individual routes.
+```bash
+./packages/cli/bin/ucd.js pipelines run --ui --port 4040 --cwd packages/pipelines/pipeline-playground
+```
 
-This visual feedback is invaluable when developing custom pipelines or debugging data processing errors.
+## What the UI exposes
+
+### Source and pipeline browsing
+
+The sidebar lets you switch sources, choose a pipeline file, and move between pipeline overview, inspect, and execution history.
+
+### Overview
+
+The overview page summarizes:
+
+- selected versions
+- source and route counts
+- pipeline include filter
+- transforms and outputs
+- recent executions
+
+### Inspect
+
+Inspect mode is for static definition debugging:
+
+- **Routes**: graph and route-level structure
+- **Transforms**: where transforms are reused
+- **Outputs**: output IDs, sinks, format, and path metadata
+
+### Executions
+
+The executions pages focus on runtime behavior:
+
+- execution history
+- per-run status and timings
+- timeline and traces
+- captured logs
+- execution graph for a specific run
+
+## Best use cases
+
+Use the Pipeline Server when:
+
+- you need to verify route dependencies visually
+- you want to inspect output declarations without reading the source file
+- you want logs and traces for one execution
+- you need to compare recent runs of the same pipeline

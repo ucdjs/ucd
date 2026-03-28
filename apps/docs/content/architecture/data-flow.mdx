@@ -16,7 +16,7 @@ flowchart TD
   subgraph Pipelines["Pipeline Layer"]
     PS["pipelines-loader\n(discover & load)"]
     PE["pipelines-executor\n(run routes in DAG order)"]
-    PA["Artifacts\n(processed output)"]
+    PA["Outputs / route data\n(processed result)"]
     PS --> PE --> PA
   end
 
@@ -49,29 +49,29 @@ flowchart TD
 
 ### 1. Ingestion
 
-Raw UCD files are fetched from `unicode.org` (or a configured mirror). A pipeline definition specifies a **source** pointing at the remote files and a set of **routes** describing how they should be processed.
+Raw UCD files are fetched from `unicode.org` (or a configured mirror). A pipeline definition specifies one or more **sources** and a set of **routes** describing how those files should be processed.
 
 ```mermaid
 flowchart LR
   U["Unicode.org"] -->|"HTTP fetch"| SRC["Pipeline Source"]
   SRC --> R1["Route: filter .txt files"]
   SRC --> R2["Route: filter PropertyAliases"]
-  R1 --> A1["Artifact: processed data"]
-  R2 --> A2["Artifact: property map"]
+  R1 --> A1["Output: processed data"]
+  R2 --> A2["Output: property map"]
 ```
 
 Routes form a **directed acyclic graph (DAG)**. The executor resolves the dependency order and runs routes concurrently where possible.
 
 ### 2. Storage
 
-Processed artifacts are persisted via `@ucdjs/ucd-store`, which delegates all I/O to an `fs-bridge` implementation. Two bridges exist out of the box:
+Processed outputs and derived data packages are persisted via `@ucdjs/ucd-store`, which delegates all I/O to an `fs-bridge` implementation. Two bridges exist out of the box:
 
 | Bridge | Usage |
 |---|---|
 | `NodeFSBridge` | Read/write local disk (server-side) |
 | `HTTPFSBridge` | Read-only access over HTTP |
 
-State is tracked in two lockfile artifacts written by `@ucdjs/lockfile`:
+State is tracked in two lockfile files written by `@ucdjs/lockfile`:
 
 - `.ucd-store.lock` — version index listing all mirrored versions
 - `{version}/snapshot.json` — per-version manifest with file hashes

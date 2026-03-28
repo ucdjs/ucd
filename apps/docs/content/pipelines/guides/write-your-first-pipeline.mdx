@@ -1,0 +1,85 @@
+---
+title: Write Your First Pipeline
+description: Build and run a minimal pipeline definition
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Write Your First Pipeline
+
+Use this pattern when you want the smallest possible pipeline definition: one source, one route, one resolver, and one runnable file that the loader can discover.
+
+The canonical example is `source-and-route.ucd-pipeline.ts` from the pipeline playground.
+
+## Start from the simplest shape
+
+```ts
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
+import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+
+const colorsSource = createMemorySource({
+  id: "colors",
+  files: {
+    "1.0.0": [{
+      path: "data/colors.txt",
+      content: `FF0000; Red
+00FF00; Green
+0000FF; Blue`,
+    }],
+  },
+});
+
+const colorsRoute = definePipelineRoute({
+  id: "colors",
+  filter: byName("colors.txt"),
+  parser: standardParser,
+  resolver: propertyJsonResolver,
+});
+
+export const sourceAndRoutePipeline = definePipeline({
+  id: "source-and-route",
+  name: "Source and Route",
+  versions: ["1.0.0"],
+  inputs: [colorsSource],
+  routes: [colorsRoute],
+});
+```
+
+## What each piece does
+
+- The pipeline file must match `*.ucd-pipeline.ts` for automatic discovery.
+- `createMemorySource(...)` exposes versioned files through an in-memory backend.
+- `filter` decides which files the route should process.
+- `parser` turns file content into rows.
+- `resolver` turns those rows into route data and outputs.
+- `definePipeline(...)` ties versions, inputs, and routes together and validates the route DAG up front.
+
+## Run it from the repo root
+
+```bash
+./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground
+```
+
+```bash
+./packages/cli/bin/ucd.js pipelines run source-and-route --cwd packages/pipelines/pipeline-playground
+```
+
+## When to use this pattern
+
+Use this starting point when:
+
+- you are building a new pipeline from scratch
+- you want a minimal test fixture
+- you need to confirm file discovery, parsing, and execution before adding dependencies or outputs
+
+## What to check when it fails
+
+- Make sure the file name ends with `.ucd-pipeline.ts`.
+- Make sure the exported value is a real pipeline definition created by `definePipeline(...)`.
+- Make sure the route filter matches the file name exactly.
+- Make sure the `versions` array matches a version present in the source helper.
+
+<Callout type="info">
+  Once the minimal pipeline runs, add transforms, route dependencies, or published outputs one step at a time. That keeps debugging much simpler.
+</Callout>

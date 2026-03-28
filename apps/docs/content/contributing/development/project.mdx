@@ -24,7 +24,7 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
 
 ## High-Level Flow
 
-UCD source files can be accessed either through the storage layer (fs-bridge + ucd-store) or directly through the API. The API does not depend on the storage layer; it can serve files and metadata by calling upstream sources. Pipelines run internally to extract data and produce artifacts/data packages. Consumers typically use the API (and data packages when available). The CLI can explore local files, call the API directly, and orchestrate local workflows.
+UCD source files can be accessed either through the storage layer (fs-bridge + ucd-store) or directly through the API. The API does not depend on the storage layer; it can serve files and metadata by calling upstream sources. Pipelines run internally to extract data and produce outputs/data packages. Consumers typically use the API (and data packages when available). The CLI can explore local files, call the API directly, and orchestrate local workflows.
 
 ```text
 UCD source files
@@ -35,7 +35,7 @@ Storage + Store    API (direct upstream)
       ↓
  Pipelines (internal build path)
       ↓
-Artifacts / Data Packages → Consumers (NPM packages)
+Outputs / Data Packages → Consumers (NPM packages)
 ```
 
 <Callout title="Note">
@@ -54,15 +54,15 @@ Use cases:
 
 ## Pipelines
 
-Pipelines are an internal extraction/build path. They define how data is processed and artifacts are produced. Pipelines are split into dedicated packages for core types, loading, execution, graph ordering, and artifact handling.
+Pipelines are an internal extraction/build path. They define how data is processed and outputs are produced. Pipelines are split into dedicated packages for core types, loading, execution, graph ordering, presets, and the Pipeline Server UI.
 
 Key packages:
 - @ucdjs/pipelines-core
 - @ucdjs/pipelines-loader
 - @ucdjs/pipelines-executor
 - @ucdjs/pipelines-graph
-- @ucdjs/pipelines-artifacts
 - @ucdjs/pipelines-presets
+- @ucdjs/pipelines-server
 
 Most consumers do not run pipelines directly.
 

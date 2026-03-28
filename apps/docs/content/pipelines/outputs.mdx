@@ -1,0 +1,109 @@
+---
+title: Outputs
+description: Emitted and published route results
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Outputs
+
+Outputs are the concrete results a route emits after its resolver finishes. They are how a pipeline run exposes JSON or text payloads to the rest of the system.
+
+UCD.js uses the term **outputs** for this runtime behavior. Older artifact-oriented language is misleading here because the live API is configured directly on `route.outputs`.
+
+## What an output definition controls
+
+Each route can declare zero or more output destinations:
+
+- `id`: a stable identifier for the output within the route
+- `sink`: where the output should be persisted
+- `format`: `"json"` or `"text"`
+- `path`: a fixed path string or a function that derives a path from runtime context
+
+If you omit `outputs`, the executor still normalizes a default in-memory output for the route. Add explicit outputs when you want stable IDs, persisted files, or published data that other pipelines can consume.
+
+## Defining outputs
+
+The `with-traced-outputs` playground pipeline shows the common patterns:
+
+```ts
+import {
+  byName,
+  definePipelineRoute,
+  filesystemSink,
+} from "@ucdjs/pipelines-core";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+
+const publishedColorsRoute = definePipelineRoute({
+  id: "published-colors",
+  filter: byName("colors.txt"),
+  parser: standardParser,
+  resolver: propertyJsonResolver,
+  outputs: [
+    {
+      id: "memory-preview",
+      path: "preview/{version}/{property:kebab}.json",
+    },
+    {
+      id: "filesystem-archive",
+      sink: filesystemSink({ baseDir: ".tmp/pipeline-playground-outputs" }),
+      path: ({ version, routeId, property }) =>
+        `archive/${version}/${routeId}/${(property ?? "output").toLowerCase()}.json`,
+    },
+  ],
+});
+```
+
+## Path behavior
+
+`path` supports two styles:
+
+- A string template, such as `preview/{version}/{property:kebab}.json`
+- A function that receives `version`, `routeId`, `file`, `output`, `property`, and `outputIndex`
+
+Use string paths when the shape is predictable and easy to read. Use function paths when the output name depends on runtime values or custom slug logic.
+
+## Sinks
+
+When `sink` is omitted, the output remains available to the current run only.
+
+When you want persisted files, use `filesystemSink(...)`:
+
+```ts
+import { filesystemSink } from "@ucdjs/pipelines-core";
+
+{
+  id: "summary-file",
+  format: "text",
+  sink: filesystemSink({ baseDir: ".tmp/pipeline-playground-outputs" }),
+  path: "summaries/{version}/{routeId}.txt",
+}
+```
+
+## Cross-pipeline consumption
+
+Published outputs can become inputs to another pipeline through `pipelineOutputSource(...)`:
+
+```ts
+import { pipelineOutputSource } from "@ucdjs/pipelines-core";
+
+const publishedColorsInput = pipelineOutputSource({
+  pipelineId: "traced-outputs",
+  outputId: "filesystem-archive",
+});
+```
+
+The executor orders the pipelines so the upstream publisher runs before the downstream consumer.
+
+## What to document for each output
+
+When you add a new output, keep the docs and code clear about:
+
+- whether the output is in-memory only or persisted
+- whether downstream pipelines should depend on its `id`
+- whether the file is JSON or text
+- whether the path is fixed or derived
+
+<Callout type="info">
+  Use stable output IDs when another pipeline or a debugging workflow needs to target a specific published result.
+</Callout>
