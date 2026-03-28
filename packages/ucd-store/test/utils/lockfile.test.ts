@@ -104,7 +104,7 @@ describe("initLockfile", () => {
 
       await initLockfile(context);
 
-      // basePath is now handled by fs-bridge, test directory existence via fs
+      // basePath is now handled by fs-backend, test directory existence via fs
       const exists = await fs.exists(".");
       expect(exists).toBe(true);
     });
