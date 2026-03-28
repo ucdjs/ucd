@@ -5,7 +5,6 @@ export type {
   CacheStats,
   CacheStore,
 } from "./cache";
-
 export {
   createMemoryCacheStore,
   defaultHashFn,
@@ -14,6 +13,10 @@ export {
 } from "./cache";
 
 export { createPipelineExecutor } from "./executor";
+
+export { createOtlpExporter } from "./exporters/otlp";
+
+export type { OtlpExporterOptions } from "./exporters/otlp";
 export type {
   PipelineExecutionContext,
   PipelineExecutionLogInput,

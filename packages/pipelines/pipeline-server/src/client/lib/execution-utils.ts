@@ -4,6 +4,8 @@ import { getTracePhase } from "@ucdjs/pipelines-core/tracing";
 
 export interface ExecutionSpan {
   spanId: string;
+  parentSpanId?: string;
+  depth: number;
   label: string;
   start: number;
   end: number;
@@ -14,56 +16,80 @@ export interface ExecutionSpan {
 
 function buildSpanLabel(trace: ExecutionTraceItem): string {
   const data = trace.data as Record<string, unknown> | null;
-  if (data && "version" in data && data.version) {
-    return `${trace.kind} v${data.version}`;
+  const fileName = data && "file" in data && data.file && typeof data.file === "object"
+    ? (data.file as Record<string, unknown>).name as string | undefined
+    : undefined;
+  const routeId = data && "routeId" in data ? data.routeId as string | undefined : undefined;
+  const version = data && "version" in data ? data.version as string | undefined : undefined;
+
+  // For file.route the routeId + file IS the identity — no kind prefix needed.
+  if (trace.kind === "file.route") {
+    if (routeId && fileName) return `${routeId}: ${fileName}`;
+    if (routeId) return routeId;
+    if (fileName) return fileName;
   }
-  if (data && "routeId" in data && data.routeId) {
-    return `${trace.kind} ${data.routeId}`;
+  // For parse/resolve keep the kind so they're distinguishable from file.route and each other.
+  if (trace.kind === "parse" || trace.kind === "resolve") {
+    if (routeId && fileName) return `${trace.kind} · ${routeId}: ${fileName}`;
+    if (routeId) return `${trace.kind} · ${routeId}`;
+    if (fileName) return `${trace.kind} · ${fileName}`;
   }
-  if (data && "file" in data && data.file && typeof data.file === "object" && "name" in (data.file as Record<string, unknown>)) {
-    return `${trace.kind} ${(data.file as Record<string, unknown>).name}`;
-  }
+
+  if (version) return `${trace.kind} v${version}`;
+  if (routeId) return `${trace.kind} ${routeId}`;
+  if (fileName) return `${trace.kind} ${fileName}`;
   return trace.kind;
 }
 
-export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan[] {
-  const startMap = new Map<string, ExecutionTraceItem>();
-  const spans: ExecutionSpan[] = [];
+function computeDepths(spans: Omit<ExecutionSpan, "depth">[]): ExecutionSpan[] {
+  const spanMap = new Map(spans.map(s => [s.spanId, s]));
+  const depthCache = new Map<string, number>();
 
-  const sorted = traces.toSorted((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-  for (const trace of sorted) {
-    if (trace.kind.endsWith(".start")) {
-      startMap.set(trace.spanId ?? trace.id, trace);
-      continue;
+  function getDepth(spanId: string): number {
+    if (depthCache.has(spanId)) return depthCache.get(spanId)!;
+    const span = spanMap.get(spanId);
+    if (!span?.parentSpanId) {
+      depthCache.set(spanId, 0);
+      return 0;
     }
+    const depth = getDepth(span.parentSpanId) + 1;
+    depthCache.set(spanId, depth);
+    return depth;
+  }
 
-    if (trace.kind.endsWith(".end")) {
-      const key = trace.spanId ?? trace.id;
-      const startTrace = startMap.get(key);
-      if (!startTrace) continue;
+  return spans.map(s => ({ ...s, depth: getDepth(s.spanId) }));
+}
 
-      const startTime = new Date(startTrace.timestamp).getTime();
-      const endTime = new Date(trace.timestamp).getTime();
-      const data = trace.data as Record<string, unknown> | null;
-      const durationMs = data && "durationMs" in data && typeof data.durationMs === "number"
+export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan[] {
+  const raw: Omit<ExecutionSpan, "depth">[] = [];
+
+  for (const trace of traces) {
+    const data = trace.data as Record<string, unknown> | null;
+    const startTimestamp = data && typeof data.startTimestamp === "number" ? data.startTimestamp : null;
+
+    if (startTimestamp != null) {
+      const endTimestamp = new Date(trace.timestamp).getTime();
+      const durationMs = data && typeof data.durationMs === "number"
         ? data.durationMs
-        : Math.max(0, endTime - startTime);
+        : Math.max(0, endTimestamp - startTimestamp);
 
-      spans.push({
-        spanId: key,
-        label: buildSpanLabel(startTrace),
-        start: startTime,
-        end: endTime,
+      raw.push({
+        spanId: trace.spanId ?? trace.id,
+        parentSpanId: trace.parentSpanId ?? undefined,
+        label: buildSpanLabel(trace),
+        start: startTimestamp,
+        end: endTimestamp,
         durationMs,
-        phase: getTracePhase(startTrace.kind),
+        phase: getTracePhase(trace.kind),
       });
-      startMap.delete(key);
+      continue;
     }
 
     if (trace.kind === "error") {
       const ts = new Date(trace.timestamp).getTime();
-      spans.push({
+      raw.push({
         spanId: trace.spanId ?? trace.id,
+        parentSpanId: trace.parentSpanId ?? undefined,
         label: buildSpanLabel(trace),
         start: ts,
         end: ts + 1,
@@ -74,5 +100,5 @@ export function buildExecutionSpans(traces: ExecutionTraceItem[]): ExecutionSpan
     }
   }
 
-  return spans.sort((a, b) => a.start - b.start);
+  return computeDepths(raw);
 }

@@ -34,14 +34,7 @@ describe("LogPayloadPanel", () => {
             message: "Structured log",
             args: ["Structured log"],
             meta: { routeId: "compile" },
-            event: {
-              id: "event-1",
-              type: "file:matched",
-              file: { version: "16.0.0", dir: "ucd", path: "ucd/data.txt", name: "data.txt", ext: ".txt" },
-              routeId: "compile",
-              spanId: "span-1",
-              timestamp: 1,
-            },
+            traceKind: "file.matched",
           },
         }}
       />,
@@ -49,8 +42,9 @@ describe("LogPayloadPanel", () => {
 
     expect(screen.getByText("Level")).toBeInTheDocument();
     expect(screen.getByText("Source")).toBeInTheDocument();
+    expect(screen.getByText("Trace")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
-    expect(screen.getByText("warn")).toBeInTheDocument();
+    expect(screen.getByText("file.matched")).toBeInTheDocument();
     expect(screen.getByText(/"routeId": "compile"/)).toBeInTheDocument();
     expect(screen.getByText(/"message": "Structured log"/)).toBeInTheDocument();
   });
