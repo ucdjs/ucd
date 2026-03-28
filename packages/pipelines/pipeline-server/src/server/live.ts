@@ -8,7 +8,6 @@ import chokidar from "chokidar";
 import { plugin as websocketPlugin } from "crossws/server";
 import { defineWebSocketHandler } from "h3";
 
-const LIVE_ROUTE = "/api/live";
 const PIPELINE_FILE_SUFFIX = ".ucd-pipeline.ts";
 const WATCH_DEBOUNCE_MS = 100;
 const IGNORED_DIR_NAMES = new Set(["node_modules", ".git", "dist", "build"]);
@@ -131,6 +130,7 @@ export function setupLiveUpdates(
     }
 
     const rootPath = pathKind === "file" ? path.dirname(resolvedPath) : resolvedPath;
+    // eslint-disable-next-line no-console
     console.log(`Setting up watcher for source "${source.id}" at path: ${resolvedPath}`);
     const watcher = chokidar.watch(resolvedPath, createWatchOptions(pathKind));
 
@@ -156,7 +156,7 @@ export function setupLiveUpdates(
     return watcher;
   }
 
-  app.get(LIVE_ROUTE, defineWebSocketHandler({
+  app.get("/api/live", defineWebSocketHandler({
     open(peer) {
       peers.add(peer);
       peer.send(JSON.stringify({
