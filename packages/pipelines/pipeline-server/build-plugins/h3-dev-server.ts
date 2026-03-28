@@ -9,6 +9,9 @@ import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "../sr
 const appModuleId = "/src/server/app.ts";
 const dbModuleId = "/src/server/db/index.ts";
 
+type DatabaseModuleType = typeof import("../src/server/db");
+type AppModuleType = typeof import("../src/server/app");
+
 export function h3DevServerPlugin(): Plugin {
   return {
     name: "h3-dev-server",
@@ -18,8 +21,7 @@ export function h3DevServerPlugin(): Plugin {
 
       // Initialize database before starting the server
       try {
-        const dbMod = await server.ssrLoadModule(dbModuleId);
-        const { createDatabase, runMigrations } = dbMod as typeof import("../src/server/db");
+        const { createDatabase, runMigrations } = await server.ssrLoadModule(dbModuleId) as unknown as DatabaseModuleType;
 
         await fs.mkdir(getUcdConfigDir(), { recursive: true });
         db = createDatabase();
@@ -35,18 +37,20 @@ export function h3DevServerPlugin(): Plugin {
         // The app will fail when trying to access db.context
       }
 
-      const getApp = async () => {
-        return server
-          .ssrLoadModule(appModuleId)
-          .then((mod) => (mod as typeof import("../src/server/app")).createApp({
-            db: db!,
-            workspaceId: resolveWorkspace().workspaceId,
-          }));
-      };
+      async function getAppModule(): Promise<AppModuleType> {
+        return server.ssrLoadModule(appModuleId) as any;
+      }
+
+      async function getApp() {
+        return getAppModule().then((appMod) => appMod.createApp({
+          db: db!,
+          workspaceId: resolveWorkspace().workspaceId,
+        }));
+      }
 
       if (db && server.httpServer) {
         const workspace = resolveWorkspace();
-        const appMod = await server.ssrLoadModule(appModuleId) as typeof import("../src/server/app");
+        const appMod = await getAppModule();
         const sources = appMod.resolvePipelineSources();
         const liveApp = appMod.createApp({
           db,
@@ -58,6 +62,7 @@ export function h3DevServerPlugin(): Plugin {
           workspaceId: workspace.workspaceId,
         });
         const ws = nodeAdapter({
+          // @ts-expect-error - The types for h3's fetch event are not compatible with crossws, but the runtime objects are compatible
           resolve: async (req) => (await liveApp.fetch(req)).crossws,
         });
 
