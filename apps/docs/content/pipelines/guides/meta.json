@@ -1,0 +1,10 @@
+{
+  "title": "Guides",
+  "description": "Authoring and debugging workflows for pipelines",
+  "pages": [
+    "write-your-first-pipeline",
+    "compose-routes-and-dependencies",
+    "publish-and-consume-outputs",
+    "debug-pipelines"
+  ]
+}

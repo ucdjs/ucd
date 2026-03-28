@@ -11,7 +11,6 @@
     "schemas",
     "schema-gen",
     "fs-backend",
-    "fs-bridge",
     "---Utilities---",
     "path-utils",
     "env",

@@ -5,12 +5,16 @@
   "icon": "Waypoints",
   "pages": [
     "index",
+    "---Guides---",
+    "guides",
     "---Core Concepts---",
     "definitions",
     "sources",
+    "filters",
     "routes",
-    "artifacts",
-    "---Execution---",
+    "outputs",
+    "---Reference---",
+    "api",
     "running",
     "ui"
   ]

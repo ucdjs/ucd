@@ -1,0 +1,120 @@
+---
+title: Pipeline API
+description: Reference for pipeline authoring, execution, presets, and CLI entrypoints
+---
+
+# Pipeline API Reference
+
+This page is a compact reference for the pipeline authoring surface that exists today.
+
+## Core authoring functions
+
+| Package | API | Purpose |
+|---|---|---|
+| `@ucdjs/pipelines-core` | `definePipeline(...)` | Create a pipeline definition with sources, routes, versions, and execution options |
+| `@ucdjs/pipelines-core` | `definePipelineRoute(...)` | Create a route with a filter, parser, optional transforms, resolver, dependencies, and outputs |
+| `@ucdjs/pipelines-core` | `definePipelineSource(...)` | Create a source definition around a backend |
+| `@ucdjs/pipelines-core` | `definePipelineTransform(...)` | Create a reusable transform that runs between parser and resolver |
+| `@ucdjs/pipelines-core` | `pipelineOutputSource(...)` | Consume published outputs from another pipeline |
+| `@ucdjs/pipelines-core` | `filesystemSink(...)` | Persist route outputs to the filesystem |
+
+## Source helpers
+
+| Import | Purpose |
+|---|---|
+| `createMemorySource` from `@ucdjs/pipelines-core/sources` | Best option for tests, examples, and small local fixtures |
+| `createHttpSource` from `@ucdjs/pipelines-core/sources` | HTTP-backed source helper for custom backends and controlled file enumeration |
+| `createUnicodeOrgSource` from `@ucdjs/pipelines-core/sources` | Preconfigured HTTP helper targeting `https://www.unicode.org/Public/` |
+
+## Filter helpers
+
+Common helpers from `@ucdjs/pipelines-core`:
+
+- `byName(...)`
+- `byDir(...)`
+- `byExt(...)`
+- `byGlob(...)`
+- `byPath(...)`
+- `byProp(...)`
+- `bySource(...)`
+- `and(...)`
+- `or(...)`
+- `not(...)`
+- `always()`
+- `never()`
+
+See [/pipelines/filters](/pipelines/filters) for examples and guidance on when to use source-level versus route-level filtering.
+
+## Built-in transforms
+
+Common helpers from `@ucdjs/pipelines-core/transforms`:
+
+- `createSortTransform(...)`
+- `createDeduplicateTransform(...)`
+- `createExpandRangesTransform(...)`
+- `createNormalizeTransform(...)`
+- `sortByCodePoint`
+- `deduplicateRows`
+- `expandRanges`
+- `normalizeCodePoints`
+
+## Presets
+
+Useful exports from `@ucdjs/pipelines-presets`:
+
+| Category | Examples |
+|---|---|
+| Parsers | `standardParser`, `sequenceParser`, `unicodeDataParser`, `createStandardParser(...)` |
+| Resolvers | `propertyJsonResolver`, `createPropertyJsonResolver(...)`, `createGroupedResolver(...)` |
+| Routes | `unicodeDataRoute`, `blocksRoute`, `scriptsRoute`, `emojiDataRoute`, `allRoutes` |
+| Pipeline factories | `createBasicPipeline(...)`, `createFullPipeline(...)`, `createEmojiPipeline(...)` |
+
+## Route runtime context
+
+Inside a route you will commonly use:
+
+- `ctx.logger` for structured logs
+- `ctx.getRouteData("route-id")` to read upstream route data declared through `depends`
+- `ctx.now()` for timestamps
+- `ctx.normalizeEntries(...)` when normalizing resolved entries
+
+Inside filters and transforms you also receive the logger, file metadata, version, and source metadata where relevant.
+
+## Execution API
+
+Programmatic execution lives in `@ucdjs/pipelines-executor`:
+
+```ts
+import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+
+const executor = createPipelineExecutor({});
+const results = await executor.run([pipeline], {
+  cache: true,
+  versions: ["1.0.0"],
+});
+```
+
+Execution options and hooks:
+
+- `cacheStore` to enable route result caching
+- `onLog(entry)` to receive incremental logs
+- `onTrace(trace)` to receive execution traces
+- `runtime` to provide environment-specific logging and output capture
+
+## CLI entrypoints
+
+The CLI reference lives at [/packages/cli/pipelines](/packages/cli/pipelines). The commands most relevant to authors are:
+
+- `ucd pipelines list`
+- `ucd pipelines run`
+- `ucd pipelines cache status`
+- `ucd pipelines cache refresh`
+- `ucd pipelines cache clear`
+
+Pipeline discovery uses the file pattern `**/*.ucd-pipeline.ts`.
+
+Run the CLI from the repo root during development:
+
+```bash
+./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground
+```

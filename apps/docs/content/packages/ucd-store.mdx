@@ -1,11 +1,9 @@
 ---
 title: UCD Store
-description: Manage and mirror Unicode Character Database files locally
+description: Manage and mirror Unicode Character Database files in a local store
 ---
 
 import { Callout } from 'fumadocs-ui/components/callout';
-
-# UCD Store
 
 The `@ucdjs/ucd-store` package manages a local cache of Unicode Character Database files. It tracks what has been downloaded via a lockfile, supports mirroring specific versions, and can verify the integrity of local files against the remote API.
 
@@ -33,13 +31,13 @@ A store is a directory on disk containing UCD files organized by version. The st
   All of these operations are available through the [`ucd store`](/packages/cli/store) CLI commands without writing any code.
 </Callout>
 
-## File System Bridges
+## File System Backends
 
-The store can operate over different file system backends via `@ucdjs/fs-bridge`:
+The store works with filesystem-style backends for local disk access, remote HTTP access, and testing-friendly in-memory implementations. In the public docs, the backend model is documented through [`@ucdjs/fs-backend`](/packages/fs-backend).
 
-- **Node.js** — reads and writes to the local file system using `node:fs`
-- **HTTP** — read-only access to a remote UCD store over HTTP
-- **In-memory** — ephemeral store for testing and pipeline workloads
+<Callout type="info">
+  If you are building tooling around store-style file access, start with <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a>.
+</Callout>
 
 ## Lockfile
 

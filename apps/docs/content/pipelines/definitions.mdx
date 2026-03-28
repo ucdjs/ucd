@@ -1,32 +1,75 @@
 ---
 title: Definitions
-description: Structuring pipelines with DAGs
+description: Define versions, sources, routes, and execution options for a pipeline
 ---
 
 # Pipeline Definitions
 
-A pipeline definition ties together sources, routes, and artifacts. It determines the order in which routes execute based on their dependencies, forming a Directed Acyclic Graph (DAG).
+A pipeline definition is the object returned by `definePipeline(...)`. It ties together versions, sources, routes, and execution settings into one typed unit.
 
-## Defining a Pipeline
-
-Pipelines are created using the `definePipeline` function from `@ucdjs/pipelines-core`.
-
-You provide the sources that yield files, the routes that process those files, and the specific Unicode Character Database versions the pipeline targets.
+## The core shape
 
 ```ts
 import { definePipeline } from "@ucdjs/pipelines-core";
 
-const myPipeline = definePipeline({
+export const myPipeline = definePipeline({
   id: "my-pipeline",
-  name: "My Processing Pipeline",
-  versions: ["16.0.0", "15.1.0"],
+  name: "My Pipeline",
+  description: "Example pipeline definition",
+  versions: ["1.0.0"],
   inputs: [mySource],
-  routes: [myRoute, anotherRoute],
+  routes: [myRoute],
+  include: undefined,
+  strict: false,
+  concurrency: 4,
+  fallback: undefined,
 });
 ```
 
-The pipeline will automatically construct the execution graph by analyzing the artifact dependencies between the routes. If `anotherRoute` requires an artifact produced by `myRoute`, the execution graph will ensure `myRoute` runs first.
+## Key fields
+
+- `id`: stable pipeline identifier used by the CLI and executor
+- `name`: human-readable display name
+- `description`: optional summary shown in UIs and listings
+- `versions`: versions the pipeline can process
+- `inputs`: source definitions that provide files
+- `routes`: route definitions that parse and resolve those files
+- `include`: optional pipeline-wide file filter applied before route matching
+- `strict`: when `true`, unmatched files without a fallback are treated as errors
+- `concurrency`: maximum number of route executions processed in parallel
+- `fallback`: optional handler for unmatched files
+- `tags`: optional metadata for classification and tooling
+
+## DAG validation happens at definition time
+
+When you call `definePipeline(...)`, the core package builds the route DAG immediately from declared route dependencies.
+
+If the dependency graph is invalid, pipeline creation fails early. That means authoring mistakes such as unknown route dependencies or dependency cycles surface before execution.
+
+## Example with multiple routes
+
+```ts
+export const dependentRoutesPipeline = definePipeline({
+  id: "dependent-routes",
+  name: "Dependent Routes",
+  versions: ["1.0.0"],
+  inputs: [colorsSource, sizesSource],
+  routes: [colorsRoute, sizesAfterColorsRoute],
+});
+```
+
+In that example, `sizesAfterColorsRoute` depends on `colorsRoute`, so the DAG forces the colors route to finish before the dependent route resolves.
+
+## Fallback behavior
+
+`fallback` is for files that pass the pipeline-wide include filter but do not match any route. It has its own parser and resolver and is useful when you want a controlled catch-all instead of ignoring unmatched files.
 
 ## Loading Pipelines
 
-The `@ucdjs/pipelines-loader` package provides utilities to dynamically load pipeline definitions from files or directories, which is particularly useful for programmatic execution or CLI tools.
+The loader discovers files matching `**/*.ucd-pipeline.ts` and imports any named exports that are real pipeline definitions.
+
+That discovery model powers:
+
+- `ucd pipelines list`
+- `ucd pipelines run`
+- local and remote loading through `@ucdjs/pipelines-loader`

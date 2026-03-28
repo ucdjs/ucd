@@ -1,0 +1,109 @@
+---
+title: Publish And Consume Outputs
+description: Persist outputs and consume them from downstream pipelines
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Use this pattern when a route should emit stable, named outputs that humans can inspect or that another pipeline should consume later in the same executor batch.
+
+The canonical example is `with-traced-outputs.ucd-pipeline.ts`.
+
+## Publish outputs from a route
+
+The upstream route can define multiple outputs with stable IDs:
+
+```ts
+const publishedColorsRoute = definePipelineRoute({
+  id: "published-colors",
+  filter: byName("colors.txt"),
+  parser: standardParser,
+  resolver: propertyJsonResolver,
+  outputs: [
+    {
+      id: "memory-preview",
+      path: "preview/{version}/{property:kebab}.json",
+    },
+    {
+      id: "filesystem-archive",
+      sink: filesystemSink({ baseDir: ".tmp/pipeline-playground-outputs" }),
+      path: ({ version, routeId, property }) => {
+        const propertySlug = (property ?? "output").toLowerCase();
+        return `archive/${version}/${routeId}/${propertySlug}.json`;
+      },
+    },
+  ],
+});
+```
+
+This example demonstrates:
+
+- multiple outputs on one route
+- template paths
+- function paths
+- in-memory outputs
+- filesystem outputs
+
+## Consume a published output in another pipeline
+
+Create a synthetic source with `pipelineOutputSource(...)`:
+
+```ts
+const publishedColorsInput = pipelineOutputSource({
+  pipelineId: "traced-outputs",
+  outputId: "filesystem-archive",
+});
+```
+
+That source can then feed a downstream route:
+
+```ts
+const publishedOutputConsumerRoute = definePipelineRoute({
+  id: "published-output-consumer",
+  filter: byExt(".json"),
+  parser: publishedPropertyJsonParser,
+  resolver: async (ctx, rows) => {
+    let count = 0;
+
+    for await (const _row of rows) {
+      count += 1;
+    }
+
+    return [{
+      version: ctx.version,
+      property: "published-output-consumer-summary",
+      file: ctx.file.name,
+      entries: [{
+        value: `Consumed ${count} entries from ${ctx.file.path}`,
+      }],
+    }];
+  },
+});
+```
+
+## Run both pipelines together
+
+```bash
+./packages/cli/bin/ucd.js pipelines run traced-outputs published-output-consumer --cwd packages/pipelines/pipeline-playground
+```
+
+The executor resolves the cross-pipeline dependency automatically and runs `traced-outputs` before `published-output-consumer`.
+
+## When to use this pattern
+
+Use published outputs when:
+
+- another pipeline should consume a stable subset of route results
+- you want predictable output IDs for debugging or automation
+- you need filesystem materialization for archives, exports, or inspection
+
+## What to check when it fails
+
+- Make sure the upstream `pipelineId` matches the real pipeline definition ID.
+- Make sure `outputId` matches the output declaration on the upstream route.
+- Make sure both pipelines are part of the same executor batch when you rely on `pipelineOutputSource(...)`.
+- Make sure text outputs use `format: "text"` and JSON outputs keep the default `format: "json"`.
+
+<Callout type="info">
+  Treat output IDs as API surface for downstream pipelines. Rename them carefully and update dependent pipelines at the same time.
+</Callout>

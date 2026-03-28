@@ -1,9 +1,7 @@
 ---
 title: Features
-description: What makes UCD.js special?
+description: The main capabilities and strengths of UCD.js
 ---
-
-# Features
 
 UCD.js is designed with modern developer experience and correctness in mind.
 
@@ -25,7 +23,7 @@ UCD.js is split into focused packages — install only what you need.
 
 ## Built-in Pipelines
 
-Working with raw UCD files like `UnicodeData.txt` is notoriously difficult. The UCD.js pipeline engine transforms these legacy formats into structured JSON artifacts using a DAG (Directed Acyclic Graph) executor.
+Working with raw UCD files like `UnicodeData.txt` is notoriously difficult. The UCD.js pipeline engine transforms these legacy formats into structured route data and published outputs using a DAG (Directed Acyclic Graph) executor.
 
 - **Parallel execution** for maximum throughput.
 - **Visual UI** for debugging complex data dependencies.
@@ -37,8 +35,8 @@ The `@ucdjs/cli` gives you powerful tooling without writing any code. Manage loc
 
 ## File System Agnostic
 
-The `@ucdjs/fs-bridge` package abstracts how files are accessed. UCD data can be read from:
+UCD.js tooling can work with filesystem-style backends for:
 
 - The **local file system** via `node:fs`.
-- Over **HTTP/HTTPS** directly from a remote API.
-- From **in-memory** stores for testing and ephemeral workloads.
+- **HTTP/HTTPS** access to remote file APIs.
+- **In-memory** implementations for testing and ephemeral workloads.

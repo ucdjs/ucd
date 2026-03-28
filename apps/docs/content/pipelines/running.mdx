@@ -1,40 +1,60 @@
 ---
-title: Running Pipelines
-description: Executing pipeline configurations
+title: Run Pipelines
+description: Run pipeline definitions with the CLI or the executor API
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
 
 # Running Pipelines
 
-Pipelines can be executed either programmatically using the `@ucdjs/pipelines-core` library or via the `ucd` CLI tool, which utilizes the pipeline executor under the hood.
+Pipelines can be executed either through the CLI or programmatically with `@ucdjs/pipelines-executor`.
 
 <Tabs items={["CLI", "Programmatic"]}>
   <Tab value="CLI">
-    The CLI provides an easy way to interact with defined pipelines in your project.
+    Use the CLI when you want discovery, local or remote loading, selector-based runs, or the Pipeline Server UI.
 
     ```bash
-    # List available pipelines in your project
-    ucd pipelines list
+    # List discovered pipelines
+    ./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground
 
-    # Run a specific pipeline by ID
-    ucd pipelines run my-pipeline
+    # Run one pipeline by ID
+    ./packages/cli/bin/ucd.js pipelines run source-and-route --cwd packages/pipelines/pipeline-playground
+
+    # Launch the Pipeline Server
+    ./packages/cli/bin/ucd.js pipelines run --ui --cwd packages/pipelines/pipeline-playground
     ```
   </Tab>
   <Tab value="Programmatic">
-    To run pipelines programmatically, you use `createPipelineExecutor` from `@ucdjs/pipelines-core`. This executor manages the Directed Acyclic Graph (DAG) execution, resolving dependencies, running routes in parallel where possible, and handling source resolution.
+    Programmatic execution lives in `@ucdjs/pipelines-executor`.
 
     ```ts
-    import { createPipelineExecutor } from "@ucdjs/pipelines-core";
+    import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 
-    const executor = createPipelineExecutor({ 
-      pipelines: [myPipeline] 
+    const executor = createPipelineExecutor({
+      onLog(entry) {
+        console.log(entry.level, entry.message);
+      },
     });
-    
-    // Run the defined pipeline
-    const result = await executor.run();
+
+    const results = await executor.run([myPipeline], {
+      cache: true,
+      versions: ["1.0.0"],
+    });
     ```
   </Tab>
 </Tabs>
 
-The executor analyzes the dependencies between routes defined by their required artifacts and ensures they execute in the correct topological order. If an error occurs in a route, it halts downstream dependencies while allowing independent routes to complete if possible.
+The executor orders pipelines that depend on published outputs, resolves source files, evaluates route filters, respects the route DAG, materializes outputs, and emits logs and traces to the host.
+
+## Useful CLI flags
+
+- `--cwd <path>` to change the discovery root
+- `--path <path>` to narrow discovery within a directory or repository
+- `--github <owner/repo>` and `--gitlab <owner/repo>` to load remote pipeline definitions
+- `--ref <ref>` to target a branch, tag, or commit
+- `--ui` and `--port <number>` to launch the Pipeline Server
+
+<Callout type="info">
+  During monorepo development, run the CLI from the repo root so it uses workspace sources: `./packages/cli/bin/ucd.js ...`
+</Callout>
