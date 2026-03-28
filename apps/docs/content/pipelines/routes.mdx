@@ -39,11 +39,13 @@ const myRoute = definePipelineRoute({
 
 ### Filters
 
-Filters determine which files the route should process. Common helpers include `byName`, `byDir`, `byExt`, `byGlob`, `byPath`, and combinators such as `and(...)` and `or(...)`.
+Filters determine which files the route should process.
 
 ```ts
 filter: byName("Blocks.txt")
 ```
+
+See [/pipelines/filters](/pipelines/filters) for the full helper set, including `byDir`, `byExt`, `byGlob`, `byPath`, `bySource`, `byProp`, and the filter combinators.
 
 ### Parser
 
