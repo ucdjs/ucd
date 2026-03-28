@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { executeRequest } from "./helpers/request";
 
 describe("store root", () => {
@@ -21,16 +21,38 @@ describe("store root", () => {
     });
   });
 
-  it("returns a 400 when only a version is provided", async () => {
+  it("treats a bare version path as the version root directory", async () => {
+    const filesMock = vi.fn(async () => {
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        kind: "directory",
+        body: JSON.stringify([{ name: "Blocks.txt" }]),
+      };
+    });
+
     const { response, json } = await executeRequest(
       new Request("https://ucd-store.ucdjs.dev/17.0.0"),
-      env,
+      {
+        ...env,
+        UCDJS_API: {
+          files: filesMock,
+        },
+      } as unknown as Cloudflare.Env,
     );
 
-    expect(response.status).toBe(400);
-
-    const payload = await json<{ status: number; message: string }>();
-    expect(payload.status).toBe(400);
-    expect(payload.message).toContain("file path is required");
+    expect(response.status).toBe(200);
+    expect(await json()).toEqual([{ name: "Blocks.txt" }]);
+    expect(filesMock).toHaveBeenCalledWith("17.0.0/ucd", {
+      query: undefined,
+      pattern: undefined,
+      type: undefined,
+      sort: undefined,
+      order: undefined,
+      isHeadRequest: false,
+      stripUCDPrefix: true,
+    });
   });
 });

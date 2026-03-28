@@ -1,4 +1,5 @@
 import type { H3, H3Event } from "h3";
+import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import {
   MAX_AGE_ONE_WEEK_SECONDS,
 } from "@ucdjs-internal/worker-utils";
@@ -15,11 +16,7 @@ async function handleFilesRequest(event: H3Event): Promise<Response> {
     return Response.json({ error: "Version parameter is required" }, { status: 400 });
   }
 
-  const filepath = event.url.pathname
-    .slice(`/${version}`.length)
-    // eslint-disable-next-line e18e/prefer-static-regex
-    .replace(/^\/+/, "")
-    .trim();
+  const filepath = trimLeadingSlash(trimTrailingSlash((event.context.params?.path || "").trim()));
 
   if (!("files" in env.UCDJS_API)) {
     return Response.json({ error: "Files API not available" }, { status: 503 });
@@ -67,6 +64,6 @@ async function handleFilesRequest(event: H3Event): Promise<Response> {
 }
 
 export function registerFilesRoute(app: H3) {
-  app.get("/:version/**", handleFilesRequest);
-  app.head("/:version/**", handleFilesRequest);
+  app.get("/:version/:path*", handleFilesRequest);
+  app.head("/:version/:path*", handleFilesRequest);
 }
