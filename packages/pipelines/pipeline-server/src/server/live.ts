@@ -1,7 +1,7 @@
 import type { SourceChange, SourceChangedEvent } from "#shared/schemas/live";
 import type { FSWatcher } from "chokidar";
 import type { H3 } from "h3";
-import type { PipelineSource } from "./app";
+import type { AppOptions, PipelineSource } from "./app";
 import { stat } from "node:fs/promises";
 import path from "node:path";
 import chokidar from "chokidar";
@@ -60,16 +60,20 @@ function createWatchOptions(pathKind: "file" | "directory") {
   };
 }
 
+type ServerPlugin = ReturnType<typeof websocketPlugin>;
+
+interface LiveUpdatesResult {
+  plugins: ServerPlugin[];
+  close: () => Promise<void>;
+}
+
 export function setupLiveUpdates(
   app: H3,
-  { sources, workspaceId }: { sources: PipelineSource[]; workspaceId: string },
-): {
-  plugins: ReturnType<typeof websocketPlugin>[];
-  close: () => Promise<void>;
-} {
+  { sources, workspaceId }: Required<Pick<AppOptions, "sources" | "workspaceId">>,
+): LiveUpdatesResult {
   const peers = new Set<{ send: (message: string) => void }>();
   const watcherStarts: Promise<FSWatcher | null>[] = [];
-  const flushTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  const flushTimers = new Map<string, NodeJS.Timeout>();
   const pendingChanges = new Map<string, Map<string, SourceChange>>();
   let closed = false;
 
