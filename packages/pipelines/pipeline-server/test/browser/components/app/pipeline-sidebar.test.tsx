@@ -16,48 +16,35 @@ import {
 
 const VERSION_STORAGE_KEY = "ucd-versions-local:alpha:main-pipeline";
 
-function mockSidebarApi({
-  executeHandler,
-}: {
-  executeHandler?: () => Response;
-} = {}) {
-  mockFetch([
-    ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
-    ["GET", "/api/sources", () => HttpResponse.json([
-      buildSourceSummary(),
-    ])],
-    ["GET", "/api/sources/:sourceId", ({ params }) => HttpResponse.json(buildSourceResponse({
-      id: params.sourceId as string,
-    }))],
-    ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({
-      activity: [],
-      summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
-      recentExecutions: [],
-    })],
-    ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
-      pipeline: {
-        ...buildPipelineResponse().pipeline,
-        versions: ["16.0.0", "15.1.0"],
-        routeCount: 2,
-      },
-    }))],
-    ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
-      buildExecutionsResponse([], {
-        pagination: { total: 0, limit: 12, offset: 0, hasMore: false },
-      }),
-    )],
-    ...(
-      executeHandler
-        ? [["POST", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execute", executeHandler] as const]
-        : []
-    ),
-  ]);
-}
-
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("PipelineSidebar", () => {
   beforeEach(() => {
-    mockSidebarApi();
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        buildSourceSummary(),
+      ])],
+      ["GET", "/api/sources/:sourceId", ({ params }) => HttpResponse.json(buildSourceResponse({
+        id: params.sourceId as string,
+      }))],
+      ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({
+        activity: [],
+        summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+        recentExecutions: [],
+      })],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
+        pipeline: {
+          ...buildPipelineResponse().pipeline,
+          versions: ["16.0.0", "15.1.0"],
+          routeCount: 2,
+        },
+      }))],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
+        buildExecutionsResponse([], {
+          pagination: { total: 0, limit: 12, offset: 0, hasMore: false },
+        }),
+      )],
+    ]);
   });
 
   it("shows workspace metadata and the source switcher on source routes", async () => {
@@ -82,15 +69,39 @@ describe("PipelineSidebar", () => {
 
   it("registers Mod+E on pipeline routes and navigates to the created execution", async () => {
     let executeCalls = 0;
-    mockSidebarApi({
-      executeHandler: () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        buildSourceSummary(),
+      ])],
+      ["GET", "/api/sources/:sourceId", ({ params }) => HttpResponse.json(buildSourceResponse({
+        id: params.sourceId as string,
+      }))],
+      ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({
+        activity: [],
+        summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+        recentExecutions: [],
+      })],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
+        pipeline: {
+          ...buildPipelineResponse().pipeline,
+          versions: ["16.0.0", "15.1.0"],
+          routeCount: 2,
+        },
+      }))],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
+        buildExecutionsResponse([], {
+          pagination: { total: 0, limit: 12, offset: 0, hasMore: false },
+        }),
+      )],
+      ["POST", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execute", () => {
         executeCalls += 1;
         return HttpResponse.json({
           success: true,
           executionId: "exec-123",
         });
-      },
-    });
+      }],
+    ]);
 
     const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline" });
     const manager = getTestHotkeyManager();
@@ -109,15 +120,39 @@ describe("PipelineSidebar", () => {
 
   it("suppresses Mod+E when no versions are selected", async () => {
     let executeCalls = 0;
-    mockSidebarApi({
-      executeHandler: () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        buildSourceSummary(),
+      ])],
+      ["GET", "/api/sources/:sourceId", ({ params }) => HttpResponse.json(buildSourceResponse({
+        id: params.sourceId as string,
+      }))],
+      ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({
+        activity: [],
+        summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+        recentExecutions: [],
+      })],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json(buildPipelineResponse({
+        pipeline: {
+          ...buildPipelineResponse().pipeline,
+          versions: ["16.0.0", "15.1.0"],
+          routeCount: 2,
+        },
+      }))],
+      ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json(
+        buildExecutionsResponse([], {
+          pagination: { total: 0, limit: 12, offset: 0, hasMore: false },
+        }),
+      )],
+      ["POST", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execute", () => {
         executeCalls += 1;
         return HttpResponse.json({
           success: true,
           executionId: "exec-123",
         });
-      },
-    });
+      }],
+    ]);
 
     const { history } = await renderFileRoute(<div />, {
       initialLocation: "/s/local/alpha/main-pipeline",
