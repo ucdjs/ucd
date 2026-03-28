@@ -1,35 +1,9 @@
-/* eslint-disable react/component-hook-factories */
-import type { ComponentProps, ReactNode } from "react";
+import type { ComponentProps } from "react";
 import { ExecutionTable } from "#components/execution/execution-table";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
-
-vi.mock("@tanstack/react-router", () => {
-  return {
-    Link: ({
-      children,
-      to,
-      params,
-      ...props
-    }: {
-      children: ReactNode;
-      to: string;
-      params: Record<string, string>;
-    } & React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-      const href = to
-        .replace("$sourceId", params.sourceId ?? "")
-        .replace("$sourceFileId", params.sourceFileId ?? "")
-        .replace("$pipelineId", params.pipelineId ?? "")
-        .replace("$executionId", params.executionId ?? "");
-
-      return (
-        <a href={href} {...props}>
-          {children}
-        </a>
-      );
-    },
-  };
-});
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+import { renderComponent } from "../../route-test-utils";
 
 const execution = {
   id: "exec-1",
@@ -55,9 +29,16 @@ const execution = {
   error: null,
 } satisfies ComponentProps<typeof ExecutionTable>["executions"][number];
 
-describe("executionTable", () => {
-  it("renders the empty state messaging when there are no executions", () => {
-    render(
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("ExecutionTable", () => {
+  beforeEach(() => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({ workspaceId: "workspace-123", version: "16.0.0" })],
+      ["GET", "/api/sources", () => HttpResponse.json([])],
+    ]);
+  });
+  it("renders the empty state messaging when there are no executions", async () => {
+    await renderComponent(
       <ExecutionTable
         executions={[]}
         emptyTitle="No runs yet"
@@ -69,8 +50,8 @@ describe("executionTable", () => {
     expect(screen.getByText("Kick off a run to populate this list.")).toBeInTheDocument();
   });
 
-  it("shows the pipeline column and graph link only when enabled", () => {
-    render(
+  it("shows the pipeline column and graph link only when enabled", async () => {
+    await renderComponent(
       <ExecutionTable
         executions={[execution]}
         emptyTitle="No runs yet"
@@ -91,8 +72,8 @@ describe("executionTable", () => {
     );
   });
 
-  it("falls back when route data, versions, or summary are missing", () => {
-    render(
+  it("falls back when route data, versions, or summary are missing", async () => {
+    await renderComponent(
       <ExecutionTable
         executions={[{
           ...execution,

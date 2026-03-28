@@ -16,7 +16,7 @@ export function LogPayloadPanel({ log }: LogPayloadPanelProps) {
     );
   }
 
-  const { level, source, event } = payload;
+  const { level, source, traceKind } = payload;
 
   return (
     <div className="border border-border rounded-lg bg-background p-4 space-y-3">
@@ -27,10 +27,10 @@ export function LogPayloadPanel({ log }: LogPayloadPanelProps) {
         <span className="text-muted-foreground self-center">Source</span>
         <Badge variant="outline" className="font-mono justify-self-start">{source}</Badge>
 
-        {event && (
+        {traceKind && (
           <>
-            <span className="text-muted-foreground self-center">Event</span>
-            <Badge variant="outline" className="justify-self-start">{event.type}</Badge>
+            <span className="text-muted-foreground self-center">Trace</span>
+            <Badge variant="outline" className="justify-self-start">{traceKind}</Badge>
           </>
         )}
       </div>

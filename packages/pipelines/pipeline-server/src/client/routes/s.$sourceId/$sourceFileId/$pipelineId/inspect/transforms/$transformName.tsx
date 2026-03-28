@@ -2,7 +2,7 @@ import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { ArrowRight, FolderOutput, Link2, Package, Shuffle, Spline } from "lucide-react";
+import { ArrowRight, FolderOutput, Link2, Shuffle, Spline } from "lucide-react";
 
 const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
@@ -170,42 +170,15 @@ function TransformDetailPage() {
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Dependencies</div>
                   <div className="flex flex-wrap gap-1.5">
                     {route.depends.map((dep) => (
-                      dep.type === "route"
-                        ? (
-                            <Link
-                              key={`route-${dep.routeId}`}
-                              to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
-                              params={{ sourceId, sourceFileId, pipelineId, routeId: dep.routeId }}
-                              className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                            >
-                              <Spline className="h-3 w-3" />
-                              {dep.routeId}
-                            </Link>
-                          )
-                        : (
-                            <span key={`artifact-${dep.routeId}-${dep.artifactName}`} className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground">
-                              <Package className="h-3 w-3" />
-                              {dep.routeId}
-                              :
-                              {dep.artifactName}
-                            </span>
-                          )
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {route.emits.length > 0 && (
-                <div className="space-y-1">
-                  <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Emits</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {route.emits.map((emit) => (
-                      <Badge key={emit.id} variant="secondary" className="text-xs">
-                        <Package className="h-3 w-3" />
-                        {emit.id}
-                        {" "}
-                        <span className="text-[10px] opacity-70">{emit.scope}</span>
-                      </Badge>
+                      <Link
+                        key={`route-${dep.routeId}`}
+                        to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
+                        params={{ sourceId, sourceFileId, pipelineId, routeId: dep.routeId }}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <Spline className="h-3 w-3" />
+                        {dep.routeId}
+                      </Link>
                     ))}
                   </div>
                 </div>

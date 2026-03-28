@@ -3,7 +3,9 @@ import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
 export default createTsdownConfig({
   entry: [
     "./src/index.ts",
+    "./src/outputs/index.ts",
     "./src/sources/index.ts",
     "./src/transforms/index.ts",
+    "./src/tracing/index.ts",
   ],
 });

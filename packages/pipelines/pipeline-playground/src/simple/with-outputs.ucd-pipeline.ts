@@ -13,10 +13,9 @@ const colorsRoute = definePipelineRoute({
   filter: byName("colors.txt"),
   parser: standardParser,
   resolver: propertyJsonResolver,
-  out: {
-    dir: "data/colors",
-    fileName: () => "colors.json",
-  },
+  outputs: [{
+    path: "data/colors/colors.json",
+  }],
 });
 
 const planetsRoute = definePipelineRoute({
@@ -24,10 +23,9 @@ const planetsRoute = definePipelineRoute({
   filter: byName("planets.txt"),
   parser: standardParser,
   resolver: propertyJsonResolver,
-  out: {
-    dir: "data/planets",
-    fileName: () => "planets.json",
-  },
+  outputs: [{
+    path: "data/planets/planets.json",
+  }],
 });
 
 const sizesRoute = definePipelineRoute({
@@ -35,10 +33,9 @@ const sizesRoute = definePipelineRoute({
   filter: byName("sizes.txt"),
   parser: standardParser,
   resolver: propertyJsonResolver,
-  out: {
-    dir: "data/sizes",
-    fileName: () => "sizes.json",
-  },
+  outputs: [{
+    path: "data/sizes/sizes.json",
+  }],
 });
 
 export const withOutputsPipeline = definePipeline({

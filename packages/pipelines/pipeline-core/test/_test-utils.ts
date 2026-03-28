@@ -1,17 +1,29 @@
 import type {
-  ArtifactDefinition,
   FileContext,
   ParsedRow,
   PipelineDependency,
   PipelineFilter,
   PipelineRouteDefinition,
-  RouteOutput,
+  RouteOutputDefinition,
   SourceBackend,
 } from "../src";
 import type { AnyPipelineTransformDefinition } from "../src/transform";
-import type { ParserFn, PropertyJson } from "../src/types";
+import type { ParserFn, PipelineLogger, PropertyJson } from "../src/types";
 import { vi } from "vitest";
 import { always, definePipelineRoute } from "../src";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
+
+type DeepPartial<T>
+  = T extends (...args: any[]) => any ? T
+    : T extends readonly (infer U)[] ? readonly DeepPartial<U>[]
+      : T extends object ? { [K in keyof T]?: DeepPartial<T[K]> }
+        : T;
 
 export function createMockBackend(files: FileContext[]): SourceBackend {
   return {
@@ -37,33 +49,29 @@ export async function* mockParser(): AsyncIterable<ParsedRow> {
 
 export interface MockRouteOptions<
   TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
-  TEmits extends Record<string, ArtifactDefinition> = Record<string, never>,
   TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 > {
   depends?: TDepends;
-  emits?: TEmits;
   transforms?: TTransforms;
-  out?: RouteOutput;
+  out?: RouteOutputDefinition;
   cache?: boolean;
   filter?: PipelineFilter;
   parser?: ParserFn;
-  resolver?: PipelineRouteDefinition<string, TDepends, TEmits, TTransforms, TOutput>["resolver"];
+  resolver?: PipelineRouteDefinition<string, TDepends, TTransforms, TOutput>["resolver"];
 }
 
 export function createMockRoute<
   const TId extends string,
   const TDepends extends readonly PipelineDependency[] = readonly [],
-  const TEmits extends Record<string, ArtifactDefinition> = Record<string, never>,
   const TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 >(
   id: TId,
-  options: MockRouteOptions<TDepends, TEmits, TTransforms, TOutput> = {},
-): PipelineRouteDefinition<TId, TDepends, TEmits, TTransforms, TOutput> {
+  options: MockRouteOptions<TDepends, TTransforms, TOutput> = {},
+): PipelineRouteDefinition<TId, TDepends, TTransforms, TOutput> {
   const {
     depends,
-    emits,
     transforms,
     out,
     cache,
@@ -72,7 +80,6 @@ export function createMockRoute<
     resolver = (async () => []) as unknown as PipelineRouteDefinition<
       TId,
       TDepends,
-      TEmits,
       TTransforms,
       TOutput
     >["resolver"],
@@ -84,9 +91,25 @@ export function createMockRoute<
     parser,
     resolver,
     depends,
-    emits,
     transforms,
-    out,
+    outputs: out ? [out] : undefined,
     cache,
   });
+}
+
+export function createMockFilterContext(
+  overrides: DeepPartial<Parameters<PipelineFilter>[0]> = {},
+): Parameters<PipelineFilter>[0] {
+  const { file, logger, row, source, ...rest } = overrides;
+
+  return {
+    logger: {
+      ...noopLogger,
+      ...logger,
+    },
+    row: row ? { ...row } : undefined,
+    source: source ? { id: source.id ?? "test-source" } : undefined,
+    file: createFile(file as Partial<FileContext>),
+    ...rest,
+  };
 }

@@ -22,7 +22,6 @@ const samplePipeline = makePipeline([
     id: "compile",
     cache: true,
     depends: [],
-    emits: [{ id: "parsed", scope: "version" }],
     filter: "byName('data.txt')",
     outputs: [{ dir: "dist", fileName: "data.json" }],
     transforms: ["normalize", "dedupe"],
@@ -31,7 +30,6 @@ const samplePipeline = makePipeline([
     id: "publish",
     cache: false,
     depends: [{ type: "route", routeId: "compile" }],
-    emits: [],
     filter: "byExt('.txt')",
     outputs: [{ dir: "release", fileName: "bundle.txt" }, { dir: "release", fileName: "meta.json" }],
     transforms: ["ship"],
@@ -39,8 +37,7 @@ const samplePipeline = makePipeline([
   {
     id: "archive",
     cache: false,
-    depends: [{ type: "artifact", routeId: "compile", artifactName: "parsed" }],
-    emits: [],
+    depends: [{ type: "route", routeId: "compile" }],
     outputs: [],
     transforms: [],
   },
@@ -56,16 +53,16 @@ describe("definitionGraphToFlow", () => {
     expect(nodes.every((n) => n.data.kind === "definition-route")).toBe(true);
   });
 
-  it("creates edges for route and artifact dependencies", () => {
+  it("creates edges for route dependencies", () => {
     const { edges } = definitionGraphToFlow(samplePipeline);
 
-    const routeEdge = edges.find((e) => e.source === "compile" && e.target === "publish");
-    expect(routeEdge).toBeDefined();
-    expect(routeEdge!.style?.strokeWidth).toBe(2);
+    const publishEdge = edges.find((e) => e.source === "compile" && e.target === "publish");
+    expect(publishEdge).toBeDefined();
+    expect(publishEdge!.style?.strokeWidth).toBe(2);
 
-    const artifactEdge = edges.find((e) => e.source === "compile" && e.target === "archive");
-    expect(artifactEdge).toBeDefined();
-    expect(artifactEdge!.style?.strokeDasharray).toBe("6 3");
+    const archiveEdge = edges.find((e) => e.source === "compile" && e.target === "archive");
+    expect(archiveEdge).toBeDefined();
+    expect(archiveEdge!.style?.strokeWidth).toBe(2);
   });
 
   it("does not include output nodes by default", () => {
@@ -121,7 +118,7 @@ describe("filterToNeighbors", () => {
 
   it("returns only the selected node when it has no neighbors", () => {
     const lonely = makePipeline([
-      { id: "solo", cache: false, depends: [], emits: [], outputs: [], transforms: [] },
+      { id: "solo", cache: false, depends: [], outputs: [], transforms: [] },
     ]);
     const { nodes, edges } = definitionGraphToFlow(lonely);
     const filtered = filterToNeighbors(nodes, edges, "solo");

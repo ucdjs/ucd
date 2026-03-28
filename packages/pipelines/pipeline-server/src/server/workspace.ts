@@ -92,3 +92,20 @@ export async function ensureWorkspace(db: Database, workspaceId: string, rootPat
     },
   });
 }
+
+export async function ensureWorkspaceExists(
+  db: Database,
+  workspaceId: string,
+  rootPath: string | null = null,
+): Promise<void> {
+  const now = new Date();
+
+  await db.insert(schema.workspaces).values({
+    id: workspaceId,
+    rootPath,
+    createdAt: now,
+    updatedAt: now,
+  }).onConflictDoNothing({
+    target: schema.workspaces.id,
+  });
+}

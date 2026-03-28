@@ -1,36 +1,35 @@
-import type { FileContext, PipelineEvent } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipelines-core";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { definePipeline } from "@ucdjs/pipelines-core";
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createPipelineExecutor } from "../src/executor";
 import { createMockFile, createTestRoute, createTestSource } from "./helpers";
 
-describe("executor events", () => {
-  it("should emit pipeline and version events", async () => {
-    const events: PipelineEvent[] = [];
+describe("executor traces", () => {
+  it("should emit pipeline and version traces", async () => {
+    const traces: PipelineTraceRecord[] = [];
     const files: FileContext[] = [createMockFile("Test.txt")];
     const contents = { "ucd/Test.txt": "0041;A" };
 
     const pipeline = definePipeline({
-      id: "events",
-      name: "Events",
+      id: "traces",
+      name: "Traces",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("route", () => true)],
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => {
-        events.push(event);
-        return undefined;
+      onTrace: (trace) => {
+        traces.push(trace);
       },
     });
 
     await executor.run([pipeline]);
 
-    expect(events.some((event) => event.type === "pipeline:start")).toBe(true);
-    expect(events.some((event) => event.type === "pipeline:end")).toBe(true);
-    expect(events.some((event) => event.type === "version:start")).toBe(true);
-    expect(events.some((event) => event.type === "version:end")).toBe(true);
-    expectTypeOf(events).toMatchTypeOf<PipelineEvent[]>();
+    expect(traces.some((trace) => trace.kind === "pipeline.start")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "pipeline.end")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "version.start")).toBe(true);
+    expect(traces.some((trace) => trace.kind === "version.end")).toBe(true);
   });
 });
