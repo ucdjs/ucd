@@ -156,7 +156,7 @@ describe("pipeline command palette", () => {
     expect(within(dialog).getByText("Open current pipeline")).toBeInTheDocument();
   });
 
-  it.todo("does not show current-pipeline actions on non-pipeline routes and surfaces the no-results state", async () => {
+  it("does not show current-pipeline actions on non-pipeline routes and surfaces the no-results state", async () => {
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json({
         workspaceId: "workspace-123",
