@@ -3,7 +3,13 @@ title: HTTP Bridge
 description: Read-only file system bridge for accessing files over HTTP/HTTPS
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # HTTP File System Bridge
+
+<Callout type="warn">
+  This bridge is part of deprecated `@ucdjs/fs-bridge`. Prefer the <a href="/packages/fs-backend/bridges/http">FS Backend HTTP backend</a> for new code, and use the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when switching existing consumers.
+</Callout>
 
 The HTTP File System Bridge provides read-only access to files served over HTTP or HTTPS. It's designed to work with APIs that serve file contents and directory listings, making it ideal for accessing remote Unicode data files.
 

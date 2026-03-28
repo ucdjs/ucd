@@ -3,7 +3,13 @@ title: Capabilities
 description: Understanding and working with bridge capabilities
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Capabilities System
+
+<Callout type="warn">
+  This page documents deprecated `@ucdjs/fs-bridge` capabilities. New code should use <a href="/packages/fs-backend/specification/features">FS Backend features</a> instead.
+</Callout>
 
 Bridges automatically detect which optional operations they support. The capabilities system allows you to check which operations are available at runtime and provides type-safe access to optional operations.
 

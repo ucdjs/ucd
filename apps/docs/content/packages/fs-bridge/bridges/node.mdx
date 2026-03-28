@@ -3,7 +3,13 @@ title: Node.js Bridge
 description: Full-featured file system bridge for local file system access
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Node.js File System Bridge
+
+<Callout type="warn">
+  This bridge is part of deprecated `@ucdjs/fs-bridge`. Prefer the <a href="/packages/fs-backend/bridges/node">FS Backend Node backend</a> for new code, and use the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when switching existing consumers.
+</Callout>
 
 The Node.js File System Bridge provides full access to the local file system using Node.js's built-in `fs` module. It supports all bridge operations including read, write, directory creation, and removal.
 
