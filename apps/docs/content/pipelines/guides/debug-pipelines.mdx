@@ -9,30 +9,36 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Use this workflow when a pipeline does not load, does not match files, produces unexpected route data, or needs execution-level inspection.
 
-## 1. Confirm discovery first
-
-Start with `list` so you know the loader can find your pipeline files:
+The examples below use the public `ucd` CLI shape. If you are working inside the UCD.js monorepo, you can run the same commands through the workspace binary instead:
 
 ```bash
-./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground
+./packages/cli/bin/ucd.js pipelines ...
+```
+
+## 1. Confirm discovery first
+
+Start with `list` so you know the loader can find your pipeline files at all:
+
+```bash
+ucd pipelines list --cwd ./my-pipelines
 ```
 
 Useful variations:
 
 ```bash
-./packages/cli/bin/ucd.js pipelines list --cwd packages/pipelines/pipeline-playground --path src/simple
+ucd pipelines list --cwd ./my-pipelines --path src/simple
 ```
 
 ```bash
-./packages/cli/bin/ucd.js pipelines list --github owner/repo --ref main
+ucd pipelines list --github owner/repo --ref main
 ```
 
-If the pipeline does not appear here, fix discovery before debugging execution.
+If the pipeline does not appear here, fix discovery before you debug execution logic.
 
 ## 2. Run one pipeline in isolation
 
 ```bash
-./packages/cli/bin/ucd.js pipelines run with-logging --cwd packages/pipelines/pipeline-playground
+ucd pipelines run my-pipeline --cwd ./my-pipelines
 ```
 
 Use selectors so you do not mix unrelated output with the pipeline you are debugging.
@@ -42,13 +48,13 @@ Use selectors so you do not mix unrelated output with the pipeline you are debug
 The quickest way to inspect a run is the built-in UI:
 
 ```bash
-./packages/cli/bin/ucd.js pipelines run --ui --cwd packages/pipelines/pipeline-playground
+ucd pipelines run --ui --cwd ./my-pipelines
 ```
 
 Or choose a specific port:
 
 ```bash
-./packages/cli/bin/ucd.js pipelines run --ui --port 4040 --cwd packages/pipelines/pipeline-playground
+ucd pipelines run --ui --port 4040 --cwd ./my-pipelines
 ```
 
 ## 4. Use the right view for the problem
@@ -81,7 +87,7 @@ resolver: async (ctx, rows) => {
 }
 ```
 
-The `with-logging` playground example also shows `console.log(...)` and filter/parser/transform logging in context.
+If you prefer, you can also emit `console.log(...)` output and let the runtime capture it, but `ctx.logger` is the clearer default because it keeps the log entry structured.
 
 ## What to check when it fails
 
@@ -92,5 +98,5 @@ The `with-logging` playground example also shows `console.log(...)` and filter/p
 - If the UI looks empty, make sure you actually launched with `--ui` and then executed a pipeline from the server.
 
 <Callout type="warn">
-  The UI helps you inspect execution, but the first debugging win is usually simpler: list the pipeline, run one selector, and verify that the route filters match the files you think they match.
+  The UI helps a lot, but the fastest debugging loop is usually simpler: confirm discovery, run one pipeline selector, and verify that the route filters match the files you think they match.
 </Callout>
