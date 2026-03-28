@@ -4,8 +4,13 @@ description: Monitor and debug file system operations with hooks
 ---
 
 import { TypeTable } from "fumadocs-ui/components/type-table";
+import { Callout } from 'fumadocs-ui/components/callout';
 
 # Hooks System
+
+<Callout type="warn">
+  `@ucdjs/fs-bridge` is deprecated. For new integrations, prefer <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a> and its <a href="/packages/fs-backend/hooks">hooks documentation</a>. Use the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when updating existing bridge consumers.
+</Callout>
 
 All file system bridges support a hook system that allows you to listen to file system events. This is useful for monitoring, debugging, logging, and performance tracking.
 

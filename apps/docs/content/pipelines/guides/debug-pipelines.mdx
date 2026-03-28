@@ -9,24 +9,20 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 Use this workflow when a pipeline does not load, does not match files, produces unexpected route data, or needs execution-level inspection.
 
-The examples below use the public `ucd` CLI shape. If you are working inside the UCD.js monorepo, you can run the same commands through the workspace binary instead:
-
-```bash
-./packages/cli/bin/ucd.js pipelines ...
-```
+The examples below use the real installed CLI binary, `ucd`, against the runnable pipeline playground that ships in this repo.
 
 ## 1. Confirm discovery first
 
 Start with `list` so you know the loader can find your pipeline files at all:
 
 ```bash
-ucd pipelines list --cwd ./my-pipelines
+ucd pipelines list --cwd packages/pipelines/pipeline-playground
 ```
 
 Useful variations:
 
 ```bash
-ucd pipelines list --cwd ./my-pipelines --path src/simple
+ucd pipelines list --cwd packages/pipelines/pipeline-playground --path src/simple
 ```
 
 ```bash
@@ -38,7 +34,7 @@ If the pipeline does not appear here, fix discovery before you debug execution l
 ## 2. Run one pipeline in isolation
 
 ```bash
-ucd pipelines run my-pipeline --cwd ./my-pipelines
+ucd pipelines run with-logging --cwd packages/pipelines/pipeline-playground
 ```
 
 Use selectors so you do not mix unrelated output with the pipeline you are debugging.
@@ -48,13 +44,13 @@ Use selectors so you do not mix unrelated output with the pipeline you are debug
 The quickest way to inspect a run is the built-in UI:
 
 ```bash
-ucd pipelines run --ui --cwd ./my-pipelines
+ucd pipelines run --ui --cwd packages/pipelines/pipeline-playground
 ```
 
 Or choose a specific port:
 
 ```bash
-ucd pipelines run --ui --port 4040 --cwd ./my-pipelines
+ucd pipelines run --ui --port 4040 --cwd packages/pipelines/pipeline-playground
 ```
 
 ## 4. Use the right view for the problem

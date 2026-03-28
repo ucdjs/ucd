@@ -8,11 +8,12 @@ import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # FS-Bridge
+<span className="ml-2 align-middle rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.12em] text-amber-700 dark:text-amber-300">Deprecated</span>
 
 The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations, allowing different storage backends to be used interchangeably. This enables your code to work seamlessly across different environments—from Node.js file systems to HTTP-based remote storage.
 
 <Callout type="warn">
-  `@ucdjs/fs-bridge` is deprecated. Use <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a> for new code and follow the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when moving existing consumers.
+  `@ucdjs/fs-bridge` is deprecated. Use <a href="/packages/fs-backend"><code>@ucdjs/fs-backend</code></a> for new code and follow the <a href="/packages/fs-backend/migration-from-fs-bridge">migration guide</a> when moving existing consumers. If you are starting fresh, skip this package and go straight to FS Backend.
 </Callout>
 
 <Callout type="info">
