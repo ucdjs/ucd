@@ -591,9 +591,9 @@ importers:
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
-      hono:
+      h3:
         specifier: catalog:backend
-        version: 4.12.9
+        version: 2.0.1-rc.19(crossws@0.4.4(srvx@0.11.13))
       nanotar:
         specifier: catalog:build
         version: 0.3.0
@@ -1966,6 +1966,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
+      h3:
+        specifier: catalog:backend
+        version: 2.0.1-rc.19(crossws@0.4.4(srvx@0.11.13))
       hono:
         specifier: catalog:backend
         version: 4.12.9
