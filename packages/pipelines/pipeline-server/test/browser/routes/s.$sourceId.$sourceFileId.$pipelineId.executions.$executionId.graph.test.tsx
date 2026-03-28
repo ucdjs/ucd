@@ -236,4 +236,79 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
 
     expect(screen.getByTestId("pipeline-graph-details")).toBeInTheDocument();
   });
+
+  it("renders the not-found path for an invalid execution graph", async () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({
+        workspaceId: "workspace-123",
+        version: "16.0.0",
+      })],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        {
+          id: "local",
+          type: "local",
+          label: "Local Source",
+          fileCount: 1,
+          pipelineCount: 1,
+          errors: [],
+        },
+      ])],
+      ["GET", "/api/sources/local", () => HttpResponse.json({
+        id: "local",
+        type: "local",
+        label: "Local Source",
+        errors: [],
+        files: [
+          {
+            id: "alpha",
+            path: "src/alpha.ts",
+            label: "Alpha file",
+            pipelines: [
+              {
+                id: "main-pipeline",
+                name: "Main pipeline",
+                description: "Build and publish",
+                versions: ["16.0.0"],
+                routeCount: 1,
+                sourceCount: 1,
+                sourceId: "local",
+              },
+            ],
+          },
+        ],
+      })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
+        pipeline: {
+          id: "main-pipeline",
+          name: "Main pipeline",
+          description: "Build and publish",
+          include: undefined,
+          versions: ["16.0.0"],
+          routeCount: 1,
+          sourceCount: 1,
+          routes: [],
+          sources: [{ id: "local" }],
+        },
+      })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
+
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () =>
+        HttpResponse.json({ message: "Missing execution" }, { status: 404 })],
+    ]);
+
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
+
+    expect(await screen.findByText(/not found/i)).toBeInTheDocument();
+  });
 });

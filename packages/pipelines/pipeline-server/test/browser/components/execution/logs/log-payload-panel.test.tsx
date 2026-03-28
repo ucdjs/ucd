@@ -20,7 +20,7 @@ describe("LogPayloadPanel", () => {
     expect(screen.getByText("Raw stderr output")).toBeInTheDocument();
   });
 
-  it.todo("renders payload details and formatted JSON when payload exists", () => {
+  it("renders payload details and formatted JSON when payload exists", () => {
     render(
       <LogPayloadPanel
         log={{
@@ -49,9 +49,9 @@ describe("LogPayloadPanel", () => {
 
     expect(screen.getByText("Level")).toBeInTheDocument();
     expect(screen.getByText("Source")).toBeInTheDocument();
-    expect(screen.getByText("Event")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
-    expect(screen.getByText("file:matched")).toBeInTheDocument();
+    expect(screen.getByText("warn")).toBeInTheDocument();
     expect(screen.getByText(/"routeId": "compile"/)).toBeInTheDocument();
+    expect(screen.getByText(/"message": "Structured log"/)).toBeInTheDocument();
   });
 });
