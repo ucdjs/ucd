@@ -17,7 +17,7 @@ import {
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs/env";
-import { defineWebSocketHandler, H3, serve, serveStatic } from "h3";
+import { H3, serve, serveStatic } from "h3";
 import { version } from "../../package.json" with { type: "json" };
 
 export type PipelineSource = PipelineLocator & { id: string };
@@ -202,5 +202,4 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   console.info(`Pipeline UI running at http://localhost:${port}`);
 }
 
-export { createDatabase, runMigrations };
-export { setupLiveUpdates };
+export { createDatabase, runMigrations, setupLiveUpdates };
