@@ -1,38 +1,69 @@
-import type { Hono } from "hono";
-import type { StatusCode } from "hono/utils/http-status";
-import type { HonoEnv } from "../types";
+import type { H3, H3Event } from "h3";
+import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import {
   MAX_AGE_ONE_WEEK_SECONDS,
 } from "@ucdjs-internal/worker-utils";
-import { cache } from "hono/cache";
+import { getCloudflareEnv } from "@ucdjs-internal/worker-utils/h3";
 import { transformPathForUnicodeOrg } from "../lib/path-utils";
 
-export function registerFilesRoute(router: Hono<HonoEnv>) {
-  router.get(
-    "/:version/:filepath{.*}?",
-    cache({
-      cacheName: "ucdjs:ucd-store:files",
-      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-    }),
-    async (c) => {
-      const version = c.req.param("version");
-      const filepath = c.req.param("filepath")?.trim() || "";
+const CACHE_CONTROL = `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`;
 
-      if (!("files" in c.env.UCDJS_API)) {
-        return c.json({ error: "Files API not available" }, 503);
-      }
+async function handleFilesRequest(event: H3Event): Promise<Response> {
+  const env = getCloudflareEnv<Env>(event);
+  const version = event.context.params?.version;
 
-      const { body, status, headers } = await c.env.UCDJS_API.files(transformPathForUnicodeOrg(version, filepath), {
-        query: c.req.query("query"),
-        pattern: c.req.query("pattern"),
-        type: c.req.query("type"),
-        sort: c.req.query("sort"),
-        order: c.req.query("order"),
-        isHeadRequest: c.req.method === "HEAD",
-        stripUCDPrefix: true,
-      });
+  if (!version) {
+    return Response.json({ error: "Version parameter is required" }, { status: 400 });
+  }
 
-      return c.newResponse(body, status as StatusCode, headers);
-    },
-  );
+  const filepath = trimLeadingSlash(trimTrailingSlash((event.context.params?.path || "").trim()));
+
+  if (!("files" in env.UCDJS_API)) {
+    return Response.json({ error: "Files API not available" }, { status: 503 });
+  }
+
+  const cacheKey = event.req.method === "GET"
+    ? new Request(event.req.url, {
+        method: "GET",
+        headers: event.req.headers,
+      })
+    : null;
+
+  if (cacheKey) {
+    const cachedResponse = await caches.default.match(cacheKey);
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+  }
+
+  const { body, status, headers } = await env.UCDJS_API.files(transformPathForUnicodeOrg(version, filepath), {
+    query: event.url.searchParams.get("query") || undefined,
+    pattern: event.url.searchParams.get("pattern") || undefined,
+    type: event.url.searchParams.get("type") || undefined,
+    sort: event.url.searchParams.get("sort") || undefined,
+    order: event.url.searchParams.get("order") || undefined,
+    isHeadRequest: event.req.method === "HEAD",
+    stripUCDPrefix: true,
+  });
+
+  const responseHeaders = new Headers(headers);
+  if (!responseHeaders.has("Cache-Control")) {
+    responseHeaders.set("Cache-Control", CACHE_CONTROL);
+  }
+
+  const response = new Response(body, {
+    status,
+    headers: responseHeaders,
+  });
+
+  if (cacheKey && response.ok) {
+    event.waitUntil(caches.default.put(cacheKey, response.clone()));
+  }
+
+  return response;
+}
+
+export function registerFilesRoute(app: H3) {
+  app.get("/:version/:path*", handleFilesRequest);
+  app.head("/:version/:path*", handleFilesRequest);
 }

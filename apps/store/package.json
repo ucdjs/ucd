@@ -24,7 +24,7 @@
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "apache-autoindex-parse": "catalog:runtime",
-    "hono": "catalog:backend",
+    "h3": "catalog:backend",
     "nanotar": "catalog:build",
     "zod": "catalog:runtime"
   },
