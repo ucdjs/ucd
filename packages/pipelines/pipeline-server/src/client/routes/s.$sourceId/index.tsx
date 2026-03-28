@@ -1,6 +1,6 @@
 import { StatusIcon } from "#components/execution/status-icon";
 import { ExecutionActivityChart } from "#components/overview/activity-chart";
-import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
+import { StatusOverview } from "#components/overview/status-overview";
 import { PipelineFileCard } from "#components/source/pipeline-file-card";
 import { PipelineFileRow } from "#components/source/pipeline-file-row";
 import { SourceIssuesDialog } from "#components/source/source-issues-dialog";
@@ -104,10 +104,9 @@ function RouteComponent() {
             summaryStates={overview.summary}
             compact
           />
-          <StatusOverviewPanel
+          <StatusOverview
             summaryStates={overview.summary}
             total={overview.summary.total}
-            compact
           />
           <Card>
             <CardHeader className="border-b border-border/60 pb-2 pt-3 px-4">
@@ -179,7 +178,7 @@ function RouteComponent() {
                 placeholder="Search files and pipelines..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-border/60 bg-muted/30 py-2 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border focus:bg-background"
+                className="w-full rounded-lg border border-border/60 bg-card py-2 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border"
               />
             </div>
             <div className="flex shrink-0 rounded-lg border border-border/60">
@@ -213,7 +212,7 @@ function RouteComponent() {
                 )
               : viewMode === "list"
                 ? (
-                    <div className="rounded-xl border border-border/60 overflow-hidden">
+                    <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
                       {filtered.map((file, idx) => (
                         <div key={file.id} className={idx > 0 ? "border-t border-border/60" : ""}>
                           <PipelineFileRow file={file} sourceId={sourceId} />

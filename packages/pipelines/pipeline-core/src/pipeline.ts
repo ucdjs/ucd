@@ -1,12 +1,10 @@
 import type { DAG } from "./dag";
-import type { PipelineEvent } from "./events";
-import type { AnyPipelineRouteDefinition, InferRoutesOutput, PipelineRouteDefinition } from "./route";
+import type { AnyPipelineRouteDefinition, InferRoutesOutput, PipelineRouteDefinition, ResolveContext } from "./route";
 import type { InferSourceIds, PipelineSourceDefinition } from "./source";
-import type { ParseContext, ParsedRow, PipelineFilter, ResolveContext } from "./types";
+import type { ParseContext, ParsedRow, PipelineFilter } from "./types";
 import { buildDAG } from "./dag";
 
 export interface FallbackRouteDefinition<
-  TArtifacts extends Record<string, unknown> = Record<string, unknown>,
   TOutput = unknown,
 > {
   /**
@@ -22,13 +20,13 @@ export interface FallbackRouteDefinition<
   /**
    * Resolver function that transforms parsed rows into output.
    */
-  resolver: (ctx: ResolveContext<TArtifacts>, rows: AsyncIterable<ParsedRow>) => Promise<TOutput>;
+  resolver: (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<TOutput>;
 }
 
 export interface PipelineDefinitionSpec<
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
   TRoutes extends readonly AnyPipelineRouteDefinition[] = readonly AnyPipelineRouteDefinition[],
-  TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+  TFallback extends FallbackRouteDefinition<unknown> | undefined = undefined,
 > {
   /**
    * Unique identifier for the pipeline.
@@ -86,26 +84,19 @@ export interface PipelineDefinitionSpec<
    * Fallback handler for files that don't match any route.
    */
   fallback?: TFallback;
-
-  /**
-   * Event handler for pipeline events.
-   * Note: This is stored but not invoked by the definition itself.
-   * The executor is responsible for calling this.
-   */
-  onEvent?: (event: PipelineEvent) => void | Promise<void>;
 }
 
 export type PipelineDefinitionOptions<
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
-  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
-  TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any>[],
+  TFallback extends FallbackRouteDefinition<unknown> | undefined = undefined,
 > = PipelineDefinitionSpec<TSources, TRoutes, TFallback>;
 
 export type PipelineDefinition<
   TId extends string = string,
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
-  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
-  TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any>[],
+  TFallback extends FallbackRouteDefinition<unknown> | undefined = undefined,
 > = Readonly<PipelineDefinitionSpec<TSources, TRoutes, TFallback>> & {
   /**
    * Marker to identify this as a pipeline definition.
@@ -142,9 +133,9 @@ export type PipelineDefinition<
 export type AnyPipelineDefinition = PipelineDefinition<any, any, any, any>;
 
 export type InferPipelineOutput<
-  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
-  TFallback extends FallbackRouteDefinition<any, unknown> | undefined,
-> = TFallback extends FallbackRouteDefinition<any, infer TFallbackOutput>
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any>[],
+  TFallback extends FallbackRouteDefinition<unknown> | undefined,
+> = TFallback extends FallbackRouteDefinition<infer TFallbackOutput>
   ? InferRoutesOutput<TRoutes> | TFallbackOutput
   : InferRoutesOutput<TRoutes>;
 
@@ -153,7 +144,7 @@ export type InferPipelineSourceIds<T> = T extends PipelineDefinition<any, infer 
   : never;
 
 export type InferPipelineRouteIds<T> = T extends PipelineDefinition<any, any, infer TRoutes, any>
-  ? TRoutes[number] extends PipelineRouteDefinition<infer TId, any, any, any, any>
+  ? TRoutes[number] extends PipelineRouteDefinition<infer TId, any, any, any>
     ? TId
     : never
   : never;
@@ -182,8 +173,8 @@ export type InferPipelineRouteIds<T> = T extends PipelineDefinition<any, any, in
 export function definePipeline<
   const TId extends string,
   const TSources extends readonly PipelineSourceDefinition[],
-  const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
-  const TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+  const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any>[],
+  const TFallback extends FallbackRouteDefinition<unknown> | undefined = undefined,
 >(
   options: Omit<PipelineDefinitionSpec<readonly [...TSources], readonly [...TRoutes], TFallback>, "inputs" | "routes">
     & {
@@ -211,7 +202,6 @@ export function definePipeline<
     strict: options.strict ?? false,
     concurrency: options.concurrency ?? 4,
     fallback: options.fallback,
-    onEvent: options.onEvent,
     dag: dagResult.dag!,
     tags: options.tags ?? [],
   };

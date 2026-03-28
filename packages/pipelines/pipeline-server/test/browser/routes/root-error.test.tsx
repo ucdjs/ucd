@@ -21,9 +21,8 @@ describe("root route error handling", () => {
           errors: [],
         },
       ])],
-      ["GET", "/api/overview", () => HttpResponse.json({
-        message: "Overview blew up",
-      }, { status: 500 })],
+      ["GET", "/api/sources/:sourceId", () => HttpResponse.json({ message: "Source exploded" }, { status: 500 })],
+      ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({ message: "Overview exploded" }, { status: 500 })],
     ]);
 
     const queryClient = new QueryClient({

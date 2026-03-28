@@ -1,7 +1,9 @@
-import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
-import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { AnyPipelineDefinition, PipelineGraph, PipelineLogLevel } from "@ucdjs/pipelines-core";
+import type { PipelineError, PipelineOutputManifestEntry, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import type { CacheStore } from "./cache";
 import type { PipelineExecutionRuntime } from "./runtime";
+
+export type { PipelineLogLevel } from "@ucdjs/pipelines-core";
 
 export interface PipelineSummary {
   versions: string[];
@@ -28,15 +30,13 @@ export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
 export interface PipelineExecutionResult {
   id: string;
   data: unknown[];
+  outputManifest: PipelineOutputManifestEntry[];
+  traces: PipelineTraceRecord[];
   graph: PipelineGraph;
   errors: PipelineError[];
   summary: PipelineSummary;
   status: ExecutionStatus;
 }
-
-export type PipelineLogLevel = "debug" | "info" | "warn" | "error";
-
-export type PipelineLogStream = "stdout" | "stderr";
 
 export type PipelineLogSource = "logger" | "console" | "stdio";
 
@@ -44,9 +44,8 @@ export interface PipelineLogEntry {
   executionId: string;
   workspaceId: string;
   spanId?: string;
-  event?: PipelineEvent;
+  traceKind?: string;
   level: PipelineLogLevel;
-  stream: PipelineLogStream;
   source: PipelineLogSource;
   message: string;
   timestamp: number;
@@ -55,10 +54,9 @@ export interface PipelineLogEntry {
 }
 
 export interface PipelineExecutorOptions {
-  artifacts?: PipelineArtifactDefinition[];
   cacheStore?: CacheStore;
-  onEvent?: (event: PipelineEvent) => void | Promise<void>;
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
+  onTrace?: (trace: PipelineTraceRecord) => void | Promise<void>;
   runtime?: PipelineExecutionRuntime;
 }
 

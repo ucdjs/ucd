@@ -1,12 +1,9 @@
-import type { PipelineLogger } from "../src/logger";
 import type {
-  ArtifactDefinition,
   InferRoute,
-  RouteResolveContext,
+  ResolveContext,
 } from "../src/route";
-import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
+import type { FileContext, ParsedRow, PipelineLogger, PropertyJson } from "../src/types";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
-import { z } from "zod";
 import {
   definePipelineRoute,
 } from "../src/route";
@@ -34,13 +31,12 @@ async function* mockParser(): AsyncIterable<ParsedRow> {
   yield { sourceFile: "test.txt", kind: "point", codePoint: "0042", value: "B" };
 }
 
-function createMockResolveContext(): RouteResolveContext {
+function createMockResolveContext(): ResolveContext {
   return {
     version: "16.0.0",
     file: createFileContext(),
     logger: noopLogger,
-    getArtifact: vi.fn(),
-    emitArtifact: vi.fn(),
+    getRouteData: vi.fn(() => []),
     normalizeEntries: vi.fn((entries) => entries),
     now: vi.fn(() => "2024-01-01T00:00:00Z"),
   };
@@ -65,32 +61,12 @@ describe("definePipelineRoute", () => {
     const route = definePipelineRoute({
       id: "dependent-route",
       filter: () => true,
-      depends: ["route:other-route", "artifact:source:data"] as const,
+      depends: ["route:other-route"] as const,
       parser: mockParser,
       resolver: async () => [],
     });
 
-    expect(route.depends).toEqual(["route:other-route", "artifact:source:data"]);
-  });
-
-  it("should define a route with emits", () => {
-    const emits = {
-      result: {
-        _type: "artifact" as const,
-        schema: z.string(),
-        scope: "version" as const,
-      },
-    };
-
-    const route = definePipelineRoute({
-      id: "emitting-route",
-      filter: () => true,
-      emits,
-      parser: mockParser,
-      resolver: async () => [],
-    });
-
-    expect(route.emits).toBe(emits);
+    expect(route.depends).toEqual(["route:other-route"]);
   });
 
   it("should define a route with transforms", () => {
@@ -120,14 +96,12 @@ describe("definePipelineRoute", () => {
       filter: () => true,
       parser: mockParser,
       resolver: async () => [],
-      out: {
-        dir: "custom-dir",
-        fileName: (pj) => `${pj.property}.json`,
-      },
+      outputs: [{
+        path: "custom-dir/{property:kebab}.json",
+      }],
     });
 
-    expect(route.out?.dir).toBe("custom-dir");
-    expect(typeof route.out?.fileName).toBe("function");
+    expect(route.outputs?.[0]?.path).toBe("custom-dir/{property:kebab}.json");
   });
 
   it("should define a route with cache option", () => {
@@ -150,31 +124,21 @@ describe("definePipelineRoute", () => {
       },
     });
 
-    const emits = {
-      data: {
-        _type: "artifact" as const,
-        schema: z.number(),
-        scope: "version" as const,
-      },
-    };
-
     const route = definePipelineRoute({
       id: "full-route",
       filter: (ctx) => ctx.file.ext === ".txt",
       depends: ["route:dependency"] as const,
-      emits,
       parser: mockParser,
       transforms: [transform] as const,
       resolver: async () => [],
-      out: { dir: "output" },
+      outputs: [{ path: "output/{property:kebab}.json" }],
       cache: true,
     });
 
     expect(route.id).toBe("full-route");
     expect(route.depends).toHaveLength(1);
-    expect(route.emits).toBe(emits);
     expect(route.transforms).toHaveLength(1);
-    expect(route.out?.dir).toBe("output");
+    expect(route.outputs?.[0]?.path).toBe("output/{property:kebab}.json");
     expect(route.cache).toBe(true);
   });
 });
@@ -262,7 +226,7 @@ describe("route resolver", () => {
       data: string[];
     }
 
-    const route = definePipelineRoute<"custom", readonly [], Record<string, never>, readonly [], CustomOutput>({
+    const route = definePipelineRoute<"custom", readonly [], readonly [], CustomOutput>({
       id: "custom",
       filter: () => true,
       parser: mockParser,
@@ -285,58 +249,28 @@ describe("route resolver", () => {
 });
 
 describe("route context methods", () => {
-  it("should provide getArtifact in resolver context", async () => {
-    const getArtifact = vi.fn().mockReturnValue("artifact-value");
+  it("should provide getRouteData in resolver context", async () => {
+    const getRouteData = vi.fn().mockReturnValue([{ data: "test" }]);
 
     const route = definePipelineRoute({
       id: "test",
       filter: () => true,
-      depends: ["artifact:source:data"] as const,
+      depends: ["route:source"] as const,
       parser: mockParser,
       resolver: async (ctx) => {
-        const value = ctx.getArtifact("source:data");
-        return [{ value }] as any;
+        const data = ctx.getRouteData("source");
+        return [{ data }] as any;
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
-      getArtifact,
+      getRouteData,
     };
 
     await route.resolver(ctx, mockParser());
 
-    expect(getArtifact).toHaveBeenCalledWith("source:data");
-  });
-
-  it("should provide emitArtifact in resolver context", async () => {
-    const emitArtifact = vi.fn();
-
-    const route = definePipelineRoute({
-      id: "test",
-      filter: () => true,
-      emits: {
-        result: {
-          _type: "artifact",
-          schema: z.string(),
-          scope: "version",
-        },
-      },
-      parser: mockParser,
-      resolver: async (ctx) => {
-        ctx.emitArtifact("result", "emitted-value");
-        return [];
-      },
-    });
-
-    const ctx: RouteResolveContext = {
-      ...createMockResolveContext(),
-      emitArtifact,
-    };
-
-    await route.resolver(ctx, mockParser());
-
-    expect(emitArtifact).toHaveBeenCalledWith("result", "emitted-value");
+    expect(getRouteData).toHaveBeenCalledWith("source");
   });
 
   it("should provide normalizeEntries in resolver context", async () => {
@@ -353,7 +287,7 @@ describe("route context methods", () => {
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
       normalizeEntries,
     };
@@ -376,7 +310,7 @@ describe("route context methods", () => {
       },
     });
 
-    const ctx: RouteResolveContext = {
+    const ctx: ResolveContext = {
       ...createMockResolveContext(),
       now,
     };
@@ -410,36 +344,13 @@ describe("type inference", () => {
       const route = definePipelineRoute({
         id: "test",
         filter: () => true,
-        depends: ["route:dep1", "artifact:route:artifact"] as const,
+        depends: ["route:dep1"] as const,
         parser: mockParser,
         resolver: async () => [],
       });
 
       type Depends = InferRoute<typeof route>["depends"];
-      expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1", "artifact:route:artifact"]>();
-    });
-
-    it("should infer route emits", () => {
-      const emits = {
-        data: {
-          _type: "artifact" as const,
-          schema: z.string(),
-          scope: "version" as const,
-        },
-      } satisfies Record<string, ArtifactDefinition>;
-
-      const route = definePipelineRoute({
-        id: "test",
-        filter: () => true,
-        emits,
-        parser: mockParser,
-        resolver: async () => [],
-      });
-
-      type Emits = InferRoute<typeof route>["emits"];
-      const routeEmits: Emits = route.emits!;
-
-      expect(routeEmits.data._type).toBe("artifact");
+      expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1"]>();
     });
 
     it("should infer route output type", () => {
@@ -453,6 +364,83 @@ describe("type inference", () => {
 
       type Output = InferRoute<typeof route>["output"];
       expectTypeOf<Output>().toEqualTypeOf<PropertyJson[]>();
+    });
+  });
+
+  describe("getRouteData type constraints", () => {
+    it("should constrain routeId to the declared dependency ID", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toEqualTypeOf<"source">();
+          return [];
+        },
+      });
+    });
+
+    it("should accept a union of IDs when multiple deps are declared", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:a", "route:b"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toEqualTypeOf<"a" | "b">();
+          return [];
+        },
+      });
+    });
+
+    it("should make routeId never when no deps are declared", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        parser: mockParser,
+        resolver: async (ctx) => {
+          expect(ctx).toBeDefined();
+
+          type RouteDataParam = Parameters<typeof ctx.getRouteData>[0];
+          expectTypeOf<RouteDataParam>().toBeNever();
+          return [];
+        },
+      });
+    });
+
+    it("should return readonly unknown[] by default", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          const data = ctx.getRouteData("source");
+          expectTypeOf(data).toEqualTypeOf<readonly unknown[]>();
+          return [];
+        },
+      });
+    });
+
+    it("should return readonly T[] when a type parameter is provided", () => {
+      definePipelineRoute({
+        id: "test",
+        filter: () => true,
+        depends: ["route:source"],
+        parser: mockParser,
+        resolver: async (ctx) => {
+          const data = ctx.getRouteData<PropertyJson>("source");
+          expectTypeOf(data).toEqualTypeOf<readonly PropertyJson[]>();
+          return [];
+        },
+      });
     });
   });
 });

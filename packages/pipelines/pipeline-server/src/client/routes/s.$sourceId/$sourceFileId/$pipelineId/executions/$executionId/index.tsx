@@ -7,7 +7,7 @@ import { StatusIcon } from "#components/execution/status-icon";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
 import { buildExecutionSpans } from "#lib/execution-utils";
 import { formatExecutionDuration } from "#lib/format";
-import { executionEventsQueryOptions } from "#queries/execution";
+import { executionTracesQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
@@ -18,7 +18,7 @@ import { Suspense, useMemo, useState } from "react";
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/")({
   loader: async ({ context, params }) => {
     try {
-      await context.queryClient.ensureQueryData(executionEventsQueryOptions({
+      await context.queryClient.ensureQueryData(executionTracesQueryOptions({
         sourceId: params.sourceId,
         fileId: params.sourceFileId,
         pipelineId: params.pipelineId,
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/exe
 
 function ExecutionDetailPage() {
   const { sourceId, sourceFileId, pipelineId, executionId } = Route.useParams();
-  const { data: executionData } = useSuspenseQuery(executionEventsQueryOptions({
+  const { data: executionData } = useSuspenseQuery(executionTracesQueryOptions({
     sourceId,
     fileId: sourceFileId,
     pipelineId,
@@ -49,10 +49,8 @@ function ExecutionDetailPage() {
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
   const [activeSpan, setActiveSpan] = useState<ExecutionSpan | null>(null);
 
-  const events = executionData.events
-    .map((event) => event.data)
-    .filter((event) => event != null);
-  const spans = useMemo(() => buildExecutionSpans(events), [events]);
+  const traces = executionData.traces;
+  const spans = useMemo(() => buildExecutionSpans(traces), [traces]);
 
   function handleSpanSelect(spanId: string | null) {
     setSelectedSpanId(spanId);
@@ -89,16 +87,16 @@ function ExecutionDetailPage() {
               <div className="mt-1 text-sm text-muted-foreground">
                 {executionData.pagination.total}
                 {" "}
-                events
+                traces
                 {" · "}
                 {selectedSpanId
                   ? "Filtered"
-                  : executionData.events.length > 0
+                  : executionData.traces.length > 0
                     ? formatExecutionDuration(
-                        executionData.events[0]!.timestamp,
-                        executionData.events.at(-1)?.timestamp ?? null,
+                        executionData.traces[0]!.timestamp,
+                        executionData.traces.at(-1)?.timestamp ?? null,
                       )
-                    : "No events"}
+                    : "No traces"}
               </div>
             </div>
           </div>
@@ -170,7 +168,7 @@ function ExecutionDetailPage() {
 
       <ExecutionSpanDrawer
         span={activeSpan}
-        baseTime={events.length > 0 ? (events[0]?.timestamp ?? 0) : 0}
+        baseTime={traces.length > 0 ? new Date(traces[0]!.timestamp).getTime() : 0}
         onClose={() => setActiveSpan(null)}
       />
     </div>

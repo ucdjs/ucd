@@ -40,7 +40,7 @@ interface GraphRouteContext {
   pipelineId: string;
 }
 
-export const graphNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "artifact", "output"];
+export const graphNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "output"];
 
 export const graphNodeConfig = {
   source: {
@@ -76,17 +76,6 @@ export const graphNodeConfig = {
       badgeClassName: "bg-amber-500/12 text-amber-700 dark:text-amber-300",
     },
   },
-  artifact: {
-    label: "Artifact",
-    color: "#8b5cf6",
-    visual: {
-      bg: "#f5f3ff",
-      border: "#c4b5fd",
-      iconBg: "#8b5cf6",
-      icon: "A",
-      badgeClassName: "bg-violet-500/12 text-violet-600 dark:text-violet-300",
-    },
-  },
   output: {
     label: "Output",
     color: "#0ea5e9",
@@ -118,14 +107,12 @@ const graphNodeDetailSchema = {
     { label: "Node ID", key: "id", type: "text" },
     { label: "Route ID", key: "routeId", type: "text" },
   ],
-  artifact: [
-    { label: "Node ID", key: "id", type: "text" },
-    { label: "Artifact ID", key: "artifactId", type: "text" },
-  ],
   output: [
     { label: "Node ID", key: "id", type: "text" },
     { label: "Output Index", key: "outputIndex", type: "text" },
+    { label: "Output ID", key: "outputId", type: "text", hideIfEmpty: true },
     { label: "Property", key: "property", type: "text", hideIfEmpty: true },
+    { label: "Locator", key: "locator", type: "content", hideIfEmpty: true },
   ],
 } as const satisfies Record<PipelineGraphNodeType, readonly GraphDetailFieldSchema[]>;
 
@@ -156,8 +143,6 @@ export function getGraphEdgeStyle(edgeType: PipelineGraphEdge["type"]): {
       return { style: { ...baseStyle, stroke: "#f59e0b" } };
     case "resolved":
       return { style: { ...baseStyle, stroke: "#3b82f6" } };
-    case "uses-artifact":
-      return { style: { ...baseStyle, stroke: "#8b5cf6" }, animated: true };
     default:
       return { style: baseStyle };
   }
@@ -207,11 +192,14 @@ function getGraphNodeActions(
     case "output":
       return [{
         label: "Open outputs",
-        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs",
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
         params: {
           sourceId: routeContext.sourceId,
           sourceFileId: routeContext.fileId,
           pipelineId: routeContext.pipelineId,
+        },
+        search: {
+          view: "outputs",
         },
       }];
     default:
@@ -245,13 +233,27 @@ function getNodeLabel(node: PipelineGraphNode): string {
       return node.file.name;
     case "route":
       return node.routeId;
-    case "artifact":
-      return node.artifactId;
     case "output":
+      if (node.outputId && node.outputId !== "default") {
+        if (node.locator) {
+          return `${node.outputId} -> ${getLocatorName(node.locator)}`;
+        }
+        return node.outputId;
+      }
+      if (node.locator) {
+        return getLocatorName(node.locator);
+      }
       return node.property
         ? `Output[${node.outputIndex}].${node.property}`
         : `Output[${node.outputIndex}]`;
   }
+}
+
+function getLocatorName(locator: string): string {
+  // eslint-disable-next-line e18e/prefer-static-regex
+  const normalized = locator.replace(/^memory:\/\//, "");
+  const parts = normalized.split("/").filter(Boolean);
+  return parts.at(-1) ?? locator;
 }
 
 function getValueByKeyPath(value: unknown, keyPath: string): unknown {

@@ -5,7 +5,6 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  sourcesEventsRouter,
   sourcesExecutionsRouter,
   sourcesGraphRouter,
   sourcesIndexRouter,
@@ -13,6 +12,7 @@ import {
   sourcesOverviewRouter,
   sourcesPipelineRouter,
   sourcesSourceRouter,
+  sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs/env";
@@ -97,9 +97,9 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionsRouter);
-  app.mount("/api/sources", sourcesEventsRouter);
   app.mount("/api/sources", sourcesLogsRouter);
   app.mount("/api/sources", sourcesGraphRouter);
+  app.mount("/api/sources", sourcesTracesRouter);
 
   return app;
 }

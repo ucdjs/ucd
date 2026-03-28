@@ -11,16 +11,14 @@ describe("graph builder", () => {
     builder.addFileNode(createFile());
     builder.addRouteNode("route-a", "16.0.0");
     builder.addRouteNode("route-a", "16.0.0");
-    builder.addArtifactNode("route-a:meta", "16.0.0");
     builder.addOutputNode(0, "16.0.0", "Line_Break");
 
     const graph = builder.build();
 
-    expect(graph.nodes).toHaveLength(5);
+    expect(graph.nodes).toHaveLength(4);
     expect(find(graph, "source:16.0.0")).toBeDefined();
     expect(find(graph, "file:16.0.0:ucd/LineBreak.txt")).toBeDefined();
     expect(find(graph, "route:16.0.0:route-a")).toBeDefined();
-    expect(find(graph, "artifact:16.0.0:route-a:meta")).toBeDefined();
     expect(find(graph, "output:16.0.0:0")).toBeDefined();
   });
 

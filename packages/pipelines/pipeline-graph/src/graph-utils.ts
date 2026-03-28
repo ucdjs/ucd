@@ -8,7 +8,7 @@ import { PipelineGraphBuilder } from "./builder";
 /**
  * Build a pipeline graph from a pipeline definition and its DAG.
  * @param {PipelineDefinition} pipeline The pipeline definition to build the graph from.
- * @param {DAG} dag The DAG representing the dependencies between routes and artifacts in the pipeline.
+ * @param {DAG} dag The DAG representing the dependencies between routes in the pipeline.
  * @returns {PipelineGraph} The constructed pipeline graph.
  */
 export function buildRouteGraph(
@@ -26,11 +26,6 @@ export function buildRouteGraph(
     for (const depId of routeNode.dependencies) {
       const depNodeId = builder.addRouteNode(depId, "static");
       builder.addEdge(depNodeId, currentRouteId, "provides");
-    }
-
-    for (const artifactId of routeNode.emittedArtifacts) {
-      const artifactNodeId = builder.addArtifactNode(artifactId, "static");
-      builder.addEdge(currentRouteId, artifactNodeId, "resolved");
     }
   }
 

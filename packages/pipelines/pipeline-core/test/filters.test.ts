@@ -1,5 +1,3 @@
-import type { PipelineLogger } from "../src/logger";
-import type { FileContext, FilterContext } from "../src/types";
 import { describe, expect, it } from "vitest";
 import {
   always,
@@ -16,37 +14,7 @@ import {
   not,
   or,
 } from "../src/filters";
-
-const noopLogger: PipelineLogger = {
-  debug: () => {},
-  info: () => {},
-  warn: () => {},
-  error: () => {},
-};
-
-function createFileContext(overrides: Partial<FileContext> = {}): FileContext {
-  return {
-    version: "16.0.0",
-    dir: "ucd",
-    path: "ucd/LineBreak.txt",
-    name: "LineBreak.txt",
-    ext: ".txt",
-    ...overrides,
-  };
-}
-
-function createFilterContext(
-  fileOverrides: Partial<FileContext> = {},
-  rowProperty?: string,
-  sourceId?: string,
-): FilterContext {
-  return {
-    file: createFileContext(fileOverrides),
-    logger: noopLogger,
-    row: rowProperty ? { property: rowProperty } : undefined,
-    source: sourceId ? { id: sourceId } : undefined,
-  };
-}
+import { createMockFilterContext } from "./_test-utils";
 
 describe("byName", () => {
   it.each([
@@ -54,7 +22,11 @@ describe("byName", () => {
     ["LineBreak.txt", "PropList.txt", false],
     ["LineBreak.txt", "linebreak.txt", false],
   ])("byName(%j) vs %j → %s", (filter, name, expected) => {
-    expect(byName(filter)(createFilterContext({ name }))).toBe(expected);
+    expect(byName(filter)(createMockFilterContext({
+      file: {
+        name,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -65,7 +37,11 @@ describe("byDir", () => {
     ["custom-dir", "custom-dir", true],
     ["ucd", "emoji", false],
   ])("byDir(%j) vs %j → %s", (filter, dir, expected) => {
-    expect(byDir(filter)(createFilterContext({ dir }))).toBe(expected);
+    expect(byDir(filter)(createMockFilterContext({
+      file: {
+        dir,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -77,7 +53,11 @@ describe("byExt", () => {
     ["", "", true],
     ["", ".txt", false],
   ])("byExt(%j) vs %j → %s", (filter, ext, expected) => {
-    expect(byExt(filter)(createFilterContext({ ext }))).toBe(expected);
+    expect(byExt(filter)(createMockFilterContext({
+      file: {
+        ext,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -90,7 +70,11 @@ describe("byGlob", () => {
     ["ucd/*.{txt,xml}", "ucd/file.xml", true],
     ["ucd/*.{txt,xml}", "ucd/file.json", false],
   ])("byGlob(%j) vs %j → %s", (pattern, path, expected) => {
-    expect(byGlob(pattern)(createFilterContext({ path }))).toBe(expected);
+    expect(byGlob(pattern)(createMockFilterContext({
+      file: {
+        path,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -101,7 +85,11 @@ describe("byPath", () => {
     [/LineBreak/, "ucd/LineBreak.txt", true],
     [/^ucd\/.*\.txt$/, "emoji/file.txt", false],
   ])("byPath(%s) vs %j → %s", (pattern, path, expected) => {
-    expect(byPath(pattern)(createFilterContext({ path }))).toBe(expected);
+    expect(byPath(pattern)(createMockFilterContext({
+      file: {
+        path,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -114,7 +102,11 @@ describe("byProp", () => {
     [/^NFKC_/, "Line_Break", false],
     [/^NFKC_/, undefined, false],
   ])("byProp(%s) vs %s → %s", (pattern, prop, expected) => {
-    expect(byProp(pattern)(createFilterContext({}, prop))).toBe(expected);
+    expect(byProp(pattern)(createMockFilterContext({
+      row: {
+        property: prop,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -127,7 +119,11 @@ describe("bySource", () => {
     [["unicode", "cldr"], "cldr", true],
     [["unicode", "cldr"], "other", false],
   ])("bySource(%j) vs %s → %s", (ids, sourceId, expected) => {
-    expect(bySource(ids)(createFilterContext({}, undefined, sourceId))).toBe(expected);
+    expect(bySource(ids)(createMockFilterContext({
+      source: {
+        id: sourceId,
+      },
+    }))).toBe(expected);
   });
 });
 
@@ -135,12 +131,12 @@ describe("and", () => {
   it("should require all filters to pass", () => {
     const filter = and(byDir("ucd"), byExt(".txt"), byName("LineBreak.txt"));
 
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".txt", name: "LineBreak.txt" }))).toBe(true);
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".txt", name: "PropList.txt" }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".txt", name: "LineBreak.txt" } }))).toBe(true);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".txt", name: "PropList.txt" } }))).toBe(false);
   });
 
   it("should return true for empty filter array", () => {
-    expect(and()(createFilterContext())).toBe(true);
+    expect(and()(createMockFilterContext())).toBe(true);
   });
 });
 
@@ -148,12 +144,12 @@ describe("or", () => {
   it("should pass when any filter matches", () => {
     const filter = or(byName("LineBreak.txt"), byName("PropList.txt"));
 
-    expect(filter(createFilterContext({ name: "LineBreak.txt" }))).toBe(true);
-    expect(filter(createFilterContext({ name: "UnicodeData.txt" }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { name: "LineBreak.txt" } }))).toBe(true);
+    expect(filter(createMockFilterContext({ file: { name: "UnicodeData.txt" } }))).toBe(false);
   });
 
   it("should return false for empty filter array", () => {
-    expect(or()(createFilterContext())).toBe(false);
+    expect(or()(createMockFilterContext())).toBe(false);
   });
 });
 
@@ -161,18 +157,18 @@ describe("not", () => {
   it("should invert filter result", () => {
     const filter = not(byDir("ucd"));
 
-    expect(filter(createFilterContext({ dir: "ucd" }))).toBe(false);
-    expect(filter(createFilterContext({ dir: "emoji" }))).toBe(true);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd" } }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { dir: "emoji" } }))).toBe(true);
   });
 });
 
 describe("always / never", () => {
   it("always returns true", () => {
-    expect(always()(createFilterContext())).toBe(true);
+    expect(always()(createMockFilterContext())).toBe(true);
   });
 
   it("never returns false", () => {
-    expect(never()(createFilterContext())).toBe(false);
+    expect(never()(createMockFilterContext())).toBe(false);
   });
 });
 
@@ -180,11 +176,11 @@ describe("complex filter combinations", () => {
   it("should combine and/or/not filters", () => {
     const filter = and(byDir("ucd"), or(byExt(".txt"), byExt(".xml")), not(byName("ReadMe.txt")));
 
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".txt", name: "LineBreak.txt" }))).toBe(true);
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".xml", name: "data.xml" }))).toBe(true);
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".txt", name: "ReadMe.txt" }))).toBe(false);
-    expect(filter(createFilterContext({ dir: "emoji", ext: ".txt", name: "data.txt" }))).toBe(false);
-    expect(filter(createFilterContext({ dir: "ucd", ext: ".json", name: "data.json" }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".txt", name: "LineBreak.txt" } }))).toBe(true);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".xml", name: "data.xml" } }))).toBe(true);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".txt", name: "ReadMe.txt" } }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { dir: "emoji", ext: ".txt", name: "data.txt" } }))).toBe(false);
+    expect(filter(createMockFilterContext({ file: { dir: "ucd", ext: ".json", name: "data.json" } }))).toBe(false);
   });
 });
 
@@ -204,7 +200,7 @@ describe("getFilterDescription", () => {
     [bySource(["unicode", "cldr"]), "bySource([\"unicode\",\"cldr\"])"],
     [always(), "always()"],
     [never(), "never()"],
-  ] as const)("leaf: %s → %s", (filter, expected) => {
+  ])("leaf: %s → %s", (filter, expected) => {
     expect(getFilterDescription(filter)).toBe(expected);
   });
 
@@ -212,7 +208,7 @@ describe("getFilterDescription", () => {
     [and(byName("a"), byExt(".txt")), "byName(\"a\") AND byExt(\".txt\")"],
     [or(byName("a"), byName("b")), "byName(\"a\") OR byName(\"b\")"],
     [not(byName("a")), "NOT byName(\"a\")"],
-  ] as const)("combinator: %s → %s", (filter, expected) => {
+  ])("combinator: %s → %s", (filter, expected) => {
     expect(getFilterDescription(filter)).toBe(expected);
   });
 
@@ -241,7 +237,7 @@ describe("getFilterDescription", () => {
       ),
       "(byDir(\"ucd\") OR byDir(\"emoji\")) AND NOT (byName(\"ReadMe.txt\") OR byName(\"Index.txt\")) AND byExt(\".txt\")",
     ],
-  ] as const)("nested: %s → %s", (filter, expected) => {
+  ])("nested: %s → %s", (filter, expected) => {
     expect(getFilterDescription(filter)).toBe(expected);
   });
 

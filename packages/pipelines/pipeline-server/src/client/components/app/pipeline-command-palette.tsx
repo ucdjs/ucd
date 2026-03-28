@@ -121,6 +121,7 @@ function CurrentPipelineActions({
 export function PipelineCommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+
   const { data: sourcesData } = useSuspenseQuery(sourcesQueryOptions());
   const sourceQueries = useQueries({
     queries: sourcesData.map((source) => sourceQueryOptions({ sourceId: source.id })),
@@ -197,15 +198,6 @@ export function PipelineCommandPalette() {
     event.preventDefault();
     setOpen((value) => !value);
   });
-
-  useHotkey(
-    "Mod+E",
-    (event) => {
-      event.preventDefault();
-      void handleExecuteCurrent();
-    },
-    { enabled: open && Boolean(currentPipeline) && !executing },
-  );
 
   return (
     <Command.Dialog

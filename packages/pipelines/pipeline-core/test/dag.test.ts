@@ -10,8 +10,8 @@ import {
 
 function createRoute(
   id: string,
-  depends?: (`route:${string}` | `artifact:${string}:${string}`)[],
-): PipelineRouteDefinition<string, any, any, any, any> {
+  depends?: `route:${string}`[],
+): PipelineRouteDefinition<string, any, any, any> {
   return definePipelineRoute({
     id,
     filter: always(),
@@ -233,7 +233,6 @@ describe("DAGNode structure", () => {
       id: "test-route",
       dependencies: expect.any(Set),
       dependents: expect.any(Set),
-      emittedArtifacts: expect.any(Set),
     });
   });
 

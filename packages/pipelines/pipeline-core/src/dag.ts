@@ -1,11 +1,10 @@
 import type { PipelineRouteDefinition } from "./route";
-import { isArtifactDependency, isRouteDependency, parseDependency } from "./dependencies";
+import { parseDependency } from "./dependencies";
 
 export interface DAGNode {
   id: string;
   dependencies: Set<string>;
   dependents: Set<string>;
-  emittedArtifacts: Set<string>;
 }
 
 export interface DAG {
@@ -14,7 +13,7 @@ export interface DAG {
 }
 
 export interface DAGValidationError {
-  type: "cycle" | "missing-route" | "missing-artifact" | "duplicate-route";
+  type: "cycle" | "missing-route" | "duplicate-route";
   message: string;
   details: {
     routeId?: string;
@@ -29,10 +28,9 @@ export interface DAGValidationResult {
   dag?: DAG;
 }
 
-export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any, any, any>[]): DAGValidationResult {
+export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any, any>[]): DAGValidationResult {
   const errors: DAGValidationError[] = [];
   const nodes = new Map<string, DAGNode>();
-  const artifactsByRoute = new Map<string, Set<string>>();
 
   const seenIds = new Map<string, number>();
   for (let i = 0; i < routes.length; i++) {
@@ -57,19 +55,10 @@ export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any,
   const routeIds = new Set(routes.map((r) => r.id));
 
   for (const route of routes) {
-    const emittedArtifacts = new Set<string>();
-    if (route.emits) {
-      for (const artifactName of Object.keys(route.emits)) {
-        emittedArtifacts.add(`${route.id}:${artifactName}`);
-      }
-    }
-    artifactsByRoute.set(route.id, emittedArtifacts);
-
     nodes.set(route.id, {
       id: route.id,
       dependencies: new Set(),
       dependents: new Set(),
-      emittedArtifacts,
     });
   }
 
@@ -81,43 +70,16 @@ export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any,
     for (const dep of route.depends) {
       const parsed = parseDependency(dep);
 
-      if (isRouteDependency(dep)) {
-        if (!routeIds.has(parsed.routeId)) {
-          errors.push({
-            type: "missing-route",
-            message: `Route "${route.id}" depends on non-existent route "${parsed.routeId}"`,
-            details: { routeId: route.id, dependencyId: parsed.routeId },
-          });
-          continue;
-        }
-        node.dependencies.add(parsed.routeId);
-        nodes.get(parsed.routeId)!.dependents.add(route.id);
-      } else if (isArtifactDependency(dep)) {
-        if (parsed.type !== "artifact") continue;
-
-        if (!routeIds.has(parsed.routeId)) {
-          errors.push({
-            type: "missing-route",
-            message: `Route "${route.id}" depends on artifact from non-existent route "${parsed.routeId}"`,
-            details: { routeId: route.id, dependencyId: parsed.routeId },
-          });
-          continue;
-        }
-
-        const routeArtifacts = artifactsByRoute.get(parsed.routeId);
-        const artifactKey = `${parsed.routeId}:${parsed.artifactName}`;
-        if (!routeArtifacts?.has(artifactKey)) {
-          errors.push({
-            type: "missing-artifact",
-            message: `Route "${route.id}" depends on non-existent artifact "${parsed.artifactName}" from route "${parsed.routeId}"`,
-            details: { routeId: route.id, dependencyId: artifactKey },
-          });
-          continue;
-        }
-
-        node.dependencies.add(parsed.routeId);
-        nodes.get(parsed.routeId)!.dependents.add(route.id);
+      if (!routeIds.has(parsed.routeId)) {
+        errors.push({
+          type: "missing-route",
+          message: `Route "${route.id}" depends on non-existent route "${parsed.routeId}"`,
+          details: { routeId: route.id, dependencyId: parsed.routeId },
+        });
+        continue;
       }
+      node.dependencies.add(parsed.routeId);
+      nodes.get(parsed.routeId)!.dependents.add(route.id);
     }
   }
 

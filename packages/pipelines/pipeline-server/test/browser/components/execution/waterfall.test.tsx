@@ -32,7 +32,8 @@ const spans: ExecutionSpan[] = [
   },
 ];
 
-describe("executionWaterfall", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("ExecutionWaterfall", () => {
   it("renders an empty state when there are no spans", () => {
     render(
       <ExecutionWaterfall

@@ -11,24 +11,18 @@ export const PipelineInfoSchema = z.object({
   sourceId: z.string(),
 });
 
-const PipelineRouteDependencySchema = z.union([
-  z.object({
-    type: z.literal("route"),
-    routeId: z.string(),
-  }),
-  z.object({
-    type: z.literal("artifact"),
-    routeId: z.string(),
-    artifactName: z.string(),
-  }),
-]);
-
-const PipelineRouteEmitSchema = z.object({
-  id: z.string(),
-  scope: z.enum(["version", "global"]),
+const PipelineRouteDependencySchema = z.object({
+  type: z.literal("route"),
+  routeId: z.string(),
 });
 
 const PipelineRouteOutputSchema = z.object({
+  id: z.string(),
+  sink: z.string(),
+  format: z.enum(["json", "text"]),
+  path: z.string().optional(),
+  dynamicPath: z.boolean().default(false),
+  pathSource: z.string().optional(),
   dir: z.string().optional(),
   fileName: z.string().optional(),
 });
@@ -37,7 +31,6 @@ const PipelineRouteSchema = z.object({
   id: z.string(),
   cache: z.boolean(),
   depends: z.array(PipelineRouteDependencySchema),
-  emits: z.array(PipelineRouteEmitSchema),
   filter: z.string().optional(),
   outputs: z.array(PipelineRouteOutputSchema),
   transforms: z.array(z.string()),

@@ -195,26 +195,10 @@ describe("definePipeline", () => {
     expect(pipeline.fallback?.filter).toBeDefined();
   });
 
-  it("should define a pipeline with onEvent handler", () => {
-    const onEvent = vi.fn();
-
-    const pipeline = definePipeline({
-      id: "with-events",
-      name: "with-events",
-      versions: ["16.0.0"],
-      inputs: [],
-      routes: [],
-      onEvent,
-    });
-
-    expect(pipeline.onEvent).toBe(onEvent);
-  });
-
   it("should define a complete pipeline with all options", () => {
     const source = createMockSource("source");
     const route = createMockRoute("route");
     const include = vi.fn().mockReturnValue(true);
-    const onEvent = vi.fn();
     const fallback: FallbackRouteDefinition = {
       parser: mockParser,
       resolver: async () => [],
@@ -231,7 +215,6 @@ describe("definePipeline", () => {
       strict: true,
       concurrency: 2,
       fallback,
-      onEvent,
     });
 
     expect(pipeline._type).toBe("pipeline-definition");
@@ -245,7 +228,6 @@ describe("definePipeline", () => {
     expect(pipeline.strict).toBe(true);
     expect(pipeline.concurrency).toBe(2);
     expect(pipeline.fallback).toBe(fallback);
-    expect(pipeline.onEvent).toBe(onEvent);
   });
 });
 
@@ -513,7 +495,7 @@ describe("fallback route", () => {
       raw: string;
     }
 
-    const fallback: FallbackRouteDefinition<Record<string, never>, CustomOutput> = {
+    const fallback: FallbackRouteDefinition<CustomOutput> = {
       parser: mockParser,
       resolver: async () => ({ raw: "data" }),
     };

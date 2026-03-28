@@ -1,14 +1,11 @@
-import type { ArtifactDefinition, ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
 
 /**
  * Groups entries by the first character of their value.
  * Produces one PropertyJson per group (e.g. Colors_R, Colors_G, ...).
  */
-export async function groupByInitialResolver<
-  TArtifactKeys extends string,
-  TEmits extends Record<string, ArtifactDefinition>,
->(
-  ctx: RouteResolveContext<TArtifactKeys, TEmits>,
+export async function groupByInitialResolver(
+  ctx: ResolveContext,
   rows: AsyncIterable<ParsedRow>,
 ): Promise<PropertyJson[]> {
   const groups = new Map<string, ResolvedEntry[]>();
@@ -37,11 +34,8 @@ export async function groupByInitialResolver<
 /**
  * Collects all entries and attaches a summary in meta (total count + timestamp).
  */
-export async function summaryResolver<
-  TArtifactKeys extends string,
-  TEmits extends Record<string, ArtifactDefinition>,
->(
-  ctx: RouteResolveContext<TArtifactKeys, TEmits>,
+export async function summaryResolver(
+  ctx: ResolveContext,
   rows: AsyncIterable<ParsedRow>,
 ): Promise<PropertyJson[]> {
   const entries: ResolvedEntry[] = [];

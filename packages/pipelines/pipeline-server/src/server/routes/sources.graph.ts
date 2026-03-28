@@ -1,6 +1,8 @@
 import type { ExecutionGraphResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
+import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildExecutionGraphView } from "#shared/lib/graph";
+import { buildExecutionGraphFromTraces } from "@ucdjs/pipelines-executor/graph";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError } from "h3";
 
@@ -23,7 +25,6 @@ sourcesGraphRouter.get(
       .select({
         id: schema.executions.id,
         pipelineId: schema.executions.pipelineId,
-        graph: schema.executions.graph,
         status: schema.executions.status,
       })
       .from(schema.executions)
@@ -40,12 +41,34 @@ sourcesGraphRouter.get(
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
     }
 
+    if (!hasExecutionTracesTable(db)) {
+      return {
+        executionId: execution.id,
+        pipelineId: execution.pipelineId,
+        status: execution.status,
+        graph: null,
+      } satisfies ExecutionGraphResponse;
+    }
+
+    const traceRows = await db
+      .select({ data: schema.executionTraces.data })
+      .from(schema.executionTraces)
+      .where(and(
+        eq(schema.executionTraces.workspaceId, workspaceId),
+        eq(schema.executionTraces.executionId, executionId),
+      ))
+      .orderBy(schema.executionTraces.timestamp);
+
+    const graph = traceRows.length > 0
+      ? buildExecutionGraphFromTraces(traceRows.map((trace) => trace.data))
+      : null;
+
     return {
       executionId: execution.id,
       pipelineId: execution.pipelineId,
       status: execution.status,
-      graph: execution.graph
-        ? buildExecutionGraphView(execution.graph, {
+      graph: graph
+        ? buildExecutionGraphView(graph, {
             sourceId,
             fileId,
             pipelineId,

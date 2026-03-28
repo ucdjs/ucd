@@ -14,7 +14,6 @@ export {
 } from "./cache";
 
 export { createPipelineExecutor } from "./executor";
-
 export type {
   PipelineExecutionContext,
   PipelineExecutionLogInput,
@@ -31,7 +30,6 @@ export type {
   PipelineLogEntry,
   PipelineLogLevel,
   PipelineLogSource,
-  PipelineLogStream,
   PipelineSummary,
 } from "./types";
 export type { PipelineLogger } from "@ucdjs/pipelines-core";

@@ -2,114 +2,202 @@ import type { FileContext, PipelineFilter } from "./types";
 import picomatch from "picomatch";
 
 type FilterNode
-  = | { type: "filter"; name: string; args: unknown[] }
-    | { type: "and"; filters: PipelineFilter[] }
-    | { type: "or"; filters: PipelineFilter[] }
-    | { type: "not"; filter: PipelineFilter };
+  = | {
+    type: "filter";
+    name: string;
+    args: readonly unknown[];
+  }
+  | {
+    type: "and";
+    filters: readonly PipelineFilter[];
+  }
+  | {
+    type: "or";
+    filters: readonly PipelineFilter[];
+  }
+  | {
+    type: "not";
+    filter: PipelineFilter;
+  };
 
-export const FILTER_NODE: symbol = Symbol.for("ucdjs.filter-node");
+export const FILTER_NODE: unique symbol = Symbol.for("ucdjs.filter-node") as typeof FILTER_NODE;
+
+type FilterWithNode = PipelineFilter & {
+  [FILTER_NODE]?: FilterNode;
+};
+
+function setFilterNode(filter: PipelineFilter, node: FilterNode): PipelineFilter {
+  Object.defineProperty(filter, FILTER_NODE, {
+    value: node,
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  });
+
+  return filter;
+}
+
+function getFilterNode(filter: PipelineFilter): FilterNode | undefined {
+  return (filter as FilterWithNode)[FILTER_NODE];
+}
 
 export function createPipelineFilter(
   caller: { name: string },
-  args: unknown[],
-  fn: PipelineFilter,
+  args: readonly unknown[],
+  filter: PipelineFilter,
 ): PipelineFilter {
-  (fn as any)[FILTER_NODE] = { type: "filter", name: caller.name, args };
-  return fn;
+  return setFilterNode(filter, {
+    type: "filter",
+    name: caller.name,
+    args,
+  });
 }
 
 function serializeNode(filter: PipelineFilter, insideCombinator = false): string {
-  const node = (filter as any)[FILTER_NODE] as FilterNode | undefined;
-  if (!node) return "<custom>";
+  const node = getFilterNode(filter);
+
+  if (!node) {
+    return "<custom>";
+  }
 
   switch (node.type) {
     case "filter": {
       const args = node.args.map(formatArg).join(", ");
       return `${node.name}(${args})`;
     }
+
     case "and": {
-      const desc = node.filters.map((f) => serializeNode(f, true)).join(" AND ");
-      return insideCombinator ? `(${desc})` : desc;
+      const description = node.filters.map((filter) => serializeNode(filter, true)).join(" AND ");
+      return insideCombinator ? `(${description})` : description;
     }
+
     case "or": {
-      const desc = node.filters.map((f) => serializeNode(f, true)).join(" OR ");
-      return insideCombinator ? `(${desc})` : desc;
+      const description = node.filters.map((filter) => serializeNode(filter, true)).join(" OR ");
+      return insideCombinator ? `(${description})` : description;
     }
-    case "not": {
+
+    case "not":
       return `NOT ${serializeNode(node.filter, true)}`;
-    }
   }
 }
 
 function formatArg(arg: unknown): string {
-  if (typeof arg === "string") return `"${arg}"`;
-  if (arg instanceof RegExp) return String(arg);
-  if (Array.isArray(arg)) return JSON.stringify(arg);
+  if (typeof arg === "string") {
+    return JSON.stringify(arg);
+  }
+
+  if (arg instanceof RegExp) {
+    return String(arg);
+  }
+
+  if (Array.isArray(arg)) {
+    return JSON.stringify(arg);
+  }
+
   return String(arg);
 }
 
 export function getFilterDescription(filter: PipelineFilter): string | undefined {
-  const node = (filter as any)[FILTER_NODE] as FilterNode | undefined;
-  if (!node) return undefined;
+  if (!getFilterNode(filter)) {
+    return undefined;
+  }
+
   return serializeNode(filter);
 }
 
 export function byName(name: string): PipelineFilter {
-  return createPipelineFilter(byName, [name], (ctx) => ctx.file.name === name);
+  return createPipelineFilter(byName, [name], (context) => context.file.name === name);
 }
 
 export function byDir(dir: FileContext["dir"]): PipelineFilter {
-  return createPipelineFilter(byDir, [dir], (ctx) => ctx.file.dir === dir);
+  return createPipelineFilter(byDir, [dir], (context) => context.file.dir === dir);
 }
 
 export function byExt(ext: string): PipelineFilter {
-  if (ext === "") {
-    return createPipelineFilter(byExt, [""], (ctx) => ctx.file.ext === "");
-  }
-  const normalizedExt = ext.startsWith(".") ? ext : `.${ext}`;
-  return createPipelineFilter(byExt, [normalizedExt], (ctx) => ctx.file.ext === normalizedExt);
+  const normalizedExt = ext === "" ? "" : ext.startsWith(".") ? ext : `.${ext}`;
+
+  return createPipelineFilter(
+    byExt,
+    [normalizedExt],
+    (context) => context.file.ext === normalizedExt,
+  );
 }
 
 export function byGlob(pattern: string): PipelineFilter {
-  const matcher = picomatch(pattern);
-  return createPipelineFilter(byGlob, [pattern], (ctx) => matcher(ctx.file.path));
+  const matches = picomatch(pattern);
+
+  return createPipelineFilter(
+    byGlob,
+    [pattern],
+    (context) => matches(context.file.path),
+  );
 }
 
 export function byPath(pathPattern: string | RegExp): PipelineFilter {
   if (typeof pathPattern === "string") {
-    return createPipelineFilter(byPath, [pathPattern], (ctx) => ctx.file.path === pathPattern);
+    return createPipelineFilter(
+      byPath,
+      [pathPattern],
+      (context) => context.file.path === pathPattern,
+    );
   }
-  return createPipelineFilter(byPath, [pathPattern], (ctx) => pathPattern.test(ctx.file.path));
+
+  return createPipelineFilter(
+    byPath,
+    [pathPattern],
+    (context) => pathPattern.test(context.file.path),
+  );
 }
 
 export function byProp(pattern: string | RegExp): PipelineFilter {
   if (typeof pattern === "string") {
-    return createPipelineFilter(byProp, [pattern], (ctx) => ctx.row?.property === pattern);
+    return createPipelineFilter(
+      byProp,
+      [pattern],
+      (context) => context.row?.property === pattern,
+    );
   }
-  return createPipelineFilter(byProp, [pattern], (ctx) => !!ctx.row?.property && pattern.test(ctx.row.property));
+
+  return createPipelineFilter(
+    byProp,
+    [pattern],
+    (context) => {
+      const property = context.row?.property;
+      return property != null && pattern.test(property);
+    },
+  );
 }
 
-export function bySource(sourceIds: string | string[]): PipelineFilter {
+export function bySource(sourceIds: string | readonly string[]): PipelineFilter {
   const ids = Array.isArray(sourceIds) ? sourceIds : [sourceIds];
-  return createPipelineFilter(bySource, [ids.length === 1 ? ids[0]! : ids], (ctx) => ctx.source != null && ids.includes(ctx.source.id));
+  const serializedArg = ids.length === 1 ? ids[0] : ids;
+
+  return createPipelineFilter(
+    bySource,
+    [serializedArg],
+    (context) => context.source != null && ids.includes(context.source.id),
+  );
 }
 
 export function and(...filters: PipelineFilter[]): PipelineFilter {
-  const fn: PipelineFilter = (ctx) => filters.every((f) => f(ctx));
-  (fn as any)[FILTER_NODE] = { type: "and", filters };
-  return fn;
+  return setFilterNode(
+    (context) => filters.every((filter) => filter(context)),
+    { type: "and", filters },
+  );
 }
 
 export function or(...filters: PipelineFilter[]): PipelineFilter {
-  const fn: PipelineFilter = (ctx) => filters.some((f) => f(ctx));
-  (fn as any)[FILTER_NODE] = { type: "or", filters };
-  return fn;
+  return setFilterNode(
+    (context) => filters.some((filter) => filter(context)),
+    { type: "or", filters },
+  );
 }
 
 export function not(filter: PipelineFilter): PipelineFilter {
-  const fn: PipelineFilter = (ctx) => !filter(ctx);
-  (fn as any)[FILTER_NODE] = { type: "not", filter };
-  return fn;
+  return setFilterNode(
+    (context) => !filter(context),
+    { type: "not", filter },
+  );
 }
 
 export function always(): PipelineFilter {

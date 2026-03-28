@@ -17,7 +17,7 @@ import { emojiSource, ucdSource } from "./sources";
 export const playgroundAdvancedPipeline = definePipeline({
   id: "playground-advanced",
   name: "Advanced Pipeline Playground",
-  description: "A comprehensive pipeline demonstrating all available features including dependencies, artifacts, transforms, and multiple sources",
+  description: "A comprehensive pipeline demonstrating all available features including dependencies, transforms, and multiple sources",
   versions: ["15.0.0", "15.1.0", "16.0.0"],
   inputs: [ucdSource, emojiSource],
   routes: [
@@ -62,44 +62,5 @@ export const playgroundAdvancedPipeline = definePipeline({
         entries,
       }];
     },
-  },
-  onEvent: (event) => {
-    switch (event.type) {
-      case "pipeline:start":
-        // eslint-disable-next-line no-console
-        console.log(`[Pipeline] Started: ${event.id}`);
-        break;
-      case "pipeline:end":
-        // eslint-disable-next-line no-console
-        console.log(`[Pipeline] Completed in ${event.durationMs}ms`);
-        break;
-      case "version:start":
-        // eslint-disable-next-line no-console
-        console.log(`[Version] Processing ${event.version}`);
-        break;
-      case "version:end":
-        // eslint-disable-next-line no-console
-        console.log(`[Version] ${event.version} completed in ${event.durationMs}ms`);
-        break;
-      case "file:matched":
-        // eslint-disable-next-line no-console
-        console.log(`[File] Matched ${event.file.path} -> ${event.routeId}`);
-        break;
-      case "file:skipped":
-        // eslint-disable-next-line no-console
-        console.log(`[File] Skipped ${event.file.path}: ${event.reason}`);
-        break;
-      case "artifact:produced":
-        // eslint-disable-next-line no-console
-        console.log(`[Artifact] Produced ${event.artifactId} from ${event.routeId}`);
-        break;
-      case "artifact:consumed":
-        // eslint-disable-next-line no-console
-        console.log(`[Artifact] Consumed ${event.artifactId} by ${event.routeId}`);
-        break;
-      case "error":
-        console.error(`[Error] ${event.error.scope}: ${event.error.message}`);
-        break;
-    }
   },
 });

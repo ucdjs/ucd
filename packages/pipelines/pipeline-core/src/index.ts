@@ -11,10 +11,7 @@ export {
 } from "./dag";
 
 export type {
-  ExtractArtifactDependencies,
-  ExtractArtifactKeys,
   ExtractRouteDependencies,
-  ParsedArtifactDependency,
   ParsedDependency,
   ParseDependencyType,
   ParsedRouteDependency,
@@ -22,50 +19,10 @@ export type {
 } from "./dependencies";
 
 export {
-  createArtifactDependency,
   createRouteDependency,
-  isArtifactDependency,
   isRouteDependency,
   parseDependency,
 } from "./dependencies";
-
-export type {
-  ArtifactConsumedEvent,
-  ArtifactEndEvent,
-  ArtifactProducedEvent,
-  ArtifactStartEvent,
-  CacheHitEvent,
-  CacheMissEvent,
-  CacheStoreEvent,
-  FileFallbackEvent,
-  FileMatchedEvent,
-  FileSkippedEvent,
-  ParseEndEvent,
-  ParseStartEvent,
-  PipelineEndEvent,
-  PipelineError,
-  PipelineErrorEvent,
-  PipelineErrorScope,
-  PipelineEvent,
-  PipelineEventInput,
-  PipelineEventPhase,
-  PipelineEventType,
-  PipelineGraph,
-  PipelineGraphEdge,
-  PipelineGraphEdgeType,
-  PipelineGraphNode,
-  PipelineGraphNodeType,
-  PipelineStartEvent,
-  ResolveEndEvent,
-  ResolveStartEvent,
-  VersionEndEvent,
-  VersionStartEvent,
-} from "./events";
-
-export {
-  getPipelineEventPhase,
-  PIPELINE_EVENT_PHASES,
-} from "./events";
 
 export {
   always,
@@ -85,7 +42,27 @@ export {
   or,
 } from "./filters";
 
-export type { PipelineLogger } from "./logger";
+export type {
+  PipelineGraph,
+  PipelineGraphEdge,
+  PipelineGraphEdgeType,
+  PipelineGraphNode,
+  PipelineGraphNodeType,
+} from "./graph";
+
+export type {
+  FilesystemOutputSinkDefinition,
+  NormalizedRouteOutputDefinition,
+  OutputSinkDefinition,
+  RouteOutputDefinition,
+  RouteOutputPathContext,
+  RouteOutputPathResolver,
+} from "./outputs/types";
+
+export {
+  filesystemSink,
+  normalizeRouteOutputs,
+} from "./outputs/types";
 
 export type {
   AnyPipelineDefinition,
@@ -107,13 +84,11 @@ export {
 
 export type {
   AnyPipelineRouteDefinition,
-  ArtifactDefinition,
-  InferArtifactType,
-  InferEmittedArtifactsFromRoute,
   InferRoute,
   InferRoutesOutput,
   PipelineRouteDefinition,
-  RouteResolveContext,
+  ResolveContext,
+  ResolverFn,
 } from "./route";
 
 export { definePipelineRoute } from "./route";
@@ -122,6 +97,7 @@ export type {
   FileMetadata,
   InferSourceId,
   InferSourceIds,
+  PipelineOutputSourceDefinition,
   PipelineSourceDefinition,
   ResolveSourceContext,
   SourceBackend,
@@ -131,6 +107,8 @@ export type {
 
 export {
   definePipelineSource,
+  isPipelineOutputSource,
+  pipelineOutputSource,
   resolveMultipleSourceFiles,
   resolveSourceFiles,
 } from "./source";
@@ -156,11 +134,10 @@ export type {
   ParsedRow,
   ParserFn,
   PipelineFilter,
+  PipelineLogger,
+  PipelineLogLevel,
   PropertyJson,
-  ResolveContext,
   ResolvedEntry,
-  ResolverFn,
-  RouteOutput,
   RowContext,
 } from "./types";
 

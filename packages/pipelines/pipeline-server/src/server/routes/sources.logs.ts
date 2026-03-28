@@ -138,7 +138,6 @@ sourcesLogsRouter.get(
       logs: logs.map((log) => ({
         id: log.id,
         spanId: log.spanId,
-        stream: log.stream,
         message: log.message,
         timestamp: log.timestamp.toISOString(),
         payload: log.payload,
