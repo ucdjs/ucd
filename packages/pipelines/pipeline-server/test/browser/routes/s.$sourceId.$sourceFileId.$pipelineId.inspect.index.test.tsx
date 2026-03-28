@@ -55,6 +55,15 @@ function mockInspectApi() {
 }
 
 describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () => {
+  it("redirects /inspect to /inspect/routes", async () => {
+    mockInspectApi();
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect" });
+
+    await waitFor(() => {
+      expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect/routes/compile");
+    });
+  });
+
   it("auto-redirects from /inspect/routes to the first route", async () => {
     mockInspectApi();
     const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/inspect/routes" });

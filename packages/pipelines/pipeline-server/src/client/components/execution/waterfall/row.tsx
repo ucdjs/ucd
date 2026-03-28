@@ -70,6 +70,7 @@ export function ExecutionWaterfallRow({
         <button
           type="button"
           onClick={() => onSelect(span)}
+          aria-label={`${span.label} ${formatDuration(span.durationMs)}`}
           className={cn(
             "execution-phase-bar my-1.5 h-3 rounded-[2px] px-1.5 text-xs font-medium text-white transition-all",
             selected && "ring-1 ring-foreground/50",

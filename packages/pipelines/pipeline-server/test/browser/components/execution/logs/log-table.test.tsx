@@ -46,7 +46,7 @@ describe("ExecutionLogTable", () => {
     expect(screen.getByText("No logs captured for this execution.")).toBeInTheDocument();
   });
 
-  it.todo("expands and collapses a log row to show payload details", async () => {
+  it("expands and collapses a log row to show payload details", async () => {
     const user = userEvent.setup();
 
     render(<ExecutionLogTable logs={logs} />);
@@ -56,12 +56,12 @@ describe("ExecutionLogTable", () => {
 
     await user.click(row!);
 
-    expect(screen.getByText("file:matched")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
+    expect(screen.getByText(/"routeId": "compile"/)).toBeInTheDocument();
 
     await user.click(row!);
 
-    expect(screen.queryByText("file:matched")).not.toBeInTheDocument();
+    expect(screen.queryByText(/"routeId": "compile"/)).not.toBeInTheDocument();
   });
 
   it("uses the stderr error row path and the %O placeholder for large objects", () => {
