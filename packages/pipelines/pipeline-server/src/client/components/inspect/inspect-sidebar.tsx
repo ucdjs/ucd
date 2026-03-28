@@ -7,8 +7,6 @@ import { SidebarOutputsList } from "./list/sidebar-outputs-list";
 import { SidebarRoutesList } from "./list/sidebar-routes-list";
 import { SidebarTransformsList } from "./list/sidebar-transforms-list";
 
-const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
-
 type TabId = "routes" | "transforms" | "outputs";
 
 const tabs: {
@@ -25,9 +23,10 @@ const tabs: {
   { id: "outputs", label: "Outputs", to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs", icon: FolderOutput },
 ];
 
+const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
+
 export function InspectSidebar() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
+  const { pipeline } = PipelineRoute.useLoaderData();
   const routeParams = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
   const params = useParams({ strict: false });
   const [filterValue, setFilterValue] = useState("");

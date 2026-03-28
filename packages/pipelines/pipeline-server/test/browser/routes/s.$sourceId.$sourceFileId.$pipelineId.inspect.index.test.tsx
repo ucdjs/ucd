@@ -36,21 +36,19 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/inspect", () =
         pagination: { total: 0, limit: 1, offset: 0, hasMore: false },
       })],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: "**/*.txt",
-          versions: ["16.0.0"],
-          routeCount: 3,
-          sourceCount: 1,
-          routes: [
-            { id: "compile", cache: true, depends: [], filter: "compile-filter", outputs: [{ id: "compile-out", sink: "file", format: "json", dir: "dist", fileName: "compile.json" }], transforms: ["normalize", "dedupe"] },
-            { id: "publish", cache: false, depends: [{ type: "route", routeId: "compile" }], filter: "publish-filter", outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }], transforms: ["ship"] },
-            { id: "archive", cache: false, depends: [{ type: "route", routeId: "publish" }], filter: "archive-filter", outputs: [], transforms: [] },
-          ],
-          sources: [{ id: "local" }],
-        },
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: "**/*.txt",
+        versions: ["16.0.0"],
+        routeCount: 3,
+        sourceCount: 1,
+        routes: [
+          { id: "compile", cache: true, depends: [], filter: "compile-filter", outputs: [{ id: "compile-out", sink: "file", format: "json", dir: "dist", fileName: "compile.json" }], transforms: ["normalize", "dedupe"] },
+          { id: "publish", cache: false, depends: [{ type: "route", routeId: "compile" }], filter: "publish-filter", outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }], transforms: ["ship"] },
+          { id: "archive", cache: false, depends: [{ type: "route", routeId: "publish" }], filter: "archive-filter", outputs: [], transforms: [] },
+        ],
+        sources: [{ id: "local" }],
       })],
     ]);
   });

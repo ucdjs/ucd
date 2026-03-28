@@ -11,8 +11,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/ins
 });
 
 function TransformDetailPage() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
+  const { pipeline } = PipelineRoute.useLoaderData();
   const { sourceId, sourceFileId, pipelineId, transformName } = Route.useParams();
 
   const transformRoutes = pipeline.routes.filter((route) => route.transforms.includes(transformName));

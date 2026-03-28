@@ -35,8 +35,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(Object.keys(data)).toEqual(["pipeline"]);
-    expect(data.pipeline).toEqual(expect.objectContaining({
+    expect(data).toEqual(expect.objectContaining({
       id: DEFAULT_DISCOVERABLE_PIPELINE_ID,
       versions: expect.any(Array),
       routes: expect.any(Array),

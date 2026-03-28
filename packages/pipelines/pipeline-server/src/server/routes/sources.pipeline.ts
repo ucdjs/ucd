@@ -1,5 +1,5 @@
 import type { ExecutePipelineResponse } from "#shared/schemas/execution";
-import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas/pipeline";
+import type { PipelineDetails } from "#shared/schemas/pipeline";
 import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
@@ -61,9 +61,7 @@ async function resolvePipelineRoute(event: H3Event) {
 sourcesPipelineRouter.get(BASE, async (event) => {
   const { pipeline } = await resolvePipelineRoute(event);
 
-  return {
-    pipeline: toPipelineDetails(pipeline),
-  } satisfies SourcePipelineResponse;
+  return toPipelineDetails(pipeline) satisfies PipelineDetails;
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {

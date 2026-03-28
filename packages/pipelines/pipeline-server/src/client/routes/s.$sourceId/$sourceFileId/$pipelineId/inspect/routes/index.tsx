@@ -7,12 +7,12 @@ const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/")({
   loader: async ({ context, params }) => {
-    const pipelineResponse = await context.queryClient.ensureQueryData(pipelineQueryOptions({
+    const pipeline = await context.queryClient.ensureQueryData(pipelineQueryOptions({
       sourceId: params.sourceId,
       fileId: params.sourceFileId,
       pipelineId: params.pipelineId,
     }));
-    const firstRoute = pipelineResponse.pipeline.routes[0];
+    const firstRoute = pipeline.routes[0];
     if (firstRoute) {
       throw redirect({
         to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId",
@@ -24,8 +24,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/ins
 });
 
 function RoutesIndexPage() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
+  const { pipeline } = PipelineRoute.useLoaderData();
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
   const navigate = useNavigate();
 

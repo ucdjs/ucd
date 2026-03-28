@@ -21,10 +21,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       ])],
       ["GET", "/api/sources/local", () => HttpResponse.json(buildSourceResponse())],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {
@@ -158,10 +156,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       ])],
       ["GET", "/api/sources/local", () => HttpResponse.json(buildSourceResponse())],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {
@@ -200,10 +196,8 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       ])],
       ["GET", "/api/sources/local", () => HttpResponse.json(buildSourceResponse())],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json(buildPipelineResponse({
-        pipeline: {
-          ...buildPipelineResponse().pipeline,
-          routeCount: 2,
-        },
+        ...buildPipelineResponse(),
+        routeCount: 2,
       }))],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", () => HttpResponse.json(
         buildExecutionsResponse([], {

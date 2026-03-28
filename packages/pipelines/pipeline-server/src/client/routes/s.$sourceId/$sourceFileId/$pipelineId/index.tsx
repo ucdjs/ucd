@@ -25,14 +25,13 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/")(
 
 function RouteComponent() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
-  const { file, source, pipelineResponse } = ParentRoute.useLoaderData();
+  const { file, source, pipeline } = ParentRoute.useLoaderData();
   const { data: executionsData } = useSuspenseQuery(executionsQueryOptions({
     sourceId,
     fileId: sourceFileId,
     pipelineId,
     limit: 6,
   }));
-  const pipeline = pipelineResponse.pipeline;
   const recentExecutions = executionsData.executions;
   const latestExecution = recentExecutions[0] ?? null;
   const latestGraphExecution = recentExecutions.find((execution) => execution.hasGraph) ?? null;

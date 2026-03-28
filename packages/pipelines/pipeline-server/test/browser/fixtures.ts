@@ -109,30 +109,26 @@ export function buildOverviewResponse(overrides: Partial<{
 }
 
 export function buildPipelineResponse(overrides: Partial<{
-  pipeline: {
-    id: string;
-    name: string;
-    description: string;
-    include: string | undefined;
-    versions: string[];
-    routeCount: number;
-    sourceCount: number;
-    routes: Array<Record<string, unknown>>;
-    sources: Array<{ id: string }>;
-  };
+  id: string;
+  name: string;
+  description: string;
+  include: string | undefined;
+  versions: string[];
+  routeCount: number;
+  sourceCount: number;
+  routes: Array<Record<string, unknown>>;
+  sources: Array<{ id: string }>;
 }> = {}) {
   return {
-    pipeline: {
-      id: "main-pipeline",
-      name: "Main pipeline",
-      description: "Build and publish",
-      include: undefined,
-      versions: ["16.0.0"],
-      routeCount: 1,
-      sourceCount: 1,
-      routes: [],
-      sources: [{ id: "local" }],
-    },
+    id: "main-pipeline",
+    name: "Main pipeline",
+    description: "Build and publish",
+    include: undefined,
+    versions: ["16.0.0"],
+    routeCount: 1,
+    sourceCount: 1,
+    routes: [],
+    sources: [{ id: "local" }],
     ...overrides,
   };
 }
