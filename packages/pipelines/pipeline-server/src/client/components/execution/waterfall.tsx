@@ -40,10 +40,6 @@ export function ExecutionWaterfall({
     () => spans.filter((span) => visibleActivePhases.has(span.phase)),
     [spans, visibleActivePhases],
   );
-  const sortedSpans = useMemo(
-    () => filteredSpans.toSorted((a, b) => a.start - b.start),
-    [filteredSpans],
-  );
   const ticks = buildTicks(duration, 5);
 
   function handleTogglePhase(phase: PipelineTracePhase) {
@@ -81,7 +77,7 @@ export function ExecutionWaterfall({
         <ExecutionWaterfallAxis durationMs={duration} ticks={ticks} />
 
         <div>
-          {sortedSpans.map((span, index) => {
+          {filteredSpans.map((span, index) => {
             const spanKey = `${span.spanId}-${span.start}-${span.end}-${span.phase}-${index}`;
 
             return (

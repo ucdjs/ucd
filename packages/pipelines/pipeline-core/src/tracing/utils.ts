@@ -72,11 +72,11 @@ export type PipelineTracePhase = typeof PIPELINE_TRACE_PHASES[number];
 
 export function getTracePhase(kind: PipelineTraceKind): PipelineTracePhase {
   if (kind === "error") return "Error";
-  if (kind.startsWith("pipeline.")) return "Pipeline";
-  if (kind.startsWith("version.")) return "Version";
-  if (kind.startsWith("parse.")) return "Parse";
-  if (kind.startsWith("resolve.")) return "Resolve";
-  if (kind.startsWith("file.") || kind.startsWith("source.")) return "File";
+  if (kind === "pipeline") return "Pipeline";
+  if (kind === "version") return "Version";
+  if (kind === "parse") return "Parse";
+  if (kind === "resolve") return "Resolve";
+  if (kind === "source.listing" || kind.startsWith("file.") || kind.startsWith("source.")) return "File";
   if (kind.startsWith("cache.")) return "Cache";
   if (kind.startsWith("output.")) return "Other";
   return "Other";

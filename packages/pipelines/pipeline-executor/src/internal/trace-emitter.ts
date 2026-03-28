@@ -18,12 +18,15 @@ export interface TraceHandlerOptions {
 export function createTraceEmitter(options: TraceHandlerOptions): TraceEmitter {
   const { onTrace, runtime } = options;
   let traceCounter = 0;
-  let spanCounter = 0;
   const emitterId = globalThis.crypto?.randomUUID?.()
     ?? `${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
   const nextTraceId = (): string => `trace_${emitterId}_${++traceCounter}`;
-  const nextSpanId = (): string => `span_${emitterId}_${++spanCounter}`;
+  const nextSpanId = (): string => {
+    const bytes = new Uint8Array(8);
+    globalThis.crypto.getRandomValues(bytes);
+    return Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("");
+  };
 
   const emit = async (trace: PipelineTraceInput): Promise<PipelineTraceRecord> => {
     const context = runtime.getExecutionContext();

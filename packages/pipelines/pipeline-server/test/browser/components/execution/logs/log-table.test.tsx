@@ -56,12 +56,14 @@ describe("ExecutionLogTable", () => {
 
     await user.click(row!);
 
+    expect(screen.getByText("Level")).toBeInTheDocument();
+    expect(screen.getByText("Source")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
     expect(screen.getByText(/"routeId": "compile"/)).toBeInTheDocument();
 
     await user.click(row!);
 
-    expect(screen.queryByText(/"routeId": "compile"/)).not.toBeInTheDocument();
+    expect(screen.queryByText("Level")).not.toBeInTheDocument();
   });
 
   it("uses the stderr error row path and the %O placeholder for large objects", () => {
