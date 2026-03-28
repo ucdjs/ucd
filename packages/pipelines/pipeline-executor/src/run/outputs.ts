@@ -4,7 +4,9 @@ import type {
   OutputSinkDefinition,
 } from "@ucdjs/pipelines-core";
 import type { ResolvedOutputDestination } from "@ucdjs/pipelines-core/outputs";
+import type { PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
+import { trace } from "@opentelemetry/api";
 import {
   getOutputProperty,
   resolveOutputDestination,
@@ -42,42 +44,11 @@ export interface PublishedOutputFile {
   };
 }
 
-type OutputTraceInput = Extract<
-  | {
-    kind: "output.produced";
-    version: string;
-    routeId: string;
-    file: FileContext;
-    outputIndex: number;
-    property?: string;
-  }
-  | {
-    kind: "output.resolved";
-    version: string;
-    routeId: string;
-    file: FileContext;
-    outputIndex: number;
-    outputId: string;
-    property?: string;
-    sink: string;
-    format: "json" | "text";
-    locator: string;
-  }
-  | {
-    kind: "output.written";
-    version: string;
-    routeId: string;
-    file: FileContext;
-    outputIndex: number;
-    outputId: string;
-    property?: string;
-    sink: string;
-    locator: string;
-    status: "written" | "failed";
-    error?: string;
-  },
-  { kind: "output.produced" | "output.resolved" | "output.written" }
->;
+export interface MaterializeOutputsResult {
+  entries: PipelineOutputManifestEntry[];
+  /** Write errors that occurred — callers should push these to their error collections. */
+  writeErrors: Array<{ error: unknown; outputId: string; routeId: string }>;
+}
 
 export async function materializeOutputs(options: {
   outputs: unknown[];
@@ -85,44 +56,130 @@ export async function materializeOutputs(options: {
   routeId: string;
   file: FileContext;
   values: readonly unknown[];
-  emitTrace: (trace: OutputTraceInput) => Promise<unknown>;
   definitions: readonly NormalizedRouteOutputDefinition[];
-  runtime?: PipelineExecutionRuntime;
-}): Promise<void> {
-  const { outputs, version, routeId, file, values, emitTrace, definitions, runtime } = options;
+  runtime: PipelineExecutionRuntime;
+  pipelineId: string;
+}): Promise<MaterializeOutputsResult> {
+  const { outputs, version, routeId, file, values, definitions, runtime, pipelineId } = options;
+  const manifestEntries: PipelineOutputManifestEntry[] = [];
+  const writeErrors: MaterializeOutputsResult["writeErrors"] = [];
+
+  // Capture the active file.route span to add output.produced events
+  const fileRouteSpan = trace.getActiveSpan();
 
   for (const output of values) {
     const outputIndex = outputs.length;
     const property = getOutputProperty(output);
     outputs.push(output);
 
-    await emitTrace({ kind: "output.produced", version, routeId, file, outputIndex, property });
-    for (const definition of definitions) {
-      const destination: ResolvedOutputDestination = resolveOutputDestination(definition, { version, routeId, file, output, property, outputIndex }, runtime?.resolvePath);
-      const traceBase = {
-        version,
-        routeId,
-        file,
-        outputIndex,
-        outputId: definition.id,
-        property,
-        sink: definition.sink?.type ?? "memory",
-        locator: destination.displayLocator,
-      };
+    fileRouteSpan?.addEvent("output.produced", {
+      "pipeline.id": pipelineId,
+      "pipeline.version": version,
+      "route.id": routeId,
+      "file.path": file.path,
+      "file.name": file.name,
+      "output.index": outputIndex,
+      "output.property": property ?? "",
+    });
 
-      await emitTrace({ kind: "output.resolved", ...traceBase, format: definition.format });
-      try {
-        await writeOutputToSink(definition.sink, destination.locator, output, definition.format, runtime);
-        await emitTrace({ kind: "output.written", ...traceBase, status: "written" });
-      } catch (error) {
-        await emitTrace({
-          kind: "output.written",
-          ...traceBase,
-          status: "failed",
-          error: error instanceof Error ? error.message : String(error),
+    for (const definition of definitions) {
+      const destination: ResolvedOutputDestination = resolveOutputDestination(
+        definition,
+        { version, routeId, file, output, property, outputIndex },
+        runtime.resolvePath,
+      );
+
+      const outputId = definition.id;
+      const sink = definition.sink?.type ?? "memory";
+      const locator = destination.displayLocator;
+
+      await runtime.startSpan("output.resolved", async (outputSpan) => {
+        outputSpan.setAttributes({
+          "pipeline.id": pipelineId,
+          "pipeline.version": version,
+          "route.id": routeId,
+          "file.path": file.path,
+          "file.name": file.name,
+          "file.dir": file.dir,
+          "file.ext": file.ext,
+          "file.version": file.version,
+          "output.index": outputIndex,
+          "output.id": outputId,
+          "output.property": property ?? "",
+          "output.sink": sink,
+          "output.format": definition.format,
+          "output.locator": locator,
         });
-        throw error;
-      }
+
+        try {
+          await writeOutputToSink(definition.sink, destination.locator, output, definition.format, runtime);
+          outputSpan.setAttribute("output.status", "written");
+          outputSpan.addEvent("output.written", {
+            "pipeline.id": pipelineId,
+            "pipeline.version": version,
+            "route.id": routeId,
+            "file.path": file.path,
+            "file.name": file.name,
+            "file.dir": file.dir,
+            "file.ext": file.ext,
+            "file.version": file.version,
+            "output.index": outputIndex,
+            "output.id": outputId,
+            "output.property": property ?? "",
+            "output.sink": sink,
+            "output.locator": locator,
+            "output.status": "written",
+          });
+          manifestEntries.push({
+            outputIndex,
+            outputId,
+            routeId,
+            pipelineId,
+            version,
+            property,
+            sink,
+            format: definition.format,
+            locator,
+            status: "written",
+          });
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          outputSpan.setAttribute("output.status", "failed");
+          outputSpan.addEvent("output.written", {
+            "pipeline.id": pipelineId,
+            "pipeline.version": version,
+            "route.id": routeId,
+            "file.path": file.path,
+            "file.name": file.name,
+            "file.dir": file.dir,
+            "file.ext": file.ext,
+            "file.version": file.version,
+            "output.index": outputIndex,
+            "output.id": outputId,
+            "output.property": property ?? "",
+            "output.sink": sink,
+            "output.locator": locator,
+            "output.status": "failed",
+            "output.error": errorMessage,
+          });
+          manifestEntries.push({
+            outputIndex,
+            outputId,
+            routeId,
+            pipelineId,
+            version,
+            property,
+            sink,
+            format: definition.format,
+            locator,
+            status: "failed",
+            error: errorMessage,
+          });
+          writeErrors.push({ error, outputId, routeId });
+        }
+      });
     }
   }
+
+  return { entries: manifestEntries, writeErrors };
 }

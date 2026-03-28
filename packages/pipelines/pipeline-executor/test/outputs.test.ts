@@ -7,7 +7,6 @@ import {
   filesystemSink,
   normalizeRouteOutputs,
 } from "@ucdjs/pipelines-core";
-import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   materializeOutputs,
@@ -17,6 +16,7 @@ import {
   writeOutputToSink,
 } from "../src/run/outputs";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
+import { createNoopExecutionRuntime } from "../src/runtime";
 import { createMockFile } from "./helpers";
 
 const tempDirs: string[] = [];
@@ -82,7 +82,7 @@ describe("output utilities", () => {
     expect(serializeOutputValue({ value: "x" }, "text")).toContain("\"value\"");
   });
 
-  it("materializes output values into trace facts that build a manifest", async () => {
+  it("materializes output values and returns a manifest directly", async () => {
     const route = definePipelineRoute({
       id: "scripts",
       filter: byName("Scripts.txt"),
@@ -97,9 +97,9 @@ describe("output utilities", () => {
     const [definition] = normalizeRouteOutputs(route);
     const file = createMockFile("Scripts.txt");
     const outputs: unknown[] = [];
-    const traces = [] as Array<ReturnType<typeof buildTraceRecord>>;
+    const runtime = createNoopExecutionRuntime();
 
-    await materializeOutputs({
+    const manifest = await materializeOutputs({
       outputs,
       version: "16.0.0",
       routeId: "scripts",
@@ -110,35 +110,20 @@ describe("output utilities", () => {
         entries: [],
       }],
       definitions: [definition!],
-      emitTrace: async (trace) => {
-        const record = buildTraceRecord(trace);
-        traces.push(record);
-        return record;
-      },
+      runtime,
+      pipelineId: "test-pipeline",
     });
 
     expect(outputs).toHaveLength(1);
-    expect(traces.map((trace) => trace.kind)).toEqual([
-      "output.produced",
-      "output.resolved",
-      "output.written",
-    ]);
-    expect(buildOutputManifestFromTraces(traces)).toEqual([
+    expect(manifest.entries).toEqual([
       expect.objectContaining({
         outputId: "preview",
         routeId: "scripts",
+        pipelineId: "test-pipeline",
         status: "written",
         locator: "memory://preview/16.0.0/script-extensions.json",
       }),
     ]);
+    expect(manifest.writeErrors).toHaveLength(0);
   });
 });
-
-function buildTraceRecord<TTrace extends Parameters<typeof materializeOutputs>[0]["emitTrace"] extends (trace: infer TInput) => Promise<unknown> ? TInput : never>(trace: TTrace) {
-  return {
-    id: `trace-${Date.now()}-${Math.random()}`,
-    pipelineId: "test-pipeline",
-    timestamp: Date.now(),
-    ...trace,
-  };
-}

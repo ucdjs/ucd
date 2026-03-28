@@ -200,6 +200,36 @@
     --_bar:         var(--execution-phase-cache-bar);
   }
 
+  /* Per-kind overrides — take precedence over phase when a span kind
+     warrants its own distinct color within a shared phase bucket. */
+  .execution-phase[data-kind="source.listing"] {
+    --_dot:         rgb(129 140 248 / 0.8);
+    --_chip-border: rgb(99 102 241 / 0.3);
+    --_chip-bg:     rgb(99 102 241 / 0.12);
+    --_chip-fg:     rgb(67 56 202);
+    --_bar-start:   #818cf8;
+    --_bar:         #6366f1;
+  }
+
+  .dark .execution-phase[data-kind="source.listing"] {
+    --_chip-bg: color-mix(in srgb, #6366f1 18%, transparent);
+    --_chip-fg: rgb(165 180 252);
+  }
+
+  .execution-phase[data-kind="output.resolved"] {
+    --_dot:         rgb(251 113 133 / 0.8);
+    --_chip-border: rgb(244 63 94 / 0.3);
+    --_chip-bg:     rgb(244 63 94 / 0.12);
+    --_chip-fg:     rgb(190 18 60);
+    --_bar-start:   #fb7185;
+    --_bar:         #f43f5e;
+  }
+
+  .dark .execution-phase[data-kind="output.resolved"] {
+    --_chip-bg: color-mix(in srgb, #f43f5e 18%, transparent);
+    --_chip-fg: rgb(253 164 175);
+  }
+
   .execution-phase[data-phase="Error"],
   .execution-phase[data-error="true"] {
     --_dot:         var(--execution-phase-error-dot);

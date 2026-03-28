@@ -1,3 +1,4 @@
+import type { Span, Tracer } from "@opentelemetry/api";
 import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { PipelineLogEntry, PipelineLogLevel } from "../types";
 import type {
@@ -9,6 +10,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -31,6 +33,7 @@ export interface NodeExecutionRuntimeOptions {
     console?: boolean;
     stdio?: boolean;
   };
+  tracer?: Tracer;
 }
 
 class NodeExecutionRuntime implements PipelineExecutionRuntime {
@@ -53,10 +56,11 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     stderrWrite: process.stderr.write.bind(process.stderr),
   };
 
-  readonly #contextStorage = new AsyncLocalStorage<PipelineExecutionContext>();
+  readonly #appStorage = new AsyncLocalStorage<PipelineExecutionContext>();
   readonly #logHandlerStorage = new AsyncLocalStorage<LoggerRuntimeContext>();
   readonly #fs;
   readonly #outputCapture;
+  readonly #tracer: Tracer;
   #captureSessionCount = 0;
   #consoleCaptureEnabledCount = 0;
   #stdioCaptureEnabledCount = 0;
@@ -64,26 +68,69 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   constructor(options: NodeExecutionRuntimeOptions) {
     this.#fs = options.fs;
     this.#outputCapture = options.outputCapture ?? {};
+    this.#tracer = options.tracer ?? trace.getTracer("pipeline-executor");
+  }
+
+  startSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
+    const app = this.#appStorage.getStore();
+    if (!app) {
+      // No execution context — use noop tracer so the callback still fires
+      return trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => {
+        let result: T | Promise<T>;
+        try {
+          result = fn(span);
+        } catch (err) {
+          span.end();
+          throw err;
+        }
+        if (result instanceof Promise) {
+          return result.then(
+            (val) => { span.end(); return val; },
+            (err) => { span.end(); throw err; },
+          ) as T | Promise<T>;
+        }
+        span.end();
+        return result;
+      });
+    }
+
+    return this.#tracer.startActiveSpan(name, (span) => {
+      let result: T | Promise<T>;
+      try {
+        result = fn(span);
+      } catch (err) {
+        span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
+        span.recordException(err instanceof Error ? err : new Error(String(err)));
+        span.end();
+        throw err;
+      }
+
+      if (result instanceof Promise) {
+        return result.then(
+          (val) => { span.end(); return val; },
+          (err) => {
+            span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
+            span.recordException(err instanceof Error ? err : new Error(String(err)));
+            span.end();
+            throw err;
+          },
+        ) as T | Promise<T>;
+      }
+
+      span.end();
+      return result;
+    });
   }
 
   getExecutionContext(): PipelineExecutionContext | undefined {
-    return this.#contextStorage.getStore();
+    return this.#appStorage.getStore();
   }
 
   runWithExecutionContext<T>(
     context: PipelineExecutionContext,
     fn: () => T | Promise<T>,
   ): T | Promise<T> {
-    return this.#contextStorage.run(context, fn);
-  }
-
-  withSpan<T>(spanId: string, fn: () => T | Promise<T>): T | Promise<T> {
-    const current = this.#contextStorage.getStore();
-    if (!current) {
-      return fn();
-    }
-
-    return this.#contextStorage.run({ ...current, parentSpanId: current.spanId, spanId }, fn);
+    return this.#appStorage.run(context, fn);
   }
 
   runWithLogHandler<T>(
@@ -94,21 +141,22 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   }
 
   emitLog(entry: PipelineExecutionLogInput): void {
-    const runtime = this.#logHandlerStorage.getStore();
-    const context = this.#contextStorage.getStore();
+    const logCtx = this.#logHandlerStorage.getStore();
+    const appCtx = this.#appStorage.getStore();
 
-    if (!runtime?.onLog || !context) {
+    if (!logCtx?.onLog || !appCtx) {
       return;
     }
 
-    const onLog = runtime.onLog;
+    const onLog = logCtx.onLog;
+    const spanId = trace.getActiveSpan()?.spanContext().spanId;
 
     // Run onLog with no handler in context so any console.log/stdout writes
     // inside the handler are not re-captured as pipeline log entries.
     void this.#logHandlerStorage.run({ onLog: undefined }, () => onLog({
-      executionId: context.executionId,
-      workspaceId: context.workspaceId,
-      spanId: context.spanId,
+      executionId: appCtx.executionId,
+      workspaceId: appCtx.workspaceId,
+      spanId,
       level: entry.level,
       source: entry.source,
       message: entry.message,
