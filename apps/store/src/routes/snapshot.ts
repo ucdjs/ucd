@@ -1,7 +1,7 @@
 import type { Snapshot } from "@ucdjs/schemas";
-import type { Hono } from "hono";
-import type { HonoEnv } from "../types";
-import { badGateway, notFound } from "@ucdjs-internal/worker-utils";
+import type { H3 } from "h3";
+import { badGateway, badRequest, notFound } from "@ucdjs-internal/worker-utils";
+import { getCloudflareEnv } from "@ucdjs-internal/worker-utils/h3";
 import { extractFilename } from "../lib/path-utils";
 
 // Placeholder hash (sha256 with 64 zeros)
@@ -11,14 +11,21 @@ interface ManifestData {
   expectedFiles: string[];
 }
 
-export function registerSnapshotRoute(router: Hono<HonoEnv>) {
-  router.get("/:version/snapshot.json", async (c) => {
-    const version = c.req.param("version");
-    const bucket = c.env.UCD_BUCKET;
+export function registerSnapshotRoute(app: H3) {
+  app.get("/:version/snapshot.json", async (event) => {
+    const env = getCloudflareEnv<Env>(event);
+    const version = event.context.params?.version;
+    const bucket = env.UCD_BUCKET;
+
+    if (!version) {
+      return badRequest({
+        message: "Version parameter is required",
+      });
+    }
 
     if (!bucket) {
       console.error("[ucd-store]: UCD_BUCKET binding not configured");
-      return badGateway(c);
+      return badGateway();
     }
 
     try {
@@ -27,7 +34,7 @@ export function registerSnapshotRoute(router: Hono<HonoEnv>) {
       const manifestObj = await bucket.get(manifestKey);
 
       if (!manifestObj) {
-        return notFound(c, {
+        return notFound({
           message: `Manifest not found for version ${version}`,
         });
       }
@@ -52,13 +59,15 @@ export function registerSnapshotRoute(router: Hono<HonoEnv>) {
         files,
       };
 
-      return c.json(snapshot, 200, {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=86400", // 24 hours
+      return Response.json(snapshot, {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=86400", // 24 hours
+        },
       });
     } catch (err) {
       console.error(`[ucd-store]: Failed to generate snapshot for ${version}:`, err);
-      return badGateway(c);
+      return badGateway();
     }
   });
 }
