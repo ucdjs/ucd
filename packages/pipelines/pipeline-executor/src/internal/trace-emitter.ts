@@ -1,7 +1,7 @@
 import type {
   PipelineTraceInput,
   PipelineTraceRecord,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
 
 export interface TraceEmitter {
@@ -33,7 +33,7 @@ export function createTraceEmitter(options: TraceHandlerOptions): TraceEmitter {
       spanId: context?.spanId,
       parentSpanId: context?.parentSpanId,
       timestamp: Date.now(),
-    } };
+    } } satisfies PipelineTraceRecord;
 
     await onTrace?.(fullTrace);
     return fullTrace;
