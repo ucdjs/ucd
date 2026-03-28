@@ -27,13 +27,19 @@ export function createTraceEmitter(options: TraceHandlerOptions): TraceEmitter {
 
   const emit = async (trace: PipelineTraceInput): Promise<PipelineTraceRecord> => {
     const context = runtime.getExecutionContext();
-    const fullTrace = { ...trace, ...{
+    const runtimeFields = {
       id: nextTraceId(),
       traceId: context?.traceId ?? "",
       spanId: context?.spanId,
       parentSpanId: context?.parentSpanId,
       timestamp: Date.now(),
-    } } satisfies PipelineTraceRecord;
+    };
+    // The spread of a large discriminated union confuses TypeScript's ability to
+    // verify the result satisfies PipelineTraceRecord, so we assert the type here.
+    // The correctness is guaranteed structurally: `trace` is PipelineTraceInput
+    // (which is PipelineTraceRecord minus the runtime fields), and `runtimeFields`
+    // supplies exactly those missing fields.
+    const fullTrace = { ...trace, ...runtimeFields } as PipelineTraceRecord;
 
     await onTrace?.(fullTrace);
     return fullTrace;
