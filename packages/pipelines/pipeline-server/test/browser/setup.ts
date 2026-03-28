@@ -90,6 +90,7 @@ vi.mock("@tanstack/react-router-devtools", () => {
 afterEach(() => {
   cleanup();
   localStorage.clear();
+  (globalThis as { __useRealPipelineCommandPalette__?: boolean }).__useRealPipelineCommandPalette__ = false;
 });
 
 if (typeof window !== "undefined" && typeof window.matchMedia !== "function") {

@@ -1,5 +1,6 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderFileRoute } from "../../route-test-utils";
 
@@ -52,5 +53,21 @@ describe("SourceFileList", () => {
     expect(screen.getAllByText("beta.ts")).not.toHaveLength(0);
   });
 
-  it.todo("renders nested files and lets the user expand a file to reveal its pipelines");
+  it("renders nested files and lets the user expand a file to reveal its pipelines", async () => {
+    const user = userEvent.setup();
+    const { history } = await renderFileRoute(<div />, { initialLocation: "/s/local" });
+    const sidebarGroup = await screen.findByTestId("pipeline-sidebar-current-source:local");
+
+    expect(within(sidebarGroup).getByText("nested")).toBeInTheDocument();
+    expect(screen.queryByText("Alpha pipeline")).not.toBeInTheDocument();
+
+    await user.click(within(sidebarGroup).getByText("alpha.ts"));
+
+    const pipelineLink = await screen.findByRole("link", { name: "Alpha pipeline" });
+    expect(pipelineLink).toHaveAttribute("href", "/s/local/alpha/alpha-pipeline");
+
+    await user.click(pipelineLink);
+
+    expect(history.location.pathname).toBe("/s/local/alpha/alpha-pipeline");
+  });
 });

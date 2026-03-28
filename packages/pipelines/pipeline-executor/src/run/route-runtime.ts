@@ -4,11 +4,10 @@ import type {
   FileContext,
   ParsedRow,
   PipelineFilter,
-  PipelineTraceEmitInput,
-  PipelineTraceRecord,
   PipelineTransformDefinition,
   ResolveContext,
 } from "@ucdjs/pipelines-core";
+import type { PipelineTraceEmitInput, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-files";
 import { applyTransforms } from "@ucdjs/pipelines-core";
