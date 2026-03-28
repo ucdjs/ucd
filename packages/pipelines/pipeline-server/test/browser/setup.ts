@@ -77,6 +77,7 @@ vi.mock("@tanstack/react-query-devtools", () => {
 vi.mock("@tanstack/react-hotkeys-devtools", () => {
   return {
     HotkeysDevtoolsPanel: () => null,
+    hotkeysDevtoolsPlugin: () => null,
   };
 });
 

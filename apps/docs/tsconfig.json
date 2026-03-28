@@ -4,13 +4,12 @@
     "jsx": "react-jsx",
     "lib": ["ES2024", "DOM", "DOM.Iterable"],
 
-    "baseUrl": ".",
     "module": "ESNext",
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"],
-      "fumadocs-mdx:collections/*": [".source/*"]
+      "fumadocs-mdx:collections/*": ["./.source/*"]
     },
     "types": ["vite/client"],
     "allowImportingTsExtensions": true,

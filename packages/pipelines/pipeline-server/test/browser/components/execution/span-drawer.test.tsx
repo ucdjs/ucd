@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import type { ExecutionSpan } from "#lib/execution-utils";
 import type { ReactNode } from "react";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
