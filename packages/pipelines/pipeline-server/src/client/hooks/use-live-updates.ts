@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 const RECONNECT_BASE_DELAY_MS = 500;
 const RECONNECT_MAX_DELAY_MS = 5_000;
+const SOURCES_QUERY_KEY = ["sources"] as const;
 
 function getLiveUrl(): string | null {
   if (typeof window === "undefined") {
@@ -28,39 +29,60 @@ export function useLiveUpdates() {
     let reconnectAttempts = 0;
     let disposed = false;
 
-    const clearReconnectTimer = () => {
+    function clearReconnectTimer() {
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
         reconnectTimer = null;
       }
-    };
+    }
 
-    const scheduleReconnect = () => {
+    async function invalidateSources() {
+      await queryClient.invalidateQueries({
+        queryKey: SOURCES_QUERY_KEY,
+      });
+    }
+
+    async function invalidateSource(sourceId: string) {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: SOURCES_QUERY_KEY,
+          exact: true,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: [...SOURCES_QUERY_KEY, sourceId],
+        }),
+      ]);
+    }
+
+    function cleanupSocket() {
+      if (!socket) {
+        return;
+      }
+
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onclose = null;
+      socket.onerror = null;
+      socket.close();
+      socket = null;
+    }
+
+    function scheduleReconnect() {
       if (disposed || reconnectTimer) {
         return;
       }
 
       const delay = Math.min(RECONNECT_BASE_DELAY_MS * 2 ** reconnectAttempts, RECONNECT_MAX_DELAY_MS);
       reconnectAttempts += 1;
+      // eslint-disable-next-line no-console
       console.debug("[live-updates] schedule reconnect", { delay, reconnectAttempts });
       reconnectTimer = setTimeout(() => {
         reconnectTimer = null;
         connect();
       }, delay);
-    };
+    }
 
-    const cleanupSocket = () => {
-      if (socket) {
-        socket.onopen = null;
-        socket.onmessage = null;
-        socket.onclose = null;
-        socket.onerror = null;
-        socket.close();
-        socket = null;
-      }
-    };
-
-    const connect = () => {
+    function connect() {
       if (disposed) {
         return;
       }
@@ -68,75 +90,92 @@ export function useLiveUpdates() {
       clearReconnectTimer();
       cleanupSocket();
 
-      const currentSocket = new WebSocket(liveUrl);
+      const currentSocket = new WebSocket(liveUrl!);
       socket = currentSocket;
+      // eslint-disable-next-line no-console
       console.debug("[live-updates] connect", { liveUrl });
 
       currentSocket.onopen = () => {
+        if (socket !== currentSocket) {
+          return;
+        }
+
         reconnectAttempts = 0;
+        // eslint-disable-next-line no-console
         console.debug("[live-updates] open");
-        void queryClient.invalidateQueries({
-          queryKey: ["sources"],
-        });
       };
 
       currentSocket.onmessage = (event) => {
-        if (typeof event.data !== "string") {
+        if (socket !== currentSocket || typeof event.data !== "string") {
           return;
         }
+
+        // eslint-disable-next-line no-console
+        console.debug("[live-updates] raw message", event.data);
 
         let rawEvent: unknown;
         try {
           rawEvent = JSON.parse(event.data);
         } catch {
+          // eslint-disable-next-line no-console
+          console.debug("[live-updates] ignore invalid json", event.data);
           return;
         }
 
         const parsed = LiveEventSchema.safeParse(rawEvent);
         if (!parsed.success) {
+          // eslint-disable-next-line no-console
           console.debug("[live-updates] ignore invalid message", rawEvent);
           return;
         }
 
+        // eslint-disable-next-line no-console
         console.debug("[live-updates] message", parsed.data);
 
-        if (parsed.data.type === "source.changed") {
-          void Promise.all([
-            queryClient.invalidateQueries({
-              queryKey: ["sources"],
-              exact: true,
-            }),
-            queryClient.invalidateQueries({
-              queryKey: ["sources", parsed.data.sourceId],
-            }),
-          ]);
+        switch (parsed.data.type) {
+          case "ready": {
+            void invalidateSources();
+            break;
+          }
+          case "source.changed": {
+            void invalidateSource(parsed.data.sourceId);
+            break;
+          }
         }
       };
 
       currentSocket.onclose = (event) => {
+        if (socket !== currentSocket) {
+          return;
+        }
+
+        socket = null;
+        // eslint-disable-next-line no-console
         console.debug("[live-updates] close", {
           code: event.code,
           reason: event.reason,
           wasClean: event.wasClean,
         });
 
-        if (socket === currentSocket) {
-          socket = null;
-        }
-
         scheduleReconnect();
       };
 
       currentSocket.onerror = () => {
+        if (socket !== currentSocket) {
+          return;
+        }
+
+        // eslint-disable-next-line no-console
         console.debug("[live-updates] error");
         currentSocket.close();
       };
-    };
+    }
 
     connect();
 
     return () => {
       disposed = true;
+      // eslint-disable-next-line no-console
       console.debug("[live-updates] dispose");
       clearReconnectTimer();
       cleanupSocket();

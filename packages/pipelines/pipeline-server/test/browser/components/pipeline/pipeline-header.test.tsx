@@ -26,7 +26,15 @@ describe("PipelineHeader", () => {
       ["GET", "/api/sources/:sourceId", ({ params }) => HttpResponse.json({ id: params.sourceId, type: "local", label: "Local Source", errors: [], files: [] })],
       ["GET", "/api/sources/:sourceId/overview", () => HttpResponse.json({ activity: [], summary: { total: 0, pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 }, recentExecutions: [] })],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => HttpResponse.json({
-        id: "main-pipeline", name: "Main pipeline", description: "Build and publish", include: undefined, versions: ["16.0.0", "15.1.0"], routeCount: 4, sourceCount: 2, routes: [], sources: [],
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0", "15.1.0"],
+        routeCount: 4,
+        sourceCount: 2,
+        routes: [],
+        sources: [],
       })],
       ["GET", "/api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => HttpResponse.json({
         executions: [],
