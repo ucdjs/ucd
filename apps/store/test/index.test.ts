@@ -20,4 +20,17 @@ describe("store root", () => {
       files: "GET /{version}/{filepath}",
     });
   });
+
+  it("returns a 400 when only a version is provided", async () => {
+    const { response, json } = await executeRequest(
+      new Request("https://ucd-store.ucdjs.dev/17.0.0"),
+      env,
+    );
+
+    expect(response.status).toBe(400);
+
+    const payload = await json<{ status: number; message: string }>();
+    expect(payload.status).toBe(400);
+    expect(payload.message).toContain("file path is required");
+  });
 });

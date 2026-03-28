@@ -10,20 +10,27 @@ const CACHE_CONTROL = `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`;
 async function handleFilesRequest(event: H3Event): Promise<Response> {
   const env = getCloudflareEnv<Env>(event);
   const version = event.context.params?.version;
-  const filepath = event.context.params?._?.replace(/^\/+/, "").trim() || "";
 
   if (!version) {
     return Response.json({ error: "Version parameter is required" }, { status: 400 });
   }
 
+  const filepath = event.url.pathname
+    .slice(`/${version}`.length)
+    // eslint-disable-next-line e18e/prefer-static-regex
+    .replace(/^\/+/, "")
+    .trim();
+
   if (!("files" in env.UCDJS_API)) {
     return Response.json({ error: "Files API not available" }, { status: 503 });
   }
 
-  const cacheKey = event.req.method === "GET" ? new Request(event.req.url, {
-    method: "GET",
-    headers: event.req.headers,
-  }) : null;
+  const cacheKey = event.req.method === "GET"
+    ? new Request(event.req.url, {
+        method: "GET",
+        headers: event.req.headers,
+      })
+    : null;
 
   if (cacheKey) {
     const cachedResponse = await caches.default.match(cacheKey);
