@@ -3,6 +3,7 @@ import type { Database } from "../src/server/db";
 import fs from "node:fs/promises";
 import { Readable } from "node:stream";
 import { getUcdConfigDir } from "@ucdjs/env";
+import nodeAdapter from "crossws/adapters/node";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";
@@ -13,6 +14,7 @@ export function h3DevServerPlugin(): Plugin {
     name: "h3-dev-server",
     async configureServer(server) {
       let db: Database | null = null;
+      let liveClose: (() => Promise<void>) | null = null;
 
       // Initialize database before starting the server
       try {
@@ -41,6 +43,39 @@ export function h3DevServerPlugin(): Plugin {
             workspaceId: resolveWorkspace().workspaceId,
           }));
       };
+
+      if (db && server.httpServer) {
+        const workspace = resolveWorkspace();
+        const appMod = await server.ssrLoadModule(appModuleId) as typeof import("../src/server/app");
+        const sources = appMod.resolvePipelineSources();
+        const liveApp = appMod.createApp({
+          db,
+          sources,
+          workspaceId: workspace.workspaceId,
+        });
+        const live = appMod.setupLiveUpdates(liveApp, {
+          sources,
+          workspaceId: workspace.workspaceId,
+        });
+        const ws = nodeAdapter({
+          resolve: async (req) => (await liveApp.fetch(req)).crossws,
+        });
+
+        liveClose = live.close;
+
+        server.httpServer.on("upgrade", async (req, socket, head) => {
+          if (!req.url?.startsWith("/api/live")) {
+            return;
+          }
+
+          try {
+            await ws.handleUpgrade(req, socket, head);
+          } catch (err) {
+            console.error("[h3-dev-server] Failed to upgrade websocket:", err);
+            socket.destroy();
+          }
+        });
+      }
 
       // Add middleware BEFORE Vite's internal middleware (no return = pre-hook)
       // This ensures /api routes are handled before Vite's SPA fallback
@@ -101,6 +136,12 @@ export function h3DevServerPlugin(): Plugin {
               message: err instanceof Error ? err.message : String(err),
             }));
           }
+        }
+      });
+
+      server.httpServer?.once("close", () => {
+        if (liveClose) {
+          void liveClose();
         }
       });
     },

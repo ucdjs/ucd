@@ -1,5 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { PipelineSidebar } from "#components/app/pipeline-sidebar";
+import { useLiveUpdates } from "#hooks/use-live-updates";
 import { configQueryOptions } from "#queries/config";
 import { sourcesQueryOptions } from "#queries/sources";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -57,6 +58,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 
 function RootLayout() {
   const { data: config } = useSuspenseQuery(configQueryOptions({ baseUrl: "" }));
+  useLiveUpdates();
 
   return (
     <>
