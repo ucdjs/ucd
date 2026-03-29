@@ -14,12 +14,12 @@ npm install @ucdjs-internal/worker-utils
 ## Usage
 
 ```ts
-import { Hono } from "hono";
 import {
   badRequest,
   errorHandler,
   notFoundHandler,
 } from "@ucdjs-internal/worker-utils";
+import { Hono } from "hono";
 
 const app = new Hono();
 
