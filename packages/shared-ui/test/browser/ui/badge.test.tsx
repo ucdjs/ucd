@@ -2,7 +2,7 @@ import { Badge } from "#ui/badge";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-describe("Badge", () => {
+describe("badge", () => {
   it("renders its children", () => {
     render(<Badge>New</Badge>);
 

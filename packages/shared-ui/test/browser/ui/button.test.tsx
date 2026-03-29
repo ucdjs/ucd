@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-describe("Button", () => {
+describe("button", () => {
   it("renders with default variant and size", () => {
     render(<Button>Click me</Button>);
 

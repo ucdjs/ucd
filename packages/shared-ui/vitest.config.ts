@@ -11,5 +11,5 @@ export default defineProject({
       },
     },
     setupFiles: ["./packages/shared-ui/test/browser/setup.ts"],
-  }
+  },
 });

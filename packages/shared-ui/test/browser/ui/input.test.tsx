@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-describe("Input", () => {
+describe("input", () => {
   it("renders an input element", () => {
     render(<Input aria-label="search" />);
 
