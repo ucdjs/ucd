@@ -10,10 +10,10 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
         executions: [{
           traces: [
             {
-              kind: "output.resolved",
+              kind: "output",
               data: {
                 id: "trace-1",
-                kind: "output.resolved",
+                kind: "output",
                 pipelineId: "simple",
                 timestamp: Date.now(),
                 version: "16.0.0",
@@ -73,7 +73,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       executionId,
       pipelineId: "simple",
       traces: expect.arrayContaining([
-        expect.objectContaining({ kind: "output.resolved" }),
+        expect.objectContaining({ kind: "output" }),
         expect.objectContaining({ kind: "output.written" }),
       ]),
       outputManifest: [
@@ -84,34 +84,6 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
           status: "written",
         }),
       ],
-    }));
-  });
-
-  it("returns an empty trace payload when the trace table is unavailable", async () => {
-    const { app, db, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
-      seed: {
-        executions: [{}],
-      },
-    });
-    const executionId = seeded.executionIds[0]!;
-
-    db.$client.exec("drop table execution_traces");
-
-    const res = await app.fetch(new Request(
-      `http://localhost/api/sources/local/files/simple/pipelines/simple/executions/${executionId}/traces`,
-    ));
-
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data).toEqual(expect.objectContaining({
-      executionId,
-      pipelineId: "simple",
-      traces: [],
-      outputManifest: [],
-      pagination: expect.objectContaining({
-        total: 0,
-        hasMore: false,
-      }),
     }));
   });
 });

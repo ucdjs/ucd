@@ -1,13 +1,11 @@
 import type { FileContext } from "@ucdjs/pipelines-core";
-import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { definePipeline } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
 import { createPipelineExecutor } from "../src/executor";
 import { createMockFile, createTestRoute, createTestSource } from "./helpers";
 
 describe("executor traces", () => {
-  it("should emit pipeline and version traces", async () => {
-    const traces: PipelineTraceRecord[] = [];
+  it("should run pipeline and version spans successfully", async () => {
     const files: FileContext[] = [createMockFile("Test.txt")];
     const contents = { "ucd/Test.txt": "0041;A" };
 
@@ -19,17 +17,11 @@ describe("executor traces", () => {
       routes: [createTestRoute("route", () => true)],
     });
 
-    const executor = createPipelineExecutor({
-      onTrace: (trace) => {
-        traces.push(trace);
-      },
-    });
+    const executor = createPipelineExecutor({});
+    const results = await executor.run([pipeline]);
+    const result = results.find((r) => r.id === "traces");
 
-    await executor.run([pipeline]);
-
-    expect(traces.some((trace) => trace.kind === "pipeline.start")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "pipeline.end")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "version.start")).toBe(true);
-    expect(traces.some((trace) => trace.kind === "version.end")).toBe(true);
+    expect(result?.status).toBe("completed");
+    expect(result?.summary.matchedFiles).toBeGreaterThan(0);
   });
 });

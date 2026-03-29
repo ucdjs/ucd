@@ -7,7 +7,6 @@ import {
   definePipeline,
   definePipelineRoute,
   filesystemSink,
-
   pipelineOutputSource,
 } from "@ucdjs/pipelines-core";
 import { afterEach, describe, expect, it } from "vitest";
@@ -25,8 +24,8 @@ afterEach(async () => {
   tempDirs.length = 0;
 });
 
-describe("execution traces and output manifests", () => {
-  it("records output traces and writes filesystem outputs", async () => {
+describe("execution output manifests", () => {
+  it("records output manifest and writes filesystem outputs", async () => {
     const dir = await mkdtemp(path.join(tmpdir(), "ucd-pipeline-traces-"));
     tempDirs.push(dir);
 
@@ -64,12 +63,8 @@ describe("execution traces and output manifests", () => {
       ],
     });
 
-    const traces: string[] = [];
     const executor = createPipelineExecutor({
       runtime: createNodeExecutionRuntime(),
-      onTrace: (trace) => {
-        traces.push(trace.kind);
-      },
     });
 
     const [result] = await executor.run([pipeline]);
@@ -81,9 +76,6 @@ describe("execution traces and output manifests", () => {
         status: "written",
       }),
     ]);
-    expect(result?.traces.some((trace) => trace.kind === "output.resolved")).toBe(true);
-    expect(result?.traces.some((trace) => trace.kind === "output.written")).toBe(true);
-    expect(traces).toContain("file.matched");
     const outputFile = result?.outputManifest[0]?.locator;
     expect(outputFile).toBeDefined();
     expect(JSON.parse(await readFile(outputFile!, "utf8"))).toEqual(expect.objectContaining({
@@ -170,7 +162,7 @@ describe("execution traces and output manifests", () => {
     }));
   });
 
-  it("records fallback outputs in the trace-derived manifest", async () => {
+  it("records fallback outputs in the manifest", async () => {
     const fallback: FallbackRouteDefinition = {
       parser: mockParser,
       resolver: async (ctx, rows) => {
@@ -252,15 +244,9 @@ describe("execution traces and output manifests", () => {
         status: "failed",
       }),
     ]);
-    expect(result?.traces).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        kind: "output.written",
-        status: "failed",
-      }),
-    ]));
   });
 
-  it("records cache miss/store on first run and cache hit on second run", async () => {
+  it("records cache miss/store on first run and cache hit on second run (via summary)", async () => {
     const cacheStore = createMemoryCacheStore();
     const pipeline = definePipeline({
       id: "cached-pipeline",
@@ -287,10 +273,9 @@ describe("execution traces and output manifests", () => {
     const [first] = await executor.run([pipeline], { cache: true });
     const [second] = await executor.run([pipeline], { cache: true });
 
-    expect(first?.traces.map((trace) => trace.kind)).toEqual(expect.arrayContaining([
-      "cache.miss",
-      "cache.store",
-    ]));
-    expect(second?.traces.map((trace) => trace.kind)).toContain("cache.hit");
+    // First run: no cache hits
+    expect(first?.summary.cached).toBe(0);
+    // Second run: cache hit
+    expect(second?.summary.cached).toBe(1);
   });
 });

@@ -2,6 +2,7 @@ import type {
   ExecutePipelineResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
+  ExecutionSpanItem,
   ExecutionsResponse,
   ExecutionSummaryItem,
   ExecutionTracesResponse,
@@ -23,6 +24,7 @@ export type {
   ExecutePipelineResponse,
   ExecutionGraphResponse,
   ExecutionLogsResponse,
+  ExecutionSpanItem,
   ExecutionsResponse,
   ExecutionSummaryItem,
   ExecutionTracesResponse,
@@ -69,8 +71,6 @@ export interface ExecutionTracesParams {
   fileId: string;
   pipelineId: string;
   executionId: string;
-  limit?: number;
-  offset?: number;
 }
 
 export async function executePipeline({
@@ -239,17 +239,10 @@ export async function fetchExecutionTraces({
   fileId,
   pipelineId,
   executionId,
-  limit,
-  offset,
 }: ExecutionTracesParams): Promise<ExecutionTracesResponse> {
-  const params = new URLSearchParams();
-  if (limit != null) params.set("limit", String(limit));
-  if (offset != null) params.set("offset", String(offset));
-  const qs = params.toString();
-
   return (
     await customFetch<ExecutionTracesResponse>(
-      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/traces${qs ? `?${qs}` : ""}`,
+      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/traces`,
       {
         schema: ExecutionTracesResponseSchema,
       },
@@ -262,14 +255,10 @@ export function executionTracesQueryOptions({
   fileId,
   pipelineId,
   executionId,
-  limit,
-  offset,
 }: ExecutionTracesParams) {
-  const opts = { limit, offset };
-
   return queryOptions({
-    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "traces", opts],
-    queryFn: () => fetchExecutionTraces({ sourceId, fileId, pipelineId, executionId, limit, offset }),
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "traces"],
+    queryFn: () => fetchExecutionTraces({ sourceId, fileId, pipelineId, executionId }),
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => refetchWhileExecutionActive(query),

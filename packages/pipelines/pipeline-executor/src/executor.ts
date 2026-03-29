@@ -5,7 +5,6 @@ import type {
   PipelineExecutorOptions,
   PipelineExecutorRunOptions,
 } from "./types";
-import { createTraceEmitter } from "./internal/trace-emitter";
 import { run as runPipeline } from "./run";
 import { createNoopExecutionRuntime } from "./runtime";
 
@@ -13,11 +12,8 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
   const {
     cacheStore,
     onLog,
-    onTrace,
     runtime = createNoopExecutionRuntime(),
   } = options;
-
-  const traces = createTraceEmitter({ onTrace, runtime });
 
   const run = async (pipelinesToRun: AnyPipelineDefinition[], runOptions: PipelineExecutorRunOptions = {}): Promise<PipelineExecutionResult[]> => {
     return runtime.runWithLogHandler(onLog, async () => {
@@ -33,7 +29,6 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               pipeline,
               runOptions,
               cacheStore,
-              traces,
               priorResults: results,
               runtime,
             }));
@@ -42,8 +37,6 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               id: pipeline.id,
               data: [],
               outputManifest: [],
-              traces: [],
-              graph: { nodes: [], edges: [] },
               errors: [{
                 scope: "pipeline",
                 message: err instanceof Error ? err.message : String(err),

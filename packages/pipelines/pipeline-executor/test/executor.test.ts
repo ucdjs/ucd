@@ -1,5 +1,4 @@
 import type { FileContext } from "@ucdjs/pipelines-core";
-import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
 import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
@@ -39,16 +38,6 @@ describe("createPipelineExecutor", () => {
 
     const executor = createPipelineExecutor({
       cacheStore,
-    });
-
-    expect(executor).toBeDefined();
-  });
-
-  it("should accept optional trace handler", () => {
-    const onTrace = vi.fn();
-
-    const executor = createPipelineExecutor({
-      onTrace,
     });
 
     expect(executor).toBeDefined();
@@ -165,7 +154,6 @@ describe("running single pipeline via run()", () => {
 
     expect(result).toBeDefined();
     expect(result.data).toBeDefined();
-    expect(result.graph).toBeDefined();
     expect(result.errors).toBeDefined();
     expect(result.summary).toBeDefined();
   });
@@ -278,64 +266,13 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-1", workspaceId: "workspace-1", traceId: "exec-1" },
+      { executionId: "exec-1", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithLogger]),
     );
 
     expect(logs).toHaveLength(2);
     expect(logs.map((entry) => entry.message).sort()).toEqual(["parsing", "resolving"]);
     expect(logs.every((entry) => entry.source === "logger" && entry.executionId === "exec-1")).toBe(true);
-    expect(logs.every((entry) => typeof entry.spanId === "string")).toBe(true);
-  });
-
-  it("should emit runtime traces with execution trace ids and span ids when execution context is active", async () => {
-    const observedTraces: PipelineTraceRecord[] = [];
-    const runtime = createNodeExecutionRuntime();
-
-    const route = definePipelineRoute({
-      id: "trace-route",
-      filter: () => true,
-      async* parser(ctx) {
-        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
-      },
-      resolver: async (_ctx, rows) => {
-        for await (const _row of rows) {
-          /* empty */
-        }
-        return [{
-          version: "16.0.0",
-          property: "Trace",
-          file: "LineBreak.txt",
-          entries: [{ codePoint: "0041", value: "AL" }],
-        }];
-      },
-    });
-
-    const ex = createPipelineExecutor({
-      runtime,
-      onTrace: (trace) => {
-        if (trace.kind === "source.provided" || trace.kind === "file.matched" || trace.kind === "output.written") {
-          observedTraces.push(trace);
-        }
-      },
-    });
-
-    const pipelineWithTrace = definePipeline({
-      id: "trace-test",
-      name: "Trace Test",
-      versions: ["16.0.0"],
-      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
-      routes: [route],
-    });
-
-    await runtime.runWithExecutionContext(
-      { executionId: "exec-2", workspaceId: "workspace-2", traceId: "exec-2" },
-      () => ex.run([pipelineWithTrace]),
-    );
-
-    expect(observedTraces.length).toBeGreaterThan(0);
-    expect(observedTraces.every((trace) => trace.traceId === "exec-2")).toBe(true);
-    expect(observedTraces.every((trace) => typeof trace.spanId === "string" && trace.spanId.length > 0)).toBe(true);
   });
 
   it("should capture console output through onLog when enabled", async () => {
@@ -381,7 +318,7 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-2", workspaceId: "workspace-1", traceId: "exec-2" },
+      { executionId: "exec-2", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithConsole]),
     );
 
@@ -433,7 +370,7 @@ describe("running single pipeline via run()", () => {
     });
 
     await runtime.runWithExecutionContext(
-      { executionId: "exec-3", workspaceId: "workspace-1", traceId: "exec-3" },
+      { executionId: "exec-3", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithStdio]),
     );
 
@@ -519,9 +456,7 @@ describe("error handling", () => {
     expect(firstError.message).toContain("Route failed");
   });
 
-  it("should emit error traces", async () => {
-    const traces: PipelineTraceRecord[] = [];
-
+  it("should record errors in result.errors on route failure", async () => {
     const failingRoute = definePipelineRoute({
       id: "failing",
       filter: () => true,
@@ -539,23 +474,15 @@ describe("error handling", () => {
       routes: [failingRoute],
     });
 
-    const executor = createPipelineExecutor({
-      onTrace: (trace) => {
-        traces.push(trace);
-      },
-    });
+    const executor = createPipelineExecutor({});
+    const [result] = await executor.run([pipeline]);
 
-    await executor.run([pipeline]);
-
-    const errorTraces = traces.filter((t) => t.kind === "error");
-    expect(errorTraces.length).toBeGreaterThan(0);
-    expect(errorTraces[0]).toMatchObject({
-      pipelineId: "error-traces",
-      error: expect.objectContaining({
-        scope: "route",
-        message: expect.stringContaining("Test error"),
-      }),
+    expect(result?.errors.length).toBeGreaterThan(0);
+    expect(result?.errors[0]).toMatchObject({
+      scope: "route",
+      message: expect.stringContaining("Test error"),
     });
+    expect(result?.status).toBe("failed");
   });
 
   it("should handle pipeline without inputs gracefully", async () => {

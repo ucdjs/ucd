@@ -1,22 +1,28 @@
-import { cn } from "@ucdjs-internal/shared-ui";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import type { ExecutionLogItem } from "#shared/schemas/execution";
+import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 
-const LOG_LEVEL_STYLES: Record<string, string> = {
-  debug: "bg-muted text-muted-foreground",
-  info: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
-  warn: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-  error: "bg-red-500/10 text-red-600 dark:text-red-400",
+type Level = NonNullable<ExecutionLogItem["level"]>;
+
+const LEVEL_STYLES: Record<Level, string> = {
+  debug: "text-muted-foreground",
+  info: "text-sky-400",
+  warn: "text-yellow-400",
+  error: "text-red-400",
 };
 
 interface LogLevelBadgeProps {
-  level: string;
+  level: ExecutionLogItem["level"];
   className?: string;
 }
 
 export function LogLevelBadge({ level, className }: LogLevelBadgeProps) {
   return (
-    <Badge variant="outline" className={cn("text-xs font-mono", LOG_LEVEL_STYLES[level], className)}>
-      {level}
-    </Badge>
+    <span className={cn(
+      "font-mono text-xs font-medium uppercase w-10 shrink-0 text-center",
+      level != null ? LEVEL_STYLES[level] : "text-muted-foreground/40",
+      className,
+    )}>
+      {level ?? "—"}
+    </span>
   );
 }

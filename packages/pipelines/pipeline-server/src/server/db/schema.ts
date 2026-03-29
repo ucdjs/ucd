@@ -8,19 +8,7 @@ import type {
   PipelineLogSource,
   PipelineSummary,
 } from "@ucdjs/pipelines-executor";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-
-export interface ExecutionLogPayload {
-  message: string;
-  args?: unknown[];
-  level: PipelineLogLevel;
-  source: PipelineLogSource;
-  meta?: Record<string, unknown>;
-  truncated?: boolean;
-  originalSize?: number;
-  isBanner?: boolean;
-  traceKind?: string;
-}
+import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const workspaces = sqliteTable("workspaces", {
   id: text("id").primaryKey(),
@@ -28,6 +16,8 @@ export const workspaces = sqliteTable("workspaces", {
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
+
+export type Workspace = typeof workspaces.$inferSelect;
 
 export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
@@ -47,6 +37,8 @@ export const executions = sqliteTable("executions", {
   index("executions_workspace_started_idx").on(table.workspaceId, table.startedAt),
 ]);
 
+export type Execution = typeof executions.$inferSelect;
+
 export const executionTraces = sqliteTable("execution_traces", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
@@ -57,12 +49,24 @@ export const executionTraces = sqliteTable("execution_traces", {
   spanId: text("span_id"),
   parentSpanId: text("parent_span_id"),
   kind: text("kind").$type<PipelineTraceKind>().notNull(),
-  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+  startTimestamp: real("start_timestamp"),
+  durationMs: real("duration_ms"),
+  endTimestamp: integer("end_timestamp", { mode: "timestamp_ms" }).notNull(),
   data: text("data", { mode: "json" }).$type<PipelineTraceRecord>().notNull(),
 }, (table) => [
   index("execution_traces_workspace_execution_idx").on(table.workspaceId, table.executionId),
-  index("execution_traces_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
+  index("execution_traces_execution_start_idx").on(table.executionId, table.startTimestamp),
 ]);
+
+export type ExecutionTrace = typeof executionTraces.$inferSelect;
+
+export interface ExecutionLogPayload {
+  args?: unknown[];
+  meta?: Record<string, unknown>;
+  truncated?: boolean;
+  originalSize?: number;
+  isBanner?: boolean;
+}
 
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),
@@ -73,9 +77,13 @@ export const executionLogs = sqliteTable("execution_logs", {
   spanId: text("span_id"),
   stream: text("stream"),
   message: text("message").notNull(),
+  level: text("level").$type<PipelineLogLevel>(),
+  source: text("source").$type<PipelineLogSource>(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
   payload: text("payload", { mode: "json" }).$type<ExecutionLogPayload>(),
 }, (table) => [
   index("execution_logs_workspace_execution_idx").on(table.workspaceId, table.executionId),
   index("execution_logs_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
 ]);
+
+export type ExecutionLog = typeof executionLogs.$inferSelect;
