@@ -1,7 +1,8 @@
 import { cleanup, renderHook as rtlRenderHook } from "@testing-library/react";
 import { act as reactAct } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, vi } from "vitest";
+import { afterEach, beforeEach, vi } from "vitest";
+import { mockLiveUpdatesSocket } from "./websocket-test-utils";
 import "@testing-library/jest-dom/vitest";
 
 const roots = new Map<Element, ReturnType<typeof createRoot>>();
@@ -85,6 +86,10 @@ vi.mock("@tanstack/react-router-devtools", () => {
   return {
     TanStackRouterDevtoolsPanel: () => null,
   };
+});
+
+beforeEach(() => {
+  mockLiveUpdatesSocket();
 });
 
 afterEach(() => {
