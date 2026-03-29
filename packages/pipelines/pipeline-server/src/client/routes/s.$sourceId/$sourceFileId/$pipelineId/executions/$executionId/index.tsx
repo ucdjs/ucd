@@ -1,3 +1,4 @@
+import { WaterfallView } from "#components/execution/waterfall/index";
 import { executionTracesQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -11,7 +12,6 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/exe
         fileId: params.sourceFileId,
         pipelineId: params.pipelineId,
         executionId: params.executionId,
-        limit: 500,
       }));
     } catch (error) {
       if (isNotFoundError(error)) {
@@ -31,17 +31,16 @@ function ExecutionDetailPage() {
     fileId: sourceFileId,
     pipelineId,
     executionId,
-    limit: 500,
   }));
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0 overflow-auto">
-        {data.traces.length === 0 && (
-          <p className="p-4 text-muted-foreground text-sm">No trace data available.</p>
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {data.spans.length === 0 && (
+          <p className="p-4 text-sm text-muted-foreground">No trace data available.</p>
         )}
-        {data.traces.length > 0 && (
-          <p className="p-4 text-muted-foreground text-sm">Waterfall coming soon…</p>
+        {data.spans.length > 0 && (
+          <WaterfallView traceId={data.traceId} spans={data.spans} />
         )}
       </div>
 

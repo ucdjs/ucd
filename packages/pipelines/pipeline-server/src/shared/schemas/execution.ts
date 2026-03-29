@@ -48,14 +48,21 @@ export const ExecutionsResponseSchema = z.object({
   pagination: PaginationSchema,
 });
 
-export const ExecutionTraceItemSchema = z.object({
-  id: z.string(),
+export const SpanEventSchema = z.object({
+  timestamp: z.number(),
   kind: z.string(),
-  traceId: z.string().nullable(),
+  attributes: z.unknown(),
+});
+
+export const ExecutionSpanItemSchema = z.object({
+  id: z.string(),
   spanId: z.string().nullable(),
   parentSpanId: z.string().nullable(),
-  timestamp: z.string(),
-  data: z.unknown(),
+  kind: z.string(),
+  startTimestamp: z.number().nullable(),
+  durationMs: z.number().nullable(),
+  attributes: z.unknown(),
+  events: z.array(SpanEventSchema),
 });
 
 export const ExecutionLogPayloadSchema = z.object({
@@ -114,9 +121,11 @@ export const ExecutionTracesResponseSchema = z.object({
   executionId: z.string(),
   pipelineId: z.string(),
   status: ExecutionStatusSchema,
-  traces: z.array(ExecutionTraceItemSchema),
+  traceId: z.string().nullable(),
+  startTimestamp: z.number().nullable(),
+  durationMs: z.number().nullable(),
+  spans: z.array(ExecutionSpanItemSchema),
   outputManifest: z.array(OutputManifestItemSchema),
-  pagination: PaginationSchema,
 });
 
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
@@ -126,6 +135,7 @@ export type ExecutionLogPayload = z.infer<typeof ExecutionLogPayloadSchema>;
 export type ExecutionLogItem = z.infer<typeof ExecutionLogItemSchema>;
 export type ExecutionLogsResponse = z.infer<typeof ExecutionLogsResponseSchema>;
 export type ExecutionGraphResponse = z.infer<typeof ExecutionGraphResponseSchema>;
-export type ExecutionTraceItem = z.infer<typeof ExecutionTraceItemSchema>;
+export type SpanEvent = z.infer<typeof SpanEventSchema>;
+export type ExecutionSpanItem = z.infer<typeof ExecutionSpanItemSchema>;
 export type OutputManifestItem = z.infer<typeof OutputManifestItemSchema>;
 export type ExecutionTracesResponse = z.infer<typeof ExecutionTracesResponseSchema>;
