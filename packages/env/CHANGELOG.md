@@ -1,5 +1,15 @@
 # @ucdjs/env
 
+## [0.1.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.8...@ucdjs/env@0.1.1-beta.9) (2026-03-29)
+
+
+### 🚀 Features
+* add inlinedDependencies for pathe package ([43141281](https://github.com/ucdjs/ucd/commit/431412810855acf0be683ecdd2d74e0051d74c9d)) (by [@luxass](https://github.com/luxass))
+
+### 📚 Documentation
+* update documentation for environment package ([e7b80822](https://github.com/ucdjs/ucd/commit/e7b80822c6a2298fe36f9d0b326871d67bbf463e)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.7...@ucdjs/env@0.1.1-beta.8) (2026-02-27)
 
 

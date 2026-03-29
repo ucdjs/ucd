@@ -1,5 +1,26 @@
 # @ucdjs/pipelines-executor
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.7...@ucdjs/pipelines-executor@0.0.1-beta.8) (2026-03-29)
+
+
+### 🚀 Features
+* introduce PipelineGraph types and interfaces ([4968f834](https://github.com/ucdjs/ucd/commit/4968f83438973666f1be14b5800543953482ecaf)) (by [@luxass](https://github.com/luxass))
+* use fs-backend for output writing ([dd417a57](https://github.com/ucdjs/ucd/commit/dd417a570d93fdfd29a3e0ac81d728be1673aa72)) (by [@luxass](https://github.com/luxass))
+* emit logs through host callbacks ([c2ddcebd](https://github.com/ucdjs/ucd/commit/c2ddcebdec5b052e5cfa40f88e609558b27deb78)) (by [@luxass](https://github.com/luxass))
+* add context-aware logger to runtime contexts ([dd578d3b](https://github.com/ucdjs/ucd/commit/dd578d3bb02b489b3f63dfeb14e9d4d60262c9c4)) (by [@luxass](https://github.com/luxass))
+* add type exports and update entry points ([dafdc1ac](https://github.com/ucdjs/ucd/commit/dafdc1acf4aacfaec80a2fb203b0ed4b05c17629)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* correct import path for tracing types ([a24909fe](https://github.com/ucdjs/ucd/commit/a24909fe3d1c6f9e4785748a06510b5d0145b1e2)) (by [@luxass](https://github.com/luxass))
+* address remaining PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([34a6f4ce](https://github.com/ucdjs/ucd/commit/34a6f4ce9d8cc1c086ffdb6d2e0f61ec3f5da99e)) (by [@luxass](https://github.com/luxass))
+* address PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([562a1ddc](https://github.com/ucdjs/ucd/commit/562a1ddcf5a7937f1cf36586ad40eda3d15d86de)) (by [@luxass](https://github.com/luxass))
+* update packaged entry paths ([96d68591](https://github.com/ucdjs/ucd/commit/96d6859182236935a1747e02f1a4c3bfe9aee1b8)) (by [@luxass](https://github.com/luxass))
+* refresh execution views and summaries ([c62717a4](https://github.com/ucdjs/ucd/commit/c62717a4503193b309b346f4cad92f60d1be9dc3)) (by [@luxass](https://github.com/luxass))
+
+### 🎨 Styles
+* apply linter fixes to trace-emitter ([71ef2a4f](https://github.com/ucdjs/ucd/commit/71ef2a4f448821ca3909d4fe53d44cec5ebee795)) (by [@luxass](https://github.com/luxass), Claude Opus 4.6 (1M context))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.6...@ucdjs/pipelines-executor@0.0.1-beta.7) (2026-02-27)
 
 
