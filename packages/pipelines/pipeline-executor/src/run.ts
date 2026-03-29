@@ -264,30 +264,9 @@ async function executeMatchedFile(
         pipelineId: ctx.pipeline.id,
       });
       ctx.outputManifest.push(...entries);
-      for (const { error } of writeErrors) {
-        ctx.errors.push({
-          scope: "route",
-          message: error instanceof Error ? error.message : String(error),
-          error,
-          file,
-          routeId: route.id,
-          version,
-        });
-      }
+      pushWriteErrors(ctx, writeErrors, "route", file, version, route.id);
     } catch (error) {
-      ctx.errors.push({
-        scope: "route",
-        message: error instanceof Error ? error.message : String(error),
-        error,
-        file,
-        routeId: route.id,
-        version,
-      });
-      routeSpan.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : String(error),
-      });
-      routeSpan.recordException(error instanceof Error ? error : new Error(String(error)));
+      recordSpanError(ctx, routeSpan, error, "route", file, version, route.id);
     }
 
     routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
@@ -391,28 +370,9 @@ async function executeFallbackFile(
         pipelineId: ctx.pipeline.id,
       });
       ctx.outputManifest.push(...entries);
-      for (const { error } of writeErrors) {
-        ctx.errors.push({
-          scope: "file",
-          message: error instanceof Error ? error.message : String(error),
-          error,
-          file,
-          version,
-        });
-      }
+      pushWriteErrors(ctx, writeErrors, "file", file, version);
     } catch (error) {
-      ctx.errors.push({
-        scope: "file",
-        message: error instanceof Error ? error.message : String(error),
-        error,
-        file,
-        version,
-      });
-      routeSpan.setStatus({
-        code: SpanStatusCode.ERROR,
-        message: error instanceof Error ? error.message : String(error),
-      });
-      routeSpan.recordException(error instanceof Error ? error : new Error(String(error)));
+      recordSpanError(ctx, routeSpan, error, "file", file, version);
     }
 
     routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
@@ -494,6 +454,49 @@ async function loadRouteResult(
   }
 
   return result;
+}
+
+function pushWriteErrors(
+  ctx: RunCtx,
+  writeErrors: { error: unknown }[],
+  scope: "route" | "file",
+  file: FileContext,
+  version: string,
+  routeId?: string,
+): void {
+  for (const { error } of writeErrors) {
+    const message = error instanceof Error ? error.message : String(error);
+    ctx.errors.push({
+      scope,
+      message,
+      error,
+      file,
+      ...(routeId != null && { routeId }),
+      version,
+    });
+  }
+}
+
+function recordSpanError(
+  ctx: RunCtx,
+  span: Span,
+  error: unknown,
+  scope: "route" | "file",
+  file: FileContext,
+  version: string,
+  routeId?: string,
+): void {
+  const message = error instanceof Error ? error.message : String(error);
+  ctx.errors.push({
+    scope,
+    message,
+    error,
+    file,
+    ...(routeId != null && { routeId }),
+    version,
+  });
+  span.setStatus({ code: SpanStatusCode.ERROR, message });
+  span.recordException(error instanceof Error ? error : new Error(message));
 }
 
 function fileAttrs(file: FileContext): Record<string, string> {

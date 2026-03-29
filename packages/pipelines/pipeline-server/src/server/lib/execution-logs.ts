@@ -1,9 +1,11 @@
 import type { Database } from "#server/db";
-import type { ExecutionLogPayload } from "#server/db/schema";
+import type { ExecutionLogPayload as NullableLogPayload } from "#shared/schemas/execution";
 import type { PipelineLogEntry, PipelineLogLevel, PipelineLogSource } from "@ucdjs/pipelines-executor";
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
+
+type ExecutionLogPayload = NonNullable<NullableLogPayload>;
 
 const MAX_LINE_BYTES = 256 * 1024;
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024;
@@ -34,29 +36,30 @@ export interface ExecutionLogOptions {
   force?: boolean;
 }
 
-function truncateLogLine(message: string): { message: string; truncated: boolean; originalBytes: number } {
-  const originalBytes = Buffer.byteLength(message, "utf-8");
-  if (originalBytes <= MAX_LINE_BYTES) {
-    return { message, truncated: false, originalBytes };
-  }
-
+function truncateToBytes(str: string, maxBytes: number): string {
   let low = 0;
-  let high = message.length;
+  let high = str.length;
   let best = 0;
   while (low <= high) {
     const mid = Math.floor((low + high) / 2);
-    const slice = message.slice(0, mid);
-    const size = Buffer.byteLength(slice, "utf-8");
-    if (size <= MAX_LINE_BYTES) {
+    if (Buffer.byteLength(str.slice(0, mid), "utf-8") <= maxBytes) {
       best = mid;
       low = mid + 1;
     } else {
       high = mid - 1;
     }
   }
+  return str.slice(0, best);
+}
+
+function truncateLogLine(message: string): { message: string; truncated: boolean; originalBytes: number } {
+  const originalBytes = Buffer.byteLength(message, "utf-8");
+  if (originalBytes <= MAX_LINE_BYTES) {
+    return { message, truncated: false, originalBytes };
+  }
 
   return {
-    message: message.slice(0, best),
+    message: truncateToBytes(message, MAX_LINE_BYTES),
     truncated: true,
     originalBytes,
   };
@@ -90,21 +93,7 @@ export async function storeExecutionLog(
   const remaining = MAX_TOTAL_BYTES - state.capturedBytes;
   let finalMessage = line.message;
   if (messageBytes > remaining && !options.force) {
-    let low = 0;
-    let high = line.message.length;
-    let best = 0;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const slice = line.message.slice(0, mid);
-      const size = Buffer.byteLength(slice, "utf-8");
-      if (size <= remaining) {
-        best = mid;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-    finalMessage = line.message.slice(0, best);
+    finalMessage = truncateToBytes(line.message, remaining);
   }
 
   const finalBytes = Buffer.byteLength(finalMessage, "utf-8");
