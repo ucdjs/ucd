@@ -12,7 +12,7 @@ export interface PipelineExecutionContext {
 }
 
 export interface PipelineExecutionLogInput {
-  level: PipelineLogLevel;
+  level: PipelineLogLevel | null;
   source: PipelineLogSource;
   message: string;
   timestamp?: number;

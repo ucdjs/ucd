@@ -18,7 +18,7 @@ export type PipelineTraceKind
     | "cache.miss"
     | "cache.store"
     | "output.produced"
-    | "output.resolved"
+    | "output"
     | "output.written"
     | "dependency.resolve"
     | "error"
@@ -144,7 +144,7 @@ export interface OutputProducedTraceRecord extends PipelineTraceBase<"output.pro
   property?: string;
 }
 
-export interface OutputResolvedTraceRecord extends PipelineTraceBase<"output.resolved"> {
+export interface OutputTraceRecord extends PipelineTraceBase<"output"> {
   version: string;
   routeId: string;
   file: FileContext;
@@ -199,7 +199,7 @@ export type PipelineTraceRecord
     | CacheMissTraceRecord
     | CacheStoreTraceRecord
     | OutputProducedTraceRecord
-    | OutputResolvedTraceRecord
+    | OutputTraceRecord
     | OutputWrittenTraceRecord
     | DependencyResolveTraceRecord
     | ErrorTraceRecord;
