@@ -6,7 +6,7 @@ export function buildOutputManifestFromTraces(
   const manifest = new Map<string, PipelineOutputManifestEntry>();
 
   for (const trace of traces) {
-    if (trace.kind === "output.resolved") {
+    if (trace.kind === "output") {
       const key = getOutputManifestKey(trace.pipelineId, trace.version, trace.routeId, trace.outputIndex, trace.outputId, trace.locator);
       manifest.set(key, {
         outputIndex: trace.outputIndex,

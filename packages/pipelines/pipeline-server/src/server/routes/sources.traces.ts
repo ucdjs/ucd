@@ -64,7 +64,7 @@ sourcesTracesRouter.get(
       if (row.startTimestamp != null) {
         spanRows.push(row);
         if (row.kind === "pipeline") rootSpan = row;
-        if (row.kind === "output.resolved") manifestData.push(row.data);
+        if (row.kind === "output") manifestData.push(row.data);
         continue;
       }
 

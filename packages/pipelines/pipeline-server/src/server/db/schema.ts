@@ -10,18 +10,6 @@ import type {
 } from "@ucdjs/pipelines-executor";
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export interface ExecutionLogPayload {
-  message: string;
-  args?: unknown[];
-  level: PipelineLogLevel;
-  source: PipelineLogSource;
-  meta?: Record<string, unknown>;
-  truncated?: boolean;
-  originalSize?: number;
-  isBanner?: boolean;
-  traceKind?: string;
-}
-
 export const workspaces = sqliteTable("workspaces", {
   id: text("id").primaryKey(),
   rootPath: text("root_path"),
@@ -71,6 +59,14 @@ export const executionTraces = sqliteTable("execution_traces", {
 ]);
 
 export type ExecutionTrace = typeof executionTraces.$inferSelect;
+
+export interface ExecutionLogPayload {
+  args?: unknown[];
+  meta?: Record<string, unknown>;
+  truncated?: boolean;
+  originalSize?: number;
+  isBanner?: boolean;
+}
 
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),

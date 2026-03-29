@@ -136,10 +136,10 @@ function buildSpanData(
         startTimestamp: startMs,
         durationMs,
       };
-    case "output.resolved":
+    case "output":
       return {
         ...base,
-        kind: "output.resolved",
+        kind: "output",
         version,
         routeId,
         file: file!,
@@ -252,7 +252,7 @@ function buildEventData(
         error: eventAttrs["output.error"] ? str(eventAttrs["output.error"]) : undefined,
       };
     case "exception":
-      // OTel standard exception event — record as pipeline error trace
+      // OTel standard exception event -record as pipeline error trace
       return {
         ...base,
         kind: "error",

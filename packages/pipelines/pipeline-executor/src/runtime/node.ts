@@ -17,7 +17,7 @@ interface LoggerRuntimeContext {
 }
 
 interface ConsoleLogInput {
-  level: PipelineLogLevel;
+  level: PipelineLogLevel | null;
   source: "console" | "stdio";
   args: unknown[];
 }
@@ -284,7 +284,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
 
   static #installCaptureHooks(): void {
     // eslint-disable-next-line no-console
-    console.log = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.log, "info");
+    console.log = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.log, null);
     // eslint-disable-next-line no-console
     console.info = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.info, "info");
     console.warn = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.warn, "warn");
@@ -310,7 +310,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
 
   static #wrapConsoleMethod(
     original: (...args: unknown[]) => void,
-    level: PipelineLogLevel,
+    level: PipelineLogLevel | null,
   ): (...args: unknown[]) => void {
     return (...args: unknown[]) => {
       NodeExecutionRuntime.#dispatchCapturedConsoleLog({ level, source: "console", args });
