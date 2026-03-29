@@ -25,7 +25,7 @@ export function WaterfallView({ traceId, spans }: WaterfallViewProps) {
 
   const [expanded, setExpanded] = useState<Set<string>>(() => {
     const { allNodes: nodes } = buildWaterfallTree(spans, traceId);
-    return new Set(nodes.filter((n) => n.hasChildren).map((n) => n.id));
+    return new Set(nodes.filter((n) => n.hasChildren && n.depth <= 3).map((n) => n.id));
   });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -50,6 +50,14 @@ export function WaterfallView({ traceId, spans }: WaterfallViewProps) {
     () => allNodes.find((n) => n.id === selectedId) ?? null,
     [allNodes, selectedId],
   );
+
+  const expandAll = useCallback(() => {
+    setExpanded(new Set(allNodes.filter((n) => n.hasChildren).map((n) => n.id)));
+  }, [allNodes]);
+
+  const collapseAll = useCallback(() => {
+    setExpanded(new Set());
+  }, []);
 
   const handleToggle = useCallback((nodeId: string) => {
     setExpanded((prev) => {
@@ -78,6 +86,23 @@ export function WaterfallView({ traceId, spans }: WaterfallViewProps) {
           <span className="text-muted-foreground">Spans </span>
           <span className="font-medium">{allNodes.length}</span>
         </span>
+
+        <div className="ml-auto flex items-center gap-1">
+          <button
+            type="button"
+            onClick={expandAll}
+            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            Expand all
+          </button>
+          <button
+            type="button"
+            onClick={collapseAll}
+            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            Collapse all
+          </button>
+        </div>
       </div>
 
       <SpanWaterfall

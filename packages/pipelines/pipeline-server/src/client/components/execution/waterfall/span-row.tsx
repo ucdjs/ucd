@@ -26,9 +26,6 @@ export function SpanRow({
   const leftPct = clamp(bounds.start, 0, 1);
   const rightPct = clamp(bounds.end, 0, 1);
   const widthPct = rightPct - leftPct;
-  const hintSide = leftPct > 0.6 ? "left" : "right";
-  const labelInside = !node.isInstant && widthPct > 0.08;
-
   const instantPct = node.isInstant ? clamp(viewedBounds(node.startMs, node.startMs).start, 0, 1) : 0;
 
   return (
@@ -87,26 +84,6 @@ export function SpanRow({
                 backgroundColor: color,
               }}
             />
-            {labelInside && (
-              <span
-                className="pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 select-none px-1 text-[10px] text-white/90"
-                style={{ left: toPercent(leftPct) }}
-              >
-                {formatDuration(node.durationMs)}
-              </span>
-            )}
-            {!labelInside && (
-              <span
-                className="pointer-events-none absolute top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[10px] text-muted-foreground"
-                style={
-                  hintSide === "right"
-                    ? { left: `calc(${toPercent(leftPct + widthPct)} + 4px)` }
-                    : { right: `calc(${toPercent(1 - leftPct)} + 4px)` }
-                }
-              >
-                {formatDuration(node.durationMs)}
-              </span>
-            )}
           </>
         )}
 

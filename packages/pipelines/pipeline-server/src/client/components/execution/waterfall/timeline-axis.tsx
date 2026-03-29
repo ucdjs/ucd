@@ -15,7 +15,7 @@ export function TimelineAxis({ visibleStartMs, visibleDurationMs }: TimelineAxis
         <span
           key={fraction}
           className="absolute top-1 select-none whitespace-nowrap text-[10px] text-muted-foreground"
-          style={{ left: toPercent(fraction) }}
+          style={{ left: toPercent(fraction), transform: `translateX(-${fraction * 100}%)` }}
         >
           {formatDuration(visibleStartMs + fraction * visibleDurationMs)}
         </span>
