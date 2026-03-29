@@ -8,7 +8,6 @@ import { cache } from "hono/cache";
 import {
   V1_FILES_ROUTER_BASE_PATH,
   V1_VERSIONS_ROUTER_BASE_PATH,
-  WELL_KNOWN_ROUTER_BASE_PATH,
 } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { getAllVersionsFromList } from "../v1_versions/utils";
@@ -44,7 +43,7 @@ const UCD_CONFIG_ROUTE = createRoute({
                 version: "0.1",
                 endpoints: {
                   files: V1_FILES_ROUTER_BASE_PATH,
-                  manifest: `${WELL_KNOWN_ROUTER_BASE_PATH}/ucd-store.json`,
+                  manifest: `${V1_VERSIONS_ROUTER_BASE_PATH}/{version}/manifest`,
                   versions: V1_VERSIONS_ROUTER_BASE_PATH,
                 },
                 versions: ["17.0.0", "16.0.0", "15.1.0"],
@@ -78,7 +77,7 @@ export function registerUcdConfigRoute(router: OpenAPIHono<HonoEnv>) {
       version: "0.1",
       endpoints: {
         files: V1_FILES_ROUTER_BASE_PATH,
-        manifest: `${WELL_KNOWN_ROUTER_BASE_PATH}/ucd-store/{version}.json`,
+        manifest: `${V1_VERSIONS_ROUTER_BASE_PATH}/{version}/manifest`,
         versions: V1_VERSIONS_ROUTER_BASE_PATH,
       },
       versions: versionStrings,

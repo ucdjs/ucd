@@ -1,12 +1,9 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { describe, expect, it } from "vitest";
+import type { UCDStoreVersionManifest } from "@ucdjs/schemas";
+import { describe, expect, it, vi } from "vitest";
 import { createManifestResource } from "../../src/resources/manifest";
 
 describe("createManifestResource", () => {
-  const baseUrl = UCDJS_API_BASE_URL;
-
-  const mockManifest = {
+  const mockManifest: UCDStoreVersionManifest = {
     expectedFiles: [
       { name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt", storePath: "/16.0.0/UnicodeData.txt" },
       { name: "PropList.txt", path: "/16.0.0/ucd/PropList.txt", storePath: "/16.0.0/PropList.txt" },
@@ -14,142 +11,64 @@ describe("createManifestResource", () => {
     ],
   };
 
-  describe("get()", () => {
-    it("should fetch manifest for valid version successfully", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toEqual(mockManifest);
+  it("should delegate manifest fetching to getManifest", async () => {
+    const getManifest = vi.fn().mockResolvedValue({
+      data: mockManifest,
+      error: null,
     });
 
-    it("should return manifest with correct structure", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
+    const manifestResource = createManifestResource({ getManifest });
+    const { data, error } = await manifestResource.get("16.0.0");
 
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toHaveProperty("expectedFiles");
-      expect(Array.isArray(data!.expectedFiles)).toBe(true);
-      expect(data!.expectedFiles.length).toBeGreaterThan(0);
-
-      // Verify ExpectedFile structure
-      const firstFile = data!.expectedFiles[0];
-      expect(firstFile).toHaveProperty("name");
-      expect(firstFile).toHaveProperty("path");
-      expect(firstFile).toHaveProperty("storePath");
-    });
-
-    it.each([
-      "15.1.0",
-      "15.0.0",
-      "17.0.0",
-    ])("should handle manifest fetching for version %s", async (version) => {
-      const versionManifest = {
-        expectedFiles: [
-          { name: "UnicodeData.txt", path: `/${version}/ucd/UnicodeData.txt`, storePath: `/${version}/UnicodeData.txt` },
-        ],
-      };
-
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/${version}.json`, () => {
-          return HttpResponse.json(versionManifest);
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get(version);
-
-      expect(error).toBeNull();
-      expect(data).toEqual(versionManifest);
-    });
-
-    it("should handle 404 errors for non-existent version", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/99.0.0.json`, () => {
-          return new HttpResponse(null, { status: 404 });
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("99.0.0");
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-      expect(error).toHaveProperty("status", 404);
-    });
-
-    it.each([
-      "16",
-      "16.0",
-      "v16.0.0",
-      "16.0.0.0",
-      "latest",
-    ])("should handle invalid version format %s", async (version) => {
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get(version);
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-      expect(error?.message).toContain("Invalid version format");
-    });
-
-    it("should handle server errors", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
-          return new HttpResponse(null, { status: 500 });
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("16.0.0");
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-      expect(error).toHaveProperty("status", 500);
-    });
-
-    it("should handle network errors", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
-          return HttpResponse.error();
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("16.0.0");
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-    });
+    expect(getManifest).toHaveBeenCalledWith("16.0.0");
+    expect(error).toBeNull();
+    expect(data).toEqual(mockManifest);
   });
 
-  describe("custom configuration", () => {
-    it("should work with custom base URLs", async () => {
-      const customBaseUrl = "https://custom-ucd-server.com";
-
-      mockFetch([
-        ["GET", `${customBaseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
-
-      const manifestResource = createManifestResource({ baseUrl: customBaseUrl });
-      const { data, error } = await manifestResource.get("16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toEqual(mockManifest);
+  it("should preserve the manifest structure from the delegated result", async () => {
+    const getManifest = vi.fn().mockResolvedValue({
+      data: mockManifest,
+      error: null,
     });
+
+    const manifestResource = createManifestResource({ getManifest });
+    const { data, error } = await manifestResource.get("16.0.0");
+
+    expect(getManifest).toHaveBeenCalledTimes(1);
+    expect(error).toBeNull();
+    expect(data).toHaveProperty("expectedFiles");
+    expect(Array.isArray(data!.expectedFiles)).toBe(true);
+    expect(data!.expectedFiles[0]).toHaveProperty("name");
+    expect(data!.expectedFiles[0]).toHaveProperty("path");
+    expect(data!.expectedFiles[0]).toHaveProperty("storePath");
+  });
+
+  it("should pass through API errors from getManifest", async () => {
+    const getManifest = vi.fn().mockResolvedValue({
+      data: null,
+      error: new Error("Not found"),
+    });
+
+    const manifestResource = createManifestResource({ getManifest });
+    const { data, error } = await manifestResource.get("99.0.0");
+
+    expect(getManifest).toHaveBeenCalledWith("99.0.0");
+    expect(data).toBeNull();
+    expect(error).toBeDefined();
+    expect(error?.message).toBe("Not found");
+  });
+
+  it("should pass through rejected or invalid version handling to getManifest", async () => {
+    const getManifest = vi.fn().mockResolvedValue({
+      data: null,
+      error: new Error("Invalid version format: latest. Expected X.Y.Z format."),
+    });
+
+    const manifestResource = createManifestResource({ getManifest });
+    const { data, error } = await manifestResource.get("latest");
+
+    expect(getManifest).toHaveBeenCalledWith("latest");
+    expect(data).toBeNull();
+    expect(error?.message).toContain("Invalid version format");
   });
 });

@@ -20,7 +20,7 @@ describe("handler: /.well-known/ucd-config.json", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           versions: "/api/v1/versions",
         },
       });
@@ -60,7 +60,7 @@ describe("handler: /.well-known/ucd-store/{version}.json", () => {
     it("should return default store manifest", async () => {
       mockStoreApi({
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
         },
       });
 
@@ -87,12 +87,13 @@ describe("handler: /.well-known/ucd-store/{version}.json", () => {
 
       mockStoreApi({
         responses: {
-          "/.well-known/ucd-store/{version}.json": customManifest,
+          "/api/v1/versions/{version}/manifest": customManifest,
         },
       });
 
       const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json",
+        "https://api.ucdjs.dev/api/v1/versions/16.0.0/manifest",
+
       );
       const data = await response.json();
 
@@ -105,7 +106,7 @@ describe("handler: /.well-known/ucd-store/{version}.json", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
         },
       });
 

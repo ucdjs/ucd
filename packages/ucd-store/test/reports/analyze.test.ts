@@ -39,7 +39,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -81,7 +81,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -128,7 +128,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -164,7 +164,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -197,7 +197,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -231,7 +231,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -262,7 +262,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -298,7 +298,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -338,7 +338,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -373,7 +373,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -410,7 +410,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -447,7 +447,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -485,7 +485,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -526,7 +526,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -563,7 +563,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -599,7 +599,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -642,7 +642,7 @@ describe("analyze", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         } as const,
@@ -679,7 +679,7 @@ describe("analyze", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": () => {
+          "/api/v1/versions/{version}/manifest": () => {
             return HttpResponse.json(
               { message: "Internal server error", status: 500, timestamp: new Date().toISOString() },
               { status: 500 },
@@ -712,7 +712,7 @@ describe("analyze", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": () => {
+          "/api/v1/versions/{version}/manifest": () => {
             return HttpResponse.json(
               { message: "Not found", status: 404, timestamp: new Date().toISOString() },
               { status: 404 },

@@ -70,6 +70,17 @@ The API (apps/api) is a Cloudflare Worker using Hono with OpenAPI. It serves ver
 
 The Store (apps/store) provides direct access to UCD files and metadata via the storage layer. Both are public access paths and should remain stable.
 
+### File Path Boundary
+
+API and Store do not expose the same file path shape.
+
+- The API file surface maps directly to the upstream Unicode.org layout. A request for `/api/v1/files/17.0.0/...` resolves against `https://unicode.org/Public/17.0.0/...`.
+- Store is the HTTP file-store boundary used by `@ucdjs/fs-backend`, and it exposes store-style paths as `/{version}/{filepath}`.
+- For versions that have a `ucd/` directory, Store inserts that segment when resolving upstream paths.
+- For older versions that do not have a `ucd/` directory, Store resolves the same store path directly under the version root.
+
+The point of Store is to own this normalization so the storage-facing path shape stays stable even though the upstream Unicode.org layout is not.
+
 ## CLI and Apps
 
 @ucdjs/cli is the primary local interface. It can explore files, run pipelines, and call the API directly. apps/web and apps/store are end-user interfaces, while apps/docs is the documentation site.

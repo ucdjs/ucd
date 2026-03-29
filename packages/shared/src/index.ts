@@ -34,5 +34,6 @@ export type {
 export * from "./guards";
 
 export { safeJsonParse } from "./json";
+export * from "./unicode-hash";
 
 export * from "./version";

@@ -1,6 +1,8 @@
 # @ucdjs/store
 
-An API for accessing Unicode Character Database (UCD) data and more!
+`@ucdjs/store` is the storage-facing compatibility HTTP backend for UCD.js.
+
+It exposes a small filesystem-style surface used by store tooling and remote consumers.
 
 ## 🚀 Usage
 
@@ -10,24 +12,19 @@ If you are inside the root of the monorepo, run:
 pnpm run dev:apps
 ```
 
-If you only wanna start the API app, run:
+If you only want to start Store, run:
 
 ```sh
-pnpm --filter @ucdjs/api dev
+pnpm --filter @ucdjs/store dev
 ```
 
-## 📖 API Documentation
+Store runs on port `8788` in local development by default.
 
-The API documentation is available at [api.ucdjs.dev](https://api.ucdjs.dev) using Scalar.
+## Routes
 
-## 🔧 Development
-
-The project uses:
-
-- [Hono](https://hono.dev/) for the web framework
-- [Cloudflare Workers](https://workers.cloudflare.com/) for deployment
-- [Vitest](https://vitest.dev/) for testing
-- [Scalar](https://scalar.com/) for API documentation
+- `GET /.ucd-store.lock` returns the store lockfile metadata.
+- `GET /:version/snapshot.json` returns snapshot metadata for a Unicode version.
+- `GET /:version/:filepath` returns a file from the requested Unicode version.
 
 ## 📄 License
 

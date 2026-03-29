@@ -6,7 +6,6 @@ import {
   BackendEntrySchema,
   FileEntryListSchema,
   FileEntrySchema,
-  UCDStoreManifestSchema,
 } from "../src/fs";
 
 // eslint-disable-next-line test/prefer-lowercase-title
@@ -262,82 +261,6 @@ describe("BackendEntryListSchema", () => {
 
     expect(validList).toMatchSchema({
       schema: BackendEntryListSchema,
-      success: true,
-    });
-  });
-});
-
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("UCDStoreManifestSchema", () => {
-  it("should validate a manifest with multiple versions", () => {
-    const validManifest = {
-      "16.0.0": {
-        expectedFiles: ["UnicodeData.txt", "PropList.txt"],
-      },
-      "15.1.0": {
-        expectedFiles: ["UnicodeData.txt"],
-      },
-    };
-    expect(validManifest).toMatchSchema({
-      schema: UCDStoreManifestSchema,
-      success: true,
-    });
-  });
-
-  it("should use default empty array when expectedFiles is missing", () => {
-    const manifestWithDefaults = {
-      "16.0.0": {},
-    };
-    expect(manifestWithDefaults).toMatchSchema({
-      schema: UCDStoreManifestSchema,
-      success: true,
-    });
-  });
-
-  it("should validate empty manifest", () => {
-    const emptyManifest = {};
-    expect(emptyManifest).toMatchSchema({
-      schema: UCDStoreManifestSchema,
-      success: true,
-    });
-  });
-
-  it("should validate manifest with version that has empty expectedFiles", () => {
-    const manifest = {
-      "16.0.0": {
-        expectedFiles: [],
-      },
-    };
-    expect(manifest).toMatchSchema({
-      schema: UCDStoreManifestSchema,
-      success: true,
-    });
-  });
-
-  it("should reject manifest with invalid expectedFiles type", () => {
-    const invalidManifest = {
-      "16.0.0": {
-        expectedFiles: "not-an-array",
-      },
-    };
-    expect(invalidManifest).toMatchSchema({
-      schema: UCDStoreManifestSchema,
-      success: false,
-    });
-  });
-
-  it("should validate manifest with nested file paths", () => {
-    const manifest = {
-      "16.0.0": {
-        expectedFiles: [
-          "UnicodeData.txt",
-          "extracted/DerivedAge.txt",
-          "extracted/emoji/emoji-data.txt",
-        ],
-      },
-    };
-    expect(manifest).toMatchSchema({
-      schema: UCDStoreManifestSchema,
       success: true,
     });
   });

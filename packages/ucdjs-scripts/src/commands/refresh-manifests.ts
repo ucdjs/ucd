@@ -83,7 +83,7 @@ async function queueUploads(
 
   logger.info("Queueing manifest upload workflows...");
   for (const manifest of manifests) {
-    const localEtag = createManifestEtag(manifest.manifest);
+    const localEtag = createManifestEtag(manifest);
     const remoteEtag = await getRemoteManifestEtag(manifest.version, {
       baseUrl,
       taskKey,
