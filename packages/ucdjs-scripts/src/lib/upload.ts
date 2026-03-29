@@ -1,6 +1,8 @@
 import type { TaskUploadQueuedResult, TaskUploadStatusResult, UploadOptions } from "../types";
 import { logger } from "./logger";
 
+const MANIFEST_BUNDLE_ETAG_HEADER = "X-UCD-Manifest-Bundle-Etag";
+
 export async function uploadManifest(
   tar: Uint8Array,
   version: string,
@@ -101,7 +103,8 @@ export async function getRemoteManifestEtag(version: string, options: UploadOpti
     });
 
     if (headResponse.ok) {
-      const headEtag = headResponse.headers.get("ETag")?.trim();
+      const headEtag = headResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
+        ?? headResponse.headers.get("ETag")?.trim();
       if (headEtag) {
         return headEtag;
       }
@@ -112,7 +115,8 @@ export async function getRemoteManifestEtag(version: string, options: UploadOpti
     });
 
     if (getResponse.ok) {
-      const getEtag = getResponse.headers.get("ETag")?.trim();
+      const getEtag = getResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
+        ?? getResponse.headers.get("ETag")?.trim();
       if (getEtag) {
         return getEtag;
       }

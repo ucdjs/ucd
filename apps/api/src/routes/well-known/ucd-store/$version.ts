@@ -2,7 +2,7 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../../types";
 import {
   createVersionManifestHeaders,
-  parseVersionManifest,
+  readVersionManifestData,
   readVersionManifestObject,
 } from "#lib/version-manifest";
 import { createRoute } from "@hono/zod-openapi";
@@ -133,8 +133,9 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
     }
 
     try {
-      const data = await parseVersionManifest(object);
-      return c.json(data, 200, createVersionManifestHeaders(object));
+      const { data, manifestText } = await readVersionManifestData(object);
+      const headers = await createVersionManifestHeaders(bucket, version, object, manifestText);
+      return c.json(data, 200, headers);
     } catch (err) {
       console.error(`[well-known]: failed to parse manifest for version ${version}:`, err);
       return badGateway(c, {
