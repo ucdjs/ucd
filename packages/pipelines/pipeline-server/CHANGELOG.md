@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-server
 
-## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.7...@ucdjs/pipelines-server@0.0.1-beta.8) (2026-03-29)
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -60,8 +60,6 @@
 * refresh execution views and summaries ([c62717a4](https://github.com/ucdjs/ucd/commit/c62717a4503193b309b346f4cad92f60d1be9dc3)) (by [@luxass](https://github.com/luxass))
 * fill pipeline overview sidebar ([3781d015](https://github.com/ucdjs/ucd/commit/3781d01579eb779c673822d52d21374e704a7178)) (by [@luxass](https://github.com/luxass))
 * show source labels in navigation ([36d9b08b](https://github.com/ucdjs/ucd/commit/36d9b08bdcfc317e8089bd17dcfde542b3c4b968)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.6...@ucdjs/pipelines-server@0.0.1-beta.7) (2026-02-27)
 
 
