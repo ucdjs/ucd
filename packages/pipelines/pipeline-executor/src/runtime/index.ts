@@ -5,6 +5,7 @@ import type {
   PipelineLogSource,
 } from "../types";
 import { trace } from "@opentelemetry/api";
+import { runSpan } from "../internal/span";
 
 export interface PipelineExecutionContext {
   executionId: string;
@@ -42,29 +43,7 @@ function noopStop() {}
 
 export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
   return {
-    startSpan: (name, fn) => trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => {
-      let result: ReturnType<typeof fn>;
-      try {
-        result = fn(span);
-      } catch (err) {
-        span.end();
-        throw err;
-      }
-      if (result instanceof Promise) {
-        return result.then(
-          (val) => {
-            span.end();
-            return val;
-          },
-          (err) => {
-            span.end();
-            throw err;
-          },
-        ) as ReturnType<typeof fn>;
-      }
-      span.end();
-      return result;
-    }),
+    startSpan: (name, fn) => trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => runSpan(span, fn)),
     getExecutionContext: () => undefined,
     runWithExecutionContext: (_context, fn) => fn(),
     runWithLogHandler: (_onLog, fn) => fn(),

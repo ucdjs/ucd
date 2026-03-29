@@ -1,28 +1,16 @@
 import type { ExecutionLogItem } from "#shared/schemas/execution";
-import { executionLogsQueryOptions } from "#queries/execution";
+import type { FilterLevel } from "./log-level-styles";
 import { formatBytes } from "#lib/format";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { executionLogsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LogDetails } from "./log-details";
+import { LEVEL_PILL, LEVEL_PILL_ACTIVE } from "./log-level-styles";
 import { LogRow } from "./log-row";
 
 type Level = NonNullable<ExecutionLogItem["level"]>;
-const ALL_LEVELS: Level[] = ["debug", "info", "warn", "error"];
-
-const LEVEL_PILL: Record<Level, string> = {
-  debug: "text-muted-foreground hover:bg-muted",
-  info: "text-sky-400 hover:bg-sky-400/10",
-  warn: "text-yellow-400 hover:bg-yellow-400/10",
-  error: "text-red-400 hover:bg-red-400/10",
-};
-
-const LEVEL_PILL_ACTIVE: Record<Level, string> = {
-  debug: "bg-muted text-foreground",
-  info: "bg-sky-400/20 text-sky-400",
-  warn: "bg-yellow-400/20 text-yellow-400",
-  error: "bg-red-400/20 text-red-400",
-};
+const KNOWN_LEVELS: Level[] = ["debug", "info", "warn", "error"];
 
 interface LogsViewerProps {
   sourceId: string;
@@ -50,11 +38,12 @@ export function LogsViewer({
     limit: 500,
   }));
 
-  const [levelFilter, setLevelFilter] = useState<Level | null>(null);
+  const [levelFilter, setLevelFilter] = useState<FilterLevel | null>(null);
   const [selectedLog, setSelectedLog] = useState<ExecutionLogItem | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isRunning = data.status === "running";
+  const hasUnknownLevel = useMemo(() => data.logs.some((l) => l.level == null), [data.logs]);
 
   useEffect(() => {
     if (isRunning && scrollRef.current) {
@@ -64,7 +53,9 @@ export function LogsViewer({
 
   const filtered = levelFilter == null
     ? data.logs
-    : data.logs.filter((l) => l.level === levelFilter);
+    : levelFilter === "unknown"
+      ? data.logs.filter((l) => l.level == null)
+      : data.logs.filter((l) => l.level === levelFilter);
 
   return (
     <div className="flex h-full flex-col overflow-hidden font-mono text-xs">
@@ -83,7 +74,7 @@ export function LogsViewer({
           All
         </button>
 
-        {ALL_LEVELS.map((lvl) => (
+        {KNOWN_LEVELS.map((lvl) => (
           <button
             key={lvl}
             type="button"
@@ -96,6 +87,19 @@ export function LogsViewer({
             {lvl}
           </button>
         ))}
+
+        {hasUnknownLevel && (
+          <button
+            type="button"
+            onClick={() => setLevelFilter(levelFilter === "unknown" ? null : "unknown")}
+            className={cn(
+              "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+              levelFilter === "unknown" ? LEVEL_PILL_ACTIVE.unknown : LEVEL_PILL.unknown,
+            )}
+          >
+            Unknown
+          </button>
+        )}
 
         {selectedSpanId != null && (
           <div className="flex items-center gap-1 rounded border border-border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">

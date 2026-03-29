@@ -10,7 +10,8 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { SpanStatusCode, trace } from "@opentelemetry/api";
+import { trace } from "@opentelemetry/api";
+import { runSpan } from "../internal/span";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -75,60 +76,10 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     const app = this.#appStorage.getStore();
     if (!app) {
       // No execution context — use noop tracer so the callback still fires
-      return trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => {
-        let result: T | Promise<T>;
-        try {
-          result = fn(span);
-        } catch (err) {
-          span.end();
-          throw err;
-        }
-        if (result instanceof Promise) {
-          return result.then(
-            (val) => {
-              span.end();
-              return val;
-            },
-            (err) => {
-              span.end();
-              throw err;
-            },
-          ) as T | Promise<T>;
-        }
-        span.end();
-        return result;
-      });
+      return trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => runSpan(span, fn));
     }
 
-    return this.#tracer.startActiveSpan(name, (span) => {
-      let result: T | Promise<T>;
-      try {
-        result = fn(span);
-      } catch (err) {
-        span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
-        span.recordException(err instanceof Error ? err : new Error(String(err)));
-        span.end();
-        throw err;
-      }
-
-      if (result instanceof Promise) {
-        return result.then(
-          (val) => {
-            span.end();
-            return val;
-          },
-          (err) => {
-            span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
-            span.recordException(err instanceof Error ? err : new Error(String(err)));
-            span.end();
-            throw err;
-          },
-        ) as T | Promise<T>;
-      }
-
-      span.end();
-      return result;
-    });
+    return this.#tracer.startActiveSpan(name, (span) => runSpan(span, fn, { recordErrors: true }));
   }
 
   getExecutionContext(): PipelineExecutionContext | undefined {

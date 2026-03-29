@@ -7,7 +7,7 @@ import {
   generateRowStates,
   getViewedBounds,
 } from "#lib/waterfall";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { SpanDetails } from "./span-details";
 import { SpanRow } from "./span-row";
 import { TimelineAxis } from "./timeline-axis";
@@ -24,13 +24,18 @@ export function WaterfallView({ traceId, spans, onSpanSelect }: WaterfallViewPro
     [spans, traceId],
   );
 
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const { allNodes: nodes } = buildWaterfallTree(spans, traceId);
-    return new Set(nodes.filter((n) => n.hasChildren && n.depth <= 3).map((n) => n.id));
-  });
-
+  const [expanded, setExpanded] = useState<Set<string>>(() =>
+    new Set(allNodes.filter((n) => n.hasChildren && n.depth <= 3).map((n) => n.id)),
+  );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [viewRange, setViewRange] = useState<ViewRange>({ start: 0, end: 1 });
+
+  // Reset state when navigating to a different execution
+  useEffect(() => {
+    setExpanded(new Set(allNodes.filter((n) => n.hasChildren && n.depth <= 3).map((n) => n.id)));
+    setSelectedId(null);
+    setViewRange({ start: 0, end: 1 });
+  }, [allNodes]);
 
   const rowStates = useMemo(
     () => generateRowStates(roots, expanded),

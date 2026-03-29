@@ -1,24 +1,8 @@
 import type { ExecutionLogItem } from "#shared/schemas/execution";
+import { formatLogTimestamp } from "#lib/format";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { LogLevelBadge } from "./log-level-badge";
-
-type Level = NonNullable<ExecutionLogItem["level"]>;
-
-const LEVEL_BORDER: Record<Level, string> = {
-  debug: "bg-muted-foreground/40",
-  info: "bg-sky-400",
-  warn: "bg-yellow-400",
-  error: "bg-red-400",
-};
-
-function formatLogTimestamp(timestamp: string): string {
-  const d = new Date(timestamp);
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  const ss = String(d.getSeconds()).padStart(2, "0");
-  const ms = String(d.getMilliseconds()).padStart(3, "0");
-  return `${hh}:${mm}:${ss}.${ms}`;
-}
+import { LEVEL_BORDER } from "./log-level-styles";
 
 interface LogRowProps {
   log: ExecutionLogItem;

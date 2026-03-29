@@ -1,3 +1,4 @@
+import type { ExecutionLogPayload } from "#shared/schemas/execution";
 import type {
   PipelineTraceKind,
   PipelineTraceRecord,
@@ -60,14 +61,6 @@ export const executionTraces = sqliteTable("execution_traces", {
 
 export type ExecutionTrace = typeof executionTraces.$inferSelect;
 
-export interface ExecutionLogPayload {
-  args?: unknown[];
-  meta?: Record<string, unknown>;
-  truncated?: boolean;
-  originalSize?: number;
-  isBanner?: boolean;
-}
-
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
@@ -80,7 +73,7 @@ export const executionLogs = sqliteTable("execution_logs", {
   level: text("level").$type<PipelineLogLevel>(),
   source: text("source").$type<PipelineLogSource>(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
-  payload: text("payload", { mode: "json" }).$type<ExecutionLogPayload>(),
+  payload: text("payload", { mode: "json" }).$type<NonNullable<ExecutionLogPayload>>(),
 }, (table) => [
   index("execution_logs_workspace_execution_idx").on(table.workspaceId, table.executionId),
   index("execution_logs_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
