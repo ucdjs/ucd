@@ -74,5 +74,9 @@
   "@ucdjs-internal/worker-utils": {
     "type": "patch",
     "version": "0.0.1-beta.8"
+  },
+  "@ucdjs/fs-backend": {
+    "type": "minor",
+    "version": "0.1.0-beta.0"
   }
 }
