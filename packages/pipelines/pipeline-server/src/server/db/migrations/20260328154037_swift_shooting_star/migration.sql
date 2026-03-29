@@ -1,1 +1,0 @@
-ALTER TABLE `execution_traces` RENAME COLUMN `timestamp` TO `end_timestamp`;
