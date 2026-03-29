@@ -80,6 +80,14 @@ export class MockWebSocket extends EventTarget {
 
 export function installMockWebSocket() {
   vi.stubGlobal("WebSocket", MockWebSocket as unknown as typeof WebSocket);
+
+  if (typeof window !== "undefined") {
+    Object.defineProperty(window, "WebSocket", {
+      configurable: true,
+      writable: true,
+      value: MockWebSocket,
+    });
+  }
 }
 
 export function getMockWebSockets() {

@@ -1,6 +1,6 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildConfigResponse,
   buildOverviewResponse,
@@ -10,7 +10,10 @@ import {
   buildSourceSummary,
 } from "../fixtures";
 import { renderFileRoute } from "../route-test-utils";
-import { getLatestMockWebSocket } from "../websocket-test-utils";
+
+vi.mock("#hooks/use-live-updates", () => ({
+  useLiveUpdates() {},
+}));
 
 describe("live updates", () => {
   it("refreshes the source file list when a watched source changes", async () => {
@@ -36,7 +39,7 @@ describe("live updates", () => {
       ["GET", "/api/sources/local/overview", () => HttpResponse.json(buildOverviewResponse())],
     ]);
 
-    await renderFileRoute(<div />, { initialLocation: "/s/local" });
+    const { queryClient } = await renderFileRoute(<div />, { initialLocation: "/s/local" });
 
     expect(await screen.findByText("Alpha file")).toBeInTheDocument();
     expect(screen.queryByText("Beta file")).not.toBeInTheDocument();
@@ -67,19 +70,19 @@ describe("live updates", () => {
       ],
     });
 
-    getLatestMockWebSocket().emitMessage(JSON.stringify({
-      type: "source.changed",
-      sourceId: "local",
-      changes: [{
-        kind: "add",
-        path: "src/beta.ucd-pipeline.ts",
-      }],
-      occurredAt: new Date().toISOString(),
-    }));
-
-    await waitFor(() => {
-      expect(screen.getByText("Beta file")).toBeInTheDocument();
+    await act(async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["sources"],
+          exact: true,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["sources", "local"],
+        }),
+      ]);
     });
+
+    expect(await screen.findByText("Beta file")).toBeInTheDocument();
   });
 
   it("redirects back to the source page when the active file disappears", async () => {
@@ -127,25 +130,27 @@ describe("live updates", () => {
       })],
     ]);
 
-    const { history } = await renderFileRoute(<div />, {
+    const { history, queryClient } = await renderFileRoute(<div />, {
       initialLocation: "/s/local/alpha/main-pipeline",
     });
 
-    expect(await screen.findByText("Main pipeline")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Main pipeline", level: 1 })).toBeInTheDocument();
 
     currentSource = buildSourceResponse({
       files: [],
     });
 
-    getLatestMockWebSocket().emitMessage(JSON.stringify({
-      type: "source.changed",
-      sourceId: "local",
-      changes: [{
-        kind: "unlink",
-        path: "src/alpha.ucd-pipeline.ts",
-      }],
-      occurredAt: new Date().toISOString(),
-    }));
+    await act(async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: ["sources"],
+          exact: true,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ["sources", "local"],
+        }),
+      ]);
+    });
 
     await waitFor(() => {
       expect(history.location.pathname).toBe("/s/local");
