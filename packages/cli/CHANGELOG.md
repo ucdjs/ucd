@@ -7,6 +7,7 @@
 * add cache subcommands (status, clear, refresh) ([fd360f47](https://github.com/ucdjs/ucd/commit/fd360f472dc7561efef5baf6e99039ede8289bd2)) (by [@luxass](https://github.com/luxass))
 
 ### 🐞 Bug Fixes
+* update @opentelemetry/api version to support multiple versions ([06d60527](https://github.com/ucdjs/ucd/commit/06d60527af102caa981c96050a21bc1e701af27d)) (by [@luxass](https://github.com/luxass))
 * replace parseRepoString with parseRemoteSourceUrl ([600fbf3f](https://github.com/ucdjs/ucd/commit/600fbf3f152f79b75d3dbc3d8a1bb2c8ae311116)) (by [@luxass](https://github.com/luxass))
 
 
