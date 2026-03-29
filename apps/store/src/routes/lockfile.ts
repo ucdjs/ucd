@@ -2,12 +2,9 @@ import type { Lockfile } from "@ucdjs/schemas";
 import type { H3 } from "h3";
 import { badGateway } from "@ucdjs-internal/worker-utils";
 import { getCloudflareEnv } from "@ucdjs-internal/worker-utils/h3";
+import { SnapshotSchema } from "@ucdjs/schemas";
 
-const MANIFEST_KEY_RE = /^manifest\/([^/]+)\/manifest\.json$/;
-
-interface ManifestData {
-  expectedFiles: string[];
-}
+const SNAPSHOT_KEY_RE = /^manifest\/([^/]+)\/snapshot\.json$/;
 
 export function registerLockfileRoute(app: H3) {
   app.get("/.ucd-store.lock", async (event) => {
@@ -20,7 +17,8 @@ export function registerLockfileRoute(app: H3) {
     }
 
     try {
-      // List all manifests in R2
+      // List all stored manifest artifacts in R2 and derive the lockfile
+      // from the per-version snapshot files.
       const listed = await bucket.list({ prefix: "manifest/" });
 
       // Build versions map
@@ -28,23 +26,28 @@ export function registerLockfileRoute(app: H3) {
       const now = new Date();
 
       for (const obj of listed.objects) {
-        // Extract version from path: manifest/{version}/manifest.json
-        const match = obj.key.match(MANIFEST_KEY_RE);
+        const match = obj.key.match(SNAPSHOT_KEY_RE);
         if (!match) continue;
 
         const version = match[1]!;
 
-        // Fetch manifest to get file count
-        const manifestObj = await bucket.get(obj.key);
-        if (!manifestObj) continue;
+        const snapshotObj = await bucket.get(obj.key);
+        if (!snapshotObj) continue;
 
-        const manifestData = await manifestObj.json() as ManifestData;
-        const fileCount = manifestData.expectedFiles?.length || 0;
+        const parsed = SnapshotSchema.safeParse(await snapshotObj.json());
+        if (!parsed.success) {
+          console.error(`[ucd-store]: Invalid snapshot for ${version}:`, parsed.error);
+          continue;
+        }
+
+        const fileEntries = Object.values(parsed.data.files);
+        const fileCount = fileEntries.length;
+        const totalSize = fileEntries.reduce((sum, file) => sum + file.size, 0);
 
         versions[version] = {
           path: `${version}/snapshot.json`,
           fileCount,
-          totalSize: 0, // Placeholder - manifest doesn't track sizes
+          totalSize,
           createdAt: obj.uploaded || now,
           updatedAt: obj.uploaded || now,
         };

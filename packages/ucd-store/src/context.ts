@@ -83,7 +83,7 @@ export function createInternalContext(options: CreateInternalContextOptions): In
     },
     async getExpectedFilePaths(version: string): Promise<ExpectedFile[]> {
       debug?.("Fetching expected files for version:", version);
-      const result = await options.client.manifest.get(version);
+      const result = await options.client.versions.getManifest(version);
 
       if (result.error) {
         throw new UCDStoreGenericError(
