@@ -1,12 +1,10 @@
 # @ucdjs/pipelines-graph
 
-## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-graph@0.0.1-beta.7...@ucdjs/pipelines-graph@0.0.1-beta.8) (2026-03-29)
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-graph@0.0.1-beta.8...@ucdjs/pipelines-graph@0.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
 * introduce PipelineGraph types and interfaces ([4968f834](https://github.com/ucdjs/ucd/commit/4968f83438973666f1be14b5800543953482ecaf)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-graph@0.0.1-beta.6...@ucdjs/pipelines-graph@0.0.1-beta.7) (2026-02-27)
 
 

@@ -1,12 +1,10 @@
 # @ucdjs/path-utils
 
-## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.7...@ucdjs/path-utils@0.1.1-beta.8) (2026-03-29)
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.8...@ucdjs/path-utils@0.1.1-beta.8) (2026-03-29)
 
 
 ### 📚 Documentation
 * update README for clarity and security focus ([8f38e7cd](https://github.com/ucdjs/ucd/commit/8f38e7cd63d3264b78ee500817f74c7b4ed097a5)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.6...@ucdjs/path-utils@0.1.1-beta.7) (2026-02-27)
 
 

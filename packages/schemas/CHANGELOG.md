@@ -1,6 +1,6 @@
 # @ucdjs/schemas
 
-## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.7...@ucdjs/schemas@0.1.1-beta.8) (2026-03-29)
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.8...@ucdjs/schemas@0.1.1-beta.8) (2026-03-29)
 
 
 ### 🐞 Bug Fixes
@@ -8,8 +8,6 @@
 
 ### 📚 Documentation
 * table for available schemas, move usage under overview, link README to docs ([89694115](https://github.com/ucdjs/ucd/commit/896941150c8740faaf0b951a4fdb862e1858f473)) (by luxass)
-
-
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.6...@ucdjs/schemas@0.1.1-beta.7) (2026-02-27)
 
 

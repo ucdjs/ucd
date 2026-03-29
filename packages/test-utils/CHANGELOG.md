@@ -1,6 +1,6 @@
 # @ucdjs/test-utils
 
-## [1.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.7...@ucdjs/test-utils@1.0.1-beta.8) (2026-03-29)
+## [1.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.8...@ucdjs/test-utils@1.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -8,8 +8,6 @@
 
 ### 🐞 Bug Fixes
 * address migration review feedback ([beb69de5](https://github.com/ucdjs/ucd/commit/beb69de5f036794c46a3aad4345900ac3b4ba8d3)) (by [@luxass](https://github.com/luxass))
-
-
 ## [1.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.6...@ucdjs/test-utils@1.0.1-beta.7) (2026-02-27)
 
 
