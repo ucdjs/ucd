@@ -81,6 +81,8 @@ export const executionLogs = sqliteTable("execution_logs", {
   spanId: text("span_id"),
   stream: text("stream"),
   message: text("message").notNull(),
+  level: text("level").$type<PipelineLogLevel>(),
+  source: text("source").$type<PipelineLogSource>(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
   payload: text("payload", { mode: "json" }).$type<ExecutionLogPayload>(),
 }, (table) => [

@@ -82,6 +82,8 @@ export const ExecutionLogItemSchema = z.object({
   spanId: z.string().nullable(),
   message: z.string(),
   timestamp: z.string(),
+  level: z.enum(["debug", "info", "warn", "error"]),
+  source: z.enum(["logger", "console", "stdio"]),
   payload: ExecutionLogPayloadSchema,
 });
 

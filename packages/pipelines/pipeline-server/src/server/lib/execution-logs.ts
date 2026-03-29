@@ -130,6 +130,8 @@ export async function storeExecutionLog(
     executionId: options.executionId,
     spanId: options.spanId ?? null,
     message: finalMessage,
+    level: payload.level,
+    source: payload.source,
     timestamp: options.timestamp ?? new Date(),
     payload,
   });
