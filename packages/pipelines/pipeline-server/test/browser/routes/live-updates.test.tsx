@@ -11,8 +11,10 @@ import {
 } from "../fixtures";
 import { renderFileRoute } from "../route-test-utils";
 
+function mockUseLiveUpdates() {}
+
 vi.mock("#hooks/use-live-updates", () => ({
-  useLiveUpdates() {},
+  useLiveUpdates: mockUseLiveUpdates,
 }));
 
 describe("live updates", () => {
