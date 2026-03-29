@@ -22,7 +22,6 @@
     ".": "./dist/cli.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/cli.d.mts",
   "bin": {
     "ucd": "bin/ucd.js"
   },
@@ -41,35 +40,68 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@ucdjs/pipelines-server": "workspace:*"
+  },
+  "devDependencies": {
     "@clack/prompts": "catalog:runtime",
+    "@luxass/eslint-config": "catalog:lint",
     "@luxass/utils": "catalog:runtime",
+    "@types/yargs-parser": "catalog:types",
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
     "@ucdjs/pipelines-loader": "workspace:*",
-    "@ucdjs/pipelines-server": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
-    "farver": "catalog:runtime",
-    "yargs-parser": "catalog:runtime"
-  },
-  "devDependencies": {
-    "@luxass/eslint-config": "catalog:lint",
-    "@types/yargs-parser": "catalog:types",
-    "@ucdjs-tooling/tsconfig": "workspace:*",
-    "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
+    "farver": "catalog:runtime",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:test"
+    "vitest-testdirs": "catalog:test",
+    "yargs-parser": "catalog:runtime"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "inlinedDependencies": {
+    "@ai-sdk/gateway": "3.0.80",
+    "@ai-sdk/openai": "3.0.48",
+    "@ai-sdk/provider": "3.0.8",
+    "@ai-sdk/provider-utils": "4.0.21",
+    "@clack/core": "1.1.0",
+    "@clack/prompts": "1.1.0",
+    "@luxass/msw-utils": "0.6.1",
+    "@luxass/unicode-utils": "0.11.0",
+    "@luxass/utils": "2.7.3",
+    "@opentelemetry/api": "1.9.0",
+    "@rolldown/pluginutils": "1.0.0-rc.11",
+    "@unicode-utils/core": "0.12.0-beta.23",
+    "@unicode-utils/metadata": "0.12.0-beta.23",
+    "@unicode-utils/parser": "0.12.0-beta.23",
+    "@vercel/oidc": "3.1.0",
+    "ai": "6.0.138",
+    "defu": "6.1.4",
+    "eventsource-parser": "3.0.6",
+    "farver": "0.4.2",
+    "fdir": "6.5.0",
+    "hookable": "6.1.0",
+    "knitwork": "1.3.0",
+    "nanotar": "0.3.0",
+    "obug": "2.1.1",
+    "pathe": "2.0.3",
+    "picomatch": "4.0.4",
+    "rolldown": "1.0.0-rc.11",
+    "sisteransi": "1.0.5",
+    "termenv": "0.4.2",
+    "tinyglobby": "0.2.15",
+    "yargs-parser": "22.0.0",
+    "zod": "4.3.6"
   }
 }
