@@ -23,7 +23,6 @@ export function registerSnapshotRoute(app: H3) {
     try {
       const snapshotKey = `manifest/${version}/snapshot.json`;
       const snapshotObj = await bucket.get(snapshotKey);
-
       if (!snapshotObj) {
         return notFound({
           message: `Snapshot not found for version ${version}`,

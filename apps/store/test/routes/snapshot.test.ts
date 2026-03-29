@@ -5,19 +5,32 @@ import { executeRequest } from "../helpers/request";
 
 describe("store snapshot route", () => {
   it("should return snapshot for existing version", async () => {
-    const mockManifestData = {
-      expectedFiles: [
-        "17.0.0/ucd/UnicodeData.txt",
-        "17.0.0/ucd/Blocks.txt",
-        "17.0.0/ucd/emoji/emoji-data.txt",
-      ],
+    const mockSnapshotData: Snapshot = {
+      unicodeVersion: "17.0.0",
+      files: {
+        "UnicodeData.txt": {
+          hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          fileHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          size: 123,
+        },
+        "Blocks.txt": {
+          hash: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          fileHash: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          size: 456,
+        },
+        "emoji/emoji-data.txt": {
+          hash: "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          fileHash: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          size: 789,
+        },
+      },
     };
 
     const mockBucket = {
       get: vi.fn().mockImplementation((key: string) => {
-        if (key === "manifest/17.0.0/manifest.json") {
+        if (key === "manifest/17.0.0/snapshot.json") {
           return Promise.resolve({
-            json: () => Promise.resolve(mockManifestData),
+            json: () => Promise.resolve(mockSnapshotData),
           });
         }
         return Promise.resolve(null);
@@ -40,17 +53,17 @@ describe("store snapshot route", () => {
     expect(snapshot.unicodeVersion).toBe("17.0.0");
     expect(Object.keys(snapshot.files)).toHaveLength(3);
     expect(snapshot.files["UnicodeData.txt"]).toMatchObject({
-      hash: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-      fileHash: "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-      size: 0,
+      hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      fileHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      size: 123,
     });
     expect(snapshot.files["Blocks.txt"]).toBeDefined();
     expect(snapshot.files["emoji/emoji-data.txt"]).toBeDefined();
 
-    expect(mockBucket.get).toHaveBeenCalledWith("manifest/17.0.0/manifest.json");
+    expect(mockBucket.get).toHaveBeenCalledWith("manifest/17.0.0/snapshot.json");
   });
 
-  it("should return 404 when manifest does not exist", async () => {
+  it("should return 404 when snapshot does not exist", async () => {
     const mockBucket = {
       get: vi.fn().mockResolvedValue(null),
     };
@@ -66,7 +79,7 @@ describe("store snapshot route", () => {
     expect(response.status).toBe(404);
     const data = await json() as { status: number; message: string };
     expect(data.status).toBe(404);
-    expect(data.message).toContain("Manifest not found");
+    expect(data.message).toContain("Snapshot not found");
     expect(data.message).toContain("99.0.0");
   });
 
@@ -104,10 +117,15 @@ describe("store snapshot route", () => {
     expect(data.message).toBe("Bad Gateway");
   });
 
-  it("should handle empty manifest gracefully", async () => {
+  it("should handle empty snapshot gracefully", async () => {
+    const mockSnapshotData: Snapshot = {
+      unicodeVersion: "17.0.0",
+      files: {},
+    };
+
     const mockBucket = {
       get: vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({ expectedFiles: [] }),
+        json: () => Promise.resolve(mockSnapshotData),
       }),
     };
 
@@ -125,10 +143,10 @@ describe("store snapshot route", () => {
     expect(Object.keys(snapshot.files)).toHaveLength(0);
   });
 
-  it("should handle manifest with missing expectedFiles", async () => {
+  it("should return 502 for snapshot with missing files", async () => {
     const mockBucket = {
       get: vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({}),
+        json: () => Promise.resolve({ unicodeVersion: "17.0.0" }),
       }),
     };
 
@@ -140,16 +158,16 @@ describe("store snapshot route", () => {
       } as unknown as Cloudflare.Env,
     );
 
-    expect(response.status).toBe(200);
-    const snapshot = await json() as Snapshot;
-    expect(snapshot.unicodeVersion).toBe("17.0.0");
-    expect(Object.keys(snapshot.files)).toHaveLength(0);
+    expect(response.status).toBe(502);
+    const data = await json() as { status: number; message: string };
+    expect(data.status).toBe(502);
+    expect(data.message).toBe("Bad Gateway");
   });
 
-  it("should handle malformed manifest data", async () => {
+  it("should return 502 for malformed snapshot data", async () => {
     const mockBucket = {
       get: vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({ expectedFiles: null }),
+        json: () => Promise.resolve({ unicodeVersion: "17.0.0", files: null }),
       }),
     };
 
@@ -161,20 +179,27 @@ describe("store snapshot route", () => {
       } as unknown as Cloudflare.Env,
     );
 
-    expect(response.status).toBe(200);
-    const snapshot = await json() as Snapshot;
-    expect(snapshot.unicodeVersion).toBe("17.0.0");
-    expect(Object.keys(snapshot.files)).toHaveLength(0);
+    expect(response.status).toBe(502);
+    const data = await json() as { status: number; message: string };
+    expect(data.status).toBe(502);
+    expect(data.message).toBe("Bad Gateway");
   });
 
-  it("should handle various version formats", async () => {
-    const mockManifestData = {
-      expectedFiles: ["16.0.0/ucd/UnicodeData.txt"],
+  it("should return snapshot payload for another version", async () => {
+    const mockSnapshotData: Snapshot = {
+      unicodeVersion: "16.0.0",
+      files: {
+        "UnicodeData.txt": {
+          hash: "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          fileHash: "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          size: 321,
+        },
+      },
     };
 
     const mockBucket = {
       get: vi.fn().mockResolvedValue({
-        json: () => Promise.resolve(mockManifestData),
+        json: () => Promise.resolve(mockSnapshotData),
       }),
     };
 
@@ -189,6 +214,8 @@ describe("store snapshot route", () => {
     expect(response.status).toBe(200);
     const snapshot = await json() as Snapshot;
     expect(snapshot.unicodeVersion).toBe("16.0.0");
-    expect(snapshot.files["UnicodeData.txt"]).toBeDefined();
+    expect(snapshot.files["UnicodeData.txt"]).toMatchObject({
+      size: 321,
+    });
   });
 });
