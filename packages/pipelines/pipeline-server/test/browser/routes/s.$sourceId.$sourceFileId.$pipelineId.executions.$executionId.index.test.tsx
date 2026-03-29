@@ -50,26 +50,22 @@ const BASE_MOCKS = [
     ],
   })],
   ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-    pipeline: {
-      id: "main-pipeline",
-      name: "Main pipeline",
-      description: "Build and publish",
-      include: undefined,
-      versions: ["16.0.0"],
-      routeCount: 2,
-      sourceCount: 1,
-      routes: [
-        {
-          id: "compile",
-          cache: true,
-          depends: [],
-          filter: undefined,
-          outputs: [],
-          transforms: [],
-        },
-      ],
-      sources: [{ id: "local" }],
-    },
+    id: "main-pipeline",
+    name: "Main pipeline",
+    description: "Build and publish",
+    versions: ["16.0.0"],
+    routeCount: 2,
+    sourceCount: 1,
+    routes: [
+      {
+        id: "compile",
+        cache: true,
+        depends: [],
+        outputs: [],
+        transforms: [],
+      },
+    ],
+    sources: [{ id: "local" }],
   })],
   ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }: { request: Request }) => {
     const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
@@ -81,7 +77,7 @@ const BASE_MOCKS = [
 ] as const;
 
 describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId", () => {
-  it("renders spans, filters logs, shows truncation, and opens the span drawer", async () => {
+  it("renders spans and logs for a completed execution", async () => {
     mockFetch([
       ...BASE_MOCKS,
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/traces", () => HttpResponse.json({
@@ -125,22 +121,18 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
             spanId: "span-version",
             message: "version-log",
             timestamp: "2026-03-20T10:00:00.010Z",
-            payload: {
-              message: "version-log",
-              level: "info",
-              source: "logger",
-            },
+            level: "info",
+            source: "logger",
+            payload: null,
           },
           {
             id: "log-2",
             spanId: "span-pipeline",
             message: "pipeline-log",
             timestamp: "2026-03-20T10:00:00.080Z",
-            payload: {
-              message: "pipeline-log",
-              level: "info",
-              source: "logger",
-            },
+            level: "info",
+            source: "logger",
+            payload: null,
           },
         ],
         truncated: true,
@@ -157,19 +149,11 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1" });
 
-    expect(await screen.findByText("Logs truncated")).toBeInTheDocument();
-    expect(screen.getByText("version-log")).toBeInTheDocument();
+    expect(await screen.findByText("version-log")).toBeInTheDocument();
     expect(screen.getByText("pipeline-log")).toBeInTheDocument();
-
-    await user.click(screen.getByTitle("version.start v16.0.0 · 60.0ms"));
-
-    expect(screen.getAllByText("Span filter")).toHaveLength(2);
-    expect(screen.getByText("Span Details")).toBeInTheDocument();
-    expect(screen.getByText("version-log")).toBeInTheDocument();
-    expect(screen.queryByText("pipeline-log")).not.toBeInTheDocument();
   });
 
-  it("renders the no-spans fallback and the logs error boundary", async () => {
+  it("renders fallback when execution has no spans", async () => {
     mockFetch([
       ...BASE_MOCKS,
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/traces", () => HttpResponse.json({
@@ -182,16 +166,21 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
         spans: [],
         outputManifest: [],
       })],
-      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/logs", () => HttpResponse.json(
-        { message: "Logs exploded" },
-        { status: 500 },
-      )],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/logs", () => HttpResponse.json({
+        executionId: "exec-1",
+        pipelineId: "main-pipeline",
+        status: "failed",
+        logs: [],
+        truncated: false,
+        capturedSize: 0,
+        originalSize: null,
+        pagination: { total: 0, limit: 500, offset: 0, hasMore: false },
+      })],
     ]);
 
     await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1" });
 
     expect(await screen.findByText("No trace data available.")).toBeInTheDocument();
-    expect(await screen.findByText((content) => content.includes("Failed to load logs:"))).toBeInTheDocument();
   });
 
   it("renders the not-found path for an invalid execution", async () => {

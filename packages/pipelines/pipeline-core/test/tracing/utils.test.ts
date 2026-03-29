@@ -4,10 +4,10 @@ import { buildOutputManifestFromTraces, getTracePhase } from "../../src/tracing/
 
 describe("getTracePhase", () => {
   it.each([
-    ["pipeline.start", "Pipeline"],
-    ["version.start", "Version"],
-    ["parse.start", "Parse"],
-    ["resolve.start", "Resolve"],
+    ["pipeline", "Pipeline"],
+    ["version", "Version"],
+    ["parse", "Parse"],
+    ["resolve", "Resolve"],
     ["file.matched", "File"],
     ["cache.hit", "Cache"],
     ["error", "Error"],
