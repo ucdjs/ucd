@@ -1,8 +1,10 @@
+import { LogsViewer } from "#components/execution/logs/logs-viewer";
 import { WaterfallView } from "#components/execution/waterfall/index";
-import { executionTracesQueryOptions } from "#queries/execution";
+import { executionLogsQueryOptions, executionTracesQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
+import { Suspense, useState } from "react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/")({
   loader: async ({ context, params }) => {
@@ -20,6 +22,15 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/exe
 
       throw error;
     }
+
+    // Prefetch logs in parallel (non-blocking — logs panel uses its own Suspense)
+    void context.queryClient.prefetchQuery(executionLogsQueryOptions({
+      sourceId: params.sourceId,
+      fileId: params.sourceFileId,
+      pipelineId: params.pipelineId,
+      executionId: params.executionId,
+      limit: 500,
+    }));
   },
   component: ExecutionDetailPage,
 });
@@ -33,6 +44,8 @@ function ExecutionDetailPage() {
     executionId,
   }));
 
+  const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex-1 min-h-0 overflow-hidden">
@@ -40,12 +53,25 @@ function ExecutionDetailPage() {
           <p className="p-4 text-sm text-muted-foreground">No trace data available.</p>
         )}
         {data.spans.length > 0 && (
-          <WaterfallView traceId={data.traceId} spans={data.spans} />
+          <WaterfallView
+            traceId={data.traceId}
+            spans={data.spans}
+            onSpanSelect={setSelectedSpanId}
+          />
         )}
       </div>
 
-      <div className="h-48 border-t flex items-center justify-center shrink-0">
-        <p className="text-muted-foreground text-sm">Logs Viewer</p>
+      <div className="h-64 border-t shrink-0">
+        <Suspense fallback={<div className="flex h-full items-center justify-center text-sm text-muted-foreground">Loading logs…</div>}>
+          <LogsViewer
+            sourceId={sourceId}
+            fileId={sourceFileId}
+            pipelineId={pipelineId}
+            executionId={executionId}
+            selectedSpanId={selectedSpanId}
+            onClearSpan={() => setSelectedSpanId(null)}
+          />
+        </Suspense>
       </div>
     </div>
   );

@@ -15,9 +15,10 @@ import { TimelineAxis } from "./timeline-axis";
 interface WaterfallViewProps {
   traceId: string | null;
   spans: ExecutionSpanItem[];
+  onSpanSelect?: (spanId: string | null) => void;
 }
 
-export function WaterfallView({ traceId, spans }: WaterfallViewProps) {
+export function WaterfallView({ traceId, spans, onSpanSelect }: WaterfallViewProps) {
   const { roots, allNodes, totalDurationMs, traceStartMs } = useMemo(
     () => buildWaterfallTree(spans, traceId),
     [spans, traceId],
@@ -132,7 +133,11 @@ export function WaterfallView({ traceId, spans }: WaterfallViewProps) {
             viewedBounds={viewedBounds}
             isSelected={selectedId === node.id}
             isExpanded={expanded.has(node.id)}
-            onSelect={() => setSelectedId(node.id === selectedId ? null : node.id)}
+            onSelect={() => {
+              const deselect = node.id === selectedId;
+              setSelectedId(deselect ? null : node.id);
+              onSpanSelect?.(deselect ? null : node.spanId);
+            }}
             onToggle={() => handleToggle(node.id)}
           />
         ))}
