@@ -4,6 +4,7 @@ import type { CLIFilesCmdOptions } from "./cmd/files/root";
 import type { CLILockfileCmdOptions } from "./cmd/lockfile/root";
 import type { CLIPipelinesCmdOptions } from "./cmd/pipelines/root";
 import type { CLIStoreCmdOptions } from "./cmd/store/root";
+import type { Prettify, RemoveIndexSignature } from "./types";
 import process from "node:process";
 import {
   bgGreen,
@@ -16,7 +17,6 @@ import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 import { CLIError } from "./errors";
 import { output, setJsonMode } from "./output";
-import type { Prettify, RemoveIndexSignature } from "./types";
 
 type CLICommand
   = | "help"

@@ -20,8 +20,8 @@ This package keeps graph construction and graph inspection separate from pipelin
 Use it when you already have a pipeline definition or execution graph and need a stable graph-shaped view for tooling, visualization, or debugging.
 
 ```ts
-import { buildRouteGraph, toVisualTree } from "@ucdjs/pipelines-graph";
 import { buildDAG } from "@ucdjs/pipelines-core";
+import { buildRouteGraph, toVisualTree } from "@ucdjs/pipelines-graph";
 
 const dag = buildDAG(pipeline.routes);
 const graph = buildRouteGraph(pipeline, dag);
