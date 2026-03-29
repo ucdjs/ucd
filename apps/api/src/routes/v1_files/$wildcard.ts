@@ -40,7 +40,7 @@ export const WILDCARD_ROUTE = createRoute({
   description: dedent`
     This endpoint proxies requests to Unicode.org's Public directory, streaming files directly while transforming directory listings into structured JSON.
 
-    All paths are relative to \`/api/v1/files\` — for example, requesting \`/api/v1/files/15.1.0/ucd/emoji/emoji-data.txt\` fetches the emoji data file from Unicode version 15.1.0.
+    All paths are relative to \`/api/v1/files\` - for example, requesting \`/api/v1/files/15.1.0/ucd/emoji/emoji-data.txt\` fetches the emoji data file from Unicode version 15.1.0.
 
     > [!IMPORTANT]
     > The \`{wildcard}\` parameter accepts any valid path, including deeply nested ones like \`15.1.0/ucd/emoji/emoji-data.txt\`. In directory listing responses, paths for directories include a trailing slash (e.g., \`/15.1.0/ucd/charts/\`), while file paths do not.

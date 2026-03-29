@@ -47,7 +47,7 @@ export async function runPipelinesCacheStatus({ flags }: CLIPipelinesCacheStatus
   const sourceType = flags?.github ? "github" : flags?.gitlab ? "gitlab" : null;
 
   if (!sourceFlag || !sourceType) {
-    // No source specified — list all cached sources
+    // No source specified - list all cached sources
     const cached = await listCachedSources();
 
     header("Cached Pipeline Sources");
@@ -96,7 +96,7 @@ export async function runPipelinesCacheStatus({ flags }: CLIPipelinesCacheStatus
     ref: parsed.ref,
   });
 
-  header(`Cache Status — ${sourceType}:${parsed.owner}/${parsed.repo}@${parsed.ref}`);
+  header(`Cache Status - ${sourceType}:${parsed.owner}/${parsed.repo}@${parsed.ref}`);
 
   if (!status.cached) {
     keyValue("Status", yellow("not cached"));

@@ -17,7 +17,7 @@ function FontGlyphViewVersion() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Font & Glyph View —
+            Font & Glyph View -
             {" "}
             {params.version}
           </CardTitle>

@@ -42,7 +42,7 @@ function FieldValue({ field }: { field: ExecutionGraphDetailField }) {
 
 function formatFieldValue(value: unknown): string {
   if (value == null || value === "") {
-    return "—";
+    return "-";
   }
 
   if (typeof value === "string") {

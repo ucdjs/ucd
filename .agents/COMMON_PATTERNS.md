@@ -57,11 +57,11 @@ pnpm --filter @ucdjs/pipelines-server db:generate
 
 Other useful database commands:
 
-- `pnpm --filter @ucdjs/pipelines-server db:push` — push schema changes directly (dev only)
-- `pnpm --filter @ucdjs/pipelines-server db:migrate` — apply pending migrations
-- `pnpm --filter @ucdjs/pipelines-server db:studio` — open Drizzle Studio
+- `pnpm --filter @ucdjs/pipelines-server db:push` - push schema changes directly (dev only)
+- `pnpm --filter @ucdjs/pipelines-server db:migrate` - apply pending migrations
+- `pnpm --filter @ucdjs/pipelines-server db:studio` - open Drizzle Studio
 
-Migrations live in `packages/pipelines/pipeline-server/src/server/db/migrations/` and are applied automatically in tests and at server startup via `runMigrations()`. Never create migration files manually — always use `db:generate`.
+Migrations live in `packages/pipelines/pipeline-server/src/server/db/migrations/` and are applied automatically in tests and at server startup via `runMigrations()`. Never create migration files manually - always use `db:generate`.
 
 ## CLI Development
 

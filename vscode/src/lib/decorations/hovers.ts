@@ -95,7 +95,7 @@ export function getPropertyHover(property: string): MarkdownString {
   return createMarkdown([
     `### Property Value`,
     ``,
-    `**\`${prop}\`** — ${description}`,
+    `**\`${prop}\`** - ${description}`,
   ].join("\n"));
 }
 

@@ -13,7 +13,7 @@ function createLargeLogRoute(id: string, sizeKB: number) {
     resolver: async (ctx, rows) => {
       ctx.logger.warn("About to log a very large message that will be truncated by the server");
       ctx.logger.info(`Huge payload incoming: ${payload}`);
-      ctx.logger.info("This line comes after the huge log — it may not be stored if total limit is hit");
+      ctx.logger.info("This line comes after the huge log - it may not be stored if total limit is hit");
 
       const entries = [];
       for await (const row of rows) {
