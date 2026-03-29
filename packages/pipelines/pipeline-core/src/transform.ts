@@ -1,5 +1,4 @@
-import type { PipelineLogger } from "./logger";
-import type { FileContext } from "./types";
+import type { FileContext, PipelineLogger } from "./types";
 
 export interface TransformContext {
   version: string;
@@ -84,7 +83,7 @@ export type ChainTransforms<
  * Applies a sequence of transforms to an async iterable, composing them together.
  *
  * This function threads the output of one transform into the input of the next,
- * creating a pipeline. All iteration is lazy—values are pulled through the pipeline
+ * creating a pipeline. All iteration is lazy-values are pulled through the pipeline
  * only as they are consumed.
  *
  * @typeParam TInput - The input type of the first transform.

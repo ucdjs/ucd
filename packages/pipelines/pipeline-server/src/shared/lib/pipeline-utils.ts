@@ -1,6 +1,6 @@
 import type { PipelineDetails, PipelineInfo } from "#shared/schemas/pipeline";
 import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipelines-core";
-import { getFilterDescription, parseDependency } from "@ucdjs/pipelines-core";
+import { getFilterDescription, normalizeRouteOutputs, parseDependency } from "@ucdjs/pipelines-core";
 
 export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
   return {
@@ -28,14 +28,15 @@ export function toRouteDetails(
   route: PipelineRouteDefinition,
 ): PipelineDetails["routes"][number] {
   const depends = (route.depends ?? []).map((dep) => parseDependency(dep));
-  const emits = Object.entries(route.emits ?? {}).map(([id, def]) => {
-    const scope = def.scope === "global" ? "global" : "version";
-    return { id, scope } as const;
-  });
 
-  const outputs = route.out
-    ? [{ dir: route.out.dir, fileName: typeof route.out.fileName === "function" ? "[fn]" : route.out.fileName }]
-    : [];
+  const outputs = normalizeRouteOutputs(route).map((output) => ({
+    id: output.id,
+    sink: output.sink?.type ?? "runtime",
+    format: output.format,
+    path: typeof output.path === "string" ? output.path : undefined,
+    dynamicPath: typeof output.path === "function",
+    pathSource: typeof output.path === "function" ? formatFunctionPreview(output.path) : undefined,
+  }));
 
   const transformList = (route.transforms ?? []) as { id?: string }[];
   const transforms = transformList.map((transform, index) => {
@@ -47,9 +48,13 @@ export function toRouteDetails(
     id: route.id,
     cache: route.cache !== false,
     depends,
-    emits,
     filter: route.filter ? getFilterDescription(route.filter) : undefined,
     outputs,
     transforms,
   };
+}
+
+function formatFunctionPreview(fn: (...args: never[]) => unknown): string {
+  const source = fn.toString().trim();
+  return source.length > 240 ? `${source.slice(0, 237)}...` : source;
 }

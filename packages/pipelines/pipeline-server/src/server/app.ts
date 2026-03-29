@@ -4,15 +4,16 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
+import { setupLiveUpdates } from "#server/live";
 import {
-  overviewRouter,
-  sourcesEventsRouter,
   sourcesExecutionsRouter,
   sourcesGraphRouter,
   sourcesIndexRouter,
   sourcesLogsRouter,
+  sourcesOverviewRouter,
   sourcesPipelineRouter,
   sourcesSourceRouter,
+  sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs/env";
@@ -40,6 +41,27 @@ declare module "h3" {
   }
 }
 
+export function resolvePipelineSources(sources: PipelineSource[] = []): PipelineSource[] {
+  if (sources.length > 0) {
+    return sources;
+  }
+
+  const cwd = process.cwd();
+  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
+    return [{
+      kind: "local",
+      id: "local",
+      path: path.join(import.meta.dirname, "../../../pipeline-playground"),
+    }];
+  }
+
+  return [{
+    kind: "local",
+    id: "local",
+    path: cwd,
+  }];
+}
+
 export function createApp(options: AppOptions = {}): H3 {
   const { sources = [], db, workspaceId } = options;
 
@@ -48,32 +70,7 @@ export function createApp(options: AppOptions = {}): H3 {
   }
 
   const app = new H3({ debug: true });
-
-  // Default to pipeline-playground in development
-  let resolvedSources = sources;
-  if (sources.length === 0) {
-    const cwd = process.cwd();
-    if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-      resolvedSources = [{
-        kind: "local",
-        id: "local",
-        path: path.join(import.meta.dirname, "../../../pipeline-playground"),
-      }, /* {
-        kind: "remote",
-        id: "github-remote",
-        provider: "github",
-        owner: "ucdjs",
-        repo: "ucd-pipelines",
-        ref: "main",
-      } */];
-    } else {
-      resolvedSources = [{
-        kind: "local",
-        id: "local",
-        path: cwd,
-      }];
-    }
-  }
+  const resolvedSources = resolvePipelineSources(sources);
 
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
@@ -92,14 +89,14 @@ export function createApp(options: AppOptions = {}): H3 {
     version,
   }));
 
-  app.mount("/api/overview", overviewRouter);
   app.mount("/api/sources", sourcesIndexRouter);
   app.mount("/api/sources", sourcesSourceRouter);
+  app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionsRouter);
-  app.mount("/api/sources", sourcesEventsRouter);
   app.mount("/api/sources", sourcesLogsRouter);
   app.mount("/api/sources", sourcesGraphRouter);
+  app.mount("/api/sources", sourcesTracesRouter);
 
   return app;
 }
@@ -128,10 +125,16 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
 
   await ensureWorkspace(db, resolvedWorkspace.workspaceId, resolvedWorkspace.rootPath);
   await recoverStaleExecutions(db, resolvedWorkspace.workspaceId);
+  const resolvedSources = resolvePipelineSources(sources);
 
   const app = createApp({
-    sources,
+    sources: resolvedSources,
     db,
+    workspaceId: resolvedWorkspace.workspaceId,
+  });
+
+  const live = setupLiveUpdates(app, {
+    sources: resolvedSources,
     workspaceId: resolvedWorkspace.workspaceId,
   });
 
@@ -175,10 +178,28 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     });
   });
 
-  serve(app, { port, silent: true });
+  const server = serve(app, {
+    port,
+    silent: true,
+    plugins: live.plugins,
+    gracefulShutdown: false,
+  });
+
+  const originalClose = server.close.bind(server);
+  server.close = async (closeActiveConnections) => {
+    await live.close();
+    await originalClose(closeActiveConnections);
+  };
+
+  const handleShutdown = () => {
+    void server.close(true);
+  };
+
+  process.once("SIGINT", handleShutdown);
+  process.once("SIGTERM", handleShutdown);
 
   // eslint-disable-next-line no-console
   console.info(`Pipeline UI running at http://localhost:${port}`);
 }
 
-export { createDatabase, runMigrations };
+export { createDatabase, runMigrations, setupLiveUpdates };

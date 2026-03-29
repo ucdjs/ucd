@@ -25,6 +25,8 @@ import {
 
 const debug = createDebugger("ucdjs:test-utils:mock-store");
 const PATH_PARAM_RE = /\{(\w+)\}/g;
+const CANONICAL_MANIFEST_ENDPOINT = "/api/v1/versions/{version}/manifest";
+const LEGACY_MANIFEST_ENDPOINT = "/.well-known/ucd-store/{version}.json";
 
 const DEFAULT_MOCK_STORE_FILES = {
   "*": [
@@ -74,7 +76,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const endpoint = route.endpoint;
 
     // Every endpoint is optional, but by default enabled
-    const response = responses?.[endpoint as keyof typeof responses] ?? false;
+    const response = resolveEndpointResponse(endpoint, responses);
 
     // If explicitly disabled, skip
     if (response === false) continue;
@@ -166,6 +168,28 @@ export function mockStoreApi(config?: MockStoreConfig): void {
   }
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
+function resolveEndpointResponse(
+  endpoint: string,
+  responses: MockStoreConfig["responses"],
+) {
+  const response = responses?.[endpoint as keyof typeof responses];
+
+  if (response !== undefined) {
+    return response;
+  }
+
+  if (endpoint === CANONICAL_MANIFEST_ENDPOINT) {
+    return responses?.[LEGACY_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
+  }
+
+  if (endpoint === LEGACY_MANIFEST_ENDPOINT) {
+    return responses?.[CANONICAL_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
+  }
+
+  return false;
+}
+
 function toMSWPath(endpoint: string): string {
   return endpoint.replace(PATH_PARAM_RE, (_, p1) => {
     // This plays nicely with the change we made
@@ -182,7 +206,7 @@ function toMSWPath(endpoint: string): string {
 /**
  * Sets up mock handlers for the store subdomain (ucd-store.ucdjs.dev).
  *
- * This is used for the HTTP fs-bridge which directly accesses files via the store subdomain
+ * This is used for the HTTP fs-backend which directly accesses files via the store subdomain
  * rather than through the API. The store subdomain handles paths like /:version/:filepath
  * without the /ucd/ prefix (it's handled internally by the subdomain).
  *

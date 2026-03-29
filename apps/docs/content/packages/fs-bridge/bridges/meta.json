@@ -1,8 +1,0 @@
-{
-  "title": "Bridges",
-  "description": "File system bridge implementations",
-  "pages": [
-    "node",
-    "http"
-  ]
-}

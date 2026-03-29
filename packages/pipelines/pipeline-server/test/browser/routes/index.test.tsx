@@ -1,84 +1,81 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import {
+  buildConfigResponse,
+  buildOverviewResponse,
+  buildSourceResponse,
+  buildSourceSummary,
+} from "../fixtures";
 import { renderFileRoute } from "../route-test-utils";
 
 describe("file-based route /", () => {
-  it("renders the home route through the generated route tree", async () => {
+  it("redirects to the stored last active source when it still exists", async () => {
     mockFetch([
-      ["GET", "/api/config", () => {
-        return HttpResponse.json({
-          workspaceId: "workspace-123",
-          version: "16.0.0",
-        });
-      }],
-      ["GET", "/api/sources", () => {
-        return HttpResponse.json([
-          {
-            id: "local",
-            type: "local",
-            label: "Local Source",
-            fileCount: 1,
-            pipelineCount: 2,
-            errors: [],
-          },
-        ]);
-      }],
-      ["GET", "/api/overview", () => {
-        return HttpResponse.json({
-          activity: [
-            {
-              date: "2026-03-20",
-              pending: 0,
-              running: 1,
-              completed: 2,
-              failed: 0,
-              cancelled: 0,
-            },
-          ],
-          summary: {
-            total: 3,
-            pending: 0,
-            running: 1,
-            completed: 2,
-            failed: 0,
-            cancelled: 0,
-          },
-          recentExecutions: [
-            {
-              id: "exec-1",
-              sourceId: "local",
-              fileId: "alpha",
-              pipelineId: "first-pipeline",
-              status: "completed",
-              startedAt: "2026-03-20T10:00:00.000Z",
-              completedAt: "2026-03-20T10:01:00.000Z",
-              versions: ["16.0.0"],
-              summary: {
-                versions: ["16.0.0"],
-                totalRoutes: 5,
-                cached: 1,
-                totalFiles: 10,
-                matchedFiles: 8,
-                skippedFiles: 1,
-                fallbackFiles: 1,
-                totalOutputs: 4,
-                durationMs: 60000,
-              },
-              hasGraph: true,
-              error: null,
-            },
-          ],
-        });
-      }],
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        buildSourceSummary(),
+        buildSourceSummary({
+          id: "gitlab",
+          type: "gitlab",
+          label: "GitLab Source",
+          fileCount: 2,
+          pipelineCount: 3,
+        }),
+      ])],
+      ["GET", "/api/sources/gitlab", () => HttpResponse.json(buildSourceResponse({
+        id: "gitlab",
+        type: "gitlab",
+        label: "GitLab Source",
+        files: [],
+      }))],
+      ["GET", "/api/sources/gitlab/overview", () => HttpResponse.json(buildOverviewResponse())],
     ]);
 
-    const { history } = await renderFileRoute("/");
+    const { history } = await renderFileRoute(<div />, {
+      initialLocation: "/",
+      localStorage: {
+        "ucd-last-active-source": "gitlab",
+      },
+    });
 
-    expect(await screen.findByRole("heading", { name: "Overview" })).toBeInTheDocument();
-    expect(screen.getByTestId("pipeline-sidebar-workspace")).toHaveTextContent("workspace-123");
-    expect(screen.getByTestId("pipeline-sidebar-version")).toHaveTextContent("16.0.0");
-    expect(screen.getByText("1 sources")).toBeInTheDocument();
-    expect(history.location.pathname).toBe("/");
+    expect(history.location.pathname).toBe("/s/gitlab");
+  });
+
+  it("redirects to the first source when storage is missing or invalid", async () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        buildSourceSummary(),
+        buildSourceSummary({
+          id: "gitlab",
+          type: "gitlab",
+          label: "GitLab Source",
+        }),
+      ])],
+      ["GET", "/api/sources/local", () => HttpResponse.json(buildSourceResponse())],
+      ["GET", "/api/sources/local/overview", () => HttpResponse.json(buildOverviewResponse())],
+    ]);
+
+    const { history } = await renderFileRoute(<div />, {
+      initialLocation: "/",
+      localStorage: {
+        "ucd-last-active-source": "missing-source",
+      },
+    });
+
+    expect(history.location.pathname).toBe("/s/local");
+  });
+
+  it("renders the empty state when no sources are configured", async () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
+      ["GET", "/api/sources", () => HttpResponse.json([])],
+    ]);
+
+    await renderFileRoute(<div />, { initialLocation: "/" });
+
+    expect(await screen.findByText("No sources configured")).toBeInTheDocument();
+    expect(screen.getByText("Add a source to get started.")).toBeInTheDocument();
   });
 });

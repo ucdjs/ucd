@@ -35,6 +35,49 @@ function buildExpectedFiles(nodes: MockStoreNode[], version: string): ExpectedFi
   });
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
+function resolveManifestResponse(
+  version: string,
+  versions: string[],
+  shouldUseDefaultValue: boolean,
+  files: Record<string, MockStoreNode[] | undefined>,
+  providedResponse: unknown,
+) {
+  if (version && !versions.includes(version)) {
+    return HttpResponse.json({
+      status: 404,
+      message: `Manifest not found for version: ${version}`,
+      timestamp: new Date().toISOString(),
+    }, { status: 404 });
+  }
+
+  if (shouldUseDefaultValue) {
+    if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
+      return HttpResponse.json({
+        expectedFiles: buildExpectedFiles(files["*"]!, version),
+      });
+    }
+
+    if (version && files[version]) {
+      return HttpResponse.json({
+        expectedFiles: buildExpectedFiles(files[version]!, version),
+      });
+    }
+
+    return HttpResponse.json({
+      expectedFiles: [],
+    });
+  }
+
+  if (typeof providedResponse === "object" && providedResponse !== null) {
+    return HttpResponse.json(providedResponse);
+  }
+
+  return HttpResponse.json({
+    expectedFiles: [],
+  });
+}
+
 export const wellKnownConfig = defineMockRouteHandler({
   endpoint: "/.well-known/ucd-config.json",
   setup: ({
@@ -58,7 +101,7 @@ export const wellKnownConfig = defineMockRouteHandler({
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store/{version}.json",
+              manifest: "/api/v1/versions/{version}/manifest",
               versions: "/api/v1/versions",
             },
             versions,
@@ -90,51 +133,38 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
 
     mockFetch([
       ["GET", url, ({ params }) => {
-        // Extract version parameter and strip .json extension if present
         let version = params.version as string;
         if (version?.endsWith(".json")) {
-          version = version.slice(0, -5); // Remove ".json"
+          version = version.slice(0, -5);
         }
 
-        // If version is not in the provided versions list, return 404
-        if (version && !versions.includes(version)) {
-          return HttpResponse.json({
-            status: 404,
-            message: `Manifest not found for version: ${version}`,
-            timestamp: new Date().toISOString(),
-          }, { status: 404 });
-        }
+        return resolveManifestResponse(version, versions, shouldUseDefaultValue, files, providedResponse);
+      }],
+    ]);
+  },
+});
 
-        if (shouldUseDefaultValue) {
-          // If the only key in files is "*", we will
-          // just return the files object as is.
-          if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
-            return HttpResponse.json({
-              expectedFiles: buildExpectedFiles(files["*"]!, version),
-            });
-          }
+export const versionManifest = defineMockRouteHandler({
+  endpoint: "/api/v1/versions/{version}/manifest",
+  setup: ({
+    url,
+    providedResponse,
+    shouldUseDefaultValue,
+    versions,
+    mockFetch,
+    files,
+  }) => {
+    if (typeof providedResponse === "function") {
+      mockFetch([
+        ["GET", url, providedResponse],
+      ]);
+      return;
+    }
 
-          // If there is multiple keys in files we will try and match the version
-          if (version && files[version]) {
-            return HttpResponse.json({
-              expectedFiles: buildExpectedFiles(files[version]!, version),
-            });
-          }
-
-          return HttpResponse.json({
-            expectedFiles: [],
-          });
-        }
-
-        // If providedResponse is an object, use it directly
-        if (typeof providedResponse === "object" && providedResponse !== null) {
-          return HttpResponse.json(providedResponse);
-        }
-
-        // Fallback to default
-        return HttpResponse.json({
-          expectedFiles: [],
-        });
+    mockFetch([
+      ["GET", url, ({ params }) => {
+        const version = params.version as string;
+        return resolveManifestResponse(version, versions, shouldUseDefaultValue, files, providedResponse);
       }],
     ]);
   },

@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -22,6 +22,7 @@
     ".": "./dist/index.mjs",
     "./constants": "./dist/constants.mjs",
     "./environment": "./dist/environment.mjs",
+    "./h3": "./dist/h3.mjs",
     "./setups": "./dist/setups.mjs",
     "./tasks": "./dist/tasks.mjs",
     "./package.json": "./package.json"
@@ -42,6 +43,7 @@
     "generate:types": "wrangler types ./wrangler-types.d.ts"
   },
   "peerDependencies": {
+    "h3": "catalog:backend",
     "hono": "catalog:backend",
     "zod": "catalog:runtime"
   },
@@ -55,6 +57,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
+    "h3": "catalog:backend",
     "hono": "catalog:backend",
     "publint": "catalog:build",
     "tsdown": "catalog:build",

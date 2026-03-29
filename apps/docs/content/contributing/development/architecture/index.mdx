@@ -1,0 +1,54 @@
+---
+title: Architecture
+description: Overview of the main systems and package layers in UCD.js
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+UCD.js is a monorepo of TypeScript packages for ingesting, storing, processing, serving, and consuming Unicode Character Database (UCD) files. Packages are organized into six layers, each building on the one below it.
+
+```mermaid
+graph TD
+  subgraph L1["Layer 1 - Schemas & Contracts"]
+    S["@ucdjs/schemas"]
+    E["@ucdjs/env"]
+  end
+
+  subgraph L2["Layer 2 - Infrastructure"]
+    FB["@ucdjs/fs-backend"]
+    PU["@ucdjs/path-utils"]
+    SH["@ucdjs-internal/shared"]
+  end
+
+  subgraph L3["Layer 3 - Persistence"]
+    LF["@ucdjs/lockfile"]
+    US["@ucdjs/ucd-store"]
+  end
+
+  subgraph L4["Layer 4 - Processing"]
+    PC["@ucdjs/pipelines-core"]
+    PL["@ucdjs/pipelines-loader"]
+    PE["@ucdjs/pipelines-executor"]
+  end
+
+  subgraph L5["Layer 5 - Serving & Consumption"]
+    CL["@ucdjs/client"]
+    PS["@ucdjs/pipelines-server"]
+  end
+
+  subgraph L6["Layer 6 - User Interface"]
+    CLI["@ucdjs/cli"]
+  end
+
+  L1 --> L2 --> L3 --> L4 --> L5 --> L6
+```
+
+## Available Pages
+
+<Cards>
+  <Card title="Data Flow" href="/contributing/development/architecture/data-flow" description="End-to-end flow from raw UCD files to client consumption" />
+  <Card title="Package Layers" href="/contributing/development/architecture/package-layers" description="Detailed package dependency graph organized by layer" />
+  <Card title="Apps" href="/contributing/development/architecture/apps" description="Per-app architecture notes and boundaries" />
+  <Card title="Packages" href="/contributing/development/architecture/packages" description="Per-package architecture notes and extension points" />
+  <Card title="UCD Store" href="/packages/ucd-store" description="Store internals: backends, lockfile, and sync operations" />
+</Cards>

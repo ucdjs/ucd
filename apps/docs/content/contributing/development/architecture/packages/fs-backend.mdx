@@ -1,0 +1,16 @@
+---
+title: FS Backend
+description: Architecture notes for @ucdjs/fs-backend
+---
+
+`@ucdjs/fs-backend` is the filesystem abstraction layer used across the storage stack.
+
+## Role
+
+- Provides Node, HTTP, and custom backend patterns behind one contract.
+- Keeps higher-level storage code environment-agnostic.
+- Defines the HTTP backend contract consumed by Store.
+
+## Notes
+
+Use this page for backend-specific architecture decisions and contract boundaries.

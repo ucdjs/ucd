@@ -4,7 +4,6 @@
 
 - `pnpm --dir packages/pipelines/pipeline-playground run typecheck` -> passed
 - package-local `build` script -> none
-- package-local `test` script -> none
 
 ## Findings
 

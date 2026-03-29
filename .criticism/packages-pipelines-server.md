@@ -4,7 +4,6 @@
 
 - `pnpm --dir packages/pipelines/pipeline-server run typecheck` -> passed
 - `pnpm --dir packages/pipelines/pipeline-server run build` -> passed
-- package-local `test` script -> none
 
 ## Findings
 
@@ -12,7 +11,6 @@
 - The package has no README. That is a real problem because it is one of the largest packages in the repo and it mixes server API, client UI, database, workspace detection, and pipeline execution wiring.
 - The server starts by auto-running migrations in [packages/pipelines/pipeline-server/src/server/app.ts](/Users/luxass/dev/ucdjs/ucd/packages/pipelines/pipeline-server/src/server/app.ts). That may be fine for a dev tool, but it is a strong operational opinion that deserves documentation.
 - Development defaults are muddled. In development, [packages/pipelines/pipeline-server/src/server/app.ts](/Users/luxass/dev/ucdjs/ucd/packages/pipelines/pipeline-server/src/server/app.ts) falls back to `pipeline-playground` plus a GitHub remote source. That makes the package feel more like a lab environment than a clearly bounded server product.
-- The package has tests under [packages/pipelines/pipeline-server/test](/Users/luxass/dev/ucdjs/ucd/packages/pipelines/pipeline-server/test), but no package-local `test` script.
 - This package needs architecture diagrams badly: UI/client, server, DB, workspace discovery, remote source loading, and executor integration.
 
 ## What is good
@@ -24,4 +22,4 @@
 
 1. Re-evaluate the database stack and whether libSQL is justified for the current scope.
 2. Document startup behavior, migrations, and source resolution explicitly.
-3. Add diagrams for the server architecture and a package-local test script.
+3. Add diagrams for the server architecture.

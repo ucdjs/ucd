@@ -1,10 +1,15 @@
 import type { ExecutePipelineResponse } from "#shared/schemas/execution";
-import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas/pipeline";
+import type { PipelineDetails } from "#shared/schemas/pipeline";
 import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
+import {
+  hasExecutionTracesTable,
+  isIgnorableExecutionTraceWriteError,
+} from "#server/db/execution-traces";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
+import { ensureWorkspaceExists } from "#server/workspace";
 import { toPipelineDetails } from "#shared/lib/pipeline-utils";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
@@ -56,9 +61,7 @@ async function resolvePipelineRoute(event: H3Event) {
 sourcesPipelineRouter.get(BASE, async (event) => {
   const { pipeline } = await resolvePipelineRoute(event);
 
-  return {
-    pipeline: toPipelineDetails(pipeline),
-  } satisfies SourcePipelineResponse;
+  return toPipelineDetails(pipeline) satisfies PipelineDetails;
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
@@ -74,6 +77,9 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const versions = body.versions ?? pipeline.versions;
   const cache = body.cache ?? true;
   const executionId = randomUUID();
+  const tracePersistenceEnabled = hasExecutionTracesTable(db);
+
+  await ensureWorkspaceExists(db, workspaceId);
 
   await db.insert(schema.executions).values({
     id: executionId,
@@ -95,21 +101,36 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
 
   const executor = createPipelineExecutor({
     runtime,
-    onEvent: async (evt) => {
-      await db.insert(schema.events).values({
-        id: randomUUID(),
-        workspaceId,
-        executionId,
-        type: evt.type,
-        timestamp: new Date(evt.timestamp),
-        data: evt,
-      });
+    onTrace: async (trace) => {
+      if (!tracePersistenceEnabled) {
+        return;
+      }
+
+      try {
+        await db.insert(schema.executionTraces).values({
+          id: trace.id,
+          workspaceId,
+          executionId,
+          traceId: trace.traceId ?? null,
+          spanId: trace.spanId ?? null,
+          parentSpanId: trace.parentSpanId ?? null,
+          kind: trace.kind,
+          timestamp: new Date(trace.timestamp),
+          data: trace,
+        });
+      } catch (error) {
+        if (isIgnorableExecutionTraceWriteError(error)) {
+          return;
+        }
+
+        throw error;
+      }
     },
     onLog: createExecutionLogStore(db),
   });
 
   try {
-    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId }, () =>
+    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId, traceId: executionId }, () =>
       executor.run([pipeline], { versions, cache }));
 
     const pipelineResult = execResult.find((r) => r.id === pipelineId);
@@ -119,7 +140,6 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         status: pipelineResult?.status ?? "failed",
         completedAt: new Date(),
         summary: pipelineResult?.summary ?? null,
-        graph: pipelineResult?.graph ?? null,
       })
       .where(and(
         eq(schema.executions.workspaceId, workspaceId),

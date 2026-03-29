@@ -64,7 +64,7 @@ sourcesLogsRouter.get(
 
     // Phase 1: single-query safety check.
     //   Reads at most PAYLOAD_SAMPLE_SIZE rows to estimate average payload size.
-    //   count(*) here counts sampled rows (≤ PAYLOAD_SAMPLE_SIZE), not the full table —
+    //   count(*) here counts sampled rows (≤ PAYLOAD_SAMPLE_SIZE), not the full table -
     //   so this never does a full scan regardless of how many rows exist.
     //   total for pagination is computed in Phase 2 alongside the other aggregates.
     // eslint-disable-next-line no-console
@@ -87,7 +87,7 @@ sourcesLogsRouter.get(
 
     const sampleCount = Number(sampleRows[0]?.sampleCount ?? 0);
     const samplePayloadSize = Number(sampleRows[0]?.samplePayloadSize ?? 0);
-    // If we got fewer rows than PAYLOAD_SAMPLE_SIZE, we've seen every row —
+    // If we got fewer rows than PAYLOAD_SAMPLE_SIZE, we've seen every row -
     // use the actual total directly instead of extrapolating to `limit`.
     const estimatedPagePayloadSize = sampleCount < PAYLOAD_SAMPLE_SIZE
       ? samplePayloadSize
@@ -138,7 +138,6 @@ sourcesLogsRouter.get(
       logs: logs.map((log) => ({
         id: log.id,
         spanId: log.spanId,
-        stream: log.stream,
         message: log.message,
         timestamp: log.timestamp.toISOString(),
         payload: log.payload,

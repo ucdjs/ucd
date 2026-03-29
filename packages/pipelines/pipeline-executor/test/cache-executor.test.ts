@@ -1,4 +1,4 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { definePipeline } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
@@ -6,8 +6,8 @@ import { createPipelineExecutor } from "../src/executor";
 import { createMockFile, createTestRoute, createTestSource } from "./helpers";
 
 describe("executor cache behavior", () => {
-  it("should emit cache events with cache enabled", async () => {
-    const events: PipelineEvent[] = [];
+  it("should emit cache traces with cache enabled", async () => {
+    const traces: PipelineTraceRecord[] = [];
     const cacheStore = createMemoryCacheStore();
     const files = [createMockFile("Cache.txt")];
     const contents = { "ucd/Cache.txt": "0041;A" };
@@ -22,18 +22,17 @@ describe("executor cache behavior", () => {
 
     const executor = createPipelineExecutor({
       cacheStore,
-      onEvent: (event) => {
-        events.push(event);
-        return undefined;
+      onTrace: (trace) => {
+        traces.push(trace);
       },
     });
 
     await executor.run([pipeline], { cache: true });
 
-    const cacheEvents = events.filter((event) =>
-      event.type === "cache:hit" || event.type === "cache:miss" || event.type === "cache:store",
+    const cacheTraces = traces.filter((trace) =>
+      trace.kind === "cache.hit" || trace.kind === "cache.miss" || trace.kind === "cache.store",
     );
 
-    expect(cacheEvents.length).toBeGreaterThan(0);
+    expect(cacheTraces.length).toBeGreaterThan(0);
   });
 });

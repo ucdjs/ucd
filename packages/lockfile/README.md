@@ -98,10 +98,10 @@ const hash = await computeFileHash(content);
 
 `@ucdjs/lockfile` manages the canonical persisted state for mirrored local UCD stores. Two artifacts define what's in a local store:
 
-- **Lockfile** (`.ucd-store.lock`) — index of all mirrored Unicode versions, with their snapshot paths, file counts, and total sizes.
-- **Snapshots** (`{version}/snapshot.json`) — per-version manifest listing every file, its hash, and size.
+- **Lockfile** (`.ucd-store.lock`) - index of all mirrored Unicode versions, with their snapshot paths, file counts, and total sizes.
+- **Snapshots** (`{version}/snapshot.json`) - per-version manifest listing every file, its hash, and size.
 
-Together these are the source of truth for a local store. The `parseLockfile()` and `parseSnapshot()` utilities also accept content from remote sources (HTTP, KV stores) with the same shape, but those are read-only compatibility uses — not local store management.
+Together these are the source of truth for a local store. The `parseLockfile()` and `parseSnapshot()` utilities also accept content from remote sources (HTTP, KV stores) with the same shape, but those are read-only compatibility uses - not local store management.
 
 ## API Reference
 
@@ -133,6 +133,8 @@ Together these are the source of truth for a local store. The `parseLockfile()` 
 - `computeFileHash(content: string | Uint8Array): Promise<string>` - Compute SHA-256 hash
 - `computeFileHashWithoutUCDHeader(content: string): Promise<string>` - Compute SHA-256 hash after stripping the Unicode file header (useful for comparing content across versions)
 - `stripUnicodeHeader(content: string): string` - Strip the Unicode file header (filename, date, copyright lines) from content
+
+In snapshot metadata, `fileHash` is always the hash of the exact file bytes. The `hash` field is the semantic comparison hash: text Unicode files strip the Unicode header first, while binary files use the same value as `fileHash`.
 
 ### Error Types
 

@@ -1,16 +1,10 @@
 import type { ExecutionGraphNodeView } from "#shared/schemas/graph";
 import { PipelineGraphDetails } from "#components/graph/graph-details";
-import { render, screen } from "@testing-library/react";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-
-const mockedNavigate = vi.hoisted(() => vi.fn());
-
-vi.mock("@tanstack/react-router", () => {
-  return {
-    useNavigate: () => mockedNavigate,
-  };
-});
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { renderComponent } from "../../route-test-utils";
 
 const node: ExecutionGraphNodeView = {
   id: "route:compile",
@@ -50,15 +44,22 @@ const node: ExecutionGraphNodeView = {
   ],
 };
 
-describe("pipelineGraphDetails", () => {
-  it("does not render when no node is selected", () => {
-    render(<PipelineGraphDetails node={null} onClose={() => {}} />);
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("PipelineGraphDetails", () => {
+  beforeEach(() => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({ workspaceId: "workspace-123", version: "16.0.0" })],
+      ["GET", "/api/sources", () => HttpResponse.json([])],
+    ]);
+  });
+  it("does not render when no node is selected", async () => {
+    await renderComponent(<PipelineGraphDetails node={null} onClose={() => {}} />);
 
     expect(screen.queryByTestId("pipeline-graph-details")).not.toBeInTheDocument();
   });
 
-  it("renders text, content, and JSON fields", () => {
-    render(<PipelineGraphDetails node={node} onClose={() => {}} />);
+  it("renders text, content, and JSON fields", async () => {
+    await renderComponent(<PipelineGraphDetails node={node} onClose={() => {}} />);
 
     expect(screen.getByTestId("pipeline-graph-details")).toBeInTheDocument();
     expect(screen.getByText("Route ID")).toBeInTheDocument();
@@ -71,20 +72,25 @@ describe("pipelineGraphDetails", () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
 
-    render(<PipelineGraphDetails node={node} onClose={onClose} />);
+    const { router } = await renderComponent(<PipelineGraphDetails node={node} onClose={onClose} />);
+
+    const navigateSpy = vi.spyOn(router, "navigate").mockImplementation(async () => {});
 
     await user.click(screen.getByRole("button", { name: "Open route" }));
-    expect(mockedNavigate).toHaveBeenCalledWith({
-      to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
-      params: {
-        sourceId: "local",
-        sourceFileId: "alpha",
-        pipelineId: "main-pipeline",
-      },
-      search: {
-        route: "compile",
-      },
-    });
+
+    expect(navigateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect",
+        params: {
+          sourceId: "local",
+          sourceFileId: "alpha",
+          pipelineId: "main-pipeline",
+        },
+        search: {
+          route: "compile",
+        },
+      }),
+    );
 
     await user.click(screen.getByRole("button", { name: "Close details" }));
     expect(onClose).toHaveBeenCalledTimes(1);

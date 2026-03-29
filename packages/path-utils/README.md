@@ -13,7 +13,7 @@ npm install @ucdjs/path-utils
 
 ## Documentation
 
-Full documentation — security model, API reference, error classes, and examples — is available at [docs.ucdjs.dev/packages/utilities/path-utils](https://docs.ucdjs.dev/packages/utilities/path-utils).
+Full documentation - security model, API reference, error classes, and examples - is available at [docs.ucdjs.dev/packages/utilities/path-utils](https://docs.ucdjs.dev/packages/utilities/path-utils).
 
 ## 📄 License
 

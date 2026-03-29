@@ -1,13 +1,13 @@
-import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
+import type { PipelineTracePhase } from "@ucdjs/pipelines-core/tracing";
 import type { ExecutionSpan } from "../../../lib/execution-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { PIPELINE_EVENT_PHASES } from "@ucdjs/pipelines-core";
+import { PIPELINE_TRACE_PHASES } from "@ucdjs/pipelines-core/tracing";
 import { phaseLabels } from "./shared";
 
 export interface ExecutionWaterfallToolbarProps {
   spans: ExecutionSpan[];
-  activePhases: Set<PipelineEventPhase>;
-  onTogglePhase: (phase: PipelineEventPhase) => void;
+  activePhases: Set<PipelineTracePhase>;
+  onTogglePhase: (phase: PipelineTracePhase) => void;
   selectedSpanId: string | null;
   onClear: () => void;
 }
@@ -24,7 +24,7 @@ export function ExecutionWaterfallToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-2">
       <div className="flex flex-wrap gap-1.5">
-        {PIPELINE_EVENT_PHASES.filter((phase) => presentPhases.has(phase)).map((phase) => {
+        {PIPELINE_TRACE_PHASES.filter((phase) => presentPhases.has(phase)).map((phase) => {
           const isActive = activePhases.has(phase);
           const visibleCount = spans.filter((span) => span.phase === phase).length;
 

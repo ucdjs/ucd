@@ -1,4 +1,7 @@
-import type { PipelineEvent, PipelineEventType, PipelineGraph } from "@ucdjs/pipelines-core";
+import type {
+  PipelineTraceKind,
+  PipelineTraceRecord,
+} from "@ucdjs/pipelines-core/tracing";
 import type {
   ExecutionStatus,
   PipelineLogLevel,
@@ -7,11 +10,8 @@ import type {
 } from "@ucdjs/pipelines-executor";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export type ExecutionLogStream = "stdout" | "stderr";
-
 export interface ExecutionLogPayload {
   message: string;
-  stream: ExecutionLogStream;
   args?: unknown[];
   level: PipelineLogLevel;
   source: PipelineLogSource;
@@ -19,7 +19,7 @@ export interface ExecutionLogPayload {
   truncated?: boolean;
   originalSize?: number;
   isBanner?: boolean;
-  event?: PipelineEvent;
+  traceKind?: string;
 }
 
 export const workspaces = sqliteTable("workspaces", {
@@ -41,24 +41,27 @@ export const executions = sqliteTable("executions", {
   completedAt: integer("completed_at", { mode: "timestamp" }),
   versions: text("versions", { mode: "json" }).$type<string[]>(),
   summary: text("summary", { mode: "json" }).$type<PipelineSummary>(),
-  graph: text("graph", { mode: "json" }).$type<PipelineGraph>(),
   error: text("error"),
 }, (table) => [
   index("executions_workspace_pipeline_idx").on(table.workspaceId, table.pipelineId),
   index("executions_workspace_started_idx").on(table.workspaceId, table.startedAt),
 ]);
 
-export const events = sqliteTable("events", {
+export const executionTraces = sqliteTable("execution_traces", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
     .references(() => workspaces.id, { onDelete: "cascade" }),
   executionId: text("execution_id").notNull()
     .references(() => executions.id, { onDelete: "cascade" }),
-  type: text("type").$type<PipelineEventType>().notNull(),
-  timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
-  data: text("data", { mode: "json" }).$type<PipelineEvent>(),
+  traceId: text("trace_id"),
+  spanId: text("span_id"),
+  parentSpanId: text("parent_span_id"),
+  kind: text("kind").$type<PipelineTraceKind>().notNull(),
+  timestamp: integer("timestamp", { mode: "timestamp_ms" }).notNull(),
+  data: text("data", { mode: "json" }).$type<PipelineTraceRecord>().notNull(),
 }, (table) => [
-  index("events_workspace_execution_idx").on(table.workspaceId, table.executionId),
+  index("execution_traces_workspace_execution_idx").on(table.workspaceId, table.executionId),
+  index("execution_traces_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
 ]);
 
 export const executionLogs = sqliteTable("execution_logs", {
@@ -68,7 +71,7 @@ export const executionLogs = sqliteTable("execution_logs", {
   executionId: text("execution_id").notNull()
     .references(() => executions.id, { onDelete: "cascade" }),
   spanId: text("span_id"),
-  stream: text("stream").$type<ExecutionLogStream>().notNull(),
+  stream: text("stream"),
   message: text("message").notNull(),
   timestamp: integer("timestamp", { mode: "timestamp" }).notNull(),
   payload: text("payload", { mode: "json" }).$type<ExecutionLogPayload>(),

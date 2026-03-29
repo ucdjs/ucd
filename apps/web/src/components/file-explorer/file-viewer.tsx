@@ -85,7 +85,6 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
     const parsed = parseLineHash(window.location.hash);
     if (parsed && parsed.start <= lineCount && parsed.end <= lineCount) {
       shouldAutoScrollRef.current = true;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelection(parsed);
       setLastClickedLine(parsed.start);
     } else {

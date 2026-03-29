@@ -3,7 +3,7 @@ import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
 import { colorsSource, sizesSource } from "../shared.sources";
 
 /**
- * Route A: processes colors first — no dependencies.
+ * Route A: processes colors first - no dependencies.
  */
 const colorsRoute = definePipelineRoute({
   id: "colors",
@@ -14,7 +14,7 @@ const colorsRoute = definePipelineRoute({
 
 /**
  * Route B: processes sizes but must wait for the colors route to finish first.
- * This simulates a route that logically depends on data produced by a prior route.
+ * Uses `getRouteData` to access output from the colors route.
  */
 const sizesAfterColorsRoute = definePipelineRoute({
   id: "sizes-after-colors",
@@ -22,6 +22,7 @@ const sizesAfterColorsRoute = definePipelineRoute({
   depends: ["route:colors"],
   parser: standardParser,
   resolver: async (ctx, rows) => {
+    const colorData = ctx.getRouteData("colors");
     const entries = [];
 
     for await (const row of rows) {
@@ -38,6 +39,7 @@ const sizesAfterColorsRoute = definePipelineRoute({
       entries,
       meta: {
         note: "Processed after colors route completed",
+        colorOutputCount: colorData.length,
       },
     }];
   },

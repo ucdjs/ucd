@@ -1,105 +1,88 @@
-import type { z } from "zod";
-import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
-import type { PipelineLogger } from "./logger";
+import type { ExtractRouteDependencies, PipelineDependency } from "./dependencies";
+import type { RouteOutputDefinition } from "./outputs/types";
 import type { AnyPipelineTransformDefinition, ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
   FileContext,
   ParsedRow,
   ParserFn,
   PipelineFilter,
+  PipelineLogger,
   PropertyJson,
   ResolvedEntry,
-  RouteOutput,
 } from "./types";
 
-export interface ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> {
-  _type: "artifact" | "global-artifact";
-  schema: TSchema;
-  scope: "version" | "global";
-}
-
-export type InferArtifactType<T extends ArtifactDefinition>
-  = T extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never;
-
-export interface RouteResolveContext<
-  TArtifactKeys extends string = string,
-  TEmits extends Record<string, ArtifactDefinition> = Record<string, ArtifactDefinition>,
+export interface ResolveContext<
+  TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
 > {
   version: string;
   file: FileContext;
   logger: PipelineLogger;
-  getArtifact: <K extends TArtifactKeys>(key: K) => unknown;
-  emitArtifact: <K extends keyof TEmits & string>(
-    key: K,
-    value: InferArtifactType<TEmits[K]>,
-  ) => void;
+  getRouteData: <T = unknown>(routeId: ExtractRouteDependencies<TDepends>) => readonly T[];
   normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
   now: () => string;
 }
 
+export type ResolverFn<
+  TOutput = PropertyJson[],
+  TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
+> = (
+  ctx: ResolveContext<TDepends>,
+  rows: AsyncIterable<ParsedRow>,
+) => Promise<TOutput>;
+
 type PipelineRouteResolver<
   TDepends extends readonly PipelineDependency[],
-  TEmits extends Record<string, ArtifactDefinition>,
   TTransforms extends readonly AnyPipelineTransformDefinition[],
   TOutput,
 > = (
-  ctx: RouteResolveContext<ExtractArtifactKeys<TDepends>, TEmits>,
+  ctx: ResolveContext<TDepends>,
   rows: AsyncIterable<TTransforms extends readonly [] ? ParsedRow : ChainTransforms<ParsedRow, TTransforms>>,
 ) => Promise<TOutput>;
 
 export interface PipelineRouteDefinition<
   TId extends string = string,
   TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
-  TEmits extends Record<string, ArtifactDefinition> = Record<string, ArtifactDefinition>,
   TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 > {
   id: TId;
   filter: PipelineFilter;
   depends?: TDepends;
-  emits?: TEmits;
   parser: ParserFn;
   transforms?: TTransforms;
-  resolver: PipelineRouteResolver<TDepends, TEmits, TTransforms, TOutput>;
-  out?: RouteOutput;
+  resolver: PipelineRouteResolver<TDepends, TTransforms, TOutput>;
+  outputs?: RouteOutputDefinition[];
   cache?: boolean;
 }
 
-export type AnyPipelineRouteDefinition = PipelineRouteDefinition<any, any, any, any, any>;
+export type AnyPipelineRouteDefinition = PipelineRouteDefinition<any, any, any, any>;
 
 export function definePipelineRoute<
   const TId extends string,
   const TDepends extends readonly PipelineDependency[] = readonly [],
-  const TEmits extends Record<string, ArtifactDefinition> = Record<string, never>,
   const TTransforms extends readonly AnyPipelineTransformDefinition[] = readonly [],
   TOutput = PropertyJson[],
 >(
-  definition: PipelineRouteDefinition<TId, TDepends, TEmits, TTransforms, TOutput>,
-): PipelineRouteDefinition<TId, TDepends, TEmits, TTransforms, TOutput> {
+  definition: PipelineRouteDefinition<TId, TDepends, TTransforms, TOutput>,
+): PipelineRouteDefinition<TId, TDepends, TTransforms, TOutput> {
   return definition;
 }
 
 export type InferRoute<T> = T extends PipelineRouteDefinition<
   infer TId,
   infer TDepends,
-  infer TEmits,
   infer TTransforms extends readonly PipelineTransformDefinition<any, any>[],
   infer TOutput
 >
   ? {
       id: TId;
       depends: TDepends;
-      emits: TEmits;
       transforms: TTransforms;
       output: TOutput;
     }
   : never;
 
 export type InferRoutesOutput<T extends readonly AnyPipelineRouteDefinition[]>
-  = T[number] extends PipelineRouteDefinition<any, any, any, any, infer TOutput>
+  = T[number] extends PipelineRouteDefinition<any, any, any, infer TOutput>
     ? TOutput extends unknown[] ? TOutput[number] : TOutput
     : never;
-
-export type InferEmittedArtifactsFromRoute<T> = T extends PipelineRouteDefinition<any, any, infer TEmits, any, any>
-  ? { [K in keyof TEmits]: TEmits[K] extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never }
-  : never;

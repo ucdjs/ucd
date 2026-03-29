@@ -1,64 +1,49 @@
-import type { Snapshot } from "@ucdjs/schemas";
-import type { Hono } from "hono";
-import type { HonoEnv } from "../types";
-import { badGateway, notFound } from "@ucdjs-internal/worker-utils";
-import { extractFilename } from "../lib/path-utils";
+import type { H3 } from "h3";
+import { badGateway, badRequest, notFound } from "@ucdjs-internal/worker-utils";
+import { getCloudflareEnv } from "@ucdjs-internal/worker-utils/h3";
+import { SnapshotSchema } from "@ucdjs/schemas";
 
-// Placeholder hash (sha256 with 64 zeros)
-const PLACEHOLDER_HASH = "sha256:0000000000000000000000000000000000000000000000000000000000000000";
+export function registerSnapshotRoute(app: H3) {
+  app.get("/:version/snapshot.json", async (event) => {
+    const env = getCloudflareEnv<Env>(event);
+    const version = event.context.params?.version;
+    const bucket = env.UCD_BUCKET;
 
-interface ManifestData {
-  expectedFiles: string[];
-}
-
-export function registerSnapshotRoute(router: Hono<HonoEnv>) {
-  router.get("/:version/snapshot.json", async (c) => {
-    const version = c.req.param("version");
-    const bucket = c.env.UCD_BUCKET;
+    if (!version) {
+      return badRequest({
+        message: "Version parameter is required",
+      });
+    }
 
     if (!bucket) {
       console.error("[ucd-store]: UCD_BUCKET binding not configured");
-      return badGateway(c);
+      return badGateway();
     }
 
     try {
-      // Fetch manifest from R2
-      const manifestKey = `manifest/${version}/manifest.json`;
-      const manifestObj = await bucket.get(manifestKey);
-
-      if (!manifestObj) {
-        return notFound(c, {
-          message: `Manifest not found for version ${version}`,
+      const snapshotKey = `manifest/${version}/snapshot.json`;
+      const snapshotObj = await bucket.get(snapshotKey);
+      if (!snapshotObj) {
+        return notFound({
+          message: `Snapshot not found for version ${version}`,
         });
       }
 
-      const manifestData = await manifestObj.json() as ManifestData;
-
-      // Transform expectedFiles array into snapshot.files object
-      const files: Snapshot["files"] = {};
-
-      for (const filePath of manifestData.expectedFiles || []) {
-        const filename = extractFilename(filePath, version);
-
-        files[filename] = {
-          hash: PLACEHOLDER_HASH,
-          fileHash: PLACEHOLDER_HASH,
-          size: 0, // Placeholder
-        };
+      const parsed = SnapshotSchema.safeParse(await snapshotObj.json());
+      if (!parsed.success) {
+        console.error(`[ucd-store]: Invalid snapshot for ${version}:`, parsed.error);
+        return badGateway();
       }
 
-      const snapshot: Snapshot = {
-        unicodeVersion: version,
-        files,
-      };
-
-      return c.json(snapshot, 200, {
-        "Content-Type": "application/json",
-        "Cache-Control": "public, max-age=86400", // 24 hours
+      return Response.json(parsed.data, {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, max-age=86400", // 24 hours
+        },
       });
     } catch (err) {
-      console.error(`[ucd-store]: Failed to generate snapshot for ${version}:`, err);
-      return badGateway(c);
+      console.error(`[ucd-store]: Failed to load snapshot for ${version}:`, err);
+      return badGateway();
     }
   });
 }

@@ -50,13 +50,12 @@ export interface TestOutput {
   version: string;
   file: string;
   entries: Array<{ codePoint: string; value: string }>;
-  artifact?: { version: string };
 }
 
 export function createTestRoute(
   id: string,
   filter: PipelineFilter,
-): PipelineRouteDefinition<string, readonly [], Record<string, never>, readonly [], TestOutput> {
+): PipelineRouteDefinition<string, readonly [], readonly [], TestOutput> {
   return definePipelineRoute({
     id,
     filter,
@@ -69,17 +68,10 @@ export function createTestRoute(
           value: row.value as string,
         });
       }
-      let artifactValue: { version: string } | undefined;
-      try {
-        artifactValue = ctx.getArtifact("version-info" as never) as { version: string };
-      } catch {
-        artifactValue = undefined;
-      }
       return {
         version: ctx.version,
         file: ctx.file.name,
         entries,
-        artifact: artifactValue,
       };
     },
   });

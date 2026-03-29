@@ -1,6 +1,7 @@
+/* eslint-disable react/component-hook-factories */
 import type { ReactNode } from "react";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
@@ -82,18 +83,29 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
         ],
       })],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: 1,
-          sourceCount: 1,
-          routes: [],
-          sources: [{ id: "local" }],
-        },
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: 1,
+        sourceCount: 1,
+        routes: [],
+        sources: [{ id: "local" }],
       })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
+
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () => HttpResponse.json({
         executionId: "exec-1",
         pipelineId: "main-pipeline",
@@ -102,9 +114,9 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
       })],
     ]);
 
-    await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
 
-    expect(await screen.findByText("No graph recorded for this execution.")).toBeInTheDocument();
+    expect(await screen.findByText("No graph")).toBeInTheDocument();
   });
 
   it("renders the graph view, exposes filters, and navigates through node actions", async () => {
@@ -148,18 +160,29 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
         ],
       })],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
-        pipeline: {
-          id: "main-pipeline",
-          name: "Main pipeline",
-          description: "Build and publish",
-          include: undefined,
-          versions: ["16.0.0"],
-          routeCount: 1,
-          sourceCount: 1,
-          routes: [],
-          sources: [{ id: "local" }],
-        },
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: 1,
+        sourceCount: 1,
+        routes: [],
+        sources: [{ id: "local" }],
       })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
+
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () => HttpResponse.json({
         executionId: "exec-1",
         pipelineId: "main-pipeline",
@@ -200,22 +223,86 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions/$ex
     ]);
 
     const user = userEvent.setup();
-    const { history } = await renderFileRoute("/s/local/alpha/main-pipeline/executions/exec-1/graph");
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
 
     expect(await screen.findByTestId("pipeline-graph")).toBeInTheDocument();
     expect(screen.getByTestId("pipeline-graph-filters")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Route" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "compile" }));
 
     expect(screen.getByTestId("pipeline-graph-details")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Open compile" })).toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole("button", { name: "Open compile" }));
+  it("renders the not-found path for an invalid execution graph", async () => {
+    mockFetch([
+      ["GET", "/api/config", () => HttpResponse.json({
+        workspaceId: "workspace-123",
+        version: "16.0.0",
+      })],
+      ["GET", "/api/sources", () => HttpResponse.json([
+        {
+          id: "local",
+          type: "local",
+          label: "Local Source",
+          fileCount: 1,
+          pipelineCount: 1,
+          errors: [],
+        },
+      ])],
+      ["GET", "/api/sources/local", () => HttpResponse.json({
+        id: "local",
+        type: "local",
+        label: "Local Source",
+        errors: [],
+        files: [
+          {
+            id: "alpha",
+            path: "src/alpha.ts",
+            label: "Alpha file",
+            pipelines: [
+              {
+                id: "main-pipeline",
+                name: "Main pipeline",
+                description: "Build and publish",
+                versions: ["16.0.0"],
+                routeCount: 1,
+                sourceCount: 1,
+                sourceId: "local",
+              },
+            ],
+          },
+        ],
+      })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => HttpResponse.json({
+        id: "main-pipeline",
+        name: "Main pipeline",
+        description: "Build and publish",
+        include: undefined,
+        versions: ["16.0.0"],
+        routeCount: 1,
+        sourceCount: 1,
+        routes: [],
+        sources: [{ id: "local" }],
+      })],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
+        const limit = Number(new URL(request.url).searchParams.get("limit") ?? "1");
 
-    await waitFor(() => {
-      expect(history.location.pathname).toBe("/s/local/alpha/main-pipeline/inspect");
-      expect(history.location.search).toContain("route=compile");
-    });
+        return HttpResponse.json({
+          executions: [],
+          pagination: {
+            total: 0,
+            limit,
+            offset: 0,
+            hasMore: false,
+          },
+        });
+      }],
+      ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions/exec-1/graph", () =>
+        HttpResponse.json({ message: "Missing execution" }, { status: 404 })],
+    ]);
+
+    await renderFileRoute(<div />, { initialLocation: "/s/local/alpha/main-pipeline/executions/exec-1/graph" });
+
+    expect(await screen.findByText(/not found/i)).toBeInTheDocument();
   });
 });

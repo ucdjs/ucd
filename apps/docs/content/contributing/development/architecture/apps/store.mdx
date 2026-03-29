@@ -1,0 +1,16 @@
+---
+title: Store
+description: Architecture notes for apps/store
+---
+
+`apps/store` is the HTTP file-store boundary used by UCD.js storage tooling.
+
+## Role
+
+- Exposes the HTTP surface consumed by `@ucdjs/fs-backend`'s HTTP backend.
+- Serves store-style file paths plus lockfile and snapshot metadata routes.
+- Owns normalization between store paths and upstream Unicode.org layout differences.
+
+## Notes
+
+Use this page for Store-specific path rules, metadata behavior, and serving decisions.

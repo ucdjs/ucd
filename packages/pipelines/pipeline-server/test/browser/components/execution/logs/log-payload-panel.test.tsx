@@ -2,7 +2,8 @@ import { LogPayloadPanel } from "#components/execution/logs/log-payload-panel";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-describe("logPayloadPanel", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("LogPayloadPanel", () => {
   it("renders the raw message when a log has no payload", () => {
     render(
       <LogPayloadPanel
@@ -10,7 +11,6 @@ describe("logPayloadPanel", () => {
           id: "log-1",
           timestamp: "2026-03-20T10:00:00.000Z",
           message: "Raw stderr output",
-          stream: "stderr",
           payload: null,
           spanId: null,
         }}
@@ -27,21 +27,18 @@ describe("logPayloadPanel", () => {
           id: "log-2",
           timestamp: "2026-03-20T10:00:00.000Z",
           message: "ignored",
-          stream: "stdout",
           spanId: "span-1",
           payload: {
             level: "warn",
-            stream: "stdout",
             source: "logger",
             message: "Structured log",
             args: ["Structured log"],
             meta: { routeId: "compile" },
             event: {
               id: "event-1",
-              type: "artifact:produced",
-              artifactId: "bundle",
+              type: "file:matched",
+              file: { version: "16.0.0", dir: "ucd", path: "ucd/data.txt", name: "data.txt", ext: ".txt" },
               routeId: "compile",
-              version: "16.0.0",
               spanId: "span-1",
               timestamp: 1,
             },
@@ -52,9 +49,9 @@ describe("logPayloadPanel", () => {
 
     expect(screen.getByText("Level")).toBeInTheDocument();
     expect(screen.getByText("Source")).toBeInTheDocument();
-    expect(screen.getByText("Event")).toBeInTheDocument();
     expect(screen.getByText("logger")).toBeInTheDocument();
-    expect(screen.getByText("artifact:produced")).toBeInTheDocument();
+    expect(screen.getByText("warn")).toBeInTheDocument();
     expect(screen.getByText(/"routeId": "compile"/)).toBeInTheDocument();
+    expect(screen.getByText(/"message": "Structured log"/)).toBeInTheDocument();
   });
 });

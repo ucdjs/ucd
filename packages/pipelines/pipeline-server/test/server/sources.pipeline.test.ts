@@ -35,8 +35,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(Object.keys(data)).toEqual(["pipeline"]);
-    expect(data.pipeline).toEqual(expect.objectContaining({
+    expect(data).toEqual(expect.objectContaining({
       id: DEFAULT_DISCOVERABLE_PIPELINE_ID,
       versions: expect.any(Array),
       routes: expect.any(Array),
@@ -94,6 +93,49 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
       pipelineId: DEFAULT_DISCOVERABLE_PIPELINE_ID,
     }));
     expect(["completed", "failed"]).toContain(execution?.status);
+  });
+
+  it("recreates a missing workspace row before starting an execution", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, "test"));
+
+    const res = await app.fetch(new Request(`http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versions: ["16.0.0"] }),
+    }));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data).toEqual(expect.objectContaining({
+      success: true,
+      executionId: expect.any(String),
+    }));
+
+    const [workspace] = await db.select().from(schema.workspaces).where(eq(schema.workspaces.id, "test")).limit(1);
+    expect(workspace).toBeDefined();
+  });
+
+  it("still executes when the trace table is unavailable", async () => {
+    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+
+    db.$client.exec("drop table execution_traces");
+
+    const res = await app.fetch(new Request(`http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ versions: ["16.0.0"] }),
+    }));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data).toEqual(expect.objectContaining({
+      success: true,
+      executionId: expect.any(String),
+    }));
   });
 
   it("starts an execution for a cached remote source", async () => {

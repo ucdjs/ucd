@@ -4,7 +4,7 @@ import { groupByInitialResolver, summaryResolver } from "../shared.resolvers";
 import { colorsSource, planetsSource, sequencesSource, sizesSource } from "../shared.sources";
 
 /**
- * Output format 1 — Flat scalar entries.
+ * Output format 1 - Flat scalar entries.
  *
  * The simplest format: one PropertyJson with N entries, each carrying a
  * single `codePoint` (or numeric key) and a scalar string `value`.
@@ -15,11 +15,11 @@ const flatColorsRoute = definePipelineRoute({
   filter: byName("colors.txt"),
   parser: standardParser,
   resolver: propertyJsonResolver,
-  out: { dir: "flat" },
+  outputs: [{ path: "flat/{property:kebab}.json" }],
 });
 
 /**
- * Output format 2 — Scalar entries with a `meta` summary block.
+ * Output format 2 - Scalar entries with a `meta` summary block.
  *
  * Same flat structure as above, but the resolver appends a `meta` object
  * (total count + timestamp). The pipeline-server UI renders this as an
@@ -30,14 +30,13 @@ const summaryPlanetsRoute = definePipelineRoute({
   filter: byName("planets.txt"),
   parser: standardParser,
   resolver: summaryResolver,
-  out: {
-    dir: "with-meta",
-    fileName: (pj) => `${pj.property.toLowerCase()}.json`,
-  },
+  outputs: [{
+    path: "with-meta/{property:lower}.json",
+  }],
 });
 
 /**
- * Output format 3 — Array-valued entries.
+ * Output format 3 - Array-valued entries.
  *
  * Each entry's `value` field is a string array instead of a scalar string.
  * Here every size gets annotated as [label, abbreviation, category].
@@ -68,14 +67,13 @@ const arrayValuesSizesRoute = definePipelineRoute({
       },
     }];
   },
-  out: {
-    dir: "array-values",
-    fileName: (pj) => `${pj.property}.json`,
-  },
+  outputs: [{
+    path: "array-values/{property}.json",
+  }],
 });
 
 /**
- * Output format 4 — Sequence entries.
+ * Output format 4 - Sequence entries.
  *
  * Each entry carries a `sequence` array (ordered list of code-point tokens)
  * instead of a single codePoint. Uses the preset `sequenceParser` which
@@ -86,13 +84,13 @@ const sequencesRoute = definePipelineRoute({
   filter: byName("sequences.txt"),
   parser: sequenceParser,
   resolver: propertyJsonResolver,
-  out: { dir: "sequences" },
+  outputs: [{ path: "sequences/{property:kebab}.json" }],
 });
 
 /**
- * Output format 5 — Multi-property grouped output.
+ * Output format 5 - Multi-property grouped output.
  *
- * A single source file fans out into *multiple* PropertyJson objects — one
+ * A single source file fans out into *multiple* PropertyJson objects - one
  * per distinct group key. `groupByInitialResolver` (from shared.resolvers)
  * buckets entries by the first letter of their value, mirroring how
  * General_Category or Script properties produce one blob per category value.
@@ -102,10 +100,9 @@ const groupedColorsRoute = definePipelineRoute({
   filter: byName("colors.txt"),
   parser: standardParser,
   resolver: groupByInitialResolver,
-  out: {
-    dir: "grouped",
-    fileName: (pj) => `${pj.property}.json`,
-  },
+  outputs: [{
+    path: "grouped/{property}.json",
+  }],
 });
 
 export const multipleOutputFormatsPipeline = definePipeline({

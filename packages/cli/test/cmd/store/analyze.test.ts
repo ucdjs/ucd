@@ -45,7 +45,7 @@ describe("store analyze command", () => {
     mockStoreApi({
       responses: {
         "/.well-known/ucd-config.json": true,
-        "/.well-known/ucd-store/{version}.json": true,
+        "/api/v1/versions/{version}/manifest": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -100,7 +100,7 @@ describe("store analyze command", () => {
     mockStoreApi({
       responses: {
         "/.well-known/ucd-config.json": true,
-        "/.well-known/ucd-store/{version}.json": true,
+        "/api/v1/versions/{version}/manifest": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -148,7 +148,7 @@ describe("store analyze command", () => {
     mockStoreApi({
       responses: {
         "/.well-known/ucd-config.json": true,
-        "/.well-known/ucd-store/{version}.json": true,
+        "/api/v1/versions/{version}/manifest": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": true,
         "/api/v1/files/{wildcard}": ({ params }) => {
@@ -216,7 +216,7 @@ describe("store analyze command", () => {
     mockStoreApi({
       responses: {
         "/.well-known/ucd-config.json": true,
-        "/.well-known/ucd-store/{version}.json": true,
+        "/api/v1/versions/{version}/manifest": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": true,
         "/api/v1/files/{wildcard}": ({ params }) => {
@@ -264,7 +264,7 @@ describe("store analyze command", () => {
     mockStoreApi({
       responses: {
         "/.well-known/ucd-config.json": true,
-        "/.well-known/ucd-store/{version}.json": true,
+        "/api/v1/versions/{version}/manifest": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",

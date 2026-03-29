@@ -1,21 +1,19 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type {
   PipelineLogEntry,
   PipelineLogLevel,
   PipelineLogSource,
-  PipelineLogStream,
 } from "../types";
 
 export interface PipelineExecutionContext {
   executionId: string;
   workspaceId: string;
+  traceId: string;
   spanId?: string;
-  event?: PipelineEvent;
+  parentSpanId?: string;
 }
 
 export interface PipelineExecutionLogInput {
   level: PipelineLogLevel;
-  stream: PipelineLogStream;
   source: PipelineLogSource;
   message: string;
   timestamp?: number;
@@ -30,13 +28,14 @@ export interface PipelineExecutionRuntime {
     fn: () => T | Promise<T>,
   ) => T | Promise<T>;
   withSpan: <T>(spanId: string, fn: () => T | Promise<T>) => T | Promise<T>;
-  withEvent: <T>(event: PipelineEvent, fn: () => T | Promise<T>) => T | Promise<T>;
   runWithLogHandler: <T>(
     onLog: ((entry: PipelineLogEntry) => void | Promise<void>) | undefined,
     fn: () => T | Promise<T>,
   ) => T | Promise<T>;
   emitLog: (entry: PipelineExecutionLogInput) => void;
   startOutputCapture?: () => () => void;
+  writeOutput?: (locator: string, content: string) => Promise<void>;
+  resolvePath?: (base: string, relative: string) => string;
 }
 
 // eslint-disable-next-line ts/explicit-function-return-type
@@ -47,7 +46,6 @@ export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
     getExecutionContext: () => undefined,
     runWithExecutionContext: (_context, fn) => fn(),
     withSpan: (_spanId, fn) => fn(),
-    withEvent: (_event, fn) => fn(),
     runWithLogHandler: (_onLog, fn) => fn(),
     emitLog: () => {},
     startOutputCapture: () => noopStop,

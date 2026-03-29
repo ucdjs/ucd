@@ -1,15 +1,13 @@
 ---
-title: Overview
-description: Filesystem backend abstraction for local and HTTP-based storage
+title: FS Backend
+description: Filesystem backend abstraction for local and remote storage
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Step, Steps } from 'fumadocs-ui/components/steps';
 
-# FS Backend
-
-The `@ucdjs/fs-backend` package is the new filesystem abstraction for UCD.js. It replaces `@ucdjs/fs-bridge` with a smaller, more explicit API for local disk access, HTTP-backed storage, and custom backend implementations.
+The `@ucdjs/fs-backend` package provides the filesystem abstraction used across UCD.js for local disk access, HTTP-backed storage, and custom backend implementations.
 
 <Callout type="info">
   `@ucdjs/fs-backend` is intended to become the shared storage foundation across `@ucdjs/ucd-store`, lockfile utilities, and future backend-compatible tooling.
@@ -120,7 +118,6 @@ backend.features.has("copy");
 - **[Backends](/packages/fs-backend/bridges/node)** - Built-in Node and HTTP backend implementations
 - **[Hooks](/packages/fs-backend/hooks)** - Observe backend operations for logging and instrumentation
 - **[HTTP Compatibility Guide](/packages/fs-backend/http-compat)** - Build an HTTP application that works with the built-in HTTP backend
-- **[Migration Guide](/packages/fs-backend/migration-from-fs-bridge)** - Move existing consumers from `fs-bridge`
 
 ## Creating Custom Backends
 

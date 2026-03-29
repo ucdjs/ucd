@@ -17,7 +17,7 @@ function NormalizationPreviewVersion() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Normalization Preview —
+            Normalization Preview -
             {" "}
             {params.version}
           </CardTitle>

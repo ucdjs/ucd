@@ -54,7 +54,7 @@ export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
     version: "0.1",
     endpoints: {
       files: "/api/v1/files",
-      manifest: "/.well-known/ucd-store/{version}.json", // deprecated, kept for backwards compatibility
+      manifest: "/api/v1/versions/{version}/manifest",
       versions: "/api/v1/versions",
     },
     // versions array is optional for backward compatibility

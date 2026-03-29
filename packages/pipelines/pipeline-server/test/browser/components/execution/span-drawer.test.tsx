@@ -1,3 +1,4 @@
+/* eslint-disable react/component-hook-factories */
 import type { ExecutionSpan } from "#lib/execution-utils";
 import type { ReactNode } from "react";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
@@ -39,7 +40,8 @@ const span: ExecutionSpan = {
   isError: false,
 };
 
-describe("executionSpanDrawer", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("ExecutionSpanDrawer", () => {
   it("stays closed when no span is selected", () => {
     render(
       <ExecutionSpanDrawer

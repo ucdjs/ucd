@@ -1,4 +1,9 @@
 {
-  "extends": "@ucdjs-tooling/tsconfig/base"
-
+  "extends": "@ucdjs-tooling/tsconfig/base",
+  "compilerOptions": {
+    "types": [
+      "node",
+      "vite/client"
+    ]
+  }
 }

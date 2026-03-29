@@ -1,5 +1,5 @@
 import type { Database } from "#server/db";
-import type { ExecutionLogPayload, ExecutionLogStream } from "#server/db/schema";
+import type { ExecutionLogPayload } from "#server/db/schema";
 import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
@@ -26,7 +26,6 @@ export interface ExecutionLogOptions {
   executionId: string;
   workspaceId: string;
   spanId?: string;
-  stream: ExecutionLogStream;
   message: string;
   payload: ExecutionLogPayload;
   timestamp?: Date;
@@ -130,7 +129,6 @@ export async function storeExecutionLog(
     workspaceId: options.workspaceId,
     executionId: options.executionId,
     spanId: options.spanId ?? null,
-    stream: options.stream,
     message: finalMessage,
     timestamp: options.timestamp ?? new Date(),
     payload,
@@ -155,14 +153,12 @@ export function createExecutionLogState(): ExecutionLogState {
 
 export function buildTruncationBanner(
   state: ExecutionLogState,
-  stream: ExecutionLogStream,
   level: ExecutionLogPayload["level"],
   source: ExecutionLogPayload["source"],
 ): ExecutionLogPayload {
   const total = state.originalBytes > 0 ? state.originalBytes : state.capturedBytes;
   return {
     message: "Execution logs truncated due to size limits.",
-    stream,
     level,
     source,
     truncated: true,
@@ -183,12 +179,11 @@ export function createExecutionLogStore(db: Database) {
   return async (entry: PipelineLogEntry): Promise<void> => {
     const payload: ExecutionLogPayload = {
       message: entry.message,
-      stream: entry.stream,
       args: entry.args && entry.args.length > 0 ? entry.args : undefined,
       level: entry.level,
       source: entry.source,
       meta: entry.meta,
-      event: entry.event,
+      traceKind: entry.traceKind,
     };
 
     let executionState = stateByExecution.get(entry.executionId);
@@ -205,7 +200,6 @@ export function createExecutionLogStore(db: Database) {
       executionId: entry.executionId,
       workspaceId: entry.workspaceId,
       spanId: entry.spanId,
-      stream: entry.stream,
       message: entry.message,
       payload,
       timestamp: new Date(entry.timestamp),
@@ -217,12 +211,11 @@ export function createExecutionLogStore(db: Database) {
 
     if ((result.truncated || executionState.limitReached) && !executionState.truncatedLogged) {
       executionState.truncatedLogged = true;
-      const bannerPayload = buildTruncationBanner(executionState.state, entry.stream, entry.level, entry.source);
+      const bannerPayload = buildTruncationBanner(executionState.state, entry.level, entry.source);
       await storeExecutionLog(db, executionState.state, {
         executionId: entry.executionId,
         workspaceId: entry.workspaceId,
         spanId: entry.spanId,
-        stream: entry.stream,
         message: bannerPayload.message,
         payload: bannerPayload,
         timestamp: new Date(entry.timestamp),

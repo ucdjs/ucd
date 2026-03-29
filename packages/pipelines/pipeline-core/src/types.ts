@@ -1,4 +1,11 @@
-import type { PipelineLogger } from "./logger";
+export type PipelineLogLevel = "debug" | "info" | "warn" | "error";
+
+export interface PipelineLogger {
+  debug: (message: string, meta?: Record<string, unknown>) => void;
+  info: (message: string, meta?: Record<string, unknown>) => void;
+  warn: (message: string, meta?: Record<string, unknown>) => void;
+  error: (message: string, meta?: Record<string, unknown>) => void;
+}
 
 export interface FileContext {
   /**
@@ -203,64 +210,4 @@ export interface PropertyJson {
    * Additional metadata.
    */
   meta?: Record<string, unknown>;
-}
-
-export interface ResolveContext<TArtifacts extends Record<string, unknown> = Record<string, unknown>> {
-  /**
-   * The Unicode version being processed.
-   */
-  version: string;
-
-  /**
-   * The file being resolved.
-   */
-  file: FileContext;
-
-  /**
-   * Execution-aware logger for pipeline code.
-   */
-  logger: PipelineLogger;
-
-  /**
-   * Get an artifact by ID.
-   */
-  getArtifact: <K extends keyof TArtifacts>(id: K) => TArtifacts[K];
-
-  /**
-   * Emit an artifact for subsequent routes.
-   */
-  emitArtifact: <K extends string, V>(id: K, value: V) => void;
-
-  /**
-   * Normalize and sort entries by code point range.
-   */
-  normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
-
-  /**
-   * Get current timestamp in ISO 8601 format.
-   */
-  now: () => string;
-}
-
-export type ResolverFn<
-  TArtifacts extends Record<string, unknown> = Record<string, unknown>,
-  TOutput = PropertyJson[],
-> = (
-  ctx: ResolveContext<TArtifacts>,
-  rows: AsyncIterable<ParsedRow>,
-) => Promise<TOutput>;
-
-/**
- * Output configuration for a route.
- */
-export interface RouteOutput {
-  /**
-   * Custom output directory.
-   */
-  dir?: string;
-
-  /**
-   * Custom file name generator.
-   */
-  fileName?: (pj: PropertyJson) => string;
 }

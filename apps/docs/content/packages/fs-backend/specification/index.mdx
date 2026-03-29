@@ -3,8 +3,6 @@ title: Overview
 description: Complete specification for the FileSystemBackend interface
 ---
 
-# FileSystemBackend Specification
-
 This page describes the public contract behind `@ucdjs/fs-backend`.
 
 The goal of the package is to make filesystem-like operations portable across different storage implementations without hiding the important semantics.
@@ -107,8 +105,6 @@ Examples:
 
 - `/15.1.0/ucd/`
 - `/15.1.0/ucd/UnicodeData.txt`
-
-This is one of the biggest differences from the older `fs-bridge` layer: consumers should not need to guess whether a path is canonical.
 
 Input paths may be normalized by individual backends, but consumers should still prefer canonical paths when calling backend operations.
 

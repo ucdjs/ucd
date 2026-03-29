@@ -1,0 +1,148 @@
+---
+title: Filters
+description: Filter helpers for matching files, sources, and parsed rows
+---
+
+Filters are predicates used to decide whether a source or route should process a file or row. In practice, you will most often use them in:
+
+- `source.includes`
+- `source.excludes`
+- `route.filter`
+
+All built-in helpers live in `@ucdjs/pipelines-core`.
+
+## Common file filters
+
+### `byName(...)`
+
+Match a specific file name:
+
+```ts
+filter: byName("UnicodeData.txt")
+```
+
+### `byDir(...)`
+
+Match a logical directory:
+
+```ts
+filter: byDir("ucd")
+```
+
+### `byExt(...)`
+
+Match by file extension:
+
+```ts
+filter: byExt(".txt")
+```
+
+### `byGlob(...)`
+
+Match a path with a glob:
+
+```ts
+filter: byGlob("**/*.txt")
+```
+
+### `byPath(...)`
+
+Match an exact path or a regular expression:
+
+```ts
+filter: byPath("data/colors.txt")
+```
+
+```ts
+filter: byPath(/^emoji\/.*\.txt$/)
+```
+
+### `bySource(...)`
+
+Match files from one or more source IDs:
+
+```ts
+filter: bySource("unicode-org")
+```
+
+```ts
+filter: bySource(["unicode-org", "cldr"])
+```
+
+## Row-aware filter helper
+
+### `byProp(...)`
+
+Match a parsed row property name with a string or regular expression:
+
+```ts
+filter: byProp("Script")
+```
+
+```ts
+filter: byProp(/^Emoji/)
+```
+
+This is most useful in row-aware filtering contexts and composition helpers.
+
+## Filter combinators
+
+### `and(...)`
+
+All filters must match:
+
+```ts
+filter: and(
+  bySource("unicode-org"),
+  byExt(".txt"),
+)
+```
+
+### `or(...)`
+
+Any filter may match:
+
+```ts
+filter: or(
+  byName("Blocks.txt"),
+  byName("Scripts.txt"),
+)
+```
+
+### `not(...)`
+
+Invert a filter:
+
+```ts
+filter: not(byGlob("**/generated/**"))
+```
+
+### `always()` and `never()`
+
+Utility filters for explicit allow-all and match-nothing behavior:
+
+```ts
+includes: always()
+```
+
+```ts
+excludes: never()
+```
+
+## Source-level vs route-level filtering
+
+Use source filters when you want to broadly shape the files a source contributes.
+
+Use route filters when you want a specific route to match a specific subset of files from the already-resolved source set.
+
+## Custom filters
+
+You can always write a custom filter function:
+
+```ts
+filter: (ctx) => {
+  return ctx.file.name.endsWith(".txt") && ctx.file.path.startsWith("data/");
+}
+```
+
+Custom filters work well, but built-in helpers have one extra benefit: the system can derive a readable filter description for inspection UIs and diagnostics.

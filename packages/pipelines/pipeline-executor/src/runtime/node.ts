@@ -1,5 +1,5 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import type { PipelineLogEntry, PipelineLogLevel, PipelineLogStream } from "../types";
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
+import type { PipelineLogEntry, PipelineLogLevel } from "../types";
 import type {
   PipelineExecutionContext,
   PipelineExecutionLogInput,
@@ -7,6 +7,8 @@ import type {
 } from "./index";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -14,15 +16,17 @@ interface LoggerRuntimeContext {
 
 interface ConsoleLogInput {
   level: PipelineLogLevel;
-  stream: PipelineLogStream;
   source: "console" | "stdio";
   args: unknown[];
 }
 
-// eslint-disable-next-line node/prefer-global/process
-type NodeWriteFn = typeof process.stdout.write;
+interface WriteFunction {
+  (chunk: string | Uint8Array, callback?: (error: Error | null | undefined) => void): boolean;
+  (chunk: string | Uint8Array, encoding: BufferEncoding, callback?: (error: Error | null | undefined) => void): boolean;
+}
 
 export interface NodeExecutionRuntimeOptions {
+  fs?: FileSystemBackend;
   outputCapture?: {
     console?: boolean;
     stdio?: boolean;
@@ -42,21 +46,23 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     error: console.error,
   };
 
-  static readonly #originalStdio = {
+  static readonly #originalStdio: { stdoutWrite: WriteFunction; stderrWrite: WriteFunction } = {
     // eslint-disable-next-line node/prefer-global/process
-    stdoutWrite: process.stdout.write.bind(process.stdout) as NodeWriteFn,
+    stdoutWrite: process.stdout.write.bind(process.stdout),
     // eslint-disable-next-line node/prefer-global/process
-    stderrWrite: process.stderr.write.bind(process.stderr) as NodeWriteFn,
+    stderrWrite: process.stderr.write.bind(process.stderr),
   };
 
   readonly #contextStorage = new AsyncLocalStorage<PipelineExecutionContext>();
   readonly #logHandlerStorage = new AsyncLocalStorage<LoggerRuntimeContext>();
+  readonly #fs;
   readonly #outputCapture;
   #captureSessionCount = 0;
   #consoleCaptureEnabledCount = 0;
   #stdioCaptureEnabledCount = 0;
 
   constructor(options: NodeExecutionRuntimeOptions) {
+    this.#fs = options.fs;
     this.#outputCapture = options.outputCapture ?? {};
   }
 
@@ -77,16 +83,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       return fn();
     }
 
-    return this.#contextStorage.run({ ...current, spanId }, fn);
-  }
-
-  withEvent<T>(event: PipelineEvent, fn: () => T | Promise<T>): T | Promise<T> {
-    const current = this.#contextStorage.getStore();
-    if (!current) {
-      return fn();
-    }
-
-    return this.#contextStorage.run({ ...current, spanId: event.spanId, event }, fn);
+    return this.#contextStorage.run({ ...current, parentSpanId: current.spanId, spanId }, fn);
   }
 
   runWithLogHandler<T>(
@@ -112,15 +109,27 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
       executionId: context.executionId,
       workspaceId: context.workspaceId,
       spanId: context.spanId,
-      event: context.event,
       level: entry.level,
-      stream: entry.stream,
       source: entry.source,
       message: entry.message,
       timestamp: entry.timestamp ?? Date.now(),
       args: entry.args,
       meta: entry.meta,
     }));
+  }
+
+  async writeOutput(locator: string, content: string): Promise<void> {
+    if (this.#fs) {
+      await this.#fs.write(locator, content);
+      return;
+    }
+
+    await mkdir(path.dirname(locator), { recursive: true });
+    await writeFile(locator, content, "utf8");
+  }
+
+  resolvePath(base: string, relative: string): string {
+    return path.resolve(base, relative);
   }
 
   startOutputCapture(): () => void {
@@ -177,7 +186,6 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
 
     this.emitLog({
       level: input.level,
-      stream: input.stream,
       source: input.source,
       message: NodeExecutionRuntime.#formatLogArgs(input.args),
       args: input.args,
@@ -187,15 +195,14 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   #emitCapturedWrite(
     chunk: unknown,
     encoding: BufferEncoding | undefined,
-    stream: PipelineLogStream,
+    level: PipelineLogLevel,
   ): void {
     if (this.#stdioCaptureEnabledCount === 0) {
       return;
     }
 
     this.emitLog({
-      level: stream === "stderr" ? "error" : "info",
-      stream,
+      level,
       source: "stdio",
       message: NodeExecutionRuntime.#normalizeChunk(chunk, encoding),
       args: [chunk],
@@ -211,24 +218,24 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   static #dispatchCapturedWrite(
     chunk: unknown,
     encoding: BufferEncoding | undefined,
-    stream: PipelineLogStream,
+    level: PipelineLogLevel,
   ): void {
     for (const runtime of NodeExecutionRuntime.#activeRuntimes) {
-      runtime.#emitCapturedWrite(chunk, encoding, stream);
+      runtime.#emitCapturedWrite(chunk, encoding, level);
     }
   }
 
   static #installCaptureHooks(): void {
     // eslint-disable-next-line no-console
-    console.log = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.log, "info", "stdout");
+    console.log = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.log, "info");
     // eslint-disable-next-line no-console
-    console.info = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.info, "info", "stdout");
-    console.warn = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.warn, "warn", "stderr");
-    console.error = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.error, "error", "stderr");
+    console.info = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.info, "info");
+    console.warn = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.warn, "warn");
+    console.error = NodeExecutionRuntime.#wrapConsoleMethod(NodeExecutionRuntime.#originalConsole.error, "error");
     // eslint-disable-next-line node/prefer-global/process
-    process.stdout.write = NodeExecutionRuntime.#wrapWrite(NodeExecutionRuntime.#originalStdio.stdoutWrite, "stdout");
+    process.stdout.write = NodeExecutionRuntime.#wrapWrite(NodeExecutionRuntime.#originalStdio.stdoutWrite, "info");
     // eslint-disable-next-line node/prefer-global/process
-    process.stderr.write = NodeExecutionRuntime.#wrapWrite(NodeExecutionRuntime.#originalStdio.stderrWrite, "stderr");
+    process.stderr.write = NodeExecutionRuntime.#wrapWrite(NodeExecutionRuntime.#originalStdio.stderrWrite, "error");
   }
 
   static #uninstallCaptureHooks(): void {
@@ -247,10 +254,9 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   static #wrapConsoleMethod(
     original: (...args: unknown[]) => void,
     level: PipelineLogLevel,
-    stream: PipelineLogStream,
   ): (...args: unknown[]) => void {
     return (...args: unknown[]) => {
-      NodeExecutionRuntime.#dispatchCapturedConsoleLog({ level, stream, source: "console", args });
+      NodeExecutionRuntime.#dispatchCapturedConsoleLog({ level, source: "console", args });
 
       NodeExecutionRuntime.#stdioSuppressionDepth++;
       try {
@@ -261,20 +267,25 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     };
   }
 
-  static #wrapWrite(original: NodeWriteFn, stream: PipelineLogStream): NodeWriteFn {
-    return ((chunk, encodingOrCallback, callback) => {
+  static #wrapWrite(original: WriteFunction, level: PipelineLogLevel): WriteFunction {
+    const wrapped: WriteFunction = (chunk: string | Uint8Array, encodingOrCallback?: BufferEncoding | ((error: Error | null | undefined) => void), callback?: (error: Error | null | undefined) => void): boolean => {
       const encoding = typeof encodingOrCallback === "string" ? encodingOrCallback : undefined;
 
       if (NodeExecutionRuntime.#stdioSuppressionDepth === 0) {
-        NodeExecutionRuntime.#dispatchCapturedWrite(chunk, encoding, stream);
+        NodeExecutionRuntime.#dispatchCapturedWrite(chunk, encoding, level);
       }
 
       if (typeof encodingOrCallback === "function") {
         return original(chunk, encodingOrCallback);
       }
 
-      return original(chunk, encodingOrCallback, callback);
-    }) as NodeWriteFn;
+      if (encodingOrCallback != null) {
+        return original(chunk, encodingOrCallback, callback);
+      }
+
+      return original(chunk, callback);
+    };
+    return wrapped;
   }
 
   static #formatLogArgs(args: unknown[]): string {
