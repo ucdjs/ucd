@@ -1,4 +1,3 @@
-import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
 import type { CLIFilesCmdOptions } from "./cmd/files/root";
@@ -17,6 +16,7 @@ import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 import { CLIError } from "./errors";
 import { output, setJsonMode } from "./output";
+import type { Prettify, RemoveIndexSignature } from "./types";
 
 type CLICommand
   = | "help"

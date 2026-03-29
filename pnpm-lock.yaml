@@ -791,9 +791,6 @@ importers:
       '@clack/prompts':
         specifier: catalog:runtime
         version: 1.1.0
-      '@luxass/utils':
-        specifier: catalog:runtime
-        version: 2.7.3
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
@@ -821,9 +818,6 @@ importers:
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
-      '@ucdjs/schemas':
-        specifier: workspace:*
-        version: link:../schemas
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
