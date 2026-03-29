@@ -1,4 +1,4 @@
-import type { UCDStoreManifest } from "@ucdjs/schemas";
+import type { UCDStoreVersionManifest } from "@ucdjs/schemas";
 
 const STORE_MANIFEST_PREFIX = "manifest/";
 
@@ -15,8 +15,8 @@ export async function readVersionManifestObject(
 
 export async function parseVersionManifest(
   object: R2ObjectBody,
-): Promise<UCDStoreManifest[string]> {
-  return object.json<UCDStoreManifest[string]>();
+): Promise<UCDStoreVersionManifest> {
+  return object.json<UCDStoreVersionManifest>();
 }
 
 export function createVersionManifestHeaders(object: R2ObjectBody): Record<string, string> {
