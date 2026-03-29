@@ -1,5 +1,13 @@
 # @ucdjs/client
 
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.7...@ucdjs/client@0.1.1-beta.8) (2026-03-29)
+
+
+### 📚 Documentation
+* render client flow diagram ([b5afe98b](https://github.com/ucdjs/ucd/commit/b5afe98be0a68291227b33732c1e7342272a538c)) (by luxass)
+* clarify client discovery and config flow ([b932dc2f](https://github.com/ucdjs/ucd/commit/b932dc2f59b192a2d502f810b8d7d77074a9a2e1)) (by luxass)
+
+
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.6...@ucdjs/client@0.1.1-beta.7) (2026-02-27)
 
 

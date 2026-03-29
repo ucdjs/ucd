@@ -1,5 +1,16 @@
 # @ucdjs/pipelines-loader
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.7...@ucdjs/pipelines-loader@0.0.1-beta.8) (2026-03-29)
+
+
+### 🚀 Features
+* typed errors, bundle error classification, non-throwing findPipelineFiles ([f18f5e4b](https://github.com/ucdjs/ucd/commit/f18f5e4bfcb05121279fa350689e224726ba4ebd)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* normalize file path in test assertion ([acb4f52c](https://github.com/ucdjs/ucd/commit/acb4f52c5750ba1b444a0b8d2c6c2076e8fb3009)) (by [@luxass](https://github.com/luxass))
+* remove internal entry from build config and exports ([0f3de293](https://github.com/ucdjs/ucd/commit/0f3de2939243e0ff60abae26972c64760913b876)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.6...@ucdjs/pipelines-loader@0.0.1-beta.7) (2026-02-27)
 
 
