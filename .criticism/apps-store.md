@@ -10,11 +10,11 @@
 
 The earlier criticism understated what Store actually is.
 
-Store is not just an arbitrary projection over API. In this repo, it is intended to be the public compatibility HTTP backend for the storage layer, especially for `@ucdjs/fs-bridge` and `@ucdjs/ucd-store`. That is consistent with:
+Store is not just an arbitrary projection over API. In this repo, it is intended to be the public compatibility HTTP backend for the storage layer, especially for `@ucdjs/fs-backend` and `@ucdjs/ucd-store`. That is consistent with:
 
 - the architecture docs in [apps/docs/content/contributing/development/project.mdx](/Users/luxass/dev/ucdjs/ucd/apps/docs/content/contributing/development/project.mdx)
 - the glossary note in [.agents/GLOSSARY.md](/Users/luxass/dev/ucdjs/ucd/.agents/GLOSSARY.md)
-- the HTTP bridge behavior in [packages/fs-bridge/src/bridges/http.ts](/Users/luxass/dev/ucdjs/ucd/packages/fs-bridge/src/bridges/http.ts)
+- the HTTP backend behavior in [packages/fs-backend/src/backends/http.ts](/Users/luxass/dev/ucdjs/ucd/packages/fs-backend/src/backends/http.ts)
 
 The real issue is not "Store has no identity." The real issue is that Store is a hybrid boundary with split ownership:
 
@@ -64,7 +64,7 @@ Evidence:
 Why this is valid criticism:
 
 - This is the weakest part of the current Store contract.
-- Store is supposed to be the compatibility access point for `fs-bridge` and storage-facing consumers, so its metadata needs to be trustworthy.
+- Store is supposed to be the compatibility access point for `fs-backend` and storage-facing consumers, so its metadata needs to be trustworthy.
 - Returning stable-looking integrity metadata with placeholders makes the contract look more complete than it is.
 
 What to do:
@@ -96,11 +96,11 @@ What to do:
 - Split validation into:
 - unit tests for Store route behavior with a mocked `UCDJS_API` binding
 - explicit integration tests that mount API as an auxiliary worker
-- conformance tests that exercise `@ucdjs/fs-bridge` and `@ucdjs/ucd-store` against a real Store worker surface
+- conformance tests that exercise `@ucdjs/fs-backend` and `@ucdjs/ucd-store` against a real Store worker surface
 - Treat the auxiliary-worker setup as integration coverage, not as the default shape of Store validation.
 - Add contract-level assertions for the things Store exists to guarantee:
-- file reads behave the way the HTTP fs-bridge expects
-- directory listings match the shapes and semantics expected by `@ucdjs/fs-bridge`
+- file reads behave the way the HTTP backend expects
+- directory listings match the shapes and semantics expected by `@ucdjs/fs-backend`
 - lockfile and snapshot routes satisfy the metadata assumptions made by `@ucdjs/ucd-store`
 
 ### 4. The README is still materially wrong and hides the real architecture
@@ -123,7 +123,7 @@ What to do:
 - what Store is for
 - which routes it owns directly
 - which route delegates to API today
-- how it relates to `fs-bridge` and `ucd-store`
+- how it relates to `fs-backend` and `ucd-store`
 - how to run Store locally and how to run integration tests
 
 ### 5. Service metadata and public messaging should reflect the real state of the app
@@ -159,7 +159,7 @@ Why this is valid criticism:
 
 - The current implementation can be defended as a compatibility layer.
 - What is unclear is whether that is the intended end state or just a transitional implementation.
-- That uncertainty makes it harder to design `ucd-store`, `fs-bridge`, and Store cleanly.
+- That uncertainty makes it harder to design `ucd-store`, `fs-backend`, and Store cleanly.
 
 What to do:
 
@@ -175,17 +175,17 @@ Severity: medium
 Evidence:
 
 - Store is described as the public compatibility HTTP backend for the storage layer, but its current tests focus mostly on route-local behavior in [apps/store/test/routes](/Users/luxass/dev/ucdjs/ucd/apps/store/test/routes).
-- The HTTP bridge in [packages/fs-bridge/src/bridges/http.ts](/Users/luxass/dev/ucdjs/ucd/packages/fs-bridge/src/bridges/http.ts) and the storage behavior in `@ucdjs/ucd-store` depend on Store semantics, not just on individual JSON payloads.
+- The HTTP backend in [packages/fs-backend/src/backends/http.ts](/Users/luxass/dev/ucdjs/ucd/packages/fs-backend/src/backends/http.ts) and the storage behavior in `@ucdjs/ucd-store` depend on Store semantics, not just on individual JSON payloads.
 
 Why this is valid criticism:
 
 - If Store is a compatibility boundary, then route tests alone are not enough.
 - The real question is whether Store behaves correctly when consumed through the abstractions it exists to support.
-- Without that coverage, it is easy for Store, `fs-bridge`, and `ucd-store` to drift while each still appears locally correct.
+- Without that coverage, it is easy for Store, `fs-backend`, and `ucd-store` to drift while each still appears locally correct.
 
 What to do:
 
-- Add conformance-style tests that run the HTTP bridge against a Store worker instance.
+- Add conformance-style tests that run the HTTP backend against a Store worker instance.
 - Add `@ucdjs/ucd-store` integration coverage against the Store surface for:
 - reading files
 - listing directories
@@ -202,9 +202,9 @@ What to do:
 
 ## Recommended path forward
 
-1. Reframe Store publicly as the compatibility HTTP backend for `fs-bridge` and `ucd-store`.
+1. Reframe Store publicly as the compatibility HTTP backend for `fs-backend` and `ucd-store`.
 2. Fix metadata correctness first by making ingestion produce canonical hashes and sizes.
 3. Make the API dependency explicit in docs and isolate it in integration tests instead of hiding it in the default test path.
-4. Add conformance coverage between Store and the `fs-bridge` / `ucd-store` consumers it exists to support.
+4. Add conformance coverage between Store and the `fs-backend` / `ucd-store` consumers it exists to support.
 5. Decide whether delegated file reads are the long-term design or a transitional implementation.
 6. Rewrite the README and app docs so contributors can understand the boundary without reverse-engineering the code.

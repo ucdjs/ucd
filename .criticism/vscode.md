@@ -4,7 +4,6 @@
 
 - `pnpm --dir vscode run typecheck` -> passed
 - `pnpm --dir vscode run build` -> passed
-- package-local `test` script -> none
 
 ## Findings
 
