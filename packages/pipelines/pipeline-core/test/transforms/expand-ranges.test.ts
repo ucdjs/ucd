@@ -92,7 +92,7 @@ describe("createExpandRangesTransform({ maxExpansion })", () => {
     expect(result[0]?.start).toBe("0041");
   });
 
-  it("default maxExpansion is 10000 — a small range expands", async () => {
+  it("default maxExpansion is 10000 - a small range expands", async () => {
     const transform = createExpandRangesTransform();
     const rows: ParsedRow[] = [
       { sourceFile: "a.txt", kind: "range", start: "0041", end: "0043" },
