@@ -103,30 +103,7 @@ What to do:
 - directory listings match the shapes and semantics expected by `@ucdjs/fs-backend`
 - lockfile and snapshot routes satisfy the metadata assumptions made by `@ucdjs/ucd-store`
 
-### 4. The README is still materially wrong and hides the real architecture
-
-Severity: medium
-
-Evidence:
-
-- [apps/store/README.md](/Users/luxass/dev/ucdjs/ucd/apps/store/README.md) tells readers to start the API app when they "only wanna start the API app."
-- It points to API docs instead of explaining Store itself.
-
-Why this is valid criticism:
-
-- This makes Store look like a leftover scaffold instead of a deliberate compatibility boundary.
-- It also blocks contributors from understanding how Store is supposed to relate to API and the storage layer.
-
-What to do:
-
-- Rewrite the README so it documents:
-- what Store is for
-- which routes it owns directly
-- which route delegates to API today
-- how it relates to `fs-backend` and `ucd-store`
-- how to run Store locally and how to run integration tests
-
-### 5. Service metadata and public messaging should reflect the real state of the app
+### 4. Service metadata and public messaging should reflect the real state of the app
 
 Severity: medium
 
@@ -146,7 +123,7 @@ What to do:
 - Adjust the root description so it reflects the real hybrid model.
 - If you want to keep the response minimal, at least avoid implying that everything is served directly by Store.
 
-### 6. The app needs an explicit target architecture for file ownership
+### 5. The app needs an explicit target architecture for file ownership
 
 Severity: medium
 
@@ -168,7 +145,7 @@ What to do:
 - or "Store will eventually serve files directly from canonical storage"
 - Then align docs, tests, and route contracts around that decision.
 
-### 7. Store needs explicit conformance coverage as a product boundary
+### 6. Store needs explicit conformance coverage as a product boundary
 
 Severity: medium
 
@@ -207,4 +184,4 @@ What to do:
 3. Make the API dependency explicit in docs and isolate it in integration tests instead of hiding it in the default test path.
 4. Add conformance coverage between Store and the `fs-backend` / `ucd-store` consumers it exists to support.
 5. Decide whether delegated file reads are the long-term design or a transitional implementation.
-6. Rewrite the README and app docs so contributors can understand the boundary without reverse-engineering the code.
+6. Keep the app docs aligned with the actual boundary so contributors do not have to reverse-engineer it from the code.

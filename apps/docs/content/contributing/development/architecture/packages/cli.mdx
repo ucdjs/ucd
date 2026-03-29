@@ -1,0 +1,16 @@
+---
+title: CLI
+description: Architecture notes for @ucdjs/cli
+---
+
+`@ucdjs/cli` is the highest-level local interface in the monorepo.
+
+## Role
+
+- Wraps store, client, pipeline, and codegen workflows behind the `ucd` binary.
+- Acts as the main integration point for local developer workflows.
+- Should simplify subsystem boundaries rather than expose them raw.
+
+## Notes
+
+Use this page for command-family ownership and CLI-specific architecture decisions.

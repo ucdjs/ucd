@@ -1,0 +1,16 @@
+---
+title: API
+description: Architecture notes for apps/api
+---
+
+`apps/api` is the public API worker for UCD.js.
+
+## Role
+
+- Serves versioned HTTP routes for files, versions, and schemas.
+- Publishes the `.well-known` configuration used by client discovery.
+- Owns API-facing behavior and direct upstream access.
+
+## Notes
+
+Use this page for API-specific route ownership, runtime behavior, and integration decisions.
