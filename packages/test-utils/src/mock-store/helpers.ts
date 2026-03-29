@@ -4,9 +4,9 @@ import type { ConfiguredResponse, ConfiguredResponseConfig } from "./types";
  * Bypass type checking for testing edge cases and invalid responses.
  * This is useful for testing error handling with responses that don't match the schema.
  *
- * @template {any} T - The type of the response being passed through
+ * @template T - The type of the response being passed through
  * @param {T} response - Any response data to return without type checking
- * @returns {any} The response cast to `any` to bypass TypeScript type checking
+ * @returns {unknown} The response cast to bypass endpoint type checking in tests
  *
  * @example
  * ```ts
@@ -25,8 +25,8 @@ import type { ConfiguredResponse, ConfiguredResponseConfig } from "./types";
  * });
  * ```
  */
-export function unsafeResponse<T = any>(response: T): any {
-  return response as any;
+export function unsafeResponse<T>(response: T): unknown {
+  return response;
 }
 
 export const kConfiguredResponse: symbol = Symbol.for("ucdjs:test-utils:mock-store:configured-response");
