@@ -1,5 +1,5 @@
+import type { PipelineDetails } from "#queries/pipeline";
 import type { ExecutePipelineResponse } from "#shared/schemas/execution";
-import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas/pipeline";
 import type { SpanProcessor } from "@opentelemetry/sdk-trace-node";
 import type { H3Event } from "h3";
 import { schema } from "#server/db";

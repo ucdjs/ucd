@@ -52,8 +52,14 @@ export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
       }
       if (result instanceof Promise) {
         return result.then(
-          (val) => { span.end(); return val; },
-          (err) => { span.end(); throw err; },
+          (val) => {
+            span.end();
+            return val;
+          },
+          (err) => {
+            span.end();
+            throw err;
+          },
         ) as ReturnType<typeof fn>;
       }
       span.end();

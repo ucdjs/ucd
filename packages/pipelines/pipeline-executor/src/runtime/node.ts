@@ -85,8 +85,14 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
         }
         if (result instanceof Promise) {
           return result.then(
-            (val) => { span.end(); return val; },
-            (err) => { span.end(); throw err; },
+            (val) => {
+              span.end();
+              return val;
+            },
+            (err) => {
+              span.end();
+              throw err;
+            },
           ) as T | Promise<T>;
         }
         span.end();
@@ -107,7 +113,10 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
 
       if (result instanceof Promise) {
         return result.then(
-          (val) => { span.end(); return val; },
+          (val) => {
+            span.end();
+            return val;
+          },
           (err) => {
             span.setStatus({ code: SpanStatusCode.ERROR, message: err instanceof Error ? err.message : String(err) });
             span.recordException(err instanceof Error ? err : new Error(String(err)));
