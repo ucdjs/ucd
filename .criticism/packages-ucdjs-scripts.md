@@ -12,7 +12,7 @@ The package itself builds. The criticism is about orchestration design, workflow
 Review context update:
 
 - In this repo, published `@ucdjs-internal/*` packages are intentional and are not being treated here as a defect by themselves.
-- The criticism below stays focused on the workflow/tooling layer and on the messy `ucd-store`/Store API/fs-bridge area you called out, because this package is part of the coordination story around that mess.
+- The criticism below stays focused on the workflow/tooling layer and on the messy `ucd-store`/Store API/fs-backend area you called out, because this package is part of the coordination story around that mess.
 
 ## Scores
 
