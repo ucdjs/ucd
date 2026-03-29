@@ -42,7 +42,6 @@ describe("createPipelineExecutor", () => {
 
     expect(executor).toBeDefined();
   });
-
 });
 
 describe("executor.run", () => {
