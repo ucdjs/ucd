@@ -1,6 +1,10 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../../types";
+import {
+  createVersionManifestHeaders,
+  readVersionManifestData,
+  readVersionManifestObject,
+} from "#lib/version-manifest";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
@@ -8,8 +12,6 @@ import { badGateway, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
-
-const STORE_MANIFEST_PREFIX = "manifest/";
 
 const VERSION_PARAM = {
   name: "version",
@@ -31,12 +33,11 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
   description: dedent`
     ## UCD Store Manifest (Per Version)
 
-    This endpoint retrieves the UCD Store manifest for a specific Unicode version, containing metadata about expected files for that version.
+    This endpoint is a deprecated compatibility alias for the canonical version manifest route:
 
-    This is the recommended endpoint for fetching manifest data, as it provides:
-    - Smaller payloads (only the requested version)
-    - Better caching (version-specific cache invalidation)
-    - Reduced server load
+    - \`/api/v1/versions/{version}/manifest\`
+
+    It returns the same manifest payload for backward compatibility.
 
     Each file entry includes:
     - \`name\`: The filename only
@@ -44,7 +45,7 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
     - \`storePath\`: Path for the store subdomain (ucd-store.ucdjs.dev)
 
     > [!NOTE]
-    > The monolithic endpoint \`/.well-known/ucd-store.json\` is deprecated. Use this per-version endpoint instead.
+    > This route is deprecated. Prefer \`/api/v1/versions/{version}/manifest\`.
   `,
   responses: {
     200: {
@@ -89,8 +90,13 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
 });
 
 export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
-  router.openAPIRegistry.registerPath(UCD_STORE_VERSION_ROUTE);
+  router.openAPIRegistry.registerPath({
+    ...UCD_STORE_VERSION_ROUTE,
+    deprecated: true,
+  });
 
+  // TODO(luxass): Remove this compatibility alias once clients stop calling
+  // `/.well-known/ucd-store/{version}.json` and the deprecation window ends.
   // We register the route separately to avoid, having weird behavior with the OpenAPI schema.
   router.get("/ucd-store/:version{.*\\.json}", cache({
     cacheName: "ucdjs:well-known:ucd-store-version",
@@ -118,9 +124,7 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
       });
     }
 
-    // Fetch manifest.json for the specific version
-    const key = `${STORE_MANIFEST_PREFIX}${version}/manifest.json`;
-    const object = await bucket.get(key);
+    const object = await readVersionManifestObject(bucket, version);
 
     if (!object) {
       return notFound(c, {
@@ -129,20 +133,8 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
     }
 
     try {
-      const data = await object.json<UCDStoreManifest[typeof version]>();
-
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json; charset=UTF-8",
-      };
-
-      if (object.httpEtag || object.etag) {
-        headers.ETag = object.httpEtag ?? `"${object.etag}"`;
-      }
-
-      if (object.uploaded) {
-        headers["Last-Modified"] = object.uploaded.toUTCString();
-      }
-
+      const { data, manifestText } = await readVersionManifestData(object);
+      const headers = await createVersionManifestHeaders(bucket, version, object, manifestText);
       return c.json(data, 200, headers);
     } catch (err) {
       console.error(`[well-known]: failed to parse manifest for version ${version}:`, err);

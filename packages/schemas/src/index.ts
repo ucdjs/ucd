@@ -7,14 +7,12 @@ export {
   BackendFileEntrySchema,
   FileEntryListSchema,
   FileEntrySchema,
-  UCDStoreManifestSchema,
 } from "./fs";
 export type {
   BackendEntry,
   BackendEntryList,
   FileEntry,
   FileEntryList,
-  UCDStoreManifest,
 } from "./fs";
 export { LockfileSchema, SnapshotSchema } from "./lockfile";
 export type { Lockfile, LockfileInput, Snapshot } from "./lockfile";

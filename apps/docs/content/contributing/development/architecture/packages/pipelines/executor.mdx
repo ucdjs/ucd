@@ -1,0 +1,16 @@
+---
+title: Pipeline Executor
+description: Architecture notes for @ucdjs/pipelines-executor
+---
+
+`@ucdjs/pipelines-executor` runs pipelines and manages execution behavior.
+
+## Role
+
+- Resolves route order and executes work with concurrency.
+- Owns runtime concerns such as logs, traces, and published outputs.
+- Bridges pipeline definitions to host-specific execution environments.
+
+## Notes
+
+Use this page for execution-model, runtime, and observability decisions.

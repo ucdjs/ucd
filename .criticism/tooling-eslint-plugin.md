@@ -4,7 +4,6 @@
 
 - `pnpm --dir tooling/eslint-plugin run typecheck` -> passed
 - package-local `build` script -> none
-- package-local `test` script -> none
 
 ## Findings
 

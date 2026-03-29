@@ -1,0 +1,11 @@
+{
+  "title": "Apps",
+  "description": "Architecture notes for each application",
+  "pages": [
+    "index",
+    "api",
+    "docs",
+    "store",
+    "web"
+  ]
+}

@@ -26,7 +26,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -68,7 +68,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -106,7 +106,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -143,7 +143,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -189,7 +189,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -234,7 +234,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -272,7 +272,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -389,7 +389,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -434,7 +434,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -476,7 +476,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -523,7 +523,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -585,7 +585,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -623,7 +623,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },
@@ -668,7 +668,7 @@ describe("compare", () => {
           }),
         },
         responses: {
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/files/{wildcard}": true,
         },

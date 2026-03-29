@@ -25,6 +25,8 @@ import {
 
 const debug = createDebugger("ucdjs:test-utils:mock-store");
 const PATH_PARAM_RE = /\{(\w+)\}/g;
+const CANONICAL_MANIFEST_ENDPOINT = "/api/v1/versions/{version}/manifest";
+const LEGACY_MANIFEST_ENDPOINT = "/.well-known/ucd-store/{version}.json";
 
 const DEFAULT_MOCK_STORE_FILES = {
   "*": [
@@ -74,7 +76,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const endpoint = route.endpoint;
 
     // Every endpoint is optional, but by default enabled
-    const response = responses?.[endpoint as keyof typeof responses] ?? false;
+    const response = resolveEndpointResponse(endpoint, responses);
 
     // If explicitly disabled, skip
     if (response === false) continue;
@@ -164,6 +166,28 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     debug?.("Setting up custom responses");
     mockFetch(customResponses);
   }
+}
+
+// eslint-disable-next-line ts/explicit-function-return-type
+function resolveEndpointResponse(
+  endpoint: string,
+  responses: MockStoreConfig["responses"],
+) {
+  const response = responses?.[endpoint as keyof typeof responses];
+
+  if (response !== undefined) {
+    return response;
+  }
+
+  if (endpoint === CANONICAL_MANIFEST_ENDPOINT) {
+    return responses?.[LEGACY_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
+  }
+
+  if (endpoint === LEGACY_MANIFEST_ENDPOINT) {
+    return responses?.[CANONICAL_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
+  }
+
+  return false;
 }
 
 function toMSWPath(endpoint: string): string {

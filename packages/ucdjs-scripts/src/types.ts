@@ -1,4 +1,4 @@
-import type { ExpectedFile } from "@ucdjs/schemas";
+import type { ExpectedFile, Snapshot } from "@ucdjs/schemas";
 
 export interface GlobalOptions {
   logLevel?: string;
@@ -26,6 +26,7 @@ export interface UnicodeVersion {
 export interface GeneratedManifest {
   version: string;
   manifest: { expectedFiles: ExpectedFile[] };
+  snapshot: Snapshot;
   fileCount: number;
 }
 

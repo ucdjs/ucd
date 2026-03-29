@@ -4,7 +4,6 @@
 
 - package-local `typecheck` script -> none
 - package-local `build` script -> none
-- package-local `test` script -> none
 
 ## Findings
 

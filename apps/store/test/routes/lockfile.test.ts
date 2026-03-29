@@ -5,12 +5,35 @@ import { executeRequest } from "../helpers/request";
 
 describe("store lockfile route", () => {
   it("should return lockfile with versions from R2", async () => {
-    const mockManifestData = {
-      expectedFiles: [
-        "17.0.0/ucd/UnicodeData.txt",
-        "17.0.0/ucd/Blocks.txt",
-        "17.0.0/ucd/emoji/emoji-data.txt",
-      ],
+    const mockSnapshot17 = {
+      unicodeVersion: "17.0.0",
+      files: {
+        "UnicodeData.txt": {
+          hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          fileHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          size: 123,
+        },
+        "Blocks.txt": {
+          hash: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          fileHash: "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          size: 456,
+        },
+        "emoji/emoji-data.txt": {
+          hash: "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+          fileHash: "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          size: 789,
+        },
+      },
+    };
+    const mockSnapshot16 = {
+      unicodeVersion: "16.0.0",
+      files: {
+        "UnicodeData.txt": {
+          hash: "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          fileHash: "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+          size: 321,
+        },
+      },
     };
 
     const mockUploadedDate = new Date("2024-01-15T10:30:00Z");
@@ -19,26 +42,26 @@ describe("store lockfile route", () => {
       list: vi.fn().mockResolvedValue({
         objects: [
           {
-            key: "manifest/17.0.0/manifest.json",
+            key: "manifest/17.0.0/snapshot.json",
             uploaded: mockUploadedDate,
             size: 1024,
           },
           {
-            key: "manifest/16.0.0/manifest.json",
+            key: "manifest/16.0.0/snapshot.json",
             uploaded: new Date("2023-09-15T10:30:00Z"),
             size: 1024,
           },
         ],
       }),
       get: vi.fn().mockImplementation((key: string) => {
-        if (key === "manifest/17.0.0/manifest.json") {
+        if (key === "manifest/17.0.0/snapshot.json") {
           return Promise.resolve({
-            json: () => Promise.resolve(mockManifestData),
+            json: () => Promise.resolve(mockSnapshot17),
           });
         }
-        if (key === "manifest/16.0.0/manifest.json") {
+        if (key === "manifest/16.0.0/snapshot.json") {
           return Promise.resolve({
-            json: () => Promise.resolve({ expectedFiles: ["16.0.0/ucd/UnicodeData.txt"] }),
+            json: () => Promise.resolve(mockSnapshot16),
           });
         }
         return Promise.resolve(null);
@@ -61,15 +84,17 @@ describe("store lockfile route", () => {
     expect(lockfile.versions["17.0.0"]).toMatchObject({
       path: "17.0.0/snapshot.json",
       fileCount: 3,
+      totalSize: 1368,
     });
     expect(lockfile.versions["16.0.0"]).toMatchObject({
       path: "16.0.0/snapshot.json",
       fileCount: 1,
+      totalSize: 321,
     });
 
     expect(mockBucket.list).toHaveBeenCalledWith({ prefix: "manifest/" });
-    expect(mockBucket.get).toHaveBeenCalledWith("manifest/17.0.0/manifest.json");
-    expect(mockBucket.get).toHaveBeenCalledWith("manifest/16.0.0/manifest.json");
+    expect(mockBucket.get).toHaveBeenCalledWith("manifest/17.0.0/snapshot.json");
+    expect(mockBucket.get).toHaveBeenCalledWith("manifest/16.0.0/snapshot.json");
   });
 
   it("should return 502 when UCD_BUCKET is not configured", async () => {
@@ -87,7 +112,7 @@ describe("store lockfile route", () => {
     expect(data.message).toBe("Bad Gateway");
   });
 
-  it("should return empty versions when no manifests exist", async () => {
+  it("should return empty versions when no snapshots exist", async () => {
     const mockBucket = {
       list: vi.fn().mockResolvedValue({
         objects: [],
@@ -129,12 +154,12 @@ describe("store lockfile route", () => {
     expect(data.message).toBe("Bad Gateway");
   });
 
-  it("should skip non-manifest files in R2 listing", async () => {
+  it("should skip non-snapshot files in R2 listing", async () => {
     const mockBucket = {
       list: vi.fn().mockResolvedValue({
         objects: [
           {
-            key: "manifest/17.0.0/manifest.json",
+            key: "manifest/17.0.0/snapshot.json",
             uploaded: new Date("2024-01-15T10:30:00Z"),
             size: 1024,
           },
@@ -151,7 +176,16 @@ describe("store lockfile route", () => {
         ],
       }),
       get: vi.fn().mockResolvedValue({
-        json: () => Promise.resolve({ expectedFiles: ["test.txt"] }),
+        json: () => Promise.resolve({
+          unicodeVersion: "17.0.0",
+          files: {
+            "test.txt": {
+              hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              fileHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              size: 100,
+            },
+          },
+        }),
       }),
     };
 
@@ -169,29 +203,38 @@ describe("store lockfile route", () => {
     expect(lockfile.versions["17.0.0"]).toBeDefined();
   });
 
-  it("should skip manifests that cannot be fetched", async () => {
+  it("should skip snapshots that cannot be fetched", async () => {
     const mockBucket = {
       list: vi.fn().mockResolvedValue({
         objects: [
           {
-            key: "manifest/17.0.0/manifest.json",
+            key: "manifest/17.0.0/snapshot.json",
             uploaded: new Date("2024-01-15T10:30:00Z"),
             size: 1024,
           },
           {
-            key: "manifest/16.0.0/manifest.json",
+            key: "manifest/16.0.0/snapshot.json",
             uploaded: new Date("2023-09-15T10:30:00Z"),
             size: 1024,
           },
         ],
       }),
       get: vi.fn().mockImplementation((key: string) => {
-        if (key === "manifest/17.0.0/manifest.json") {
+        if (key === "manifest/17.0.0/snapshot.json") {
           return Promise.resolve({
-            json: () => Promise.resolve({ expectedFiles: ["test.txt"] }),
+            json: () => Promise.resolve({
+              unicodeVersion: "17.0.0",
+              files: {
+                "test.txt": {
+                  hash: "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                  fileHash: "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  size: 100,
+                },
+              },
+            }),
           });
         }
-        // Return null for 16.0.0 - simulating missing manifest
+        // Return null for 16.0.0 - simulating missing snapshot
         return Promise.resolve(null);
       }),
     };

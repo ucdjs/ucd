@@ -13,7 +13,7 @@
 That is its job. It is supposed to combine:
 
 - endpoint discovery and client access
-- generic filesystem access via `fs-bridge`, which is effectively the current backend layer
+- generic filesystem access via `fs-backend`, which is effectively the current backend layer
 - lockfile and snapshot handling
 - file access, mirroring, syncing, and reporting
 
@@ -32,8 +32,8 @@ Severity: high
 
 Evidence:
 
-- `createUCDStore()` in [packages/ucd-store/src/store.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/store.ts) does endpoint discovery, client creation, bridge construction, version resolution, lockfile detection, lockfile initialization, version conflict handling, and verification.
-- The code path diverges based on whether the bridge supports write operations and whether a lockfile exists.
+- `createUCDStore()` in [packages/ucd-store/src/store.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/store.ts) does endpoint discovery, client creation, backend construction, version resolution, lockfile detection, lockfile initialization, version conflict handling, and verification.
+- The code path diverges based on whether the backend supports write operations and whether a lockfile exists.
 
 Why this is valid criticism:
 
@@ -85,7 +85,7 @@ Severity: high
 Evidence:
 
 - File reads add `/ucd` back when going through the API client in [packages/ucd-store/src/files/get.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/files/get.ts).
-- Local and HTTP bridge reads use Store-style paths without `/ucd` in [packages/ucd-store/src/files/list.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/files/list.ts), [packages/ucd-store/src/files/tree.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/files/tree.ts), and [packages/ucd-store/src/tasks/mirror.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/tasks/mirror.ts).
+- Local and HTTP backend reads use Store-style paths without `/ucd` in [packages/ucd-store/src/files/list.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/files/list.ts), [packages/ucd-store/src/files/tree.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/files/tree.ts), and [packages/ucd-store/src/tasks/mirror.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/tasks/mirror.ts).
 
 Why this is valid criticism:
 
@@ -102,13 +102,13 @@ What to do:
 - Store path
 - Make file operations and mirroring consume that one translation layer instead of hand-building path rules repeatedly.
 
-### 4. The public options still expose too much raw bridge machinery
+### 4. The public options still expose too much raw backend machinery
 
 Severity: medium
 
 Evidence:
 
-- `UCDStoreOptions` in [packages/ucd-store/src/types.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/types.ts) exposes generic `fs`, `FileSystemBridgeFactory`, and `fsOptions`.
+- `UCDStoreOptions` in [packages/ucd-store/src/types.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/types.ts) exposes generic `fs`, `BackendFactory`, and `fsOptions`.
 - The package already has convenience factories in [packages/ucd-store/src/factory.ts](/Users/luxass/dev/ucdjs/ucd/packages/ucd-store/src/factory.ts).
 
 Why this is valid criticism:
@@ -118,14 +118,14 @@ Why this is valid criticism:
 - a Node-backed mirrored store
 - or an HTTP-backed remote store
 - Right now the public surface still leads with the lower-level machinery too much.
-- The current "bridge" wording also hides that `ucd-store` is really depending on a pluggable backend contract.
+- The current low-level factory wording also hides that `ucd-store` is really depending on a pluggable backend contract.
 
 What to do:
 
 - Make `createNodeUCDStore()` and `createHTTPUCDStore()` the clearly preferred entrypoints.
 - Position the raw `fs` + `fsOptions` path as advanced.
-- Reduce the visible bridge-construction complexity for ordinary consumers.
-- If the subsystem moves toward `fs-backend` terminology, align `ucd-store` around that backend concept rather than the current bridge wording.
+- Reduce the visible backend-construction complexity for ordinary consumers.
+- Align `ucd-store` around the backend concept consistently instead of mixing higher-level store semantics with low-level factory details.
 
 ### 5. Store creation mixes attachment, initialization, and verification too aggressively
 

@@ -1,0 +1,14 @@
+{
+  "title": "Pipelines",
+  "description": "Architecture notes for the pipeline package family",
+  "pages": [
+    "index",
+    "core",
+    "executor",
+    "graph",
+    "loader",
+    "playground",
+    "presets",
+    "server"
+  ]
+}

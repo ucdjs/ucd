@@ -3,7 +3,7 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-A TypeScript-first client for the UCD.js API with resource-based helpers for files, versions, manifests, and published server configuration.
+A TypeScript-first client for the UCD.js API with resource-based helpers for files, versions, version manifests, and published server configuration.
 
 ## Installation
 
@@ -58,7 +58,7 @@ const client = createUCDClientWithConfig("https://example.com", {
   version: "0.1",
   endpoints: {
     files: "/custom/api/files",
-    manifest: "/.well-known/ucd-store/{version}.json",
+    manifest: "/custom/api/versions/{version}/manifest",
     versions: "/custom/api/versions",
   },
 });
@@ -92,9 +92,16 @@ This makes it possible to host the API under a different path without changing t
 
 As long as the config points to those paths, the same `client.files.*` and `client.versions.*` methods continue to work.
 
-Regardless of whether you created the client with `createUCDClient()` or `createUCDClientWithConfig()`, the `client.config.get()` and `client.manifest.get(version)` helpers always read the published well-known documents from the origin:
+Regardless of whether you created the client with `createUCDClient()` or `createUCDClientWithConfig()`, `client.config.get()` always reads the published well-known config from the origin:
 
 - `/.well-known/ucd-config.json`
+
+Version manifest requests follow the configured `endpoints.manifest` value. By default that points to the canonical API route:
+
+- `/api/v1/versions/{version}/manifest`
+
+The deprecated compatibility alias remains:
+
 - `/.well-known/ucd-store/<version>.json`
 
 ## Resources
@@ -104,8 +111,9 @@ The returned client exposes resource helpers:
 - `client.files.get(path)` to fetch a Unicode file or directory listing
 - `client.versions.list()` to list available Unicode versions
 - `client.versions.getFileTree(version)` to fetch a version's file tree
+- `client.versions.getManifest(version)` to read the canonical per-version manifest
 - `client.config.get()` to read `/.well-known/ucd-config.json`
-- `client.manifest.get(version)` to read `/.well-known/ucd-store/<version>.json`
+- `client.manifest.get(version)` as a deprecated alias to `client.versions.getManifest(version)`
 
 ### Fetch a file
 
@@ -134,12 +142,12 @@ if (error) {
 ### Read a version manifest
 
 ```typescript
-const { data: manifest, error } = await client.manifest.get("16.0.0");
+const { data: manifest, error } = await client.versions.getManifest("16.0.0");
 
 if (error) {
   console.error("Failed to fetch manifest:", error.message);
 } else {
-  console.log("Expected files:", manifest.files);
+  console.log("Expected files:", manifest.expectedFiles);
 }
 ```
 

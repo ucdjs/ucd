@@ -1,0 +1,34 @@
+---
+title: Packages
+description: Architecture notes for each package in the monorepo
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+This section holds package-specific architecture notes, boundaries, and extension points.
+
+## Core Packages
+
+<Cards>
+  <Card title="CLI" href="/contributing/development/architecture/packages/cli" description="High-level command boundary" />
+  <Card title="Client" href="/contributing/development/architecture/packages/client" description="Typed API client and discovery layer" />
+  <Card title="Env" href="/contributing/development/architecture/packages/env" description="Shared runtime constants and headers" />
+  <Card title="FS Backend" href="/contributing/development/architecture/packages/fs-backend" description="Filesystem backend abstraction" />
+  <Card title="Lockfile" href="/contributing/development/architecture/packages/lockfile" description="Persistent store state and integrity metadata" />
+  <Card title="Path Utils" href="/contributing/development/architecture/packages/path-utils" description="Path normalization and safety utilities" />
+  <Card title="Schema Gen" href="/contributing/development/architecture/packages/schema-gen" description="Schema generation from Unicode data" />
+  <Card title="Schemas" href="/contributing/development/architecture/packages/schemas" description="Shared data contracts" />
+  <Card title="Shared" href="/contributing/development/architecture/packages/shared" description="Internal cross-package helpers" />
+  <Card title="Shared UI" href="/contributing/development/architecture/packages/shared-ui" description="Internal UI primitives and styles" />
+  <Card title="Test Utils" href="/contributing/development/architecture/packages/test-utils" description="Shared test helpers and fixtures" />
+  <Card title="UCD Store" href="/contributing/development/architecture/packages/ucd-store" description="Store coordination and file operations" />
+  <Card title="UCDJS Scripts" href="/contributing/development/architecture/packages/ucdjs-scripts" description="Workflow and local-dev orchestration" />
+  <Card title="Utils" href="/contributing/development/architecture/packages/utils" description="Public utility helpers" />
+  <Card title="Worker Utils" href="/contributing/development/architecture/packages/worker-utils" description="Internal worker and H3 helpers" />
+</Cards>
+
+## Pipeline Packages
+
+<Cards>
+  <Card title="Pipelines" href="/contributing/development/architecture/packages/pipelines" description="Nested architecture notes for the pipeline package family" />
+</Cards>

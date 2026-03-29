@@ -134,6 +134,8 @@ Together these are the source of truth for a local store. The `parseLockfile()` 
 - `computeFileHashWithoutUCDHeader(content: string): Promise<string>` - Compute SHA-256 hash after stripping the Unicode file header (useful for comparing content across versions)
 - `stripUnicodeHeader(content: string): string` - Strip the Unicode file header (filename, date, copyright lines) from content
 
+In snapshot metadata, `fileHash` is always the hash of the exact file bytes. The `hash` field is the semantic comparison hash: text Unicode files strip the Unicode header first, while binary files use the same value as `fileHash`.
+
 ### Error Types
 
 - `LockfileBaseError` - Base error class for all lockfile errors
