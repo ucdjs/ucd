@@ -20,20 +20,19 @@ export function usePipelineRouteData({
   const sourceQuery = useQuery(sourceQueryOptions({ sourceId }));
   const source = sourceQuery.data ?? null;
   const file = source?.files.find((entry) => entry.id === fileId) ?? null;
-  const pipelineExists = file?.pipelines.some((entry) => entry.id === pipelineId) ?? false;
-
+  const hasFile = file != null;
   const pipelineQuery = useQuery({
     ...pipelineQueryOptions({
       sourceId,
       fileId,
       pipelineId,
     }),
-    enabled: pipelineExists,
+    enabled: hasFile,
   });
 
   const pipelineNotFound = isNotFoundError(pipelineQuery.error);
-  const isMissing = !!source && (!file || !pipelineExists || pipelineNotFound);
-  const isPending = sourceQuery.isPending || (pipelineExists && pipelineQuery.isPending && !pipelineQuery.data);
+  const isMissing = !!source && (!file || !hasFile || pipelineNotFound);
+  const isPending = sourceQuery.isPending || (hasFile && pipelineQuery.isPending && !pipelineQuery.data);
 
   useEffect(() => {
     if (!isMissing) {
