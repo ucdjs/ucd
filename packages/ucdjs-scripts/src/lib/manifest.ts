@@ -3,21 +3,52 @@ import type { ExpectedFile, Snapshot, UnicodeFileTree, UnicodeVersionList } from
 import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
 import { createHash } from "node:crypto";
 import {
-  computeUnicodeFileHash,
-  computeUnicodeFileHashWithoutHeader,
+  computeUnicodeBytesHash,
+  computeUnicodeTextHashWithoutHeader,
   createConcurrencyLimiter,
+  customFetch,
   DEFAULT_EXCLUDED_EXTENSIONS,
-  getUnicodeFileSize,
+  getUnicodeBytesSize,
 } from "@ucdjs-internal/shared";
 import { createTar } from "nanotar";
 import { logger } from "./logger";
-import { getClient } from "./utils";
+import { getClientContext } from "./utils";
 
 const EXCLUDED_EXTENSIONS = new Set(
   (DEFAULT_EXCLUDED_EXTENSIONS as readonly string[]).map((ext) => ext.toLowerCase()),
 );
 const VERSIONED_UCD_PREFIX_RE = /^(\/[^/]+)\/ucd\//;
 const SNAPSHOT_BUILD_CONCURRENCY = 8;
+const SNAPSHOT_SEPARATOR = "\n--snapshot--\n";
+const TEXT_DECODER = new TextDecoder();
+const TEXT_CONTENT_TYPE_PREFIXES = ["text/"];
+const TEXT_CONTENT_TYPES = new Set([
+  "application/json",
+  "application/xml",
+  "application/xhtml+xml",
+  "text/csv",
+]);
+const TEXT_CONTENT_TYPE_SUFFIXES = ["+json", "+xml"];
+const BINARY_CONTENT_TYPE_PREFIXES = ["image/", "audio/", "video/", "font/"];
+const BINARY_CONTENT_TYPES = new Set([
+  "application/octet-stream",
+  "application/pdf",
+]);
+const TEXT_FILE_EXTENSIONS = new Set([
+  "csv",
+  "html",
+  "htm",
+  "json",
+  "md",
+  "svg",
+  "txt",
+  "xml",
+]);
+
+interface SnapshotSourceFile {
+  bytes: Uint8Array;
+  contentType: string | null;
+}
 
 function shouldExcludeFile(filePath: string): boolean {
   const lowerPath = filePath.toLowerCase();
@@ -70,24 +101,78 @@ function getSnapshotFilePath(expectedFile: ExpectedFile, version: string): strin
     : expectedFile.storePath.replace(/^\/+/, "");
 }
 
+function normalizeContentType(contentType: string | null): string | null {
+  if (!contentType) {
+    return null;
+  }
+
+  return contentType.split(";")[0]?.trim().toLowerCase() || null;
+}
+
+function shouldTreatAsText(path: string, contentType: string | null): boolean {
+  const normalizedContentType = normalizeContentType(contentType);
+
+  if (normalizedContentType) {
+    if (
+      TEXT_CONTENT_TYPES.has(normalizedContentType)
+      || TEXT_CONTENT_TYPE_PREFIXES.some((prefix) => normalizedContentType.startsWith(prefix))
+      || TEXT_CONTENT_TYPE_SUFFIXES.some((suffix) => normalizedContentType.endsWith(suffix))
+    ) {
+      return true;
+    }
+
+    if (
+      BINARY_CONTENT_TYPES.has(normalizedContentType)
+      || BINARY_CONTENT_TYPE_PREFIXES.some((prefix) => normalizedContentType.startsWith(prefix))
+    ) {
+      return false;
+    }
+  }
+
+  const ext = path.split(".").pop()?.toLowerCase();
+  return !!ext && TEXT_FILE_EXTENSIONS.has(ext);
+}
+
+async function fetchSnapshotSourceFile(
+  apiBaseUrl: string,
+  filesEndpoint: string,
+  path: string,
+): Promise<SnapshotSourceFile> {
+  const cleanPath = path.replace(/^\/+/, "");
+  const basePath = filesEndpoint.endsWith("/") ? filesEndpoint : `${filesEndpoint}/`;
+  const url = new URL(cleanPath, new URL(basePath, apiBaseUrl));
+  const result = await customFetch.safe<ArrayBuffer, "arrayBuffer">(url.toString(), {
+    parseAs: "arrayBuffer",
+  });
+
+  if (result.error || !result.data) {
+    throw result.error ?? new Error(`Missing file content for ${path}`);
+  }
+
+  return {
+    bytes: new Uint8Array(result.data),
+    contentType: result.response?.headers.get("content-type") ?? null,
+  };
+}
+
 async function buildSnapshot(
   version: string,
   expectedFiles: ExpectedFile[],
-  readFile: (path: string) => Promise<string>,
+  readFile: (path: string) => Promise<SnapshotSourceFile>,
 ): Promise<Snapshot> {
   const limit = createConcurrencyLimiter(SNAPSHOT_BUILD_CONCURRENCY);
 
   const files = Object.fromEntries(await Promise.all(expectedFiles.map((expectedFile) => limit(async () => {
-    const content = await readFile(expectedFile.path);
-    const [hash, fileHash] = await Promise.all([
-      computeUnicodeFileHashWithoutHeader(content),
-      computeUnicodeFileHash(content),
-    ]);
+    const { bytes, contentType } = await readFile(expectedFile.path);
+    const fileHash = await computeUnicodeBytesHash(bytes);
+    const hash = shouldTreatAsText(expectedFile.path, contentType)
+      ? await computeUnicodeTextHashWithoutHeader(TEXT_DECODER.decode(bytes))
+      : fileHash;
 
     return [getSnapshotFilePath(expectedFile, version), {
       hash,
       fileHash,
-      size: getUnicodeFileSize(content),
+      size: getUnicodeBytesSize(bytes),
     }] as const;
   }))));
 
@@ -106,7 +191,7 @@ export async function generateManifests(
     batchSize = 5,
   } = options;
 
-  const client = await getClient(apiBaseUrl);
+  const { client, endpoints } = await getClientContext(apiBaseUrl);
 
   let versionsToProcess: Array<{ version: string }>;
 
@@ -139,16 +224,11 @@ export async function generateManifests(
           logger.debug(`Using cached files for ${version}`);
         }
 
-        const snapshot = await buildSnapshot(version, expectedFiles, async (path) => {
-          // eslint-disable-next-line e18e/prefer-static-regex
-          const result = unwrap(await client.files.get(path.replace(/^\/+/, "")));
-
-          if (typeof result !== "string") {
-            throw new TypeError(`Expected text content for ${path}`);
-          }
-
-          return result;
-        });
+        const snapshot = await buildSnapshot(
+          version,
+          expectedFiles,
+          (path) => fetchSnapshotSourceFile(apiBaseUrl, endpoints.files, path),
+        );
 
         const manifest = { expectedFiles };
         return {
@@ -198,9 +278,10 @@ export function createManifestTar(manifest: GeneratedManifest): Uint8Array {
   ]);
 }
 
-export function createManifestEtag(manifest: GeneratedManifest["manifest"]): string {
-  const manifestBody = JSON.stringify(manifest, null, 2);
-  const hash = createHash("md5").update(manifestBody).digest("hex");
+export function createManifestEtag(manifest: Pick<GeneratedManifest, "manifest" | "snapshot">): string {
+  const manifestBody = JSON.stringify(manifest.manifest, null, 2);
+  const snapshotBody = JSON.stringify(manifest.snapshot, null, 2);
+  const hash = createHash("sha256").update(`${manifestBody}${SNAPSHOT_SEPARATOR}${snapshotBody}`).digest("hex");
 
   return `"${hash}"`;
 }

@@ -26,6 +26,10 @@ function uint8ArrayToHex(bytes: Uint8Array): string {
   return result;
 }
 
+function normalizeBytes(content: Uint8Array | ArrayBuffer): Uint8Array {
+  return content instanceof Uint8Array ? content : new Uint8Array(content);
+}
+
 export function stripUnicodeHeader(content: string): string {
   const lines = content.split("\n");
   let headerEndIndex = 0;
@@ -61,16 +65,38 @@ export function stripUnicodeHeader(content: string): string {
   return content;
 }
 
-export async function computeUnicodeFileHash(content: string | Uint8Array): Promise<string> {
-  const data = typeof content === "string" ? textEncoder.encode(content) : content;
+export async function computeUnicodeBytesHash(content: Uint8Array | ArrayBuffer): Promise<string> {
+  const data = normalizeBytes(content);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data as Uint8Array<ArrayBuffer>);
   return `sha256:${uint8ArrayToHex(new Uint8Array(hashBuffer))}`;
 }
 
+export async function computeUnicodeTextHash(content: string): Promise<string> {
+  return computeUnicodeBytesHash(textEncoder.encode(content));
+}
+
+export async function computeUnicodeTextHashWithoutHeader(content: string): Promise<string> {
+  return computeUnicodeTextHash(stripUnicodeHeader(content));
+}
+
+export function getUnicodeBytesSize(content: Uint8Array | ArrayBuffer): number {
+  return normalizeBytes(content).byteLength;
+}
+
+export function getUnicodeTextSize(content: string): number {
+  return textEncoder.encode(content).length;
+}
+
+export async function computeUnicodeFileHash(content: string | Uint8Array): Promise<string> {
+  return typeof content === "string"
+    ? computeUnicodeTextHash(content)
+    : computeUnicodeBytesHash(content);
+}
+
 export async function computeUnicodeFileHashWithoutHeader(content: string): Promise<string> {
-  return computeUnicodeFileHash(stripUnicodeHeader(content));
+  return computeUnicodeTextHashWithoutHeader(content);
 }
 
 export function getUnicodeFileSize(content: string): number {
-  return textEncoder.encode(content).length;
+  return getUnicodeTextSize(content);
 }
