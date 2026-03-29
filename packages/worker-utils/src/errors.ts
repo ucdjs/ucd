@@ -1,6 +1,7 @@
 import type { ApiError } from "@ucdjs/schemas";
 import type { Context } from "hono";
 import type { TypedResponse } from "hono/types";
+import type { StatusCode } from "hono/utils/http-status";
 
 export interface ResponseOptions {
   /**
@@ -14,6 +15,24 @@ export interface ResponseOptions {
    * or any other headers that might be relevant to the response.
    */
   headers?: Record<string, string>;
+}
+
+function jsonApiErrorResponse<TStatus extends StatusCode>(
+  status: TStatus,
+  options: ResponseOptions,
+  fallbackMessage: string,
+): Response & TypedResponse<ApiError, TStatus, "json"> {
+  return Response.json({
+    message: options.message || fallbackMessage,
+    status,
+    timestamp: new Date().toISOString(),
+  } satisfies ApiError, {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  }) as Response & TypedResponse<ApiError, TStatus, "json">;
 }
 
 /**
@@ -49,17 +68,7 @@ export function badRequest(contextOrOptions: Context | ResponseOptions = {}, opt
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Bad Request",
-    status: 400,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 400,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(400, finalOptions, "Bad Request");
 }
 
 /**
@@ -95,17 +104,7 @@ export function forbidden(contextOrOptions: Context | ResponseOptions = {}, opti
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Forbidden",
-    status: 403,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 403,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(403, finalOptions, "Forbidden");
 }
 
 /**
@@ -141,17 +140,7 @@ export function notFound(contextOrOptions: Context | ResponseOptions = {}, optio
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Not Found",
-    status: 404,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 404,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(404, finalOptions, "Not Found");
 }
 
 /**
@@ -187,17 +176,7 @@ export function internalServerError(contextOrOptions: Context | ResponseOptions 
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Internal Server Error",
-    status: 500,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 500,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(500, finalOptions, "Internal Server Error");
 }
 
 export function badGateway(contextOrOptions: Context | ResponseOptions = {}, options: ResponseOptions = {}): Response & TypedResponse<ApiError, 502, "json"> {
@@ -210,17 +189,7 @@ export function badGateway(contextOrOptions: Context | ResponseOptions = {}, opt
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Bad Gateway",
-    status: 502,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 502,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(502, finalOptions, "Bad Gateway");
 }
 
 export function unauthorized(contextOrOptions: Context | ResponseOptions = {}, options: ResponseOptions = {}): Response & TypedResponse<ApiError, 401, "json"> {
@@ -233,17 +202,7 @@ export function unauthorized(contextOrOptions: Context | ResponseOptions = {}, o
     finalOptions = contextOrOptions;
   }
 
-  return Response.json({
-    message: finalOptions.message || "Unauthorized",
-    status: 401,
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, {
-    status: 401,
-    headers: {
-      "Content-Type": "application/json",
-      ...finalOptions.headers,
-    },
-  }) as any;
+  return jsonApiErrorResponse(401, finalOptions, "Unauthorized");
 }
 
 export type CustomResponseOptions = Omit<Required<ResponseOptions>, "headers"> & {

@@ -24,6 +24,8 @@ app.get("/", () => {
   return {
     name: "UCD Store API",
     description: "Filesystem-style interface for Unicode Character Database files",
+    // TODO(luxass): Keep this hand-maintained for now. If Store ever starts carrying
+    // breaking app-level changes, source this from a real app version instead.
     version: "1.0.0",
     endpoints: {
       lockfile: "GET /.ucd-store.lock",

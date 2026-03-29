@@ -74,6 +74,9 @@ export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
   setup: (context: MockRouteHandlerContext<Endpoint>) => void;
 }
 
+export type MockRouteProvidedResponse<Endpoint extends EndpointWithGet>
+  = MockRouteHandlerContext<Endpoint>["providedResponse"];
+
 type DerivedEndpointConfig = InferEndpointConfig<typeof MOCK_ROUTES>;
 
 type DerivedResponses = Partial<{
@@ -205,13 +208,19 @@ export interface ConfiguredResponseConfig<Response> {
   after?: OnAfterMockFetchCallback;
 }
 
+export interface ConfiguredResponseMetadata {
+  latency?: ConfiguredResponseConfig<unknown>["latency"];
+  headers?: ConfiguredResponseConfig<unknown>["headers"];
+  before?: ConfiguredResponseConfig<unknown>["before"];
+  after?: ConfiguredResponseConfig<unknown>["after"];
+}
+
+export type ConfiguredResponseCarrier = object & {
+  [kConfiguredResponse]: ConfiguredResponseMetadata;
+};
+
 export type ConfiguredResponse<Response> = Response & {
-  [kConfiguredResponse]: {
-    latency?: ConfiguredResponseConfig<Response>["latency"];
-    headers?: ConfiguredResponseConfig<Response>["headers"];
-    before?: ConfiguredResponseConfig<Response>["before"];
-    after?: ConfiguredResponseConfig<Response>["after"];
-  };
+  [kConfiguredResponse]: ConfiguredResponseMetadata;
 };
 
 export interface WrapMockFetchCallbackPayload {
