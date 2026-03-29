@@ -70,7 +70,7 @@ export function createApp(options: AppOptions = {}): H3 {
   }
 
   const app = new H3({ debug: true });
-  const resolvedSources = sources.length > 0 ? sources : resolvePipelineSources(sources);
+  const resolvedSources = resolvePipelineSources(sources);
 
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
