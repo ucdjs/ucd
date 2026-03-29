@@ -124,6 +124,7 @@ export interface MockStoreConfig {
    *
    * It will be used by the following endpoints:
    * - `/api/v1/versions/{version}/file-tree`
+   * - `/api/v1/versions/{version}/manifest`
    * - `/.well-known/ucd-store/{version}.json`
    *
    * A special key of `*` can be used to mock all versions.
