@@ -1,6 +1,6 @@
 # @ucdjs/lockfile
 
-## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.7...@ucdjs/lockfile@0.1.1-beta.8) (2026-03-29)
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.8...@ucdjs/lockfile@0.1.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -18,8 +18,6 @@
 
 ### 📚 Documentation
 * update README with usage examples and overview ([57bfa6c6](https://github.com/ucdjs/ucd/commit/57bfa6c6ab9d86b516147c28d34e443438c66c90)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.6...@ucdjs/lockfile@0.1.1-beta.7) (2026-02-27)
 
 

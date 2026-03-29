@@ -1,6 +1,6 @@
 # @ucdjs-internal/shared
 
-## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.7...@ucdjs-internal/shared@0.1.1-beta.8) (2026-03-29)
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.8...@ucdjs-internal/shared@0.1.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -8,8 +8,6 @@
 
 ### 📚 Documentation
 * update descriptions and clarify utility functions ([b910d151](https://github.com/ucdjs/ucd/commit/b910d151c461183e2b63f46547e05197e1a64508)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.6...@ucdjs-internal/shared@0.1.1-beta.7) (2026-02-27)
 
 
