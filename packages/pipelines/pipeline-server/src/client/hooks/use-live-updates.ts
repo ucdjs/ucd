@@ -1,10 +1,12 @@
+import { sourceQueryOptions } from "#queries/source";
+import { sourceOverviewQueryOptions } from "#queries/source-overview";
+import { sourcesQueryOptions } from "#queries/sources";
 import { LiveEventSchema } from "#shared/schemas/live";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
 const RECONNECT_BASE_DELAY_MS = 500;
 const RECONNECT_MAX_DELAY_MS = 5_000;
-const SOURCES_QUERY_KEY = ["sources"] as const;
 
 function getLiveUrl(): string | null {
   if (typeof window === "undefined") {
@@ -38,18 +40,22 @@ export function useLiveUpdates() {
 
     async function invalidateSources() {
       await queryClient.invalidateQueries({
-        queryKey: SOURCES_QUERY_KEY,
+        queryKey: sourcesQueryOptions().queryKey,
+        exact: true,
       });
     }
 
     async function invalidateSource(sourceId: string) {
       await Promise.all([
         queryClient.invalidateQueries({
-          queryKey: SOURCES_QUERY_KEY,
+          queryKey: sourcesQueryOptions().queryKey,
           exact: true,
         }),
         queryClient.invalidateQueries({
-          queryKey: [...SOURCES_QUERY_KEY, sourceId],
+          queryKey: sourceQueryOptions({ sourceId }).queryKey,
+        }),
+        queryClient.invalidateQueries({
+          queryKey: sourceOverviewQueryOptions({ sourceId }).queryKey,
         }),
       ]);
     }
