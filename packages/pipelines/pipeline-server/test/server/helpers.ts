@@ -168,9 +168,13 @@ export async function seedExecutionTrace(db: Database, options: SeedExecutionTra
     id: randomUUID(),
     workspaceId: options.workspaceId ?? "test",
     executionId: options.executionId,
+    traceId: options.traceId ?? null,
     spanId: options.spanId ?? null,
+    parentSpanId: options.parentSpanId ?? null,
     kind: options.kind,
-    timestamp: options.timestamp ?? new Date("2026-01-01T00:00:03.000Z"),
+    startTimestamp: options.startTimestamp ?? null,
+    durationMs: options.durationMs ?? null,
+    endTimestamp: options.endTimestamp ?? new Date("2026-01-01T00:00:03.000Z"),
     data: options.data,
   });
 }
