@@ -13,7 +13,8 @@ export function LogLevelBadge({ level, className }: LogLevelBadgeProps) {
       "font-mono text-xs font-medium uppercase w-10 shrink-0 text-center",
       level != null ? LEVEL_COLOR[level] : "text-muted-foreground/40",
       className,
-    )}>
+    )}
+    >
       {level ?? "—"}
     </span>
   );
