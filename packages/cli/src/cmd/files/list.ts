@@ -1,4 +1,3 @@
-import type { FileEntryList } from "@ucdjs/schemas";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { createDebugger } from "@ucdjs-internal/shared";
@@ -8,6 +7,14 @@ import { printHelp } from "../../cli-utils";
 import { dim, green, output, red } from "../../output";
 
 const debug = createDebugger("ucdjs:cli:files:list");
+
+interface FileEntry {
+  name: string;
+  type: "file" | "directory";
+  lastModified: number | null;
+}
+
+type FileEntryList = FileEntry[];
 
 export interface CLIFilesListCmdOptions {
   path: string;

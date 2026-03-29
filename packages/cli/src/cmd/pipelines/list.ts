@@ -1,5 +1,5 @@
-import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
+import type { Prettify } from "../../types";
 import path from "node:path";
 import process from "node:process";
 import {

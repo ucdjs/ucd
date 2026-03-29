@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "@clack/prompts": "catalog:runtime",
-    "@luxass/utils": "catalog:runtime",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
@@ -52,7 +51,6 @@
     "@ucdjs/pipelines-loader": "workspace:*",
     "@ucdjs/pipelines-server": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "farver": "catalog:runtime",

@@ -1,5 +1,5 @@
-import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
+import type { Prettify } from "../../types";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
