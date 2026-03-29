@@ -168,6 +168,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
   }
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 function resolveEndpointResponse(
   endpoint: string,
   responses: MockStoreConfig["responses"],

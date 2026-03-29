@@ -66,6 +66,7 @@ function getSnapshotFilePath(expectedFile: ExpectedFile, version: string): strin
   const prefix = `/${version}/`;
   return expectedFile.storePath.startsWith(prefix)
     ? expectedFile.storePath.slice(prefix.length)
+    // eslint-disable-next-line e18e/prefer-static-regex
     : expectedFile.storePath.replace(/^\/+/, "");
 }
 
@@ -139,10 +140,11 @@ export async function generateManifests(
         }
 
         const snapshot = await buildSnapshot(version, expectedFiles, async (path) => {
+          // eslint-disable-next-line e18e/prefer-static-regex
           const result = unwrap(await client.files.get(path.replace(/^\/+/, "")));
 
           if (typeof result !== "string") {
-            throw new Error(`Expected text content for ${path}`);
+            throw new TypeError(`Expected text content for ${path}`);
           }
 
           return result;
