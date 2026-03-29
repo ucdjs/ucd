@@ -1,4 +1,5 @@
 import { PipelineHeader } from "#components/pipeline/pipeline-header";
+import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
 import { executionsQueryOptions } from "#queries/execution";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { sourceQueryOptions } from "#queries/source";
@@ -45,7 +46,16 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
 });
 
 function RouteComponent() {
-  const { file, source, pipeline } = Route.useLoaderData();
+  const { sourceId, sourceFileId, pipelineId } = Route.useParams();
+  const { file, source, pipeline } = usePipelineRouteData({
+    sourceId,
+    fileId: sourceFileId,
+    pipelineId,
+  });
+
+  if (!file || !source || !pipeline) {
+    return null;
+  }
 
   return (
     <div className="h-full flex flex-col bg-background">
