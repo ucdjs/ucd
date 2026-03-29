@@ -14,6 +14,29 @@ A collection of core pipeline functionalities for the UCD project.
 npm install @ucdjs/pipelines-graph
 ```
 
+## Usage
+
+This package keeps graph construction and graph inspection separate from pipeline definition loading and execution.
+Use it when you already have a pipeline definition or execution graph and need a stable graph-shaped view for tooling, visualization, or debugging.
+
+```ts
+import { buildRouteGraph, toVisualTree } from "@ucdjs/pipelines-graph";
+import { buildDAG } from "@ucdjs/pipelines-core";
+
+const dag = buildDAG(pipeline.routes);
+const graph = buildRouteGraph(pipeline, dag);
+
+console.log(toVisualTree(graph));
+```
+
+Example output:
+
+```txt
+└─ route:static:emoji
+   ├─ route:static:groups
+   └─ route:static:summary
+```
+
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
