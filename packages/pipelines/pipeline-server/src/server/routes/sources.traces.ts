@@ -1,4 +1,6 @@
+import type { ExecutionTrace } from "#server/db/schema";
 import type { ExecutionTracesResponse } from "#shared/schemas/execution";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { schema } from "#server/db";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
 import { and, asc, eq, sql } from "drizzle-orm";
@@ -53,27 +55,28 @@ sourcesTracesRouter.get(
         asc(schema.executionTraces.id),
       );
 
-    // Spans: own startTimestamp. Events: startTimestamp IS NULL (borrow parent's spanId).
-    const spanRows = allRows.filter((r) => r.startTimestamp != null);
-    const eventRows = allRows.filter((r) => r.startTimestamp == null);
+    const spanRows: ExecutionTrace[] = [];
+    const eventsBySpanId = new Map<string, ExecutionTrace[]>();
+    const manifestData: PipelineTraceRecord[] = [];
+    let rootSpan: ExecutionTrace | undefined;
 
-    // Group events by their spanId (= the parent span's spanId)
-    const eventsBySpanId = new Map<string, typeof eventRows>();
-    for (const ev of eventRows) {
-      if (!ev.spanId) continue;
-      const list = eventsBySpanId.get(ev.spanId) ?? [];
-      list.push(ev);
-      eventsBySpanId.set(ev.spanId, list);
+    for (const row of allRows) {
+      if (row.startTimestamp != null) {
+        spanRows.push(row);
+        if (row.kind === "pipeline") rootSpan = row;
+        if (row.kind === "output.resolved") manifestData.push(row.data);
+        continue;
+      }
+
+      if (row.spanId) {
+        let list = eventsBySpanId.get(row.spanId);
+        if (!list) eventsBySpanId.set(row.spanId, list = []);
+        list.push(row);
+      }
+      if (row.kind === "output.written") manifestData.push(row.data);
     }
 
-    // Root pipeline span carries trace-level metadata
-    const rootSpan = spanRows.find((r) => r.kind === "pipeline");
-
-    // Output manifest from output.resolved spans + output.written events
-    const manifestRows = allRows.filter(
-      (r) => r.kind === "output.resolved" || r.kind === "output.written",
-    );
-    const outputManifest = buildOutputManifestFromTraces(manifestRows.map((r) => r.data));
+    const outputManifest = buildOutputManifestFromTraces(manifestData);
 
     const BASE_KEYS = new Set([
       "id",

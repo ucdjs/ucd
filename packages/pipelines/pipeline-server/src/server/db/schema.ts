@@ -29,6 +29,8 @@ export const workspaces = sqliteTable("workspaces", {
   updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
 });
 
+export type Workspace = typeof workspaces.$inferSelect;
+
 export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
@@ -46,6 +48,8 @@ export const executions = sqliteTable("executions", {
   index("executions_workspace_pipeline_idx").on(table.workspaceId, table.pipelineId),
   index("executions_workspace_started_idx").on(table.workspaceId, table.startedAt),
 ]);
+
+export type Execution = typeof executions.$inferSelect;
 
 export const executionTraces = sqliteTable("execution_traces", {
   id: text("id").primaryKey(),
@@ -66,6 +70,8 @@ export const executionTraces = sqliteTable("execution_traces", {
   index("execution_traces_execution_start_idx").on(table.executionId, table.startTimestamp),
 ]);
 
+export type ExecutionTrace = typeof executionTraces.$inferSelect;
+
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
@@ -81,3 +87,5 @@ export const executionLogs = sqliteTable("execution_logs", {
   index("execution_logs_workspace_execution_idx").on(table.workspaceId, table.executionId),
   index("execution_logs_workspace_timestamp_idx").on(table.workspaceId, table.timestamp),
 ]);
+
+export type ExecutionLog = typeof executionLogs.$inferSelect;
