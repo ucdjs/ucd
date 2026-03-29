@@ -12,7 +12,7 @@ describe.todo("node integration: store creation", () => {
           "/api/v1/versions": true,
           "/api/v1/files/{wildcard}": true,
           "/api/v1/versions/{version}/file-tree": true,
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/.well-known/ucd-config.json": true,
         },
       });

@@ -289,7 +289,7 @@ describe("getFileTree", () => {
           "/api/v1/versions": true,
           "/api/v1/files/{wildcard}": true,
           "/.well-known/ucd-config.json": true,
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
         },
         onRequest: ({ path }) => {
           if (path === "/api/v1/versions/17.0.0/file-tree") {
@@ -325,7 +325,7 @@ describe("getFileTree", () => {
           "/api/v1/versions": true,
           "/api/v1/files/{wildcard}": true,
           "/.well-known/ucd-config.json": true,
-          "/.well-known/ucd-store/{version}.json": true,
+          "/api/v1/versions/{version}/manifest": true,
         },
         onRequest: ({ path }) => {
           if (path === "/api/v1/versions/17.0.0/file-tree") {

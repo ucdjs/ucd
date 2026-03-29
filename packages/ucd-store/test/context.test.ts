@@ -357,7 +357,7 @@ describe("getExpectedFilePaths", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": {
+          "/api/v1/versions/{version}/manifest": {
             expectedFiles: [
               { name: "ReadMe.txt", path: "/15.0.0/ucd/ReadMe.txt", storePath: "/15.0.0/ReadMe.txt" },
               { name: "UnicodeData.txt", path: "/15.0.0/ucd/UnicodeData.txt", storePath: "/15.0.0/UnicodeData.txt" },
@@ -384,7 +384,7 @@ describe("getExpectedFilePaths", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": {
+          "/api/v1/versions/{version}/manifest": {
             expectedFiles: [],
           },
         },
@@ -405,7 +405,7 @@ describe("getExpectedFilePaths", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": {
+          "/api/v1/versions/{version}/manifest": {
             status: 404,
             message: "Version not found",
             timestamp: new Date().toISOString(),
@@ -426,7 +426,7 @@ describe("getExpectedFilePaths", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/.well-known/ucd-store/{version}.json": {
+          "/api/v1/versions/{version}/manifest": {
             // @ts-expect-error - This is a test error
             // Missing expectedFiles
             version: "15.0.0",
