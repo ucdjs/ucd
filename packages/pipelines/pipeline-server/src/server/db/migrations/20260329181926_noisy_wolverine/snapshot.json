@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "e26d2fd3-ab27-4a6e-84b2-5f8faa4b3535",
+  "id": "c886f0f2-21c7-44c1-b448-d40e2d43642f",
   "prevIds": [
-    "6e5cebdf-c41b-4f07-9d01-9c95522f541f"
+    "a2739b01-aa66-42ea-b3e5-774c1c40b327"
   ],
   "ddl": [
     {
@@ -602,5 +602,7 @@
       "table": "executions"
     }
   ],
-  "renames": []
+  "renames": [
+    "execution_traces.timestamp->execution_traces.start_timestamp"
+  ]
 }
