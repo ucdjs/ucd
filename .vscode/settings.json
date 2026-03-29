@@ -47,6 +47,6 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
-  "ts.tsdk": "node_modules/typescript/lib",
-  "ts.experimental.useTsgo": true
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.experimental.useTsgo": true,
 }

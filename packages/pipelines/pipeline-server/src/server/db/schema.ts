@@ -58,6 +58,7 @@ export const executionTraces = sqliteTable("execution_traces", {
   parentSpanId: text("parent_span_id"),
   kind: text("kind").$type<PipelineTraceKind>().notNull(),
   startTimestamp: real("start_timestamp"),
+  durationMs: real("duration_ms"),
   endTimestamp: integer("end_timestamp", { mode: "timestamp_ms" }).notNull(),
   data: text("data", { mode: "json" }).$type<PipelineTraceRecord>().notNull(),
 }, (table) => [

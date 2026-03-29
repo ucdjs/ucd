@@ -297,6 +297,7 @@ async function persistSpans(
       parentSpanId: parentSpanId ?? null,
       kind: span.name as PipelineTraceKind,
       startTimestamp: startMs,
+      durationMs: endMs - startMs,
       endTimestamp: new Date(endMs),
       data: spanData,
     });
@@ -326,6 +327,7 @@ async function persistSpans(
         spanId,
         parentSpanId: parentSpanId ?? null,
         kind: eventKind as PipelineTraceKind,
+        durationMs: null,
         endTimestamp: new Date(eventMs),
         data: eventData,
       });
@@ -365,6 +367,7 @@ async function persistSpans(
         spanId,
         parentSpanId: parentSpanId ?? null,
         kind: "error",
+        durationMs: null,
         endTimestamp: new Date(endMs),
         data: errorData,
       });
