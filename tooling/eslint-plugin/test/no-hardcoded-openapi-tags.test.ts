@@ -10,7 +10,7 @@ const tester = new RuleTester({
 });
 
 it("validates the rule with RuleTester", () => {
-  tester.run("no-hardcoded-openapi-tags", rule, {
+  tester.run("no-hardcoded-openapi-tags", rule as any, {
     valid: [
       `createRoute({ tags: [OPENAPI_TAGS.FILES] });`,
       `createRoute({ tags: [someTag] });`,
