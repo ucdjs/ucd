@@ -1,4 +1,5 @@
 // @ts-check
+import pkg from "../package.json" with { type: "json" };
 import noHardcodedOpenApiTags from "./rules/no-hardcoded-openapi-tags.js";
 
 /**
@@ -7,7 +8,7 @@ import noHardcodedOpenApiTags from "./rules/no-hardcoded-openapi-tags.js";
 const plugin = {
   meta: {
     name: "@ucdjs-tooling/eslint-plugin",
-    version: "1.0.0",
+    version: pkg.version,
   },
   rules: {
     // @ts-ignore
