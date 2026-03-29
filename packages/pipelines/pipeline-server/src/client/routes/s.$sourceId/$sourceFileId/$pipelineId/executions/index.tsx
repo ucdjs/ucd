@@ -19,7 +19,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/exe
 
 function ExecutionsListPage() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
-  const { pipelineResponse } = ParentRoute.useLoaderData();
+  const { pipeline } = ParentRoute.useLoaderData();
   const { data } = useSuspenseQuery(executionsQueryOptions({
     sourceId,
     fileId: sourceFileId,
@@ -32,7 +32,7 @@ function ExecutionsListPage() {
       <header className="flex flex-col gap-1 border-b border-border/60 pb-4">
         <h1 className="text-lg font-semibold tracking-tight">Executions</h1>
         <div className="text-sm text-muted-foreground">
-          {pipelineResponse.pipeline.name || pipelineId}
+          {pipeline.name || pipelineId}
           {" · "}
           {data.executions.length}
         </div>

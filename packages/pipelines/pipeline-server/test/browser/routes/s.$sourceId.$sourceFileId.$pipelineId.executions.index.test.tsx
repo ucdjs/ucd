@@ -52,34 +52,32 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => {
         return HttpResponse.json({
-          pipeline: {
-            id: "main-pipeline",
-            name: "Main pipeline",
-            description: "Build and publish",
-            include: undefined,
-            versions: ["16.0.0", "15.1.0"],
-            routeCount: 2,
-            sourceCount: 1,
-            routes: [
-              {
-                id: "compile",
-                cache: true,
-                depends: [],
-                filter: undefined,
-                outputs: [],
-                transforms: ["normalize"],
-              },
-              {
-                id: "publish",
-                cache: false,
-                depends: [{ type: "route", routeId: "compile" }],
-                filter: undefined,
-                outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }],
-                transforms: [],
-              },
-            ],
-            sources: [{ id: "local" }],
-          },
+          id: "main-pipeline",
+          name: "Main pipeline",
+          description: "Build and publish",
+          include: undefined,
+          versions: ["16.0.0", "15.1.0"],
+          routeCount: 2,
+          sourceCount: 1,
+          routes: [
+            {
+              id: "compile",
+              cache: true,
+              depends: [],
+              filter: undefined,
+              outputs: [],
+              transforms: ["normalize"],
+            },
+            {
+              id: "publish",
+              cache: false,
+              depends: [{ type: "route", routeId: "compile" }],
+              filter: undefined,
+              outputs: [{ id: "publish-out", sink: "file", format: "text", dir: "dist", fileName: "bundle.txt" }],
+              transforms: [],
+            },
+          ],
+          sources: [{ id: "local" }],
         });
       }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {
@@ -176,17 +174,15 @@ describe("file-based route /s/$sourceId/$sourceFileId/$pipelineId/executions", (
       }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline", () => {
         return HttpResponse.json({
-          pipeline: {
-            id: "main-pipeline",
-            name: "Main pipeline",
-            description: "Build and publish",
-            include: undefined,
-            versions: ["16.0.0", "15.1.0"],
-            routeCount: 0,
-            sourceCount: 1,
-            routes: [],
-            sources: [{ id: "local" }],
-          },
+          id: "main-pipeline",
+          name: "Main pipeline",
+          description: "Build and publish",
+          include: undefined,
+          versions: ["16.0.0", "15.1.0"],
+          routeCount: 0,
+          sourceCount: 1,
+          routes: [],
+          sources: [{ id: "local" }],
         });
       }],
       ["GET", "/api/sources/local/files/alpha/pipelines/main-pipeline/executions", ({ request }) => {

@@ -1,23 +1,25 @@
 import { DefinitionGraph } from "#components/inspect/definition-graph";
-import { createFileRoute, getRouteApi, Link, useNavigate } from "@tanstack/react-router";
+import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button, buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, FileOutput, FolderOutput, Link2, Shuffle, Spline } from "lucide-react";
-
-const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId")({
   component: RouteDetailPage,
 });
 
 function RouteDetailPage() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
   const { sourceId, sourceFileId, pipelineId, routeId } = Route.useParams();
+  const { pipeline } = usePipelineRouteData({
+    sourceId,
+    fileId: sourceFileId,
+    pipelineId,
+  });
   const navigate = useNavigate();
 
-  const selectedRoute = pipeline.routes.find((route) => route.id === routeId);
+  const selectedRoute = pipeline!.routes.find((route) => route.id === routeId);
 
   if (!selectedRoute) {
     return (
@@ -86,11 +88,11 @@ function RouteDetailPage() {
                 {selectedRoute.filter ?? "Custom filter"}
               </code>
             </div>
-            {pipeline.include && (
+            {pipeline!.include && (
               <div className="space-y-2">
                 <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Pipeline scope</div>
                 <code className="block break-all rounded-lg border border-border/60 bg-muted/10 px-3 py-3 text-sm">
-                  {pipeline.include}
+                  {pipeline!.include}
                 </code>
               </div>
             )}
@@ -105,7 +107,7 @@ function RouteDetailPage() {
           </div>
           <div className="h-56">
             <DefinitionGraph
-              pipeline={pipeline}
+              pipeline={pipeline!}
               selectedRouteId={selectedRoute.id}
               onRouteSelect={handleRouteSelect}
               onOutputSelect={handleOutputSelect}

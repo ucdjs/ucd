@@ -4,12 +4,12 @@ import { FolderOutput } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/")({
   loader: async ({ context, params }) => {
-    const pipelineResponse = await context.queryClient.ensureQueryData(pipelineQueryOptions({
+    const pipeline = await context.queryClient.ensureQueryData(pipelineQueryOptions({
       sourceId: params.sourceId,
       fileId: params.sourceFileId,
       pipelineId: params.pipelineId,
     }));
-    const firstRoute = pipelineResponse.pipeline.routes[0];
+    const firstRoute = pipeline.routes[0];
     if (firstRoute && firstRoute.outputs.length > 0) {
       throw redirect({
         to: "/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey",

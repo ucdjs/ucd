@@ -16,18 +16,17 @@ import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/s/$sourceId/")({
   loader: async ({ context, params }) => {
-    const [source] = await Promise.all([
-      context.queryClient.ensureQueryData(sourceQueryOptions({ sourceId: params.sourceId })),
+    await Promise.all([
+      context.queryClient.prefetchQuery(sourceQueryOptions({ sourceId: params.sourceId })),
       context.queryClient.prefetchQuery(sourceOverviewQueryOptions({ sourceId: params.sourceId })),
     ]);
-    return { source };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { sourceId } = Route.useParams();
-  const { source } = Route.useLoaderData();
+  const { data: source } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
   const { data: overview } = useSuspenseQuery(sourceOverviewQueryOptions({ sourceId }));
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");

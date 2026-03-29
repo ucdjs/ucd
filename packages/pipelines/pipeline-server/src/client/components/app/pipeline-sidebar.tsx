@@ -180,9 +180,8 @@ interface PipelineViewProps {
 const HOTKEY_EXECUTE_COOLDOWN_MS = 1000;
 
 function PipelineView({ sourceId, fileId, pipelineId }: PipelineViewProps) {
-  const { data: pipelineResponse } = useSuspenseQuery(pipelineQueryOptions({ sourceId, fileId, pipelineId }));
+  const { data: pipeline } = useSuspenseQuery(pipelineQueryOptions({ sourceId, fileId, pipelineId }));
   const { data: source } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
-  const pipeline = pipelineResponse.pipeline;
   const file = source.files.find((f) => f.id === fileId);
 
   const { execute, executing } = useExecute();

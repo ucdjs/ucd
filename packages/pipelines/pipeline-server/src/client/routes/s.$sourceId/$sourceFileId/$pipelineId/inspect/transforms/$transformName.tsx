@@ -1,21 +1,23 @@
-import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
+import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, FolderOutput, Link2, Shuffle, Spline } from "lucide-react";
-
-const PipelineRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName")({
   component: TransformDetailPage,
 });
 
 function TransformDetailPage() {
-  const { pipelineResponse } = PipelineRoute.useLoaderData();
-  const pipeline = pipelineResponse.pipeline;
   const { sourceId, sourceFileId, pipelineId, transformName } = Route.useParams();
+  const { pipeline } = usePipelineRouteData({
+    fileId: sourceFileId,
+    pipelineId,
+    sourceId,
+  });
 
-  const transformRoutes = pipeline.routes.filter((route) => route.transforms.includes(transformName));
+  const transformRoutes = pipeline!.routes.filter((route) => route.transforms.includes(transformName));
 
   const coTransforms = new Set<string>();
   for (const route of transformRoutes) {
