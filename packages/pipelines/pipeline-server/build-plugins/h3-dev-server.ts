@@ -65,7 +65,7 @@ export function h3DevServerPlugin(): Plugin {
         });
         const ws = nodeAdapter({
           // @ts-expect-error - The types for h3's fetch event are not compatible with crossws, but the runtime objects are compatible
-          resolve: async (req) => (await liveApp.fetch(req)).crossws,
+          resolve: async (req) => (await app.fetch(req)).crossws,
         });
 
         liveClose = live.close;
