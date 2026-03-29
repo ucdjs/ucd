@@ -125,7 +125,9 @@ jobs:
     runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: get-apps
     if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
-    environment: apps-deploy
+    environment:
+      name: apps-deploy
+      deployment: false
     strategy:
       fail-fast: ${{ inputs.environment == 'production' }}
       matrix:
