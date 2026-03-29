@@ -1,6 +1,6 @@
+import type { PipelineSource } from "#server/app";
 import type { FSWatcher } from "chokidar";
 import path from "node:path";
-import type { PipelineSource } from "#server/app";
 import { setupLiveUpdates } from "#server/live";
 import chokidar from "chokidar";
 import { H3 } from "h3";
