@@ -1,0 +1,11 @@
+{
+  "title": "Architecture",
+  "description": "Architecture notes for apps, packages, and system boundaries",
+  "pages": [
+    "index",
+    "data-flow",
+    "package-layers",
+    "apps",
+    "packages"
+  ]
+}

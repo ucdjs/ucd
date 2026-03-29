@@ -1,0 +1,16 @@
+---
+title: Lockfile
+description: Architecture notes for @ucdjs/lockfile
+---
+
+`@ucdjs/lockfile` owns persistent store state and integrity metadata.
+
+## Role
+
+- Reads and writes `.ucd-store.lock` and per-version snapshots.
+- Defines the canonical on-disk state used by mirroring and verification flows.
+- Provides the persistence contract shared by storage tooling.
+
+## Notes
+
+Use this page for lockfile semantics, authority, and compatibility decisions.
