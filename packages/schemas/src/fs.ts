@@ -1,40 +1,6 @@
 import { dedent } from "@luxass/utils";
 import { z } from "zod";
 
-export const UCDStoreManifestSchema = z.record(
-  z.string(),
-  z.object({
-    /**
-     * List of expected file paths for this version.
-     * Defaults to an empty array when not provided.
-     */
-    expectedFiles: z.array(z.string()).default([]),
-  }).default({
-    expectedFiles: [],
-  }),
-).meta({
-  id: "UCDStoreManifest",
-  description: dedent`
-    A record of per-version metadata for the UCD store.
-    Each key is the version string, and the value is an object holding metadata.
-
-    Fields:
-    - expectedFiles: string[] (defaults to [])
-
-    ## Example
-    \`\`\`json
-    {
-      "15.1.0": { "expectedFiles": ["UnicodeData.txt", "PropList.txt"] },
-      "14.0.0": { "expectedFiles": [] }
-    }
-    \`\`\`
-
-    The path is relative to the root of the UCD Api Server, typically \`https://api.ucdjs.dev/api/v1/files\`. E.g. \`15.1.0\` would resolve to \`https://api.ucdjs.dev/api/v1/files/15.1.0\`.
-  `,
-});
-
-export type UCDStoreManifest = z.output<typeof UCDStoreManifestSchema>;
-
 const FileEntryBaseSchema = z.object({
   name: z.string(),
   path: z.string(),

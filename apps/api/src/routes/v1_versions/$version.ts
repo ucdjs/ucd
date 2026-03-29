@@ -153,6 +153,7 @@ const GET_VERSION_MANIFEST_ROUTE = createRoute({
       description: "The manifest for the specified Unicode version",
     },
     ...(generateReferences([
+      400,
       404,
       429,
       500,

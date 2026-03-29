@@ -37,7 +37,7 @@ if (result.success) {
 | Schema Family | Key Exports | Description |
 |---|---|---|
 | API | `ApiErrorSchema`, `UCDWellKnownConfigSchema` | Contracts for HTTP API responses and service discovery. |
-| File System | `FileEntrySchema`, `FileEntryListSchema`, `UCDStoreManifestSchema` | Shapes for file entries and the top-level store manifest. |
+| File System | `FileEntrySchema`, `FileEntryListSchema` | Shapes for file entries and backend-facing filesystem entries. |
 | Lockfile & Snapshot | `LockfileSchema`, `SnapshotSchema` | State shapes used by the `ucd` CLI and the `ucd-store` app. |
 | Version Manifest | `ExpectedFileSchema`, `UCDStoreVersionManifestSchema` | Per-version metadata served from `/api/v1/versions/{version}/manifest` with a deprecated well-known alias. |
 | Unicode | `UnicodeVersionSchema`, `UnicodeVersionDetailsSchema`, `UnicodeFileTreeNodeSchema`, `UnicodeFileTreeSchema` | Shapes for Unicode version metadata and file-tree responses. |
