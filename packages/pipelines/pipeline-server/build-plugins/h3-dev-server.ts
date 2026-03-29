@@ -19,22 +19,24 @@ export function h3DevServerPlugin(): Plugin {
       let db: Database | null = null;
       let liveClose: (() => Promise<void>) | null = null;
 
-      // Initialize database before starting the server
-      try {
-        const { createDatabase, runMigrations } = await server.ssrLoadModule(dbModuleId) as unknown as DatabaseModuleType;
+      const workspace = resolveWorkspace();
 
-        await fs.mkdir(getUcdConfigDir(), { recursive: true });
-        db = createDatabase();
-        await runMigrations(db);
-        const workspace = resolveWorkspace();
-        await ensureWorkspace(db, workspace.workspaceId, workspace.rootPath);
-        await recoverStaleExecutions(db, workspace.workspaceId);
-        // eslint-disable-next-line no-console
-        console.log("[h3-dev-server] Database migrations completed successfully");
-      } catch (err) {
-        console.error("[h3-dev-server] Failed to initialize database:", err);
-        // In dev, we still continue but log the error prominently
-        // The app will fail when trying to access db.context
+      async function initialDatabase() {
+        try {
+          const { createDatabase, runMigrations } = await server.ssrLoadModule(dbModuleId) as unknown as DatabaseModuleType;
+
+          await fs.mkdir(getUcdConfigDir(), { recursive: true });
+          db = createDatabase();
+          await runMigrations(db);
+          await ensureWorkspace(db, workspace.workspaceId, workspace.rootPath);
+          await recoverStaleExecutions(db, workspace.workspaceId);
+          // eslint-disable-next-line no-console
+          console.log("[h3-dev-server] Database migrations completed successfully");
+        } catch (err) {
+          console.error("[h3-dev-server] Failed to initialize database:", err);
+          // In dev, we still continue but log the error prominently
+          // The app will fail when trying to access db.context
+        }
       }
 
       async function getAppModule(): Promise<AppModuleType> {
@@ -44,20 +46,20 @@ export function h3DevServerPlugin(): Plugin {
       async function getApp() {
         return getAppModule().then((appMod) => appMod.createApp({
           db: db!,
-          workspaceId: resolveWorkspace().workspaceId,
+          workspaceId: workspace.workspaceId,
         }));
       }
 
+      // Initialize database before starting the server
+      await initialDatabase();
+
+      const appMod = await getAppModule();
+
+      const app = await getApp();
+
       if (db && server.httpServer) {
-        const workspace = resolveWorkspace();
-        const appMod = await getAppModule();
         const sources = appMod.resolvePipelineSources();
-        const liveApp = appMod.createApp({
-          db,
-          sources,
-          workspaceId: workspace.workspaceId,
-        });
-        const live = appMod.setupLiveUpdates(liveApp, {
+        const live = appMod.setupLiveUpdates(app, {
           sources,
           workspaceId: workspace.workspaceId,
         });
@@ -101,8 +103,6 @@ export function h3DevServerPlugin(): Plugin {
         }
 
         try {
-          const app = await getApp();
-
           let body: string | undefined;
           if (req.method === "POST" || req.method === "PUT" || req.method === "PATCH") {
             // eslint-disable-next-line node/prefer-global/buffer
