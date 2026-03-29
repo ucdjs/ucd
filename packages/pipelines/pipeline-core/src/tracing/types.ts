@@ -2,24 +2,25 @@ import type { FileContext } from "../types";
 import type { PipelineError } from "./events";
 
 export type PipelineTraceKind
-  = | "pipeline.start"
-    | "pipeline.end"
-    | "version.start"
-    | "version.end"
+  = | "pipeline"
+    | "version"
     | "source.provided"
+    | "source.listing"
+    | "file.route"
     | "file.matched"
     | "file.fallback"
     | "file.skipped"
-    | "parse.start"
-    | "parse.end"
-    | "resolve.start"
-    | "resolve.end"
+    | "file.queued"
+    | "file.dequeued"
+    | "parse"
+    | "resolve"
     | "cache.hit"
     | "cache.miss"
     | "cache.store"
     | "output.produced"
-    | "output.resolved"
+    | "output"
     | "output.written"
+    | "dependency.resolve"
     | "error"
     | (string & {});
 
@@ -31,28 +32,39 @@ interface PipelineTraceBase<TKind extends PipelineTraceKind> {
   spanId?: string;
   parentSpanId?: string;
   timestamp: number;
+  schemaVersion?: number;
 }
 
-export interface PipelineStartTraceRecord extends PipelineTraceBase<"pipeline.start"> {
+export interface PipelineSpanRecord extends PipelineTraceBase<"pipeline"> {
   versions: string[];
-}
-
-export interface PipelineEndTraceRecord extends PipelineTraceBase<"pipeline.end"> {
+  startTimestamp: number;
   durationMs: number;
 }
 
-export interface VersionStartTraceRecord extends PipelineTraceBase<"version.start"> {
+export interface VersionSpanRecord extends PipelineTraceBase<"version"> {
   version: string;
-}
-
-export interface VersionEndTraceRecord extends PipelineTraceBase<"version.end"> {
-  version: string;
+  startTimestamp: number;
   durationMs: number;
 }
 
 export interface SourceProvidedTraceRecord extends PipelineTraceBase<"source.provided"> {
   version: string;
   file?: FileContext;
+}
+
+export interface SourceListingSpanRecord extends PipelineTraceBase<"source.listing"> {
+  version: string;
+  fileCount: number;
+  startTimestamp: number;
+  durationMs: number;
+}
+
+export interface FileRouteSpanRecord extends PipelineTraceBase<"file.route"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+  startTimestamp: number;
+  durationMs: number;
 }
 
 export interface FileMatchedTraceRecord extends PipelineTraceBase<"file.matched"> {
@@ -72,31 +84,35 @@ export interface FileSkippedTraceRecord extends PipelineTraceBase<"file.skipped"
   reason: "no-match" | "filtered";
 }
 
-export interface ParseStartTraceRecord extends PipelineTraceBase<"parse.start"> {
+export interface FileQueuedTraceRecord extends PipelineTraceBase<"file.queued"> {
   version: string;
   file: FileContext;
   routeId: string;
 }
 
-export interface ParseEndTraceRecord extends PipelineTraceBase<"parse.end"> {
+export interface FileDequeuedTraceRecord extends PipelineTraceBase<"file.dequeued"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+  waitDurationMs: number;
+}
+
+export interface ParseSpanRecord extends PipelineTraceBase<"parse"> {
   version: string;
   file: FileContext;
   routeId: string;
   rowCount: number;
+  filteredRowCount: number;
+  startTimestamp: number;
   durationMs: number;
 }
 
-export interface ResolveStartTraceRecord extends PipelineTraceBase<"resolve.start"> {
-  version: string;
-  file: FileContext;
-  routeId: string;
-}
-
-export interface ResolveEndTraceRecord extends PipelineTraceBase<"resolve.end"> {
+export interface ResolveSpanRecord extends PipelineTraceBase<"resolve"> {
   version: string;
   file: FileContext;
   routeId: string;
   outputCount: number;
+  startTimestamp: number;
   durationMs: number;
 }
 
@@ -128,7 +144,7 @@ export interface OutputProducedTraceRecord extends PipelineTraceBase<"output.pro
   property?: string;
 }
 
-export interface OutputResolvedTraceRecord extends PipelineTraceBase<"output.resolved"> {
+export interface OutputTraceRecord extends PipelineTraceBase<"output"> {
   version: string;
   routeId: string;
   file: FileContext;
@@ -153,29 +169,39 @@ export interface OutputWrittenTraceRecord extends PipelineTraceBase<"output.writ
   error?: string;
 }
 
+export interface DependencyResolveTraceRecord extends PipelineTraceBase<"dependency.resolve"> {
+  version: string;
+  file: FileContext;
+  routeId: string;
+  dependsOnRouteId: string;
+  status: "resolved" | "missing";
+}
+
 export interface ErrorTraceRecord extends PipelineTraceBase<"error"> {
   error: PipelineError;
+  stack?: string;
 }
 
 export type PipelineTraceRecord
-  = | PipelineStartTraceRecord
-    | PipelineEndTraceRecord
-    | VersionStartTraceRecord
-    | VersionEndTraceRecord
+  = | PipelineSpanRecord
+    | VersionSpanRecord
     | SourceProvidedTraceRecord
+    | SourceListingSpanRecord
+    | FileRouteSpanRecord
     | FileMatchedTraceRecord
     | FileFallbackTraceRecord
     | FileSkippedTraceRecord
-    | ParseStartTraceRecord
-    | ParseEndTraceRecord
-    | ResolveStartTraceRecord
-    | ResolveEndTraceRecord
+    | FileQueuedTraceRecord
+    | FileDequeuedTraceRecord
+    | ParseSpanRecord
+    | ResolveSpanRecord
     | CacheHitTraceRecord
     | CacheMissTraceRecord
     | CacheStoreTraceRecord
     | OutputProducedTraceRecord
-    | OutputResolvedTraceRecord
+    | OutputTraceRecord
     | OutputWrittenTraceRecord
+    | DependencyResolveTraceRecord
     | ErrorTraceRecord;
 
 export type PipelineTraceRecordByKind<TKind extends PipelineTraceKind>

@@ -34,7 +34,7 @@ export function buildExecutionGraphFromTraces(
         });
         break;
       }
-      case "output.resolved": {
+      case "output": {
         resolvedProducedOutputs.add(`${trace.version}:${trace.routeId}:${trace.outputIndex}`);
         const routeNodeId = builder.addRouteNode(trace.routeId, trace.version);
         const outputNodeId = builder.addOutputNode(

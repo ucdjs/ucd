@@ -96,6 +96,12 @@ catalogs:
     cac: 7.0.0
     shiki: 4.0.2
     std-env: 4.0.0
+    "@opentelemetry/api": 1.9.1
+    "@opentelemetry/context-async-hooks": 2.6.1
+    "@opentelemetry/exporter-trace-otlp-http": 0.214.0
+    "@opentelemetry/sdk-trace-node": 2.6.1
+    "@opentelemetry/resources": 2.6.1
+    "@opentelemetry/semantic-conventions": 1.40.0
 
   backend:
     wrangler: 4.77.0

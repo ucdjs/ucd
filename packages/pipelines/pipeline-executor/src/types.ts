@@ -1,5 +1,5 @@
-import type { AnyPipelineDefinition, PipelineGraph, PipelineLogLevel } from "@ucdjs/pipelines-core";
-import type { PipelineError, PipelineOutputManifestEntry, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type { AnyPipelineDefinition, PipelineLogLevel } from "@ucdjs/pipelines-core";
+import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
 import type { CacheStore } from "./cache";
 import type { PipelineExecutionRuntime } from "./runtime";
 
@@ -31,8 +31,6 @@ export interface PipelineExecutionResult {
   id: string;
   data: unknown[];
   outputManifest: PipelineOutputManifestEntry[];
-  traces: PipelineTraceRecord[];
-  graph: PipelineGraph;
   errors: PipelineError[];
   summary: PipelineSummary;
   status: ExecutionStatus;
@@ -45,7 +43,7 @@ export interface PipelineLogEntry {
   workspaceId: string;
   spanId?: string;
   traceKind?: string;
-  level: PipelineLogLevel;
+  level: PipelineLogLevel | null;
   source: PipelineLogSource;
   message: string;
   timestamp: number;
@@ -56,7 +54,6 @@ export interface PipelineLogEntry {
 export interface PipelineExecutorOptions {
   cacheStore?: CacheStore;
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
-  onTrace?: (trace: PipelineTraceRecord) => void | Promise<void>;
   runtime?: PipelineExecutionRuntime;
 }
 

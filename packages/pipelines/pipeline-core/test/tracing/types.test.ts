@@ -1,5 +1,5 @@
 import type {
-  OutputResolvedTraceRecord,
+  OutputTraceRecord,
   PipelineOutputManifestEntry,
   PipelineTraceEmitInput,
   PipelineTraceInput,
@@ -13,8 +13,8 @@ type HasKey<T, K extends PropertyKey> = K extends keyof T ? true : false;
 
 describe("tracing types", () => {
   it("maps known kinds to specific trace record variants", () => {
-    expectTypeOf<PipelineTraceRecordByKind<"output.resolved">>().toEqualTypeOf<OutputResolvedTraceRecord>();
-    expectTypeOf<PipelineTraceRecordByKind<"output.resolved">["kind"]>().toEqualTypeOf<"output.resolved">();
+    expectTypeOf<PipelineTraceRecordByKind<"output">>().toEqualTypeOf<OutputTraceRecord>();
+    expectTypeOf<PipelineTraceRecordByKind<"output">["kind"]>().toEqualTypeOf<"output">();
   });
 
   it("keeps PipelineTraceKind open for extension", () => {

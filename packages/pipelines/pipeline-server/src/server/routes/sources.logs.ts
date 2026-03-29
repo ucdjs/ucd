@@ -140,6 +140,8 @@ sourcesLogsRouter.get(
         spanId: log.spanId,
         message: log.message,
         timestamp: log.timestamp.toISOString(),
+        level: log.level ?? null,
+        source: log.source ?? null,
         payload: log.payload,
       })),
       truncated,

@@ -18,7 +18,15 @@ const sizesRoute = definePipelineRoute({
   transforms: [
     createSortTransform({ direction: "asc" }),
   ],
-  resolver: propertyJsonResolver,
+  resolver: async (ctx, rows) => {
+    ctx.logger.info("Resolving sizes (sorted asc)", { version: ctx.version });
+    const entries: ResolvedEntry[] = [];
+    for await (const row of rows) {
+      if (row.value != null) entries.push({ codePoint: row.codePoint, value: row.value });
+    }
+    ctx.logger.debug("Sizes resolved", { count: entries.length });
+    return [{ version: ctx.version, property: "Sizes", file: ctx.file.name, entries }];
+  },
 });
 
 const planetsRoute = definePipelineRoute({
@@ -26,6 +34,7 @@ const planetsRoute = definePipelineRoute({
   filter: byName("planets.txt"),
   parser: standardParser,
   resolver: async (ctx, rows) => {
+    ctx.logger.info("Resolving planets (uppercased)", { version: ctx.version });
     const entries: ResolvedEntry[] = [];
 
     for await (const row of rows) {
@@ -39,6 +48,7 @@ const planetsRoute = definePipelineRoute({
       });
     }
 
+    ctx.logger.debug("Planets resolved", { count: entries.length });
     return [{
       version: ctx.version,
       property: "Planets",

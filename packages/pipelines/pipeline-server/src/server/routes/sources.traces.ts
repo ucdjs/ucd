@@ -1,9 +1,10 @@
+import type { ExecutionTrace } from "#server/db/schema";
 import type { ExecutionTracesResponse } from "#shared/schemas/execution";
+import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { schema } from "#server/db";
-import { hasExecutionTracesTable } from "#server/db/execution-traces";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { getQuery, H3, HTTPError } from "h3";
+import { and, asc, eq, sql } from "drizzle-orm";
+import { H3, HTTPError } from "h3";
 
 export const sourcesTracesRouter: H3 = new H3();
 
@@ -20,12 +21,6 @@ sourcesTracesRouter.get(
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }
-
-    const query = getQuery(event);
-    const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 200;
-    const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
-    const limit = Math.min(Math.max(Number.isFinite(parsedLimit) ? parsedLimit : 200, 1), 1000);
-    const offset = Math.max(Number.isFinite(parsedOffset) ? parsedOffset : 0, 0);
 
     const [execution] = await db
       .select({
@@ -47,71 +42,91 @@ sourcesTracesRouter.get(
       throw HTTPError.status(404, `Execution "${executionId}" not found`);
     }
 
-    if (!hasExecutionTracesTable(db)) {
-      return {
-        executionId: execution.id,
-        pipelineId: execution.pipelineId,
-        status: execution.status,
-        traces: [],
-        outputManifest: [],
-        pagination: {
-          total: 0,
-          limit,
-          offset,
-          hasMore: false,
-        },
-      } satisfies ExecutionTracesResponse;
+    const allRows = await db
+      .select()
+      .from(schema.executionTraces)
+      .where(and(
+        eq(schema.executionTraces.workspaceId, workspaceId),
+        eq(schema.executionTraces.executionId, executionId),
+      ))
+      .orderBy(
+        sql`start_timestamp ASC NULLS LAST`,
+        asc(schema.executionTraces.endTimestamp),
+        asc(schema.executionTraces.id),
+      );
+
+    const spanRows: ExecutionTrace[] = [];
+    const eventsBySpanId = new Map<string, ExecutionTrace[]>();
+    const manifestData: PipelineTraceRecord[] = [];
+    let rootSpan: ExecutionTrace | undefined;
+
+    for (const row of allRows) {
+      if (row.startTimestamp != null) {
+        spanRows.push(row);
+        if (row.kind === "pipeline") rootSpan = row;
+        if (row.kind === "output") manifestData.push(row.data);
+        continue;
+      }
+
+      if (row.spanId) {
+        let list = eventsBySpanId.get(row.spanId);
+        if (!list) eventsBySpanId.set(row.spanId, list = []);
+        list.push(row);
+      }
+      if (row.kind === "output.written") manifestData.push(row.data);
     }
 
-    const traceWhere = and(
-      eq(schema.executionTraces.workspaceId, workspaceId),
-      eq(schema.executionTraces.executionId, executionId),
-    );
+    const outputManifest = buildOutputManifestFromTraces(manifestData);
 
-    const [traceRows, allTraceRows, [countResult]] = await Promise.all([
-      db
-        .select()
-        .from(schema.executionTraces)
-        .where(traceWhere)
-        .orderBy(asc(schema.executionTraces.timestamp), asc(schema.executionTraces.id))
-        .limit(limit)
-        .offset(offset),
-      db
-        .select()
-        .from(schema.executionTraces)
-        .where(and(traceWhere, inArray(schema.executionTraces.kind, ["output.resolved", "output.written"]))),
-      db
-        .select({ count: sql<number>`count(*)` })
-        .from(schema.executionTraces)
-        .where(traceWhere),
+    const BASE_KEYS = new Set([
+      "id",
+      "kind",
+      "pipelineId",
+      "traceId",
+      "spanId",
+      "parentSpanId",
+      "timestamp",
+      "schemaVersion",
+      "startTimestamp",
+      "durationMs",
     ]);
 
-    const traces = traceRows.map((trace) => ({
-      id: trace.id,
-      kind: trace.kind,
-      traceId: trace.traceId ?? null,
-      spanId: trace.spanId ?? null,
-      parentSpanId: trace.parentSpanId ?? null,
-      timestamp: trace.timestamp.toISOString(),
-      data: trace.data,
-    }));
+    function stripBaseFields(data: unknown): unknown {
+      if (data == null || typeof data !== "object") return data;
+      const result: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+        if (!BASE_KEYS.has(k)) result[k] = v;
+      }
+      return result;
+    }
 
-    const outputManifest = buildOutputManifestFromTraces(allTraceRows.map((trace) => trace.data));
-
-    const total = Number(countResult?.count ?? 0);
+    const spans = spanRows.map((row) => {
+      const spanEvents = eventsBySpanId.get(row.spanId ?? "") ?? [];
+      return {
+        id: row.id,
+        spanId: row.spanId ?? null,
+        parentSpanId: row.parentSpanId ?? null,
+        kind: row.kind,
+        startTimestamp: row.startTimestamp ?? null,
+        durationMs: row.durationMs ?? null,
+        attributes: stripBaseFields(row.data),
+        events: spanEvents.map((ev) => ({
+          timestamp: ev.endTimestamp.getTime(),
+          kind: ev.kind,
+          attributes: stripBaseFields(ev.data),
+        })),
+      };
+    });
 
     return {
       executionId: execution.id,
       pipelineId: execution.pipelineId,
       status: execution.status,
-      traces,
+      traceId: rootSpan?.traceId ?? null,
+      startTimestamp: rootSpan?.startTimestamp ?? null,
+      durationMs: rootSpan?.durationMs ?? null,
+      spans,
       outputManifest,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + limit < total,
-      },
     } satisfies ExecutionTracesResponse;
   },
 );
