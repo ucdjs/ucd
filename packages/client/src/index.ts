@@ -29,6 +29,8 @@ export interface UCDClient {
 
   /**
    * Access manifest endpoints
+   *
+   * @deprecated Use `client.versions.getManifest(version)` instead.
    */
   manifest: ManifestResource;
 }
@@ -49,7 +51,7 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
   });
 
   const manifest = createManifestResource({
-    baseUrl,
+    getManifest: versions.getManifest,
   });
 
   return {
@@ -81,7 +83,7 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
  * const config = await client.config.get();
  *
  * // Get manifest for a version
- * const manifest = await client.manifest.get('16.0.0');
+ * const manifest = await client.versions.getManifest('16.0.0');
  * ```
  */
 export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
@@ -102,9 +104,9 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
  * const client = createUCDClientWithConfig('https://api.ucdjs.dev', {
  *   version: '1.0',
  *   endpoints: {
- *     files: '/files',
- *     manifest: '/files/.ucd-store.json',
- *     versions: '/versions',
+ *     files: '/api/v1/files',
+ *     manifest: '/api/v1/versions/{version}/manifest',
+ *     versions: '/api/v1/versions',
  *   },
  * });
  *

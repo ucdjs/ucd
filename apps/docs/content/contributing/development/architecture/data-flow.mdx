@@ -73,7 +73,7 @@ Processed outputs and derived data packages are persisted via `@ucdjs/ucd-store`
 State is tracked in two lockfile files written by `@ucdjs/lockfile`:
 
 - `.ucd-store.lock` — version index listing all mirrored versions
-- `{version}/snapshot.json` — per-version manifest with file hashes
+- `{version}/snapshot.json` — per-version snapshot with file hashes and sizes
 
 ### 3. Serving
 
@@ -83,14 +83,14 @@ The store is served over HTTP. A `.well-known/ucd-config.json` document is publi
 {
   "version": "0.1",
   "endpoints": {
-    "files": "/files",
-    "versions": "/versions",
-    "manifest": "/.well-known/ucd-store/{version}.json"
+    "files": "/api/v1/files",
+    "versions": "/api/v1/versions",
+    "manifest": "/api/v1/versions/{version}/manifest"
   }
 }
 ```
 
-This allows the server to route API paths however it wants (e.g. behind an edge proxy) without breaking clients.
+This allows the server to route API paths however it wants (e.g. behind an edge proxy) without breaking clients. Older deployments may still keep the deprecated `/.well-known/ucd-store/{version}.json` alias for compatibility.
 
 ### 4. Consumption
 
@@ -103,7 +103,7 @@ flowchart LR
   C --> D["Build resource wrappers"]
   D --> E["client.files.get(path)"]
   D --> F["client.versions.list()"]
-  D --> G["client.manifest.get(version)"]
+  D --> G["client.versions.getManifest(version)"]
 ```
 
 Alternatively, `createUCDClientWithConfig()` skips the discovery request and accepts the config object directly — useful when the endpoint map is known ahead of time or when the `.well-known` endpoint is unavailable.

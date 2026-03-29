@@ -9,7 +9,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Client
 
-The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It provides resource-based helpers for Unicode data files, versions, manifests, and published server configuration.
+The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It provides resource-based helpers for Unicode data files, versions, version manifests, and published server configuration.
 
 ## Getting Started
 
@@ -76,7 +76,7 @@ This matters when an installation serves the API from a non-default path. For ex
 
 The client types stay the same because the config points the resource wrappers at the correct paths.
 
-`client.config.get()` and `client.manifest.get(version)` still read the published well-known documents from the origin. The explicit config is about supplying the endpoint map up front, not changing those helper URLs.
+`client.config.get()` still reads the published well-known config from the origin. Version manifest requests follow the configured `endpoints.manifest` value, so discovery and explicit config both use the same canonical route by default.
 
 ```typescript title="client.ts"
 import { createUCDClientWithConfig } from "@ucdjs/client";
@@ -85,7 +85,7 @@ const client = createUCDClientWithConfig("https://example.com", {
   version: "0.1",
   endpoints: {
     files: "/edge/api/files",
-    manifest: "/.well-known/ucd-store/{version}.json",
+    manifest: "/edge/api/versions/{version}/manifest",
     versions: "/edge/api/versions",
   },
 });
@@ -105,7 +105,7 @@ flowchart TD
   D --> G["client.versions.list() / getFileTree(version)"]
 
   H["client.config.get()"] --> I["GET /.well-known/ucd-config.json"]
-  J["client.manifest.get(version)"] --> K["GET /.well-known/ucd-store/{version}.json"]
+  J["client.versions.getManifest(version)"] --> K["GET config.endpoints.manifest"]
 ```
 
 ## Resources
@@ -127,7 +127,7 @@ The client provides four primary resource namespaces. You access them as propert
       type: 'ConfigResource',
     },
     manifest: {
-      description: 'Read version manifests from /.well-known/ucd-store/{version}.json',
+      description: 'Deprecated alias for `client.versions.getManifest(version)`',
       type: 'ManifestResource',
     },
   }}
@@ -161,6 +161,10 @@ The client provides four primary resource namespaces. You access them as propert
     // Get file tree for a specific Unicode version
     const { data: fileTree } = await client.versions.getFileTree("16.0.0");
     console.log("File tree:", fileTree);
+
+    // Get the manifest for a specific Unicode version
+    const { data: manifest } = await client.versions.getManifest("16.0.0");
+    console.log("Expected files:", manifest?.expectedFiles);
     ```
   </Tab>
   <Tab value="config">
@@ -177,6 +181,7 @@ The client provides four primary resource namespaces. You access them as propert
   </Tab>
   <Tab value="manifest">
     ```typescript
+    // Deprecated alias
     const { data: manifest, error } = await client.manifest.get("16.0.0");
 
     if (error) {
@@ -184,7 +189,7 @@ The client provides four primary resource namespaces. You access them as propert
       return;
     }
 
-    console.log("Expected files for 16.0.0:", manifest.files);
+    console.log("Expected files for 16.0.0:", manifest.expectedFiles);
     ```
   </Tab>
 </Tabs>

@@ -1,11 +1,16 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
-import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type { UCDStoreVersionManifest, UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { paths } from "../.generated/api";
 import { customFetch } from "@ucdjs-internal/shared";
-import { UnicodeFileTreeSchema, UnicodeVersionListSchema } from "@ucdjs/schemas";
+import {
+  UCDStoreVersionManifestSchema,
+  UnicodeFileTreeSchema,
+  UnicodeVersionListSchema,
+} from "@ucdjs/schemas";
 
 type VersionsListResponse = paths["/api/v1/versions"]["get"]["responses"][200]["content"]["application/json"];
 type FileTreeResponse = paths["/api/v1/versions/{version}/file-tree"]["get"]["responses"][200]["content"]["application/json"];
+const VERSION_FORMAT_REGEX = /^\d+\.\d+\.\d+$/;
 
 export interface VersionsResource {
   /**
@@ -21,6 +26,14 @@ export interface VersionsResource {
    * @returns {Promise<SafeFetchResponse<FileTreeResponse>>} The file tree structure for the specified version
    */
   getFileTree: (version: string) => Promise<SafeFetchResponse<FileTreeResponse>>;
+
+  /**
+   * Get the manifest for a specific Unicode version
+   *
+   * @param {string} version - The Unicode version (e.g., "16.0.0")
+   * @returns {Promise<SafeFetchResponse<UCDStoreVersionManifest>>} The manifest for the specified version
+   */
+  getManifest: (version: string) => Promise<SafeFetchResponse<UCDStoreVersionManifest>>;
 }
 
 export interface CreateVersionsResourceOptions {
@@ -47,6 +60,23 @@ export function createVersionsResource(options: CreateVersionsResourceOptions): 
       return customFetch.safe<FileTreeResponse, "json">(url.toString(), {
         parseAs: "json",
         schema: UnicodeFileTreeSchema,
+      });
+    },
+
+    async getManifest(version: string) {
+      if (!VERSION_FORMAT_REGEX.test(version)) {
+        return {
+          error: new Error(`Invalid version format: ${version}. Expected X.Y.Z format.`),
+          data: null,
+        };
+      }
+
+      const manifestPath = endpoints.manifest.replace("{version}", version);
+      const url = new URL(manifestPath, baseUrl);
+
+      return customFetch.safe<UCDStoreVersionManifest, "json">(url.toString(), {
+        parseAs: "json",
+        schema: UCDStoreVersionManifestSchema,
       });
     },
   };

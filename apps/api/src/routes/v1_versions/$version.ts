@@ -3,11 +3,16 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
 import { createLogger } from "#lib/logger";
 import { VERSION_ROUTE_PARAM } from "#lib/shared-parameters";
+import {
+  createVersionManifestHeaders,
+  parseVersionManifest,
+  readVersionManifestObject,
+} from "#lib/version-manifest";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import { badGateway, badRequest, internalServerError, MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
-import { UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
+import { UCDStoreVersionManifestSchema, UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
@@ -85,6 +90,73 @@ const GET_VERSION_ROUTE = createRoute({
       429,
       502,
       500,
+    ])),
+  },
+});
+
+const VERSION_MANIFEST_PARAM = {
+  name: "version",
+  in: "path",
+  required: true,
+  description: "Unicode version (e.g., '16.0.0')",
+  schema: {
+    type: "string",
+    pattern: "^\\d+\\.\\d+\\.\\d+$",
+    example: "16.0.0",
+  },
+} as const;
+
+const GET_VERSION_MANIFEST_ROUTE = createRoute({
+  method: "get",
+  path: "/{version}/manifest",
+  tags: [OPENAPI_TAGS.VERSIONS],
+  middleware: [
+    cache({
+      cacheName: "ucdjs:v1_versions:manifest",
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
+    }),
+  ],
+  parameters: [
+    VERSION_MANIFEST_PARAM,
+  ],
+  description: dedent`
+    ## Get Unicode Version Manifest
+
+    This endpoint returns the canonical per-version manifest for the requested Unicode version.
+
+    Each file entry includes:
+    - \`name\`: The filename only
+    - \`path\`: Path for the \`/api/v1/files\` endpoint
+    - \`storePath\`: Path for the Store HTTP surface
+  `,
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UCDStoreVersionManifestSchema,
+          examples: {
+            default: {
+              summary: "Manifest for version 16.0.0",
+              value: {
+                expectedFiles: [
+                  {
+                    name: "UnicodeData.txt",
+                    path: "/16.0.0/ucd/UnicodeData.txt",
+                    storePath: "/16.0.0/UnicodeData.txt",
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      description: "The manifest for the specified Unicode version",
+    },
+    ...(generateReferences([
+      404,
+      429,
+      500,
+      502,
     ])),
   },
 });
@@ -258,6 +330,42 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
       console.error("Error processing directory:", err);
       return internalServerError(c, {
         message: "Failed to fetch file mappings",
+      });
+    }
+  });
+}
+
+export function registerVersionManifestRoute(router: OpenAPIHono<HonoEnv>) {
+  router.openapi(GET_VERSION_MANIFEST_ROUTE, async (c) => {
+    const version = c.req.param("version");
+    const bucket = c.env.UCD_BUCKET;
+
+    if (!bucket) {
+      console.error("[v1_versions]: UCD_BUCKET binding not configured");
+      return badGateway(c);
+    }
+
+    if (!isValidUnicodeVersion(version)) {
+      return badRequest(c, {
+        message: "Invalid Unicode version",
+      });
+    }
+
+    const object = await readVersionManifestObject(bucket, version);
+
+    if (!object) {
+      return notFound(c, {
+        message: `Manifest not found for version: ${version}`,
+      });
+    }
+
+    try {
+      const data = await parseVersionManifest(object);
+      return c.json(data, 200, createVersionManifestHeaders(object));
+    } catch (err) {
+      console.error(`[v1_versions]: failed to parse manifest for version ${version}:`, err);
+      return badGateway(c, {
+        message: `Failed to parse manifest for version: ${version}`,
       });
     }
   });
