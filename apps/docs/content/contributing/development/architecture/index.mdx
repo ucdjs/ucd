@@ -9,34 +9,34 @@ UCD.js is a monorepo of TypeScript packages for ingesting, storing, processing, 
 
 ```mermaid
 graph TD
-  subgraph L1["Layer 1 — Schemas & Contracts"]
+  subgraph L1["Layer 1 - Schemas & Contracts"]
     S["@ucdjs/schemas"]
     E["@ucdjs/env"]
   end
 
-  subgraph L2["Layer 2 — Infrastructure"]
+  subgraph L2["Layer 2 - Infrastructure"]
     FB["@ucdjs/fs-backend"]
     PU["@ucdjs/path-utils"]
     SH["@ucdjs-internal/shared"]
   end
 
-  subgraph L3["Layer 3 — Persistence"]
+  subgraph L3["Layer 3 - Persistence"]
     LF["@ucdjs/lockfile"]
     US["@ucdjs/ucd-store"]
   end
 
-  subgraph L4["Layer 4 — Processing"]
+  subgraph L4["Layer 4 - Processing"]
     PC["@ucdjs/pipelines-core"]
     PL["@ucdjs/pipelines-loader"]
     PE["@ucdjs/pipelines-executor"]
   end
 
-  subgraph L5["Layer 5 — Serving & Consumption"]
+  subgraph L5["Layer 5 - Serving & Consumption"]
     CL["@ucdjs/client"]
     PS["@ucdjs/pipelines-server"]
   end
 
-  subgraph L6["Layer 6 — User Interface"]
+  subgraph L6["Layer 6 - User Interface"]
     CLI["@ucdjs/cli"]
   end
 

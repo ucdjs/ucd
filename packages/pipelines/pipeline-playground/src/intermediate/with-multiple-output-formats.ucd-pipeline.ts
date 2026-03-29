@@ -4,7 +4,7 @@ import { groupByInitialResolver, summaryResolver } from "../shared.resolvers";
 import { colorsSource, planetsSource, sequencesSource, sizesSource } from "../shared.sources";
 
 /**
- * Output format 1 — Flat scalar entries.
+ * Output format 1 - Flat scalar entries.
  *
  * The simplest format: one PropertyJson with N entries, each carrying a
  * single `codePoint` (or numeric key) and a scalar string `value`.
@@ -19,7 +19,7 @@ const flatColorsRoute = definePipelineRoute({
 });
 
 /**
- * Output format 2 — Scalar entries with a `meta` summary block.
+ * Output format 2 - Scalar entries with a `meta` summary block.
  *
  * Same flat structure as above, but the resolver appends a `meta` object
  * (total count + timestamp). The pipeline-server UI renders this as an
@@ -36,7 +36,7 @@ const summaryPlanetsRoute = definePipelineRoute({
 });
 
 /**
- * Output format 3 — Array-valued entries.
+ * Output format 3 - Array-valued entries.
  *
  * Each entry's `value` field is a string array instead of a scalar string.
  * Here every size gets annotated as [label, abbreviation, category].
@@ -73,7 +73,7 @@ const arrayValuesSizesRoute = definePipelineRoute({
 });
 
 /**
- * Output format 4 — Sequence entries.
+ * Output format 4 - Sequence entries.
  *
  * Each entry carries a `sequence` array (ordered list of code-point tokens)
  * instead of a single codePoint. Uses the preset `sequenceParser` which
@@ -88,9 +88,9 @@ const sequencesRoute = definePipelineRoute({
 });
 
 /**
- * Output format 5 — Multi-property grouped output.
+ * Output format 5 - Multi-property grouped output.
  *
- * A single source file fans out into *multiple* PropertyJson objects — one
+ * A single source file fans out into *multiple* PropertyJson objects - one
  * per distinct group key. `groupByInitialResolver` (from shared.resolvers)
  * buckets entries by the first letter of their value, mirroring how
  * General_Category or Script properties produce one blob per category value.

@@ -3,7 +3,7 @@ import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
 import { colorsSource, sizesSource } from "../shared.sources";
 
 /**
- * Route A: processes colors first — no dependencies.
+ * Route A: processes colors first - no dependencies.
  */
 const colorsRoute = definePipelineRoute({
   id: "colors",

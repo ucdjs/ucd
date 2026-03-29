@@ -49,9 +49,9 @@ Unsupported mutable operations throw `BackendUnsupportedOperation` and should be
 guarded with `features.has(...)` when the current code path depends on them.
 
 **Notes:**
-- `list` not `listdir` — generic listing, not a POSIX syscall name
-- `remove` not `rm` — readable English, no UNIX shorthand
-- `write(path, data)` — no `encoding` param; convert before calling if needed
+- `list` not `listdir` - generic listing, not a POSIX syscall name
+- `remove` not `rm` - readable English, no UNIX shorthand
+- `write(path, data)` - no `encoding` param; convert before calling if needed
 - `exists(path)` is intentionally lossy. Backends may return `false` both for "missing"
   and for "could not determine existence". Use `stat()` when callers need error detail.
 - `copy(sourcePath, destinationPath)` is intra-backend only
@@ -140,7 +140,7 @@ function defineBackend<TOptionsSchema extends z.ZodType>(
 ): BackendFactory<TOptionsSchema>
 ```
 
-`setup()` takes options, returns operations. No injected state, no injected utilities —
+`setup()` takes options, returns operations. No injected state, no injected utilities -
 use closures and direct imports. Features are inferred from which optional methods `setup()` returns.
 
 ## Errors
@@ -222,15 +222,15 @@ packages/fs-backend/
 
 ## Dependencies
 
-- `hookable` — hook system
-- `zod` — options validation
-- `@ucdjs/path-utils` — `resolveSafePath` in node backend
-- `@ucdjs-internal/shared` — debugger utility
+- `hookable` - hook system
+- `zod` - options validation
+- `@ucdjs/path-utils` - `resolveSafePath` in node backend
+- `@ucdjs-internal/shared` - debugger utility
 
 ## Migration (future work)
 
-1. **ucd-store** — swap `FileSystemBridge` → `FileSystemBackend`; `listdir` → `list`, `rm` → `remove`, `.optionalCapabilities.write === true` → `.features.has("write")`
-2. **pipeline-core** — replace read-only `SourceBackend` with read-only `FileSystemBackend`
-3. **test-utils** — `createMemoryMockFS` → `createMemoryBackend`, `createReadOnlyBridge` → `createReadOnlyBackend`
-4. **lockfile, cli** — update imports
+1. **ucd-store** - swap `FileSystemBridge` → `FileSystemBackend`; `listdir` → `list`, `rm` → `remove`, `.optionalCapabilities.write === true` → `.features.has("write")`
+2. **pipeline-core** - replace read-only `SourceBackend` with read-only `FileSystemBackend`
+3. **test-utils** - `createMemoryMockFS` → `createMemoryBackend`, `createReadOnlyBridge` → `createReadOnlyBackend`
+4. **lockfile, cli** - update imports
 5. Mark `@ucdjs/fs-bridge` deprecated in package.json + README

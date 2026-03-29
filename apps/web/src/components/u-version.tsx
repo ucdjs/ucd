@@ -31,7 +31,7 @@ export function UVersion({
     ...style,
   };
 
-  // Scale font size based on effective size — use larger text so it's readable at small sizes
+  // Scale font size based on effective size - use larger text so it's readable at small sizes
   const fontSize = effectiveSize >= 32 ? 20 : effectiveSize >= 28 ? 18 : effectiveSize >= 24 ? 16 : 28;
 
   return (

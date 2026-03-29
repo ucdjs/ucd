@@ -17,7 +17,7 @@ interface GraphIndex {
 
 /**
  * Applies a left-to-right layered layout to a set of nodes and edges.
- * Works with any ReactFlow node type — only reads `id`, `position`, `width`, `height`.
+ * Works with any ReactFlow node type - only reads `id`, `position`, `width`, `height`.
  */
 export function applyLayeredLayout<N extends Node>(
   nodes: N[],

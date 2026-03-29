@@ -17,7 +17,7 @@ function GraphemeVisualizerVersion() {
       <Card>
         <CardHeader>
           <CardTitle>
-            Grapheme & ZWJ Visualizer —
+            Grapheme & ZWJ Visualizer -
             {" "}
             {params.version}
           </CardTitle>

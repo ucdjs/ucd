@@ -17,7 +17,7 @@ function BidiLinebreakVersion() {
       <Card>
         <CardHeader>
           <CardTitle>
-            BIDI & Line Break —
+            BIDI & Line Break -
             {" "}
             {params.version}
           </CardTitle>

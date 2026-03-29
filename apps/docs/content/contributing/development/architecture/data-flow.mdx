@@ -3,7 +3,7 @@ title: Data Flow
 description: How Unicode data moves through UCD.js from source files to consumers
 ---
 
-This page traces how Unicode data moves through the UCD.js system — from raw files on Unicode.org all the way to a consumer application using the API client.
+This page traces how Unicode data moves through the UCD.js system - from raw files on Unicode.org all the way to a consumer application using the API client.
 
 ## Overview
 
@@ -72,8 +72,8 @@ Processed outputs and derived data packages are persisted via `@ucdjs/ucd-store`
 
 State is tracked in two lockfile files written by `@ucdjs/lockfile`:
 
-- `.ucd-store.lock` — version index listing all mirrored versions
-- `{version}/snapshot.json` — per-version snapshot with file hashes and sizes
+- `.ucd-store.lock` - version index listing all mirrored versions
+- `{version}/snapshot.json` - per-version snapshot with file hashes and sizes
 
 ### 3. Serving
 
@@ -106,11 +106,11 @@ flowchart LR
   D --> G["client.versions.getManifest(version)"]
 ```
 
-Alternatively, `createUCDClientWithConfig()` skips the discovery request and accepts the config object directly — useful when the endpoint map is known ahead of time or when the `.well-known` endpoint is unavailable.
+Alternatively, `createUCDClientWithConfig()` skips the discovery request and accepts the config object directly - useful when the endpoint map is known ahead of time or when the `.well-known` endpoint is unavailable.
 
 ## Error handling
 
-Resource methods (`client.files.get()`, etc.) always return `{ data, error }` rather than throwing. Only `createUCDClient()` itself can throw — if the `.well-known` document is missing or invalid, there is no safe way to continue.
+Resource methods (`client.files.get()`, etc.) always return `{ data, error }` rather than throwing. Only `createUCDClient()` itself can throw - if the `.well-known` document is missing or invalid, there is no safe way to continue.
 
 ```typescript
 const { data, error } = await client.versions.list();

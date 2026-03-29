@@ -3,7 +3,7 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-Zod schemas that define the shared data contracts across the UCD.js monorepo — API responses, store manifests, lockfiles, and Unicode metadata.
+Zod schemas that define the shared data contracts across the UCD.js monorepo - API responses, store manifests, lockfiles, and Unicode metadata.
 
 ## Installation
 
