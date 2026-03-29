@@ -32,7 +32,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
 
   return (
     <Sheet open={node !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <SheetContent side="right" className="flex w-full flex-col gap-0 p-0 sm:max-w-lg">
+      <SheetContent side="right" className="flex h-full w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-lg">
         {node !== null && (
           <>
             <SheetHeader className="border-b px-4 py-3">
