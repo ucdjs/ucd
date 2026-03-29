@@ -1,6 +1,6 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { act, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
   buildConfigResponse,
   buildOverviewResponse,
@@ -10,12 +10,7 @@ import {
   buildSourceSummary,
 } from "../fixtures";
 import { renderFileRoute } from "../route-test-utils";
-
-function mockUseLiveUpdates() {}
-
-vi.mock("#hooks/use-live-updates", () => ({
-  useLiveUpdates: mockUseLiveUpdates,
-}));
+import { emitLiveUpdate } from "../websocket-test-utils";
 
 describe("live updates", () => {
   it("refreshes the source file list when a watched source changes", async () => {
@@ -41,7 +36,7 @@ describe("live updates", () => {
       ["GET", "/api/sources/local/overview", () => HttpResponse.json(buildOverviewResponse())],
     ]);
 
-    const { queryClient } = await renderFileRoute(<div />, { initialLocation: "/s/local" });
+    await renderFileRoute(<div />, { initialLocation: "/s/local" });
 
     expect(await screen.findByText("Alpha file")).toBeInTheDocument();
     expect(screen.queryByText("Beta file")).not.toBeInTheDocument();
@@ -73,15 +68,15 @@ describe("live updates", () => {
     });
 
     await act(async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["sources"],
-          exact: true,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["sources", "local"],
-        }),
-      ]);
+      emitLiveUpdate({
+        type: "source.changed",
+        sourceId: "local",
+        changes: [{
+          kind: "add",
+          path: "src/beta.ucd-pipeline.ts",
+        }],
+        occurredAt: new Date().toISOString(),
+      });
     });
 
     expect(await screen.findByText("Beta file")).toBeInTheDocument();
@@ -132,7 +127,7 @@ describe("live updates", () => {
       })],
     ]);
 
-    const { history, queryClient } = await renderFileRoute(<div />, {
+    const { history } = await renderFileRoute(<div />, {
       initialLocation: "/s/local/alpha/main-pipeline",
     });
 
@@ -143,15 +138,15 @@ describe("live updates", () => {
     });
 
     await act(async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ["sources"],
-          exact: true,
-        }),
-        queryClient.invalidateQueries({
-          queryKey: ["sources", "local"],
-        }),
-      ]);
+      emitLiveUpdate({
+        type: "source.changed",
+        sourceId: "local",
+        changes: [{
+          kind: "unlink",
+          path: "src/alpha.ucd-pipeline.ts",
+        }],
+        occurredAt: new Date().toISOString(),
+      });
     });
 
     await waitFor(() => {

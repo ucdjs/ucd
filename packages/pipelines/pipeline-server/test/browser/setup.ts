@@ -1,8 +1,8 @@
 import { cleanup, renderHook as rtlRenderHook } from "@testing-library/react";
 import { act as reactAct } from "react";
 import { createRoot } from "react-dom/client";
-import { afterEach, vi } from "vitest";
-import { installMockWebSocket, MockWebSocket } from "./websocket-test-utils";
+import { afterEach, beforeEach, vi } from "vitest";
+import { mockLiveUpdatesSocket } from "./websocket-test-utils";
 import "@testing-library/jest-dom/vitest";
 
 const roots = new Map<Element, ReturnType<typeof createRoot>>();
@@ -88,12 +88,13 @@ vi.mock("@tanstack/react-router-devtools", () => {
   };
 });
 
-installMockWebSocket();
+beforeEach(() => {
+  mockLiveUpdatesSocket();
+});
 
 afterEach(() => {
   cleanup();
   localStorage.clear();
-  MockWebSocket.reset();
   (globalThis as { __useRealPipelineCommandPalette__?: boolean }).__useRealPipelineCommandPalette__ = false;
 });
 
