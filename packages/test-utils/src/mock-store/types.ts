@@ -74,8 +74,8 @@ export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
   setup: (context: MockRouteHandlerContext<Endpoint>) => void;
 }
 
-export type MockRouteProvidedResponse<Endpoint extends EndpointWithGet> =
-  MockRouteHandlerContext<Endpoint>["providedResponse"];
+export type MockRouteProvidedResponse<Endpoint extends EndpointWithGet>
+  = MockRouteHandlerContext<Endpoint>["providedResponse"];
 
 type DerivedEndpointConfig = InferEndpointConfig<typeof MOCK_ROUTES>;
 

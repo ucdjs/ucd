@@ -1,8 +1,8 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
 import type { HttpResponseResolver } from "msw";
 import type {
-  ConfiguredResponseCarrier,
   ConfiguredResponse,
+  ConfiguredResponseCarrier,
   ConfiguredResponseMetadata,
   MockFetchType,
   MockStoreNode,
