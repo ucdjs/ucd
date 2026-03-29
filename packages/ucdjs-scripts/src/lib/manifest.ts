@@ -138,6 +138,7 @@ async function fetchSnapshotSourceFile(
   filesEndpoint: string,
   path: string,
 ): Promise<SnapshotSourceFile> {
+  // eslint-disable-next-line e18e/prefer-static-regex
   const cleanPath = path.replace(/^\/+/, "");
   const basePath = filesEndpoint.endsWith("/") ? filesEndpoint : `${filesEndpoint}/`;
   const url = new URL(cleanPath, new URL(basePath, apiBaseUrl));
