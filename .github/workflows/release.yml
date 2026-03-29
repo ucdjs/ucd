@@ -18,7 +18,7 @@ permissions:
 jobs:
   verify-fast:
     name: verify release (fast)
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd' && github.ref_name != 'release/next'
     permissions:
       contents: read
@@ -50,7 +50,7 @@ jobs:
 
   verify:
     name: verify release
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd' && github.ref_name == 'release/next'
     permissions:
       contents: read
@@ -85,7 +85,7 @@ jobs:
 
   release:
     name: release
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     if: |
       github.ref == 'refs/heads/main' &&
       github.repository == 'ucdjs/ucd' && (
