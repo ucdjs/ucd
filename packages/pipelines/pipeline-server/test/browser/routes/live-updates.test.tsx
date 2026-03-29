@@ -23,6 +23,7 @@ describe("live updates", () => {
         }),
       ],
     });
+    let overviewRequests = 0;
 
     mockFetch([
       ["GET", "/api/config", () => HttpResponse.json(buildConfigResponse())],
@@ -33,7 +34,10 @@ describe("live updates", () => {
         }),
       ])],
       ["GET", "/api/sources/local", () => HttpResponse.json(currentSource)],
-      ["GET", "/api/sources/local/overview", () => HttpResponse.json(buildOverviewResponse())],
+      ["GET", "/api/sources/local/overview", () => {
+        overviewRequests += 1;
+        return HttpResponse.json(buildOverviewResponse());
+      }],
     ]);
 
     await renderFileRoute(<div />, { initialLocation: "/s/local" });
@@ -80,6 +84,9 @@ describe("live updates", () => {
     });
 
     expect(await screen.findByText("Beta file")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(overviewRequests).toBeGreaterThan(1);
+    });
   });
 
   it("redirects back to the source page when the active file disappears", async () => {
