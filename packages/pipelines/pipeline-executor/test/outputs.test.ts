@@ -15,8 +15,8 @@ import {
   serializeOutputValue,
   writeOutputToSink,
 } from "../src/run/outputs";
-import { createNodeExecutionRuntime } from "../src/runtime/node";
 import { createNoopExecutionRuntime } from "../src/runtime";
+import { createNodeExecutionRuntime } from "../src/runtime/node";
 import { createMockFile } from "./helpers";
 
 const tempDirs: string[] = [];
