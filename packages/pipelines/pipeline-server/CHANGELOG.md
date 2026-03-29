@@ -4,6 +4,11 @@
 
 
 ### 🚀 Features
+* add execution log viewer with span filtering ([235817e7](https://github.com/ucdjs/ucd/commit/235817e7252480e277dfa213f36ec0bdd5d4eba9)) (by [@luxass](https://github.com/luxass))
+* add types for workspace and execution entities ([625d4434](https://github.com/ucdjs/ucd/commit/625d4434f3b9108ee91214ad0f4479df7db25b43)) (by [@luxass](https://github.com/luxass))
+* enhance waterfall view with expand/collapse functionality ([19d5f767](https://github.com/ucdjs/ucd/commit/19d5f767e2bbd0f1349ba96f0f894e1af2f73d92)) (by [@luxass](https://github.com/luxass))
+* add waterfall execution tracing components ([6e54d301](https://github.com/ucdjs/ucd/commit/6e54d301a6f824e233a507b73b94dc73d825517e)) (by [@luxass](https://github.com/luxass))
+* implement execution detail page with trace data ([1408aad9](https://github.com/ucdjs/ucd/commit/1408aad9a8f77279dce5c4e26603317aa742c713)) (by [@luxass](https://github.com/luxass))
 * enhance live updates with source queries ([6398cbe2](https://github.com/ucdjs/ucd/commit/6398cbe26609c6df4989da9e572481b4fd796543)) (by [@luxass](https://github.com/luxass))
 * integrate `usePipelineRouteData` for route data management ([3dba68f6](https://github.com/ucdjs/ucd/commit/3dba68f6e8028658420b91f2481a80e41e9c4df1)) (by [@luxass](https://github.com/luxass))
 * introduce PipelineGraph types and interfaces ([4968f834](https://github.com/ucdjs/ucd/commit/4968f83438973666f1be14b5800543953482ecaf)) (by [@luxass](https://github.com/luxass))
