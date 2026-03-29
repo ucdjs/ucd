@@ -35,6 +35,7 @@ function buildExpectedFiles(nodes: MockStoreNode[], version: string): ExpectedFi
   });
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 function resolveManifestResponse(
   version: string,
   versions: string[],
