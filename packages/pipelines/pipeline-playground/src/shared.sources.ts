@@ -67,6 +67,6 @@ export const sequencesSource = createMemorySource({
 });
 
 /**
- * All sources combined — convenient for pipelines that process multiple files.
+ * All sources combined - convenient for pipelines that process multiple files.
  */
 export const allSources = [colorsSource, sizesSource, planetsSource, sequencesSource];

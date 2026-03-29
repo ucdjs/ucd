@@ -14,18 +14,18 @@
 | `vitest` | Test runner (already in monorepo) |
 | `vitest-testdirs` | Creates isolated temp directories per test, auto-cleaned |
 | `msw` | HTTP mocking for the http backend |
-| `@ucdjs/test-utils` | MSW setup (`mockFetch`, `HttpResponse`) — already wired in root vitest config |
+| `@ucdjs/test-utils` | MSW setup (`mockFetch`, `HttpResponse`) - already wired in root vitest config |
 
 ## Test File Layout
 
 ```
 packages/fs-backend/test/
-├── define.test.ts        — factory: options validation, feature inference, hook wiring, setup errors
-├── node.test.ts          — node backend: all 6 ops against real FS (vitest-testdirs)
-├── http.test.ts          — http backend: read/list/exists against MSW mocks
-├── parity.test.ts        — shared read-only contract asserted against node + http
-├── guards.test.ts        — hasFeature, isHttpBackend, assertFeature
-└── security.test.ts      — path traversal, encoded paths, boundary enforcement (node backend)
+├── define.test.ts        - factory: options validation, feature inference, hook wiring, setup errors
+├── node.test.ts          - node backend: all 6 ops against real FS (vitest-testdirs)
+├── http.test.ts          - http backend: read/list/exists against MSW mocks
+├── parity.test.ts        - shared read-only contract asserted against node + http
+├── guards.test.ts        - hasFeature, isHttpBackend, assertFeature
+└── security.test.ts      - path traversal, encoded paths, boundary enforcement (node backend)
 ```
 
 ## Vitest Config
@@ -70,15 +70,15 @@ const backend = NodeBackend({ basePath: dir });
 const backend = HttpBackend({ baseUrl: new URL("https://ucdjs.dev") });
 ```
 
-- `read("/file.txt")` — GET returns 200 text → content returned
-- `read("/file.txt")` — GET returns 404 → throws `BackendFileNotFound`
-- `read("/file.txt")` — GET returns 500 → throws `BackendError`
-- `list("/")` — GET returns valid JSON `BackendEntry[]` → entries returned
-- `list("/")` — GET returns 404 → throws `BackendFileNotFound`
-- `list("/")` — GET returns 403 → throws backend error
-- `exists("/file.txt")` — HEAD returns 200 → `true`
-- `exists("/missing.txt")` — HEAD returns 404 → `false`
-- `stat("/file.txt")` — HEAD infers type from `X-UCD-Stat-Type`
+- `read("/file.txt")` - GET returns 200 text → content returned
+- `read("/file.txt")` - GET returns 404 → throws `BackendFileNotFound`
+- `read("/file.txt")` - GET returns 500 → throws `BackendError`
+- `list("/")` - GET returns valid JSON `BackendEntry[]` → entries returned
+- `list("/")` - GET returns 404 → throws `BackendFileNotFound`
+- `list("/")` - GET returns 403 → throws backend error
+- `exists("/file.txt")` - HEAD returns 200 → `true`
+- `exists("/missing.txt")` - HEAD returns 404 → `false`
+- `stat("/file.txt")` - HEAD infers type from `X-UCD-Stat-Type`
 - `features` set is empty (no write/mkdir/remove)
 - `isHttpBackend(backend)` → `true`
 - `isHttpBackend(NodeBackend({ basePath: "/" }))` → `false`
@@ -108,11 +108,11 @@ const backend = HttpBackend({ baseUrl: new URL("https://ucdjs.dev") });
 
 ## What "integration" means here
 
-The node backend tests ARE integration tests — they use real `fs/promises` against a real
+The node backend tests ARE integration tests - they use real `fs/promises` against a real
 temp filesystem created by `vitest-testdirs`. No mocking of filesystem operations.
 
 The http backend tests mock the HTTP layer via MSW but exercise the full request/response
 cycle through the backend's fetch logic.
 
-There is no separate "e2e" layer needed for this package — the integration coverage
+There is no separate "e2e" layer needed for this package - the integration coverage
 is sufficient since the package has no external process boundary.

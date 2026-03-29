@@ -21,9 +21,9 @@
   },
   "workbench.editor.customLabels.enabled": true,
   "workbench.editor.customLabels.patterns": {
-    "**/pipeline-server/src/server/routes/**/*.ts": "(${filename}) ${extname(1)}",
-    // custom labels for api routes
-    "**/routes/**/*.ts": "(${dirname}) ${filename}",
+    "**/pipeline-server/src/server/routes/**/*.ts": "pipeline-server • ${extname(1)}",
+    "**/api/src/routes/**/*.ts": "api • ${dirname} • ${filename}",
+    "**/store/src/routes/**/*.ts": "store • ${filename}",
   },
   "testing.automaticallyOpenTestResults": "neverOpen",
   "files.associations": {
@@ -47,6 +47,6 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
-  "ts.tsdk": "node_modules/typescript/lib",
-  "ts.experimental.useTsgo": true
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+  "js/ts.experimental.useTsgo": true,
 }

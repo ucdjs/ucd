@@ -98,10 +98,10 @@ const hash = await computeFileHash(content);
 
 `@ucdjs/lockfile` manages the canonical persisted state for mirrored local UCD stores. Two artifacts define what's in a local store:
 
-- **Lockfile** (`.ucd-store.lock`) — index of all mirrored Unicode versions, with their snapshot paths, file counts, and total sizes.
-- **Snapshots** (`{version}/snapshot.json`) — per-version manifest listing every file, its hash, and size.
+- **Lockfile** (`.ucd-store.lock`) - index of all mirrored Unicode versions, with their snapshot paths, file counts, and total sizes.
+- **Snapshots** (`{version}/snapshot.json`) - per-version manifest listing every file, its hash, and size.
 
-Together these are the source of truth for a local store. The `parseLockfile()` and `parseSnapshot()` utilities also accept content from remote sources (HTTP, KV stores) with the same shape, but those are read-only compatibility uses — not local store management.
+Together these are the source of truth for a local store. The `parseLockfile()` and `parseSnapshot()` utilities also accept content from remote sources (HTTP, KV stores) with the same shape, but those are read-only compatibility uses - not local store management.
 
 ## API Reference
 
