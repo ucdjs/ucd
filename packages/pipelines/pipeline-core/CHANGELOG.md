@@ -1,5 +1,21 @@
 # @ucdjs/pipelines-core
 
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.7...@ucdjs/pipelines-core@0.0.1-beta.8) (2026-03-29)
+
+
+### 🚀 Features
+* introduce PipelineGraph types and interfaces ([4968f834](https://github.com/ucdjs/ucd/commit/4968f83438973666f1be14b5800543953482ecaf)) (by [@luxass](https://github.com/luxass))
+* add new transforms and tests for deduplication, expansion, and normalization ([58699db1](https://github.com/ucdjs/ucd/commit/58699db1af20ac7724702ec03f1d7aaafe50bf20)) (by [@luxass](https://github.com/luxass))
+* add tracing module with trace model ([43c2b4d7](https://github.com/ucdjs/ucd/commit/43c2b4d7e33dc2b9d12c900f051dbbbffa4bb413)) (by [@luxass](https://github.com/luxass))
+* add filter and include support to pipelines ([c85c5375](https://github.com/ucdjs/ucd/commit/c85c53754a030f9b1601636fa8882588897cc6cf)) (by [@luxass](https://github.com/luxass), Claude Opus 4.6 (1M context))
+* add context-aware logger to runtime contexts ([dd578d3b](https://github.com/ucdjs/ucd/commit/dd578d3bb02b489b3f63dfeb14e9d4d60262c9c4)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* replace regex-based dash trimming with plain string scan ([2c9bb4cc](https://github.com/ucdjs/ucd/commit/2c9bb4cc4550d05265dc95c8010076448d197889)) (by [@luxass](https://github.com/luxass))
+* address remaining PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([34a6f4ce](https://github.com/ucdjs/ucd/commit/34a6f4ce9d8cc1c086ffdb6d2e0f61ec3f5da99e)) (by [@luxass](https://github.com/luxass))
+* address PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([562a1ddc](https://github.com/ucdjs/ucd/commit/562a1ddcf5a7937f1cf36586ad40eda3d15d86de)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.6...@ucdjs/pipelines-core@0.0.1-beta.7) (2026-02-27)
 
 
