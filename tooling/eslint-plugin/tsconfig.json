@@ -1,6 +1,7 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base",
   "include": [
-    "**/*.js"
+    "**/*.js",
+    "**/*.ts"
   ]
 }

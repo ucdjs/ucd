@@ -94,6 +94,7 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
 
 const packageProjects = await createProjects("packages");
 const pipelinePackageProjects = await createProjects("packages/pipelines");
+const toolingProjects = await createProjects("tooling");
 
 const appProjects = await createProjects("apps");
 
@@ -117,6 +118,7 @@ export default defineConfig({
     projects: [
       ...packageProjects,
       ...pipelinePackageProjects,
+      ...toolingProjects,
       ...appProjects
     ]
   },

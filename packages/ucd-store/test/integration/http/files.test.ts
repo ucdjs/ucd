@@ -4,7 +4,7 @@ import { findFileByPath } from "@ucdjs-internal/shared";
 import { describe, expect, it } from "vitest";
 import { createHTTPUCDStore } from "../../../src/factory";
 
-describe.todo("http integration: file operations", () => {
+describe("http integration: file operations", () => {
   describe("files.get", () => {
     it("should fetch file from HTTP endpoint", async () => {
       const files = {
@@ -23,6 +23,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -34,7 +36,9 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.get("16.0.0", "UnicodeData.txt");
+      const [data, error] = await store.files.get("16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBe("0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;");
@@ -64,6 +68,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -75,7 +81,9 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.get("16.0.0", "auxiliary/GraphemeBreakProperty.txt");
+      const [data, error] = await store.files.get("16.0.0", "auxiliary/GraphemeBreakProperty.txt", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBe("grapheme break data");
@@ -98,6 +106,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -135,6 +145,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -146,7 +158,9 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.get("16.0.0", "Unicode.txt");
+      const [data, error] = await store.files.get("16.0.0", "Unicode.txt", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBe(unicodeContent);
@@ -168,6 +182,7 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
           "/api/v1/versions/{version}/file-tree": true,
         },
@@ -180,14 +195,16 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.list("16.0.0");
+      const [data, error] = await store.files.list("16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
-      // Paths now use the store subdomain format (no /ucd/ prefix)
+      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/UnicodeData.txt",
-        "/16.0.0/Blocks.txt",
-        "/16.0.0/Scripts.txt",
+        "/16.0.0/ucd/UnicodeData.txt",
+        "/16.0.0/ucd/Blocks.txt",
+        "/16.0.0/ucd/Scripts.txt",
       ]);
     });
 
@@ -219,6 +236,7 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
           "/api/v1/versions/{version}/file-tree": true,
         },
@@ -231,14 +249,16 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.list("16.0.0");
+      const [data, error] = await store.files.list("16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toHaveLength(2);
-      // Paths now use the store subdomain format (no /ucd/ prefix)
+      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/UnicodeData.txt",
-        "/16.0.0/extracted/DerivedBidiClass.txt",
+        "/16.0.0/ucd/UnicodeData.txt",
+        "/16.0.0/ucd/extracted/DerivedBidiClass.txt",
       ]);
     });
 
@@ -256,6 +276,7 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
           "/api/v1/versions/{version}/file-tree": true,
         },
@@ -271,16 +292,18 @@ describe.todo("http integration: file operations", () => {
         },
       });
 
-      const [data, error] = await store.files.list("16.0.0");
+      const [data, error] = await store.files.list("16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toHaveLength(2);
-      // Paths now use the store subdomain format (no /ucd/ prefix)
+      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/UnicodeData.txt",
-        "/16.0.0/Blocks.txt",
+        "/16.0.0/ucd/UnicodeData.txt",
+        "/16.0.0/ucd/Blocks.txt",
       ]);
-      expect(data).not.toContain("/16.0.0/data.json");
+      expect(data).not.toContain("/16.0.0/ucd/data.json");
     });
   });
 
@@ -309,6 +332,7 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
           "/api/v1/versions/{version}/file-tree": true,
         },
@@ -321,21 +345,23 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.tree("16.0.0");
+      const [data, error] = await store.files.tree("16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
-      // Paths now use the store subdomain format (no /ucd/ prefix)
-      const unicodeDataFile = findFileByPath(data || [], "/16.0.0/UnicodeData.txt");
+      // Tree results are normalized for filtering and return store-relative paths.
+      const unicodeDataFile = findFileByPath(data || [], "UnicodeData.txt");
       expect(unicodeDataFile).toBeDefined();
       expect(unicodeDataFile?.type).toBe("file");
 
-      const extractedDir = findFileByPath(data || [], "/16.0.0/extracted");
+      const extractedDir = findFileByPath(data || [], "extracted");
       expect(extractedDir).toBeDefined();
       expect(extractedDir?.type).toBe("directory");
 
-      const nestedFile = findFileByPath(data || [], "/16.0.0/extracted/DerivedBidiClass.txt");
+      const nestedFile = findFileByPath(data || [], "extracted/DerivedBidiClass.txt");
       expect(nestedFile).toBeDefined();
       expect(nestedFile?.type).toBe("file");
     });
@@ -362,7 +388,9 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data, error] = await store.files.tree("16.0.0");
+      const [data, error] = await store.files.tree("16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toEqual([]);
@@ -387,6 +415,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -444,6 +474,8 @@ describe.todo("http integration: file operations", () => {
         files,
         responses: {
           "/.well-known/ucd-config.json": true,
+          "/api/v1/files/{wildcard}": true,
+          "/api/v1/versions/{version}/manifest": true,
           "/api/v1/versions": true,
         },
       });
@@ -455,11 +487,15 @@ describe.todo("http integration: file operations", () => {
         verify: false,
       });
 
-      const [data16, error16] = await store.files.get("16.0.0", "UnicodeData.txt");
+      const [data16, error16] = await store.files.get("16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
       expect(error16).toBeNull();
       expect(data16).toBe("v16 content");
 
-      const [data15, error15] = await store.files.get("15.0.0", "UnicodeData.txt");
+      const [data15, error15] = await store.files.get("15.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
       expect(error15).toBeNull();
       expect(data15).toBe("v15 content");
     });
