@@ -10,10 +10,10 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
         executions: [{
           traces: [
             {
-              kind: "output.resolved",
+              kind: "output",
               data: {
                 id: "trace-1",
-                kind: "output.resolved",
+                kind: "output",
                 pipelineId: "simple",
                 timestamp: Date.now(),
                 version: "16.0.0",
@@ -73,7 +73,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
       executionId,
       pipelineId: "simple",
       traces: expect.arrayContaining([
-        expect.objectContaining({ kind: "output.resolved" }),
+        expect.objectContaining({ kind: "output" }),
         expect.objectContaining({ kind: "output.written" }),
       ]),
       outputManifest: [

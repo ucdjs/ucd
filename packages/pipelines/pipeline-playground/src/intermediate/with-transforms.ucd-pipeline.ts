@@ -9,13 +9,17 @@ import { colorsSource, sizesSource } from "../shared.sources";
  */
 const uppercaseValues = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "uppercase-values",
-  async* fn(_ctx, rows) {
+  async* fn(ctx, rows) {
+    ctx.logger.debug("uppercase-values transform started");
+    let count = 0;
     for await (const row of rows) {
+      count++;
       yield {
         ...row,
         value: typeof row.value === "string" ? row.value.toUpperCase() : row.value,
       };
     }
+    ctx.logger.debug("uppercase-values transform finished", { rows: count });
   },
 });
 

@@ -43,7 +43,7 @@ export interface PipelineLogEntry {
   workspaceId: string;
   spanId?: string;
   traceKind?: string;
-  level: PipelineLogLevel;
+  level: PipelineLogLevel | null;
   source: PipelineLogSource;
   message: string;
   timestamp: number;

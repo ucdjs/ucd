@@ -47,7 +47,7 @@ export function buildWaterfallTree(spans: ExecutionSpanItem[], traceId: string |
     traceStartMs = 0;
   }
 
-  // Build node map — all items are spans with their own unique spanId
+  // Build node map -all items are spans with their own unique spanId
   const nodeMap = new Map<string, WaterfallNode>();
   for (const span of spans) {
     const isInstant = span.startTimestamp == null || span.durationMs == null;
@@ -108,7 +108,7 @@ export function buildWaterfallTree(spans: ExecutionSpanItem[], traceId: string |
     }
   }
 
-  // allNodes in DFS order (used by minimap — shows everything)
+  // allNodes in DFS order (used by minimap -shows everything)
   const allNodes: WaterfallNode[] = [];
   function collectAll(node: WaterfallNode): void {
     allNodes.push(node);
@@ -221,6 +221,14 @@ export function getSpanName(span: ExecutionSpanItem): string {
     return span.kind;
   }
 
+  if (span.kind === "output") {
+    const outputId = attrs != null && typeof attrs.outputId === "string" ? attrs.outputId : undefined;
+    if (routeId != null && outputId != null) return `output ${routeId} → ${outputId}`;
+    if (routeId != null) return `output ${routeId}`;
+    if (outputId != null) return `output ${outputId}`;
+    return "output";
+  }
+
   if (version != null) return `${span.kind} v${version}`;
   if (routeId != null) return `${span.kind} ${routeId}`;
   if (fileName != null) return `${span.kind} ${fileName}`;
@@ -236,6 +244,7 @@ export function getSpanColor(kind: string): string {
     case "resolve": return "#a78bfa";
     case "source.listing": return "#2dd4bf";
     case "source.provided": return "#94a3b8";
+    case "output": return "#f43f5e";
     case "error": return "#ef4444";
     case "cache.hit": return "#22c55e";
     case "cache.miss": return "#f97316";

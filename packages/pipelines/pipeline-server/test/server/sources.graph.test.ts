@@ -65,10 +65,10 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
               },
             },
             {
-              kind: "output.resolved",
+              kind: "output",
               data: {
                 id: "trace-4",
-                kind: "output.resolved",
+                kind: "output",
                 pipelineId: "simple",
                 timestamp: Date.now(),
                 version: "1.0.0",

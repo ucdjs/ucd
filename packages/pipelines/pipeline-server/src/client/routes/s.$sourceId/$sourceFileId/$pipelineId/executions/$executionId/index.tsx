@@ -23,7 +23,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/exe
       throw error;
     }
 
-    // Prefetch logs in parallel (non-blocking — logs panel uses its own Suspense)
+    // Prefetch logs in parallel (non-blocking -logs panel uses its own Suspense)
     void context.queryClient.prefetchQuery(executionLogsQueryOptions({
       sourceId: params.sourceId,
       fileId: params.sourceFileId,

@@ -2,7 +2,9 @@ import type { ExecutionLogItem } from "#shared/schemas/execution";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { LogLevelBadge } from "./log-level-badge";
 
-const LEVEL_BORDER: Record<ExecutionLogItem["level"], string> = {
+type Level = NonNullable<ExecutionLogItem["level"]>;
+
+const LEVEL_BORDER: Record<Level, string> = {
   debug: "bg-muted-foreground/40",
   info: "bg-sky-400",
   warn: "bg-yellow-400",
@@ -34,7 +36,7 @@ export function LogRow({ log, onSelect }: LogRowProps) {
     >
       {/* Level border + badge */}
       <div className="flex w-20 shrink-0 items-center gap-1.5 py-1.5 pl-0">
-        <div className={cn("h-full w-0.5 self-stretch", LEVEL_BORDER[log.level])} />
+        <div className={cn("h-full w-0.5 self-stretch", log.level != null ? LEVEL_BORDER[log.level] : "bg-border")} />
         <LogLevelBadge level={log.level} />
       </div>
 

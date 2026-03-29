@@ -46,7 +46,7 @@ export interface PublishedOutputFile {
 
 export interface MaterializeOutputsResult {
   entries: PipelineOutputManifestEntry[];
-  /** Write errors that occurred — callers should push these to their error collections. */
+  /** Write errors that occurred -callers should push these to their error collections. */
   writeErrors: Array<{ error: unknown; outputId: string; routeId: string }>;
 }
 
@@ -93,7 +93,7 @@ export async function materializeOutputs(options: {
       const sink = definition.sink?.type ?? "memory";
       const locator = destination.displayLocator;
 
-      await runtime.startSpan("output.resolved", async (outputSpan) => {
+      await runtime.startSpan("output", async (outputSpan) => {
         outputSpan.setAttributes({
           "pipeline.id": pipelineId,
           "pipeline.version": version,

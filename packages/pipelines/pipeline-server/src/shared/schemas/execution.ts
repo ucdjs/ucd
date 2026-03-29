@@ -66,15 +66,11 @@ export const ExecutionSpanItemSchema = z.object({
 });
 
 export const ExecutionLogPayloadSchema = z.object({
-  message: z.string(),
   args: z.array(z.unknown()).optional(),
-  level: z.enum(["debug", "info", "warn", "error"]),
-  source: z.enum(["logger", "console", "stdio"]),
   meta: z.record(z.string(), z.unknown()).optional(),
   truncated: z.boolean().optional(),
   originalSize: z.number().optional(),
   isBanner: z.boolean().optional(),
-  traceKind: z.string().optional(),
 }).nullable();
 
 export const ExecutionLogItemSchema = z.object({
@@ -82,8 +78,8 @@ export const ExecutionLogItemSchema = z.object({
   spanId: z.string().nullable(),
   message: z.string(),
   timestamp: z.string(),
-  level: z.enum(["debug", "info", "warn", "error"]),
-  source: z.enum(["logger", "console", "stdio"]),
+  level: z.enum(["debug", "info", "warn", "error"]).nullable(),
+  source: z.enum(["logger", "console", "stdio"]).nullable(),
   payload: ExecutionLogPayloadSchema,
 });
 

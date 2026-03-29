@@ -21,7 +21,7 @@ describe("buildOutputManifestFromTraces", () => {
     const traces: PipelineTraceRecord[] = [
       {
         id: "trace-1",
-        kind: "output.resolved",
+        kind: "output",
         pipelineId: "demo",
         timestamp: 1,
         version: "16.0.0",
@@ -66,7 +66,7 @@ describe("buildOutputManifestFromTraces", () => {
       },
       {
         id: "trace-3",
-        kind: "output.resolved",
+        kind: "output",
         pipelineId: "demo",
         timestamp: 3,
         version: "16.0.0",

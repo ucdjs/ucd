@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { LogDetails } from "./log-details";
 import { LogRow } from "./log-row";
 
-type Level = ExecutionLogItem["level"];
+type Level = NonNullable<ExecutionLogItem["level"]>;
 const ALL_LEVELS: Level[] = ["debug", "info", "warn", "error"];
 
 const LEVEL_PILL: Record<Level, string> = {

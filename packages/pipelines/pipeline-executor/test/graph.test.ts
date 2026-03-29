@@ -18,7 +18,7 @@ describe("buildExecutionGraphFromTraces", () => {
       },
       {
         id: "trace-2",
-        kind: "output.resolved",
+        kind: "output",
         pipelineId: "demo",
         timestamp: Date.now(),
         version: "1.0.0",
@@ -40,7 +40,7 @@ describe("buildExecutionGraphFromTraces", () => {
       },
       {
         id: "trace-3",
-        kind: "output.resolved",
+        kind: "output",
         pipelineId: "demo",
         timestamp: Date.now(),
         version: "1.0.0",
