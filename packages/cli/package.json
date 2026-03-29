@@ -80,7 +80,10 @@
     "@luxass/msw-utils": "0.6.1",
     "@luxass/unicode-utils": "0.11.0",
     "@luxass/utils": "2.7.3",
-    "@opentelemetry/api": "1.9.0",
+    "@opentelemetry/api": [
+      "1.9.0",
+      "1.9.1"
+    ],
     "@rolldown/pluginutils": "1.0.0-rc.11",
     "@unicode-utils/core": "0.12.0-beta.23",
     "@unicode-utils/metadata": "0.12.0-beta.23",
