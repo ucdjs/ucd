@@ -2,6 +2,8 @@ import type { MockFetchFn } from "@luxass/msw-utils";
 import type { HttpResponseResolver } from "msw";
 import type {
   ConfiguredResponse,
+  ConfiguredResponseCarrier,
+  ConfiguredResponseMetadata,
   MockFetchType,
   MockStoreNode,
   OnAfterMockFetchCallback,
@@ -23,10 +25,14 @@ export function parseLatency(latency: number | "random"): number {
   return latency;
 }
 
-export function isConfiguredResponse(value: unknown): value is ConfiguredResponse<any> {
+export function isConfiguredResponse(value: unknown): value is ConfiguredResponse<unknown> {
   return (typeof value === "object" || typeof value === "function")
     && value !== null
-    && kConfiguredResponse in (value as object);
+    && kConfiguredResponse in (value as ConfiguredResponseCarrier);
+}
+
+function getConfiguredMetadata(value: ConfiguredResponseCarrier): ConfiguredResponseMetadata {
+  return value[kConfiguredResponse]!;
 }
 
 export function extractConfiguredMetadata(response: unknown): {
@@ -37,12 +43,7 @@ export function extractConfiguredMetadata(response: unknown): {
   afterHook?: OnAfterMockFetchCallback;
 } {
   if (isConfiguredResponse(response)) {
-    const meta = (response as any)[kConfiguredResponse] as {
-      latency?: number | "random";
-      headers?: Record<string, string>;
-      before?: OnBeforeMockFetchCallback;
-      after?: OnAfterMockFetchCallback;
-    };
+    const meta = getConfiguredMetadata(response);
 
     return {
       actualResponse: response,
@@ -143,7 +144,15 @@ export function wrapMockFetch(
 
       debug?.("Calling original mockFetch with wrapped routes");
 
-      return originalMockFetch(wrappedRoutes, ...args.slice(1) as any);
+      if (args.length === 1) {
+        return originalMockFetch(wrappedRoutes);
+      }
+
+      if (args.length === 2) {
+        return originalMockFetch(wrappedRoutes, args[1]);
+      }
+
+      return originalMockFetch(wrappedRoutes, args[1], args[2]);
     }
 
     debug?.("Routes is not an array, calling original mockFetch directly");
@@ -163,20 +172,26 @@ export type DeepOmit<T, K extends PropertyKey> = T extends object
 export function omitContentRecursively<T extends MockStoreNode>(nodes: T[]): DeepOmit<T, "_content">[] {
   return nodes.map((node) => {
     if (node.type === "directory") {
+      const { _content: _ignored, ...rest } = node;
       return {
-        ...node,
+        ...rest,
         children: omitContentRecursively(node.children),
       } as DeepOmit<T, "_content">;
     }
 
-    delete node._content;
-    return node as DeepOmit<T, "_content">;
+    const { _content: _ignored, ...rest } = node;
+    return rest as DeepOmit<T, "_content">;
   });
 }
 
 export function omitChildrenAndContent<T extends MockStoreNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
   return nodes.map((node) => {
-    const { _content, children: _children, ...rest } = node as any;
-    return rest as Omit<T, "_content" | "children">;
+    if (node.type === "directory") {
+      const { _content: _ignored, children: _children, ...directoryRest } = node;
+      return directoryRest as Omit<T, "_content" | "children">;
+    }
+
+    const { _content: _ignored, ...fileRest } = node;
+    return fileRest as Omit<T, "_content" | "children">;
   });
 }
