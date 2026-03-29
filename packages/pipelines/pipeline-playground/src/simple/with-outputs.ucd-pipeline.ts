@@ -1,5 +1,6 @@
+import type { ResolvedEntry } from "@ucdjs/pipelines-core";
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+import { standardParser } from "@ucdjs/pipelines-presets";
 import { colorsSource, planetsSource, sizesSource } from "../shared.sources";
 
 /**
@@ -12,7 +13,15 @@ const colorsRoute = definePipelineRoute({
   id: "colors",
   filter: byName("colors.txt"),
   parser: standardParser,
-  resolver: propertyJsonResolver,
+  resolver: async (ctx, rows) => {
+    ctx.logger.info("Resolving colors", { file: ctx.file.name, version: ctx.version });
+    const entries: ResolvedEntry[] = [];
+    for await (const row of rows) {
+      if (row.value != null) entries.push({ codePoint: row.codePoint, value: row.value });
+    }
+    ctx.logger.debug("Colors resolved", { count: entries.length });
+    return [{ version: ctx.version, property: "Colors", file: ctx.file.name, entries }];
+  },
   outputs: [{
     path: "data/colors/colors.json",
   }],
@@ -22,7 +31,15 @@ const planetsRoute = definePipelineRoute({
   id: "planets",
   filter: byName("planets.txt"),
   parser: standardParser,
-  resolver: propertyJsonResolver,
+  resolver: async (ctx, rows) => {
+    ctx.logger.info("Resolving planets", { file: ctx.file.name, version: ctx.version });
+    const entries: ResolvedEntry[] = [];
+    for await (const row of rows) {
+      if (row.value != null) entries.push({ codePoint: row.codePoint, value: row.value });
+    }
+    ctx.logger.debug("Planets resolved", { count: entries.length });
+    return [{ version: ctx.version, property: "Planets", file: ctx.file.name, entries }];
+  },
   outputs: [{
     path: "data/planets/planets.json",
   }],
@@ -32,7 +49,15 @@ const sizesRoute = definePipelineRoute({
   id: "sizes",
   filter: byName("sizes.txt"),
   parser: standardParser,
-  resolver: propertyJsonResolver,
+  resolver: async (ctx, rows) => {
+    ctx.logger.info("Resolving sizes", { file: ctx.file.name, version: ctx.version });
+    const entries: ResolvedEntry[] = [];
+    for await (const row of rows) {
+      if (row.value != null) entries.push({ codePoint: row.codePoint, value: row.value });
+    }
+    ctx.logger.debug("Sizes resolved", { count: entries.length });
+    return [{ version: ctx.version, property: "Sizes", file: ctx.file.name, entries }];
+  },
   outputs: [{
     path: "data/sizes/sizes.json",
   }],

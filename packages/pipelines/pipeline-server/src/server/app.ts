@@ -16,9 +16,13 @@ import {
   sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
+import { context } from "@opentelemetry/api";
+import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { getUcdConfigDir } from "@ucdjs/env";
 import { H3, serve, serveStatic } from "h3";
 import { version } from "../../package.json" with { type: "json" };
+
+context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
 
 export type PipelineSource = PipelineLocator & { id: string };
 

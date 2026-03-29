@@ -1,9 +1,11 @@
 import type { Database } from "#server/db";
-import type { ExecutionLogPayload } from "#server/db/schema";
-import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
+import type { ExecutionLogPayload as NullableLogPayload } from "#shared/schemas/execution";
+import type { PipelineLogEntry, PipelineLogLevel, PipelineLogSource } from "@ucdjs/pipelines-executor";
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
+
+type ExecutionLogPayload = NonNullable<NullableLogPayload>;
 
 const MAX_LINE_BYTES = 256 * 1024;
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024;
@@ -27,9 +29,27 @@ export interface ExecutionLogOptions {
   workspaceId: string;
   spanId?: string;
   message: string;
+  level: PipelineLogLevel | null;
+  source: PipelineLogSource;
   payload: ExecutionLogPayload;
   timestamp?: Date;
   force?: boolean;
+}
+
+function truncateToBytes(str: string, maxBytes: number): string {
+  let low = 0;
+  let high = str.length;
+  let best = 0;
+  while (low <= high) {
+    const mid = Math.floor((low + high) / 2);
+    if (Buffer.byteLength(str.slice(0, mid), "utf-8") <= maxBytes) {
+      best = mid;
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return str.slice(0, best);
 }
 
 function truncateLogLine(message: string): { message: string; truncated: boolean; originalBytes: number } {
@@ -38,23 +58,8 @@ function truncateLogLine(message: string): { message: string; truncated: boolean
     return { message, truncated: false, originalBytes };
   }
 
-  let low = 0;
-  let high = message.length;
-  let best = 0;
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const slice = message.slice(0, mid);
-    const size = Buffer.byteLength(slice, "utf-8");
-    if (size <= MAX_LINE_BYTES) {
-      best = mid;
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-    }
-  }
-
   return {
-    message: message.slice(0, best),
+    message: truncateToBytes(message, MAX_LINE_BYTES),
     truncated: true,
     originalBytes,
   };
@@ -88,32 +93,12 @@ export async function storeExecutionLog(
   const remaining = MAX_TOTAL_BYTES - state.capturedBytes;
   let finalMessage = line.message;
   if (messageBytes > remaining && !options.force) {
-    let low = 0;
-    let high = line.message.length;
-    let best = 0;
-    while (low <= high) {
-      const mid = Math.floor((low + high) / 2);
-      const slice = line.message.slice(0, mid);
-      const size = Buffer.byteLength(slice, "utf-8");
-      if (size <= remaining) {
-        best = mid;
-        low = mid + 1;
-      } else {
-        high = mid - 1;
-      }
-    }
-    finalMessage = line.message.slice(0, best);
+    finalMessage = truncateToBytes(line.message, remaining);
   }
 
   const finalBytes = Buffer.byteLength(finalMessage, "utf-8");
   const overflowed = messageBytes > remaining && !options.force;
   const truncated = line.truncated || overflowed;
-
-  // Keep payload.message in sync with the truncated DB message column.
-  // options.payload.message is the original (untruncated) string; storing it
-  // in the JSON payload would bypass the per-line / per-execution size limits
-  // and can result in multi-hundred-MB payload blobs.
-  payload.message = finalMessage;
 
   state.originalBytes += line.originalBytes;
   state.capturedBytes += finalBytes;
@@ -130,6 +115,8 @@ export async function storeExecutionLog(
     executionId: options.executionId,
     spanId: options.spanId ?? null,
     message: finalMessage,
+    level: options.level,
+    source: options.source,
     timestamp: options.timestamp ?? new Date(),
     payload,
   });
@@ -153,14 +140,9 @@ export function createExecutionLogState(): ExecutionLogState {
 
 export function buildTruncationBanner(
   state: ExecutionLogState,
-  level: ExecutionLogPayload["level"],
-  source: ExecutionLogPayload["source"],
 ): ExecutionLogPayload {
   const total = state.originalBytes > 0 ? state.originalBytes : state.capturedBytes;
   return {
-    message: "Execution logs truncated due to size limits.",
-    level,
-    source,
     truncated: true,
     isBanner: true,
     originalSize: total,
@@ -177,13 +159,14 @@ export function createExecutionLogStore(db: Database) {
   const stateByExecution = new Map<string, ExecutionCaptureState>();
 
   return async (entry: PipelineLogEntry): Promise<void> => {
+    // Keep only non-string args — strings are already folded into `message` by the formatter.
+    // e.g. console.log("prefix:", { a: 1 }) → args: [{ a: 1 }], message: "prefix: { a: 1 }"
+    const extraArgs = entry.args?.filter((arg) => typeof arg !== "string");
+    const args = extraArgs && extraArgs.length > 0 ? extraArgs : undefined;
+
     const payload: ExecutionLogPayload = {
-      message: entry.message,
-      args: entry.args && entry.args.length > 0 ? entry.args : undefined,
-      level: entry.level,
-      source: entry.source,
+      args,
       meta: entry.meta,
-      traceKind: entry.traceKind,
     };
 
     let executionState = stateByExecution.get(entry.executionId);
@@ -201,6 +184,8 @@ export function createExecutionLogStore(db: Database) {
       workspaceId: entry.workspaceId,
       spanId: entry.spanId,
       message: entry.message,
+      level: entry.level,
+      source: entry.source,
       payload,
       timestamp: new Date(entry.timestamp),
     });
@@ -211,12 +196,14 @@ export function createExecutionLogStore(db: Database) {
 
     if ((result.truncated || executionState.limitReached) && !executionState.truncatedLogged) {
       executionState.truncatedLogged = true;
-      const bannerPayload = buildTruncationBanner(executionState.state, entry.level, entry.source);
+      const bannerPayload = buildTruncationBanner(executionState.state);
       await storeExecutionLog(db, executionState.state, {
         executionId: entry.executionId,
         workspaceId: entry.workspaceId,
         spanId: entry.spanId,
-        message: bannerPayload.message,
+        message: "Execution logs truncated due to size limits.",
+        level: entry.level,
+        source: entry.source,
         payload: bannerPayload,
         timestamp: new Date(entry.timestamp),
         force: true,
