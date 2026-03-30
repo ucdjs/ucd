@@ -11,7 +11,6 @@ import { toPipelineDetails } from "#shared/lib/pipeline-utils";
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
 import { resourceFromAttributes } from "@opentelemetry/resources";
 import { BatchSpanProcessor, NodeTracerProvider } from "@opentelemetry/sdk-trace-node";
-import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
 import { and, eq } from "drizzle-orm";
@@ -108,7 +107,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   }
 
   const resource = resourceFromAttributes({
-    [ATTR_SERVICE_NAME]: "ucdjs-pipeline-server",
+    "service.name": "ucdjs-pipeline-server",
     "pipeline.execution_id": executionId,
     "pipeline.pipeline_id": pipelineId,
     "pipeline.file_id": file.id,
