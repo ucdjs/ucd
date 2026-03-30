@@ -7,32 +7,18 @@ import { normalize } from "node:path";
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value != null && typeof value === "object";
-}
-
-function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  return isRecord(value) && typeof value.then === "function";
-}
-
-function getNestedProjects(config: unknown): TestProjectConfiguration[] | null {
-  if (!isRecord(config)) {
-    return null;
-  }
-
-  const testConfig = config.test;
-
-  if (!isRecord(testConfig) || !Array.isArray(testConfig.projects)) {
-    return null;
-  }
-
-  return testConfig.projects as TestProjectConfiguration[];
-}
+type VitestConfigWithProjects = {
+  test?: {
+    projects?: TestProjectConfiguration[];
+  };
+};
 
 async function createProjects(root: string): Promise<TestProjectConfiguration[]> {
   try {
     const rootDir = fileURLToPath(new URL(`./${root}`, import.meta.url));
-    const dirs = readdirSync(rootDir).filter((dir) => existsSync(normalize(pkgRoot(root, dir) + "/package.json")));
+    const dirs = readdirSync(rootDir).filter((dir) =>
+      existsSync(normalize(`${pkgRoot(root, dir)}/package.json`)),
+    );
 
     const promises = dirs.map(async (dir) => {
       const base = {
@@ -56,18 +42,18 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
         },
       } satisfies TestProjectConfiguration;
 
-      const customConfigPath = normalize(pkgRoot(root, dir) + "/vitest.config.ts")
+      const customConfigPath = normalize(`${pkgRoot(root, dir)}/vitest.config.ts`);
 
       if (existsSync(customConfigPath)) {
         const safePath = customConfigPath.replace(/^[A-Z]:\\/, "/").replace(/\\/g, "/");
 
         try {
           const customConfig = await import(safePath).then((m) => m.default);
-          const nestedProjects = getNestedProjects(customConfig);
+          const nestedProjects = (customConfig as VitestConfigWithProjects).test?.projects;
 
-          if (nestedProjects) {
+          if (Array.isArray(nestedProjects)) {
             return nestedProjects.map((project) => {
-              if (typeof project === "string" || typeof project === "function" || isPromiseLike(project)) {
+              if (typeof project !== "object" || project == null) {
                 return project;
               }
 
@@ -77,7 +63,10 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
 
           return mergeConfig(base, customConfig);
         } catch (err) {
-          console.warn(`[vitest] Failed to load custom config for ${root}/${dir} (path: ${customConfigPath}, safe path: ${safePath}):`, err);
+          console.warn(
+            `[vitest] Failed to load custom config for ${root}/${dir} (path: ${customConfigPath}, safe path: ${safePath}):`,
+            err,
+          );
           return base;
         }
       }
