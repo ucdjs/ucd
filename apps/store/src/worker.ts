@@ -4,7 +4,7 @@ import {
   setupH3Cors,
   setupH3Ratelimit,
 } from "@ucdjs-internal/worker-utils/h3";
-import { H3, serve } from "h3/cloudflare";
+import { H3 } from "h3/cloudflare";
 import { registerFilesRoute } from "./routes/files";
 import { registerLockfileRoute } from "./routes/lockfile";
 import { registerSnapshotRoute } from "./routes/snapshot";
@@ -40,8 +40,4 @@ app.all("/**", () => {
   return notFound();
 });
 
-const worker = serve(app, { manual: true });
-
-export default {
-  fetch: worker.fetch,
-};
+export default app;

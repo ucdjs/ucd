@@ -88,7 +88,7 @@ export function SpanWaterfall({
     }
   }, [nodes, totalDurationMs, canvasWidth]);
 
-  // Global mouse listeners — always attached, check dragStateRef to decide
+  // Global mouse listeners - always attached, check dragStateRef to decide
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const state = dragStateRef.current;

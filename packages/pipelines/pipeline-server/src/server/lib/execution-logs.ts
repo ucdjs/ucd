@@ -159,7 +159,7 @@ export function createExecutionLogStore(db: Database) {
   const stateByExecution = new Map<string, ExecutionCaptureState>();
 
   return async (entry: PipelineLogEntry): Promise<void> => {
-    // Keep only non-string args — strings are already folded into `message` by the formatter.
+    // Keep only non-string args - strings are already folded into `message` by the formatter.
     // e.g. console.log("prefix:", { a: 1 }) → args: [{ a: 1 }], message: "prefix: { a: 1 }"
     const extraArgs = entry.args?.filter((arg) => typeof arg !== "string");
     const args = extraArgs && extraArgs.length > 0 ? extraArgs : undefined;
