@@ -110,7 +110,7 @@ flowchart TD
 
 ## Resources
 
-The client provides four primary resource namespaces. You access them as properties on the instantiated `client` object.
+The client provides three primary resource namespaces. You access them as properties on the instantiated `client` object.
 
 <TypeTable
   type={{
@@ -126,16 +126,12 @@ The client provides four primary resource namespaces. You access them as propert
       description: "Read the published well-known config from /.well-known/ucd-config.json",
       type: 'ConfigResource',
     },
-    manifest: {
-      description: 'Deprecated alias for `client.versions.getManifest(version)`',
-      type: 'ManifestResource',
-    },
   }}
 />
 
 ### Examples
 
-<Tabs items={['files', 'versions', 'config', 'manifest']}>
+<Tabs items={['files', 'versions', 'config']}>
   <Tab value="files">
     ```typescript
     const { data: fileContent, error } = await client.files.get("16.0.0/ucd/UnicodeData.txt");
@@ -177,19 +173,6 @@ The client provides four primary resource namespaces. You access them as propert
     }
 
     console.log("API Config:", config);
-    ```
-  </Tab>
-  <Tab value="manifest">
-    ```typescript
-    // Deprecated alias
-    const { data: manifest, error } = await client.manifest.get("16.0.0");
-
-    if (error) {
-      console.error("Failed to fetch manifest:", error.message);
-      return;
-    }
-
-    console.log("Expected files for 16.0.0:", manifest.expectedFiles);
     ```
   </Tab>
 </Tabs>

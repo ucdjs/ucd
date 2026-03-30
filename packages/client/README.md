@@ -100,10 +100,6 @@ Version manifest requests follow the configured `endpoints.manifest` value. By d
 
 - `/api/v1/versions/{version}/manifest`
 
-The deprecated compatibility alias remains:
-
-- `/.well-known/ucd-store/<version>.json`
-
 ## Resources
 
 The returned client exposes resource helpers:
@@ -113,7 +109,6 @@ The returned client exposes resource helpers:
 - `client.versions.getFileTree(version)` to fetch a version's file tree
 - `client.versions.getManifest(version)` to read the canonical per-version manifest
 - `client.config.get()` to read `/.well-known/ucd-config.json`
-- `client.manifest.get(version)` as a deprecated alias to `client.versions.getManifest(version)`
 
 ### Fetch a file
 
