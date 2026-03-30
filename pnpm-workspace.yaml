@@ -24,7 +24,7 @@ packages:
 catalogs:
   build:
     turbo: 2.8.20
-    "@ucdjs/release-scripts": 0.1.0-beta.61
+    "@ucdjs/release-scripts": 0.1.0-beta.62
     tsdown: 0.21.4
     typescript: 6.0.2
     publint: 0.3.18
