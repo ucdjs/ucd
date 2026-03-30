@@ -1,11 +1,9 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { ConfigResource } from "./resources/config";
 import type { FilesResource } from "./resources/files";
-import type { ManifestResource } from "./resources/manifest";
 import type { VersionsResource } from "./resources/versions";
 import { createConfigResource } from "./resources/config";
 import { createFilesResource } from "./resources/files";
-import { createManifestResource } from "./resources/manifest";
 import { createVersionsResource } from "./resources/versions";
 import { discoverEndpointsFromConfig } from "./ucd-config";
 
@@ -27,12 +25,6 @@ export interface UCDClient {
    */
   config: ConfigResource;
 
-  /**
-   * Access manifest endpoints
-   *
-   * @deprecated Use `client.versions.getManifest(version)` instead.
-   */
-  manifest: ManifestResource;
 }
 
 function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["endpoints"]): UCDClient {
@@ -50,15 +42,10 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
     baseUrl,
   });
 
-  const manifest = createManifestResource({
-    getManifest: versions.getManifest,
-  });
-
   return {
     files,
     versions,
     config,
-    manifest,
   };
 }
 
