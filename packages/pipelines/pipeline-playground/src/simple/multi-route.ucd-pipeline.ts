@@ -2,7 +2,7 @@ import type { ResolvedEntry } from "@ucdjs/pipelines-core";
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createSortTransform } from "@ucdjs/pipelines-core/transforms";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { colorsSource, planetsSource, sizesSource } from "../shared.sources";
+import { colorsSource, planetsSource, sizesSource } from "../shared/sources";
 
 const colorsRoute = definePipelineRoute({
   id: "colors",

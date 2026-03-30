@@ -1,6 +1,6 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { colorsSource, sizesSource } from "../shared.sources";
+import { colorsSource, sizesSource } from "../shared/sources";
 
 /**
  * Route A: processes colors first - no dependencies.

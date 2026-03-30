@@ -1,7 +1,7 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
-import { groupByInitialResolver, summaryResolver } from "../shared.resolvers";
-import { colorsSource, planetsSource } from "../shared.sources";
+import { groupByInitialResolver, summaryResolver } from "../shared/resolvers";
+import { colorsSource, planetsSource } from "../shared/sources";
 
 export const withCustomResolverPipeline = definePipeline({
   id: "with-custom-resolver",
