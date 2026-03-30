@@ -1,5 +1,12 @@
 # @ucdjs/pipelines-server
 
+## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.9) (2026-03-30)
+
+
+### 🐞 Bug Fixes
+* reduce unpacked dependency size by ~50MB ([cac75f1c](https://github.com/ucdjs/ucd/commit/cac75f1c6ab43ace69e841bd0dac539000d6c7d8)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.8) (2026-03-29)
 
 

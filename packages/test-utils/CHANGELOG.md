@@ -1,5 +1,13 @@
 # @ucdjs/test-utils
 
+## [1.0.1](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.8...@ucdjs/test-utils@1.0.1) (2026-03-30)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.8...@ucdjs/test-utils@1.0.1)
+
+
 ## [1.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.8...@ucdjs/test-utils@1.0.1-beta.8) (2026-03-29)
 
 
