@@ -75,7 +75,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
   startSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
     const app = this.#appStorage.getStore();
     if (!app) {
-      // No execution context — use noop tracer so the callback still fires
+      // No execution context - use noop tracer so the callback still fires
       return trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => runSpan(span, fn));
     }
 
