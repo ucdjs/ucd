@@ -29,7 +29,7 @@ await startServer({
 ### Embed in an existing H3 app
 
 ```ts
-import { createDatabase, createApp, runMigrations } from "@ucdjs/pipelines-server";
+import { createApp, createDatabase, runMigrations } from "@ucdjs/pipelines-server";
 
 const db = createDatabase();
 await runMigrations(db);
