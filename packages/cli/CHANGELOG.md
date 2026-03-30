@@ -1,5 +1,13 @@
 # @ucdjs/cli
 
+## [0.3.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.9...@ucdjs/cli@0.3.1-beta.10) (2026-03-30)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.9...@ucdjs/cli@0.3.1-beta.10)
+
+
 ## [0.3.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.8...@ucdjs/cli@0.3.1-beta.9) (2026-03-30)
 
 
