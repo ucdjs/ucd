@@ -785,6 +785,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@ucdjs/pipelines-loader':
+        specifier: workspace:*
+        version: link:../pipelines/pipeline-loader
       '@ucdjs/pipelines-server':
         specifier: workspace:*
         version: link:../pipelines/pipeline-server
@@ -825,9 +828,6 @@ importers:
       '@ucdjs/pipelines-executor':
         specifier: workspace:*
         version: link:../pipelines/pipeline-executor
-      '@ucdjs/pipelines-loader':
-        specifier: workspace:*
-        version: link:../pipelines/pipeline-loader
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen

@@ -151,9 +151,8 @@ if (error) {
 }
 ```
 
-## Documentation
-
-For more examples and API reference, visit the [Client Documentation](https://docs.ucdjs.dev/api-reference/client).
+> [!NOTE]
+> Full documentation is available at [docs.ucdjs.dev/api-reference/client](https://docs.ucdjs.dev/api-reference/client).
 
 ## License
 

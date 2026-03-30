@@ -29,9 +29,8 @@ ucd pipelines run --ui
 
 Run `ucd --help` or `ucd <command> --help` for command-specific flags.
 
-Full CLI docs:
-
-- [docs.ucdjs.dev/packages/cli](https://docs.ucdjs.dev/packages/cli)
+> [!NOTE]
+> Full documentation is available at [docs.ucdjs.dev/packages/cli](https://docs.ucdjs.dev/packages/cli).
 
 ## 📄 License
 
