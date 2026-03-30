@@ -1,5 +1,12 @@
 # @ucdjs/pipelines-server
 
+## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.9...@ucdjs/pipelines-server@0.0.1-beta.10) (2026-03-30)
+
+
+### 🚀 Features
+* reorganize dependencies and update tsconfig ([77e0a979](https://github.com/ucdjs/ucd/commit/77e0a979d587058b12d25919ce24a6b446d8124d)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.9) (2026-03-30)
 
 
