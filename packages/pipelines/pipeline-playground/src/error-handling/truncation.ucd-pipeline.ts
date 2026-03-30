@@ -1,6 +1,6 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
-import { colorsSource } from "../shared.sources";
+import { colorsSource } from "../shared/sources";
 
 // eslint-disable-next-line ts/explicit-function-return-type
 function createLargeLogRoute(id: string, sizeKB: number) {

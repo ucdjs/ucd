@@ -8,7 +8,7 @@ import {
   pipelineOutputSource,
 } from "@ucdjs/pipelines-core";
 import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
-import { colorsSource, sizesSource } from "../shared.sources";
+import { colorsSource, sizesSource } from "../shared/sources";
 
 const outputBaseDir = ".tmp/pipeline-playground-outputs";
 

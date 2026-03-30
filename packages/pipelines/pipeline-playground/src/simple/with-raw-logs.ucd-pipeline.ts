@@ -1,7 +1,7 @@
 import type { ResolvedEntry } from "@ucdjs/pipelines-core";
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
-import { planetsSource } from "../shared.sources";
+import { planetsSource } from "../shared/sources";
 
 /**
  * Uses console.log exclusively (no ctx.logger), so every log entry is stored
@@ -59,7 +59,7 @@ const planetsRoute = definePipelineRoute({
 export const withRawLogsPipeline = definePipeline({
   id: "with-raw-logs",
   name: "With Raw Logs",
-  description: "Uses console.log exclusively so every log entry has a null level — useful for testing the null-level UI path.",
+  description: "Uses console.log exclusively so every log entry has a null level - useful for testing the null-level UI path.",
   versions: ["1.0.0"],
   inputs: [planetsSource],
   routes: [planetsRoute],

@@ -1,7 +1,7 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { propertyJsonResolver, sequenceParser, standardParser } from "@ucdjs/pipelines-presets";
-import { groupByInitialResolver, summaryResolver } from "../shared.resolvers";
-import { colorsSource, planetsSource, sequencesSource, sizesSource } from "../shared.sources";
+import { groupByInitialResolver, summaryResolver } from "../shared/resolvers";
+import { colorsSource, planetsSource, sequencesSource, sizesSource } from "../shared/sources";
 
 /**
  * Output format 1 - Flat scalar entries.
@@ -91,7 +91,7 @@ const sequencesRoute = definePipelineRoute({
  * Output format 5 - Multi-property grouped output.
  *
  * A single source file fans out into *multiple* PropertyJson objects - one
- * per distinct group key. `groupByInitialResolver` (from shared.resolvers)
+ * per distinct group key. `groupByInitialResolver` (from shared/resolvers)
  * buckets entries by the first letter of their value, mirroring how
  * General_Category or Script properties produce one blob per category value.
  */

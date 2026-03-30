@@ -1,7 +1,7 @@
 import type { ParsedRow, PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
 import { definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
 import { standardParser } from "@ucdjs/pipelines-presets";
-import { planetsSource } from "../shared.sources";
+import { planetsSource } from "../shared/sources";
 
 /**
  * A transform that logs every row it sees using both the context logger and console.log.
