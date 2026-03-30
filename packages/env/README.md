@@ -11,9 +11,8 @@ Runtime constants and environment helpers shared across the UCD.js workspace.
 npm install @ucdjs/env
 ```
 
-## Documentation
-
-Full usage and API documentation: https://docs.ucdjs.dev/api-reference/utilities/env
+> [!NOTE]
+> Full documentation is available at [docs.ucdjs.dev/api-reference/utilities/env](https://docs.ucdjs.dev/api-reference/utilities/env).
 
 ## Exports
 

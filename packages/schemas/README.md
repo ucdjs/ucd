@@ -31,7 +31,8 @@ if (result.success) {
 
 ## Schema Families
 
-For a full list of available schemas and their exports, see the [Schemas documentation](https://docs.ucdjs.dev/api-reference/schemas/schemas).
+> [!NOTE]
+> Full documentation is available at [docs.ucdjs.dev/api-reference/schemas/schemas](https://docs.ucdjs.dev/api-reference/schemas/schemas).
 
 ## 📄 License
 

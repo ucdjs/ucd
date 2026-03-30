@@ -11,9 +11,8 @@ Security-focused path utilities for cross-platform path handling, with built-in 
 npm install @ucdjs/path-utils
 ```
 
-## Documentation
-
-Full documentation - security model, API reference, error classes, and examples - is available at [docs.ucdjs.dev/packages/utilities/path-utils](https://docs.ucdjs.dev/packages/utilities/path-utils).
+> [!NOTE]
+> Full documentation is available at [docs.ucdjs.dev/packages/utilities/path-utils](https://docs.ucdjs.dev/packages/utilities/path-utils).
 
 ## 📄 License
 

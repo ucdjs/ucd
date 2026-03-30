@@ -40,6 +40,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@ucdjs/pipelines-loader": "workspace:*",
     "@ucdjs/pipelines-server": "workspace:*"
   },
   "devDependencies": {
@@ -55,7 +56,6 @@
     "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
-    "@ucdjs/pipelines-loader": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
