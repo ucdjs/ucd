@@ -9,6 +9,6 @@
     "noEmit": false,
     "outDir": "./dist"
   },
-  "include": ["src/server/**/*"],
+  "include": ["src/server/app.ts"],
   "exclude": ["dist", "src/client"]
 }

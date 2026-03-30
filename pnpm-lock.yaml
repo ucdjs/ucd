@@ -1282,7 +1282,13 @@ importers:
         version: 6.0.2
 
   packages/pipelines/pipeline-server:
-    dependencies:
+    devDependencies:
+      '@eslint-react/eslint-plugin':
+        specifier: catalog:lint
+        version: 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.4.1(@eslint-react/eslint-plugin@3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.57.2(typescript@6.0.2))(@typescript-eslint/utils@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@vue/compiler-sfc@3.5.31)(eslint-plugin-format@2.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(vitest@4.1.1)
       '@opentelemetry/api':
         specifier: catalog:runtime
         version: 1.9.1
@@ -1298,46 +1304,6 @@ importers:
       '@opentelemetry/sdk-trace-node':
         specifier: catalog:runtime
         version: 2.6.1(@opentelemetry/api@1.9.1)
-      '@ucdjs-internal/shared':
-        specifier: workspace:*
-        version: link:../../shared
-      '@ucdjs/env':
-        specifier: workspace:*
-        version: link:../../env
-      '@ucdjs/pipelines-core':
-        specifier: workspace:*
-        version: link:../pipeline-core
-      '@ucdjs/pipelines-executor':
-        specifier: workspace:*
-        version: link:../pipeline-executor
-      '@ucdjs/pipelines-loader':
-        specifier: workspace:*
-        version: link:../pipeline-loader
-      chokidar:
-        specifier: catalog:build
-        version: 5.0.0
-      crossws:
-        specifier: catalog:backend
-        version: 0.4.4(srvx@0.11.13)
-      drizzle-orm:
-        specifier: catalog:backend
-        version: 1.0.0-beta.18-7eb39f0(@cloudflare/workers-types@4.20260317.1)(@opentelemetry/api@1.9.1)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.3.6)
-      h3:
-        specifier: catalog:backend
-        version: 2.0.1-rc.19(crossws@0.4.4(srvx@0.11.13))
-      pathe:
-        specifier: catalog:runtime
-        version: 2.0.3
-      zod:
-        specifier: catalog:runtime
-        version: 4.3.6
-    devDependencies:
-      '@eslint-react/eslint-plugin':
-        specifier: catalog:lint
-        version: 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@luxass/eslint-config':
-        specifier: catalog:lint
-        version: 7.4.1(@eslint-react/eslint-plugin@3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.57.2(typescript@6.0.2))(@typescript-eslint/utils@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@vue/compiler-sfc@3.5.31)(eslint-plugin-format@2.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(vitest@4.1.1)
       '@rolldown/plugin-babel':
         specifier: catalog:build
         version: 0.2.2(@babel/core@7.29.0)(@babel/runtime@7.29.2)(rolldown@1.0.0-rc.11)(vite@8.0.2(@types/node@22.19.15)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
@@ -1389,6 +1355,9 @@ importers:
       '@types/react-dom':
         specifier: catalog:types
         version: 19.2.3(@types/react@19.2.14)
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../../shared
       '@ucdjs-internal/shared-ui':
         specifier: workspace:*
         version: link:../../shared-ui
@@ -1398,21 +1367,42 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../../tooling/tsdown-config
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../../env
       '@ucdjs/moonbeam':
         specifier: workspace:*
         version: link:../../../tooling/moonbeam
+      '@ucdjs/pipelines-core':
+        specifier: workspace:*
+        version: link:../pipeline-core
+      '@ucdjs/pipelines-executor':
+        specifier: workspace:*
+        version: link:../pipeline-executor
+      '@ucdjs/pipelines-loader':
+        specifier: workspace:*
+        version: link:../pipeline-loader
       '@vitejs/plugin-react':
         specifier: catalog:build
         version: 6.0.1(@rolldown/plugin-babel@0.2.2(@babel/core@7.29.0)(@babel/runtime@7.29.2)(rolldown@1.0.0-rc.11)(vite@8.0.2(@types/node@22.19.15)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3)))(babel-plugin-react-compiler@1.0.0)(vite@8.0.2(@types/node@22.19.15)(esbuild@0.27.4)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.3))
       '@xyflow/react':
         specifier: catalog:frontend
         version: 12.10.1(@types/react@19.2.14)(immer@9.0.21)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      chokidar:
+        specifier: catalog:build
+        version: 5.0.0
       clsx:
         specifier: catalog:frontend
         version: 2.1.1
+      crossws:
+        specifier: catalog:backend
+        version: 0.4.4(srvx@0.11.13)
       drizzle-kit:
         specifier: catalog:build
         version: 1.0.0-beta.18-7eb39f0
+      drizzle-orm:
+        specifier: catalog:backend
+        version: 1.0.0-beta.18-7eb39f0(@cloudflare/workers-types@4.20260317.1)(@opentelemetry/api@1.9.1)(@types/mssql@9.1.11(@azure/core-client@1.10.1))(mssql@11.0.1(@azure/core-client@1.10.1))(zod@4.3.6)
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
@@ -1422,12 +1412,18 @@ importers:
       eslint-plugin-react-refresh:
         specifier: catalog:lint
         version: 0.5.2(eslint@10.1.0(jiti@2.6.1))
+      h3:
+        specifier: catalog:backend
+        version: 2.0.1-rc.19(crossws@0.4.4(srvx@0.11.13))
       jsdom:
         specifier: catalog:test
         version: 29.0.1
       lucide-react:
         specifier: catalog:frontend
         version: 1.6.0(react@19.2.4)
+      pathe:
+        specifier: catalog:runtime
+        version: 2.0.3
       publint:
         specifier: catalog:build
         version: 0.3.18
@@ -1464,6 +1460,9 @@ importers:
       vitest-testdirs:
         specifier: catalog:test
         version: 4.4.3(vitest@4.1.1)
+      zod:
+        specifier: catalog:runtime
+        version: 4.3.6
 
   packages/schema-gen:
     dependencies:
