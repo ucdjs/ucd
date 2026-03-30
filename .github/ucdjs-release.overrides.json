@@ -1,82 +1,30 @@
 {
   "@ucdjs/cli": {
-    "type": "none",
-    "version": "0.3.1-beta.8"
-  },
-  "@ucdjs/client": {
-    "type": "none",
-    "version": "0.1.1-beta.8"
-  },
-  "@ucdjs/env": {
-    "type": "none",
-    "version": "0.1.1-beta.9"
+    "type": "patch",
+    "version": "0.3.1-beta.9"
   },
   "@ucdjs/fs-backend": {
-    "type": "none",
-    "version": "0.1.0-beta.0"
+    "type": "patch",
+    "version": "0.1.0-beta.1"
   },
   "@ucdjs/lockfile": {
-    "type": "none",
-    "version": "0.1.1-beta.8"
-  },
-  "@ucdjs/path-utils": {
-    "type": "none",
-    "version": "0.1.1-beta.8"
-  },
-  "@ucdjs/pipelines-core": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
+    "type": "patch",
+    "version": "0.1.1-beta.9"
   },
   "@ucdjs/pipelines-executor": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
-  },
-  "@ucdjs/pipelines-graph": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
-  },
-  "@ucdjs/pipelines-loader": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
-  },
-  "@ucdjs/pipelines-presets": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
+    "type": "patch",
+    "version": "0.0.1-beta.9"
   },
   "@ucdjs/pipelines-server": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
-  },
-  "@ucdjs/schema-gen": {
-    "type": "none",
-    "version": "0.2.3-beta.8"
-  },
-  "@ucdjs/schemas": {
-    "type": "none",
-    "version": "0.1.1-beta.8"
-  },
-  "@ucdjs-internal/shared": {
-    "type": "none",
-    "version": "0.1.1-beta.8"
-  },
-  "@ucdjs-internal/shared-ui": {
-    "type": "none",
-    "version": "0.1.7"
+    "type": "patch",
+    "version": "0.0.1-beta.9"
   },
   "@ucdjs/test-utils": {
-    "type": "none",
-    "version": "1.0.1-beta.8"
+    "type": "patch",
+    "version": "1.0.1-beta.9"
   },
   "@ucdjs/ucd-store": {
-    "type": "none",
-    "version": "1.0.1-beta.8"
-  },
-  "@ucdjs/utils": {
-    "type": "none",
-    "version": "0.2.1-beta.8"
-  },
-  "@ucdjs-internal/worker-utils": {
-    "type": "none",
-    "version": "0.0.1-beta.8"
+    "type": "patch",
+    "version": "1.0.1-beta.9"
   }
 }
