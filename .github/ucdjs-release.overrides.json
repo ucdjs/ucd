@@ -1,30 +1,6 @@
 {
-  "@ucdjs/cli": {
-    "type": "patch",
-    "version": "0.3.1-beta.9"
-  },
-  "@ucdjs/fs-backend": {
-    "type": "patch",
-    "version": "0.1.0-beta.1"
-  },
-  "@ucdjs/lockfile": {
-    "type": "patch",
-    "version": "0.1.1-beta.9"
-  },
-  "@ucdjs/pipelines-executor": {
-    "type": "patch",
-    "version": "0.0.1-beta.9"
-  },
   "@ucdjs/pipelines-server": {
     "type": "patch",
-    "version": "0.0.1-beta.9"
-  },
-  "@ucdjs/test-utils": {
-    "type": "patch",
-    "version": "1.0.1-beta.9"
-  },
-  "@ucdjs/ucd-store": {
-    "type": "patch",
-    "version": "1.0.1-beta.9"
+    "version": "0.0.1-beta.10"
   }
 }
