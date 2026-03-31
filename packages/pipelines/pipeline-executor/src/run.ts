@@ -1,7 +1,7 @@
 import type { Span } from "@opentelemetry/api";
 import type {
   AnyPipelineDefinition,
-  AnyPipelineRouteDefinition,
+  AnyPipelineAnyPipelineRouteDefinitioninition,
   FileContext,
   NormalizedRouteOutputDefinition,
   PipelineLogger,
@@ -26,7 +26,6 @@ import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions }
 import { createSourceAdapter, isSourceFileContext } from "./run/source";
 import { createPipelineLogger } from "./runtime";
 
-type RouteDef = AnyPipelineRouteDefinition;
 
 export interface RunPipelineOptions {
   pipeline: AnyPipelineDefinition;
@@ -42,7 +41,7 @@ interface RunCtx {
   source: SourceAdapter;
   logger: PipelineLogger;
   versions: string[];
-  routesByLayer: RouteDef[][];
+  routesByLayer: AnyPipelineRouteDefinition[][];
   routeOutputs: Map<string, readonly NormalizedRouteOutputDefinition[]>;
   cacheStore?: CacheStore;
   useCache: boolean;
@@ -208,7 +207,7 @@ async function runVersion(ctx: RunCtx, version: string): Promise<void> {
 
 function selectMatchingFiles(
   ctx: RunCtx,
-  route: RouteDef,
+  route: AnyPipelineRouteDefinition,
   files: readonly FileContext[],
 ): FileContext[] {
   return files.filter((file) => route.filter({
@@ -222,7 +221,7 @@ async function executeMatchedFile(
   ctx: RunCtx,
   versionContext: VersionContext,
   version: string,
-  route: RouteDef,
+  route: AnyPipelineRouteDefinition,
   file: FileContext,
 ): Promise<void> {
   await ctx.runtime.startSpan("file.route", async (routeSpan) => {
@@ -399,7 +398,7 @@ async function executeFallbackFile(
 
 async function loadRouteResult(
   ctx: RunCtx,
-  route: RouteDef,
+  route: AnyPipelineRouteDefinition,
   routeSpan: Span,
   routeCtx: ExecutionContext,
 ): Promise<unknown[]> {
