@@ -3,7 +3,8 @@ saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 strictPeerDependencies: false
 engineStrict: true
-minimumReleaseAge: 1440 # 1 day
+ignoreScripts: true
+minimumReleaseAge: 5760 # 4 days
 trustPolicy: "no-downgrade"
 
 minimumReleaseAgeExclude:
