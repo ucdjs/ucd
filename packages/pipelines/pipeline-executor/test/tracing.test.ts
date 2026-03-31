@@ -1,6 +1,6 @@
 import { SpanStatusCode } from "@opentelemetry/api";
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
@@ -14,12 +14,12 @@ describe("tracing", () => {
     otel = setupTestTracing();
   });
 
-  afterAll(async () => {
-    await otel.cleanup();
-  });
-
   beforeEach(() => {
     otel.exporter.reset();
+  });
+
+  afterAll(async () => {
+    await otel.cleanup();
   });
 
   it("emits pipeline, version, source.listing, file.route, parse, resolve spans", async () => {
@@ -285,8 +285,10 @@ describe("tracing", () => {
         "ucd/Unknown.txt": "0041;Latin",
       })],
       routes: [],
+      // @ts-expect-error - testing fallback route
       fallback: {
         parser: mockParser,
+        // @ts-expect-error - testing fallback resolver
         resolver: async (_ctx, rows) => {
           for await (const _ of rows) { /* consume */ }
           return [];
