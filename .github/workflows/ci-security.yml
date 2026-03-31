@@ -18,7 +18,7 @@ permissions: {}
 jobs:
   provenance:
     name: check package provenance
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-slim
     permissions:
       contents: read
     steps:
@@ -40,7 +40,7 @@ jobs:
 
   workflow-security:
     name: workflow security analysis
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       security-events: write
