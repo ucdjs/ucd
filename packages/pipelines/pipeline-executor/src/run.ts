@@ -8,7 +8,8 @@ import type {
 } from "@ucdjs/pipelines-core";
 import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
 import type { CacheStore } from "./cache";
-import type { SourceAdapter } from "./run/source-files";
+import type { ExecutionContext } from "./run/context";
+import type { SourceAdapter } from "./run/source";
 import type { PipelineExecutionRuntime } from "./runtime";
 import type {
   ExecutionStatus,
@@ -17,13 +18,13 @@ import type {
   PipelineSummary,
 } from "./types";
 import { SpanStatusCode } from "@opentelemetry/api";
-import { createPipelineLogger } from "./internal/logger";
-import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./run/cache-helpers";
+import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache";
 import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
-import { createProcessingQueue } from "./run/processing-queue";
-import { processFallback, processRoute } from "./run/route-runtime";
+import { createProcessingQueue } from "./run/queue";
+import { executeParseResolve } from "./run/route";
 import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
-import { createSourceAdapter, isSourceFileContext } from "./run/source-files";
+import { createPipelineLogger } from "./runtime";
+import { createSourceAdapter, isSourceFileContext } from "./run/source";
 
 type RouteDef = AnyPipelineRouteDefinition;
 
@@ -248,17 +249,26 @@ async function executeMatchedFile(
     ctx.summary.matchedFiles++;
 
     try {
-      const result = await loadRouteResult(ctx, version, route, file, versionContext.routeDataMap, routeSpan);
+      const routeCtx: ExecutionContext = {
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        logger: ctx.logger,
+        source: ctx.source,
+        runtime: ctx.runtime,
+        routeDataMap: versionContext.routeDataMap,
+      };
+      const outputs = await loadRouteResult(ctx, route, routeSpan, routeCtx);
 
       versionContext.routeDataMap[route.id] ??= [];
-      versionContext.routeDataMap[route.id]!.push(...result.outputs);
+      versionContext.routeDataMap[route.id]!.push(...outputs);
 
       const { entries, writeErrors } = await materializeOutputs({
         outputs: ctx.outputs,
         version,
         routeId: route.id,
         file,
-        values: result.outputs,
+        values: outputs,
         definitions: ctx.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
         runtime: ctx.runtime,
         pipelineId: ctx.pipeline.id,
@@ -349,14 +359,22 @@ async function executeFallbackFile(
     });
 
     try {
-      const outputs = await processFallback({
-        file,
-        fallback: ctx.pipeline.fallback!,
-        routeDataMap: versionContext.routeDataMap,
-        runtime: ctx.runtime,
-        source: ctx.source,
-        version,
+      const routeCtx: ExecutionContext = {
         pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        logger: ctx.logger,
+        source: ctx.source,
+        runtime: ctx.runtime,
+        routeDataMap: versionContext.routeDataMap,
+      };
+      const fallback = ctx.pipeline.fallback!;
+      const outputs = await executeParseResolve({
+        ctx: routeCtx,
+        routeId: "__fallback__",
+        parser: fallback.parser,
+        filter: fallback.filter,
+        resolver: fallback.resolver,
       });
 
       const { entries, writeErrors } = await materializeOutputs({
@@ -381,13 +399,12 @@ async function executeFallbackFile(
 
 async function loadRouteResult(
   ctx: RunCtx,
-  version: string,
   route: RouteDef,
-  file: FileContext,
-  routeDataMap: Record<string, unknown[]>,
   routeSpan: Span,
-): Promise<{ outputs: unknown[] }> {
-  const { cacheStore, runtime, source, useCache } = ctx;
+  routeCtx: ExecutionContext,
+): Promise<unknown[]> {
+  const { cacheStore, source, useCache } = ctx;
+  const { version, file, routeDataMap } = routeCtx;
   const routeCacheEnabled = useCache && route.cache !== false;
   let fileContent: string | undefined;
 
@@ -420,18 +437,17 @@ async function loadRouteResult(
     }
 
     if (cached.hit && cached.result) {
-      return cached.result;
+      return cached.result.outputs;
     }
   }
 
-  const result = await processRoute({
-    file,
-    route,
-    routeDataMap,
-    runtime,
-    source,
-    version,
-    pipelineId: ctx.pipeline.id,
+  const outputs = await executeParseResolve({
+    ctx: routeCtx,
+    routeId: route.id,
+    parser: route.parser,
+    filter: route.filter,
+    transforms: route.transforms,
+    resolver: route.resolver,
   });
 
   if (routeCacheEnabled && cacheStore) {
@@ -444,7 +460,7 @@ async function loadRouteResult(
       route.depends ?? [],
     );
 
-    await storeCacheEntry({ cacheStore, cacheKey, outputs: result.outputs });
+    await storeCacheEntry({ cacheStore, cacheKey, outputs });
     routeSpan.addEvent("cache.store", {
       "pipeline.id": ctx.pipeline.id,
       "pipeline.version": version,
@@ -453,7 +469,7 @@ async function loadRouteResult(
     });
   }
 
-  return result;
+  return outputs;
 }
 
 function pushWriteErrors(

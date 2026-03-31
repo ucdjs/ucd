@@ -1,6 +1,6 @@
 import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
 import { describe, expect, it } from "vitest";
-import { buildExecutionGraphFromTraces } from "../src/run/graph";
+import { buildExecutionGraphFromTraces } from "../src/graph";
 
 describe("buildExecutionGraphFromTraces", () => {
   it("creates distinct output nodes for traced output destinations", () => {

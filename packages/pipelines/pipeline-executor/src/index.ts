@@ -15,9 +15,9 @@ export {
 export { createPipelineExecutor } from "./executor";
 
 export type {
-  PipelineExecutionContext,
   PipelineExecutionLogInput,
   PipelineExecutionRuntime,
+  RuntimeExecutionContext,
 } from "./runtime";
 
 export { EXECUTION_STATUSES } from "./types";
