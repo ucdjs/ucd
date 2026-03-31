@@ -84,7 +84,7 @@
       "1.9.0",
       "1.9.1"
     ],
-    "@rolldown/pluginutils": "1.0.0-rc.11",
+    "@rolldown/pluginutils": "1.0.0-rc.12",
     "@unicode-utils/core": "0.12.0-beta.23",
     "@unicode-utils/metadata": "0.12.0-beta.23",
     "@unicode-utils/parser": "0.12.0-beta.23",
@@ -100,7 +100,7 @@
     "obug": "2.1.1",
     "pathe": "2.0.3",
     "picomatch": "4.0.4",
-    "rolldown": "1.0.0-rc.11",
+    "rolldown": "1.0.0-rc.12",
     "sisteransi": "1.0.5",
     "termenv": "0.4.2",
     "tinyglobby": "0.2.15",
