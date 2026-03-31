@@ -1,5 +1,6 @@
 import type { ParsedRow, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
 import { always, byExt, definePipeline } from "@ucdjs/pipelines-core";
+import { emojiSource, ucdSource } from "../shared/sources";
 import {
   auxiliaryRoute,
   blocksRoute,
@@ -12,7 +13,6 @@ import {
   ucdGeneralRoute,
   unicodeDataRoute,
 } from "./routes";
-import { emojiSource, ucdSource } from "./sources";
 
 export const playgroundAdvancedPipeline = definePipeline({
   id: "playground-advanced",

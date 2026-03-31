@@ -12,7 +12,7 @@ import {
   standardParser,
   unicodeDataParser,
 } from "@ucdjs/pipelines-presets";
-import { addMetadata, filterEmptyValues } from "./transforms";
+import { addMetadata, filterEmptyValues } from "../shared/transforms";
 
 export const unicodeDataRoute = definePipelineRoute({
   id: "unicode-data",
