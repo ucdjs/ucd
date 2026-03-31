@@ -24,7 +24,7 @@ permissions: {}
 jobs:
   upload-openapi:
     name: upload openapi artifacts
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         include:
@@ -73,7 +73,7 @@ jobs:
   report-changes:
     name: report openapi schema changes
     needs: upload-openapi
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd'
     permissions:
       pull-requests: write
