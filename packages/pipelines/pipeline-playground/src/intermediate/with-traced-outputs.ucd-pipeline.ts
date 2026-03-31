@@ -169,8 +169,8 @@ async function* publishedPropertyJsonParser(ctx: ParseContext): AsyncIterable<Pa
 function toSlug(value: string): string {
   return value
     .toLowerCase()
-    // eslint-disable-next-line e18e/prefer-static-regex
+
     .replaceAll(/[^a-z0-9]+/g, "-")
-    // eslint-disable-next-line e18e/prefer-static-regex
+
     .replace(/^-+|-+$/g, "");
 }

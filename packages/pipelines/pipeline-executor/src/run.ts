@@ -23,8 +23,8 @@ import { DEFAULT_FALLBACK_OUTPUTS, materializeOutputs } from "./run/outputs";
 import { createProcessingQueue } from "./run/queue";
 import { executeParseResolve } from "./run/route";
 import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
-import { createPipelineLogger } from "./runtime";
 import { createSourceAdapter, isSourceFileContext } from "./run/source";
+import { createPipelineLogger } from "./runtime";
 
 type RouteDef = AnyPipelineRouteDefinition;
 
