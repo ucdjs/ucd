@@ -5,10 +5,9 @@ import { fileURLToPath } from "node:url";
 import { getUcdConfigPath } from "@ucdjs/env";
 import { drizzle } from "drizzle-orm/node-sqlite";
 import { migrate } from "drizzle-orm/node-sqlite/migrator";
-import { relations } from "./relations";
 import * as schema from "./schema";
 
-export type Database = ReturnType<typeof drizzle>;
+export type Database = ReturnType<typeof drizzle<typeof schema>>;
 
 interface CreateDatabaseOptions {
   url?: string;
@@ -20,7 +19,7 @@ export function createDatabase(options: CreateDatabaseOptions = {}): Database {
 
   const sqlite = new DatabaseSync(url);
 
-  return drizzle({ client: sqlite, schema, relations });
+  return drizzle({ client: sqlite, schema });
 }
 
 export async function runMigrations(db: Database): Promise<void> {
