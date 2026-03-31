@@ -8,8 +8,8 @@ import { ensureWorkspace } from "#server/workspace";
 import { H3 as H3App } from "h3";
 
 const playgroundPath = fileURLToPath(new URL("../../../pipeline-playground/src", import.meta.url));
-export const DEFAULT_DISCOVERABLE_FILE_ID = "simple~multiple";
-export const DEFAULT_DISCOVERABLE_PIPELINE_ID = "first-pipeline";
+export const DEFAULT_DISCOVERABLE_FILE_ID = "simple~logging";
+export const DEFAULT_DISCOVERABLE_PIPELINE_ID = "with-logging";
 const defaultSources: PipelineSource[] = [{
   kind: "local",
   id: "local",
