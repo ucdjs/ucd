@@ -2,16 +2,16 @@ import type { Span, Tracer } from "@opentelemetry/api";
 import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type { PipelineLogEntry, PipelineLogLevel } from "../types";
 import type {
-  PipelineExecutionContext,
   PipelineExecutionLogInput,
   PipelineExecutionRuntime,
+  RuntimeExecutionContext,
 } from "./index";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { trace } from "@opentelemetry/api";
-import { runSpan } from "../internal/span";
+import { runSpan } from "./index";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -57,7 +57,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     stderrWrite: process.stderr.write.bind(process.stderr),
   };
 
-  readonly #appStorage = new AsyncLocalStorage<PipelineExecutionContext>();
+  readonly #appStorage = new AsyncLocalStorage<RuntimeExecutionContext>();
   readonly #logHandlerStorage = new AsyncLocalStorage<LoggerRuntimeContext>();
   readonly #fs;
   readonly #outputCapture;
@@ -82,12 +82,12 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     return this.#tracer.startActiveSpan(name, (span) => runSpan(span, fn, { recordErrors: true }));
   }
 
-  getExecutionContext(): PipelineExecutionContext | undefined {
+  getExecutionContext(): RuntimeExecutionContext | undefined {
     return this.#appStorage.getStore();
   }
 
   runWithExecutionContext<T>(
-    context: PipelineExecutionContext,
+    context: RuntimeExecutionContext,
     fn: () => T | Promise<T>,
   ): T | Promise<T> {
     return this.#appStorage.run(context, fn);

@@ -21,14 +21,10 @@ export async function writeOutputToSink(
   locator: string,
   value: unknown,
   format: "json" | "text",
-  runtime?: PipelineExecutionRuntime,
+  runtime: PipelineExecutionRuntime,
 ): Promise<void> {
   if (!sink) {
     return;
-  }
-
-  if (!runtime?.writeOutput) {
-    throw new Error(`Output sink "${sink.type}" is configured, but this runtime does not support output writes.`);
   }
 
   const content = serializeOutputValue(value, format);
@@ -86,7 +82,7 @@ export async function materializeOutputs(options: {
       const destination: ResolvedOutputDestination = resolveOutputDestination(
         definition,
         { version, routeId, file, output, property, outputIndex },
-        runtime.resolvePath,
+        runtime.resolvePath.bind(runtime),
       );
 
       const outputId = definition.id;
