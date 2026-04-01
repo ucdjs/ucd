@@ -6,14 +6,13 @@ import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/share
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@ucdjs-internal/shared-ui/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
-import { ArrowRight, ArrowUpRight, Code2, Layers, Search, Terminal } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Check, ChevronsUpDown, Code2, Layers, Search, Terminal } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/(home)/")({
@@ -36,6 +35,17 @@ export const Route = createFileRoute("/(home)/")({
     ],
   }),
 });
+
+function getVersionBadge(date?: string | number, isDraft?: boolean) {
+  const year = date ? Number.parseInt(String(date), 10) : undefined;
+  const age = year ? new Date().getFullYear() - year : undefined;
+  if (isDraft) return { label: "Draft", cls: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
+  if (age === undefined) return { label: "Unknown", cls: "bg-muted text-muted-foreground" };
+  if (age <= 1) return { label: "Recent", cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" };
+  if (age <= 3) return { label: "Mature", cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" };
+  if (age <= 5) return { label: "Old", cls: "bg-muted text-muted-foreground" };
+  return { label: "Legacy", cls: "bg-muted/60 text-muted-foreground/80" };
+}
 
 function HomePage() {
   const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
@@ -81,26 +91,60 @@ function HomePage() {
           <Card className="w-full max-w-2xl bg-card/60 ring-1 ring-border/40">
             <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
               <div className="flex-1">
-                <Select value={currentVersion} onValueChange={(value) => setSelectedVersion(value ?? "")}>
-                  <SelectTrigger className="w-full h-10 text-base">
-                    <SelectValue placeholder="Select a Unicode version" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {versions.map((version) => (
-                      <SelectItem key={version.version} value={version.version}>
-                        <span className="flex w-full items-center justify-between gap-3">
-                          <span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-base ring-offset-background">
+                    <span className="flex items-center gap-2">
+                      <Layers className="size-4 text-muted-foreground" />
+                      <span>
+                        v
+                        {currentVersion}
+                      </span>
+                      {(() => {
+                        const v = versions.find((ver) => ver.version === currentVersion);
+                        if (!v) return null;
+                        const badge = getVersionBadge(v.date ?? undefined, v.type === "draft");
+                        return (
+                          <span className={`text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
+                            {badge.label}
+                          </span>
+                        );
+                      })()}
+                    </span>
+                    <ChevronsUpDown className="size-4 text-muted-foreground" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    className="overflow-auto"
+                    style={{ width: "var(--anchor-width)", maxHeight: "18rem" }}
+                  >
+                    {versions.map((version) => {
+                      const badge = getVersionBadge(version.date ?? undefined, version.type === "draft");
+                      const isCurrent = version.version === currentVersion;
+                      return (
+                        <DropdownMenuItem
+                          key={version.version}
+                          onSelect={(event) => {
+                            event.preventDefault();
+                            setSelectedVersion(version.version);
+                          }}
+                          onClick={() => setSelectedVersion(version.version)}
+                          className={isCurrent ? "bg-accent text-accent-foreground" : undefined}
+                        >
+                          <span className="size-4 shrink-0 flex items-center justify-center">
+                            {isCurrent && <Check className="size-3.5" />}
+                          </span>
+                          <span className="flex-1">
                             v
                             {version.version}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            {version.type}
+                          <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
+                            {badge.label}
                           </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
               <Button
                 size="default"
