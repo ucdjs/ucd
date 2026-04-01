@@ -2,7 +2,7 @@ import type { OverviewActivityDay, OverviewExecutionSummary } from "#shared/sche
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { PlayCircle } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { formatDayLabel, getStateCount, overviewStates } from "./shared";
 
 interface ExecutionActivityChartProps {
@@ -27,17 +27,13 @@ export function ExecutionActivityChart({
     () => new Set(availableStates.map((state) => state.key)),
   );
 
-  const visibleStates = useMemo(() => {
-    const next = availableStates.filter((state) => visibleStateKeys.has(state.key));
-    return next.length > 0 ? next : availableStates;
-  }, [availableStates, visibleStateKeys]);
+  const filteredStates = availableStates.filter((state) => visibleStateKeys.has(state.key));
+  const visibleStates = filteredStates.length > 0 ? filteredStates : availableStates;
 
-  const activityWithTotals = useMemo(() => {
-    return activity.map((day) => ({
-      ...day,
-      total: visibleStates.reduce((sum, state) => sum + getStateCount(day, state), 0),
-    }));
-  }, [activity, visibleStates]);
+  const activityWithTotals = activity.map((day) => ({
+    ...day,
+    total: visibleStates.reduce((sum, state) => sum + getStateCount(day, state), 0),
+  }));
 
   const maxTotal = Math.max(1, ...activityWithTotals.map((day) => day.total));
   const hasActivity = activityWithTotals.some((day) => day.total > 0);

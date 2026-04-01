@@ -9,7 +9,7 @@ import {
   useCommandActions,
 } from "@ucdjs-internal/shared-ui/ui/command";
 import { Loader2, Play, Search, Spline, Terminal } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useState } from "react";
 
 const PIPELINE_PALETTE = "pipeline-server.main";
 const STORAGE_KEY_PREFIX = "ucd-versions-";
@@ -58,60 +58,56 @@ function CurrentPipelineActions({
   onExecuteCurrent,
   onNavigate,
 }: CurrentPipelineActionsProps) {
-  const actions = useMemo(() => {
-    if (!currentPipeline) {
-      return [];
-    }
-
-    return [
-      {
-        id: "pipeline.current.execute",
-        value: "Execute current pipeline",
-        keywords: [
-          currentPipeline.name || currentPipeline.id,
-          currentPipeline.id,
-          currentPipeline.sourceLabel,
-          currentPipeline.fileLabel,
-          "run",
-          "execute",
-        ],
-        onSelect: onExecuteCurrent,
-        icon: executing
-          ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          : <Play className="mr-2 h-4 w-4" />,
-        shortcut: "⌘E",
-        disabled: executing,
-      },
-      {
-        id: "pipeline.current.open",
-        value: "Open current pipeline",
-        keywords: [
-          currentPipeline.name || currentPipeline.id,
-          currentPipeline.id,
-          currentPipeline.sourceLabel,
-          currentPipeline.fileLabel,
-          "view",
-          "open",
-        ],
-        onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}`),
-        icon: <Search className="mr-2 h-4 w-4" />,
-      },
-      {
-        id: "pipeline.current.inspect",
-        value: "Inspect current pipeline",
-        keywords: [
-          currentPipeline.name || currentPipeline.id,
-          currentPipeline.id,
-          currentPipeline.sourceLabel,
-          currentPipeline.fileLabel,
-          "debug",
-          "inspect",
-        ],
-        onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}/inspect`),
-        icon: <Spline className="mr-2 h-4 w-4" />,
-      },
-    ];
-  }, [currentPipeline, executing, onExecuteCurrent, onNavigate]);
+  const actions = currentPipeline
+    ? [
+        {
+          id: "pipeline.current.execute",
+          value: "Execute current pipeline",
+          keywords: [
+            currentPipeline.name || currentPipeline.id,
+            currentPipeline.id,
+            currentPipeline.sourceLabel,
+            currentPipeline.fileLabel,
+            "run",
+            "execute",
+          ],
+          onSelect: onExecuteCurrent,
+          icon: executing
+            ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            : <Play className="mr-2 h-4 w-4" />,
+          shortcut: "⌘E",
+          disabled: executing,
+        },
+        {
+          id: "pipeline.current.open",
+          value: "Open current pipeline",
+          keywords: [
+            currentPipeline.name || currentPipeline.id,
+            currentPipeline.id,
+            currentPipeline.sourceLabel,
+            currentPipeline.fileLabel,
+            "view",
+            "open",
+          ],
+          onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}`),
+          icon: <Search className="mr-2 h-4 w-4" />,
+        },
+        {
+          id: "pipeline.current.inspect",
+          value: "Inspect current pipeline",
+          keywords: [
+            currentPipeline.name || currentPipeline.id,
+            currentPipeline.id,
+            currentPipeline.sourceLabel,
+            currentPipeline.fileLabel,
+            "debug",
+            "inspect",
+          ],
+          onSelect: () => onNavigate(`/s/${currentPipeline.sourceId}/${currentPipeline.fileId}/${currentPipeline.id}/inspect`),
+          icon: <Spline className="mr-2 h-4 w-4" />,
+        },
+      ]
+    : [];
 
   useCommandActions(PIPELINE_PALETTE, actions);
 
@@ -134,24 +130,22 @@ export function PipelineCommandPalette() {
     sourceId: currentSourceId,
   } = useParams({ strict: false });
 
-  const pipelines = useMemo<PipelinePaletteEntry[]>(() => {
-    return sourceQueries.flatMap((query) => {
-      const source = query.data;
-      if (!source) {
-        return [];
-      }
+  const pipelines: PipelinePaletteEntry[] = sourceQueries.flatMap((query) => {
+    const source = query.data;
+    if (!source) {
+      return [];
+    }
 
-      return source.files.flatMap((file) =>
-        file.pipelines.map((pipeline) => ({
-          ...pipeline,
-          sourceId: source.id,
-          sourceLabel: source.label,
-          fileId: file.id,
-          fileLabel: file.label,
-        })),
-      );
-    });
-  }, [sourceQueries]);
+    return source.files.flatMap((file) =>
+      file.pipelines.map((pipeline) => ({
+        ...pipeline,
+        sourceId: source.id,
+        sourceLabel: source.label,
+        fileId: file.id,
+        fileLabel: file.label,
+      })),
+    );
+  });
 
   const currentPipeline = pipelines.find((pipeline) =>
     pipeline.sourceId === currentSourceId
@@ -159,12 +153,12 @@ export function PipelineCommandPalette() {
     && pipeline.id === currentPipelineId,
   );
 
-  const handleOpenChange = useCallback((next: boolean) => {
+  const handleOpenChange = (next: boolean) => {
     setOpen(next);
     if (!next) setSearch("");
-  }, []);
+  };
 
-  const handleExecuteCurrent = useCallback(async () => {
+  const handleExecuteCurrent = async () => {
     if (!currentPipeline || executing) return;
     try {
       const versionsToExecute = getSelectedVersionsFromStorage(
@@ -176,9 +170,9 @@ export function PipelineCommandPalette() {
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
     }
-  }, [currentPipeline, execute, executing]);
+  };
 
-  const handleExecutePipeline = useCallback(async (sourceId: string, fileId: string, pipelineId: string, versions: string[]) => {
+  const handleExecutePipeline = async (sourceId: string, fileId: string, pipelineId: string, versions: string[]) => {
     if (executing) return;
     try {
       const versionsToExecute = getSelectedVersionsFromStorage(`${sourceId}:${fileId}:${pipelineId}`, versions);
@@ -187,12 +181,12 @@ export function PipelineCommandPalette() {
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
     }
-  }, [execute, executing]);
+  };
 
-  const handleNavigate = useCallback((to: string) => {
+  const handleNavigate = (to: string) => {
     navigate({ to });
     setOpen(false);
-  }, [navigate]);
+  };
 
   useHotkey("Mod+K", (event) => {
     event.preventDefault();
