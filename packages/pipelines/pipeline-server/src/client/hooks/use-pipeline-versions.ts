@@ -26,30 +26,6 @@ function readVersionsSnapshot(storageKey: string): string | null {
   }
 }
 
-function loadVersionsFromStorage(storageKey: string, allVersions: string[]): Set<string> {
-  if (typeof window === "undefined") {
-    return new Set(allVersions);
-  }
-
-  try {
-    const stored = readVersionsSnapshot(storageKey);
-    if (stored) {
-      const parsed = JSON.parse(stored) as string[];
-      const validVersions = parsed.filter((v) => allVersions.includes(v));
-      if (parsed.length === 0) {
-        return new Set();
-      }
-      if (validVersions.length > 0) {
-        return new Set(validVersions);
-      }
-    }
-  } catch {
-    // Fall through to default
-  }
-
-  return new Set(allVersions);
-}
-
 function saveVersionsToStorage(storageKey: string, versions: Set<string>): void {
   if (typeof window === "undefined") return;
 
@@ -117,10 +93,10 @@ export function usePipelineVersions(
 
         return sanitizeVersions(parsed, allVersions);
       } catch {
-        return loadVersionsFromStorage(storageKey, allVersions);
+        return new Set(allVersions);
       }
     },
-    [allVersions, snapshot, storageKey],
+    [allVersions, snapshot],
   );
 
   const toggleVersion = useCallback((version: string) => {

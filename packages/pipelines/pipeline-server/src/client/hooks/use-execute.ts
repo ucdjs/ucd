@@ -3,13 +3,6 @@ import { executePipelineMutationOptions } from "#queries/execution";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
-export interface UseExecuteOptions {
-  /**
-   * Base URL for the API (default: "")
-   */
-  baseUrl?: string;
-}
-
 export interface UseExecuteReturn {
   execute: (
     sourceId: string,
@@ -24,8 +17,7 @@ export interface UseExecuteReturn {
   reset: () => void;
 }
 
-export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
-  void options;
+export function useExecute(): UseExecuteReturn {
   const queryClient = useQueryClient();
 
   const [result, setResult] = useState<ExecuteResult | null>(null);

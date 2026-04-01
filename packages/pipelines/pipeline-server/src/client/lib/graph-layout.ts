@@ -61,9 +61,11 @@ function assignLayers<N extends Node>(
     layers.set(nodeId, 0);
   }
 
+  const visited = new Set<string>();
   for (let i = 0; i < queue.length; i += 1) {
     const nodeId = queue[i];
-    if (!nodeId) continue;
+    if (!nodeId || visited.has(nodeId)) continue;
+    visited.add(nodeId);
 
     const layer = layers.get(nodeId) ?? 0;
 
@@ -71,8 +73,8 @@ function assignLayers<N extends Node>(
       const nextLayer = layer + 1;
       if (nextLayer > (layers.get(childId) ?? -1)) {
         layers.set(childId, nextLayer);
+        queue.push(childId);
       }
-      queue.push(childId);
     }
   }
 
