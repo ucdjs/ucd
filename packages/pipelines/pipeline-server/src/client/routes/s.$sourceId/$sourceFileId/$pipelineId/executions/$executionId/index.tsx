@@ -1,5 +1,5 @@
 import { LogsViewer } from "#components/execution/logs/logs-viewer";
-import { WaterfallView } from "#components/execution/waterfall/index";
+import { WaterfallView } from "#components/execution/waterfall/waterfall-view";
 import { executionLogsQueryOptions, executionTracesQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -54,6 +54,7 @@ function ExecutionDetailPage() {
         )}
         {data.spans.length > 0 && (
           <WaterfallView
+            key={data.traceId}
             traceId={data.traceId}
             spans={data.spans}
             onSpanSelect={setSelectedSpanId}

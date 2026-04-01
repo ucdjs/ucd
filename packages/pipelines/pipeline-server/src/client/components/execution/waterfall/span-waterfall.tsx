@@ -43,6 +43,7 @@ export function SpanWaterfall({
 
   // Sync when the parent resets viewRange externally
   useEffect(() => {
+    // eslint-disable-next-line react/set-state-in-effect
     setLiveRange(viewRange);
   }, [viewRange]);
 
