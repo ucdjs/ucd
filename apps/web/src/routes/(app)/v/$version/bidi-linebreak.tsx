@@ -1,10 +1,10 @@
-import { VersionHeader } from "#components/layout/version/header";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
 export const Route = createFileRoute("/(app)/v/$version/bidi-linebreak")({
   component: BidiLinebreakVersion,
+  loader: () => ({ crumb: "BIDI & Line Break" }),
 });
 
 function BidiLinebreakVersion() {
@@ -12,8 +12,6 @@ function BidiLinebreakVersion() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="BIDI & Line Break" />
-
       <Card>
         <CardHeader>
           <CardTitle>

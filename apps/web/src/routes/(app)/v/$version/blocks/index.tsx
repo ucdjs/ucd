@@ -1,11 +1,8 @@
 import { blocksQueryOptions } from "#functions/blocks";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
-import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { Grid3X3, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -13,6 +10,7 @@ export const Route = createFileRoute("/(app)/v/$version/blocks/")({
   component: BlocksPage,
   loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(blocksQueryOptions(params.version));
+    return { crumb: "Blocks" };
   },
 });
 
@@ -32,39 +30,7 @@ function BlocksPage() {
   }, [blocks, searchQuery]);
 
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/">Home</Link>} />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={(
-                  <Link to="/v/$version" params={{ version }}>
-                    Unicode
-                    {version}
-                  </Link>
-                )}
-                />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Blocks</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* Page Header */}
         <div className="flex flex-col gap-4 py-4">
           <div className="flex items-center justify-between gap-3">
@@ -161,7 +127,6 @@ function BlocksPage() {
             </p>
           </div>
         )}
-      </div>
-    </>
+    </div>
   );
 }

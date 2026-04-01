@@ -1,17 +1,15 @@
 import { blockQueryOptions } from "#functions/blocks";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
-import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ArrowLeft, Grid3X3 } from "lucide-react";
 
 export const Route = createFileRoute("/(app)/v/$version/blocks/$id")({
   component: BlockDetailPage,
   loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(blockQueryOptions(params.version, params.id));
+    return { crumb: params.id };
   },
 });
 
@@ -39,45 +37,7 @@ function BlockDetailPage() {
   }
 
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/">Home</Link>} />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={(
-                  <Link to="/v/$version" params={{ version }}>
-                    Unicode
-                    {version}
-                  </Link>
-                )}
-                />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/v/$version/blocks" params={{ version }}>Blocks</Link>} />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage className="max-w-[200px] truncate">
-                  {block.name}
-                </BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* Back Button */}
         <div>
           <Button
@@ -233,7 +193,6 @@ function BlockDetailPage() {
             </p>
           </CardContent>
         </Card>
-      </div>
-    </>
+    </div>
   );
 }

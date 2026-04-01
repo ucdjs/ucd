@@ -1,4 +1,4 @@
-import { PageHeader } from "#components/layout/page-header";
+import { AppHeader } from "#components/layout/app-header";
 import { AppSidebar } from "#components/layout/sidebar/app-sidebar";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
@@ -15,7 +15,7 @@ function AppLayout() {
         <div className="app-shell">
           <div className="app-shell-bg" aria-hidden="true" />
           <div className="app-shell-content">
-            <PageHeader />
+            <AppHeader />
             <Outlet />
           </div>
         </div>
