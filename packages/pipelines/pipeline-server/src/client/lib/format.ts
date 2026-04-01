@@ -18,7 +18,7 @@ export function formatTimestamp(timestamp: string): string {
 }
 
 export function formatBytes(value: number | null): string {
-  if (!value) return "0B";
+  if (value == null || value <= 0) return "0B";
   if (value < 1024) return `${value}B`;
   if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)}KB`;
   return `${(value / (1024 * 1024)).toFixed(1)}MB`;
@@ -51,7 +51,7 @@ export function formatLogTimestamp(timestamp: string): string {
 
 export function formatStartedAt(timestamp: string): string {
   const date = new Date(timestamp);
-  const diffMs = Date.now() - date.getTime();
+  const diffMs = Math.max(0, Date.now() - date.getTime());
   const diffSecs = Math.floor(diffMs / 1000);
   const diffMins = Math.floor(diffSecs / 60);
   const diffHours = Math.floor(diffMins / 60);

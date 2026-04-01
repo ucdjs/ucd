@@ -28,27 +28,22 @@ export function SourceSwitcher() {
   const [search, setSearch] = React.useState("");
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  const currentSourceId = React.useMemo(() => {
-    if ("sourceId" in params && typeof params.sourceId === "string") {
-      return params.sourceId;
-    }
-    return null;
-  }, [params]);
+  const currentSourceId = "sourceId" in params && typeof params.sourceId === "string"
+    ? params.sourceId
+    : null;
 
   const sources = data ?? [];
   const currentSource = sources.find((s) => s.id === currentSourceId) ?? null;
 
-  const filtered = React.useMemo(() => {
-    if (!search) return sources;
-    const lower = search.toLowerCase();
-    return sources.filter((s) => s.label.toLowerCase().includes(lower));
-  }, [sources, search]);
+  const filtered = !search
+    ? sources
+    : sources.filter((s) => s.label.toLowerCase().includes(search.toLowerCase()));
 
-  const handleSelect = React.useCallback((sourceId: string) => {
+  const handleSelect = (sourceId: string) => {
     setOpen(false);
     setSearch("");
     navigate({ to: "/s/$sourceId", params: { sourceId } });
-  }, [navigate]);
+  };
 
   React.useEffect(() => {
     if (!open) return;
@@ -58,20 +53,18 @@ export function SourceSwitcher() {
         setSearch("");
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
-
-  React.useEffect(() => {
-    if (!open) return;
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpen(false);
         setSearch("");
       }
     }
+    document.addEventListener("mousedown", handleClickOutside);
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
   }, [open]);
 
   return (
