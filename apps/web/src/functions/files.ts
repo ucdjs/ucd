@@ -11,6 +11,7 @@ import {
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
+import { getShikiLanguage, highlight } from "../lib/highlight";
 
 /**
  * Maximum file size to load completely (1MB)
@@ -26,7 +27,7 @@ const MAX_INLINE_FILE_SIZE = 1024 * 1024;
  */
 export type FilesResponse
   = | { type: "directory"; files: FileEntry[] }
-    | { type: "file"; content: string; contentType: string; size: number }
+    | { type: "file"; html: string; contentType: string; size: number }
     | { type: "file-too-large"; size: number; contentType: string; downloadUrl: string };
 
 type FileQueryParams = {
@@ -101,14 +102,22 @@ export const fetchFiles = createServerFn({ method: "GET" })
     const responseStatType = res.headers.get(UCD_STAT_TYPE_HEADER) ?? statType;
     const responseContentType = res.headers.get("Content-Type") || contentType;
     const isJson = responseContentType.includes("application/json");
+    const isText = responseContentType.startsWith("text/") || isJson;
+
+    if (!isText) {
+      throw new Error(`Unexpected Content-Type: ${responseContentType}`);
+    }
+
     const resolvedStatType = responseStatType
       ?? (isJson ? "directory" : "file");
 
     if (resolvedStatType === "file") {
       const content = await res.text();
+      const fileName = data.path.split("/").filter(Boolean).pop() || "file";
+      const html = await highlight(content, getShikiLanguage(fileName));
       return {
         type: "file",
-        content,
+        html,
         contentType: responseContentType,
         size: size ?? content.length,
       };
@@ -121,9 +130,11 @@ export const fetchFiles = createServerFn({ method: "GET" })
     }
 
     const content = await res.text();
+    const fileName = data.path.split("/").filter(Boolean).pop() || "file";
+    const html = await highlight(content, getShikiLanguage(fileName));
     return {
       type: "file",
-      content,
+      html,
       contentType: responseContentType,
       size: size || content.length,
     };
@@ -160,6 +171,8 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
       signal,
     }),
     staleTime: 1000 * 60 * 60, // 1 hour
+    gcTime: 1000 * 60 * 60,
+    structuralSharing: false,
   });
 }
 

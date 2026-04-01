@@ -22,6 +22,25 @@ export default defineConfig((env) => ({
       },
       minify: env.mode === "build",
       wasm: false,
+      routeRules: {
+        "/**": {
+          headers: {
+            "Content-Security-Policy": [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data:",
+              "connect-src 'self' https://api.ucdjs.dev https://preview.api.ucdjs.dev",
+              "frame-ancestors 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join("; "),
+            "X-Content-Type-Options": "nosniff",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "strict-origin-when-cross-origin",
+          },
+        },
+      },
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
