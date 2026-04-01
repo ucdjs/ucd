@@ -1,48 +1,36 @@
 import { VersionNotFound } from "#components/not-found";
+import { versionsQueryOptions } from "#functions/versions";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
-import { createMiddleware } from "@tanstack/react-start";
-import { UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
+import { UNICODE_STABLE_VERSION } from "@unicode-utils/core";
 
-const validateVersionMiddleware = createMiddleware({
-  type: "request",
-}).server(
-  async ({ next, pathname }) => {
-    const pathSegments = pathname.split("/");
-    const version = pathSegments[2]?.toLowerCase() || "";
+export const Route = createFileRoute("/(app)/v/$version")({
+  component: VersionLayoutComponent,
+  notFoundComponent: VersionNotFoundBoundary,
+  async beforeLoad({ params, context }) {
+    const version = params.version.toLowerCase();
 
     if (version === "latest") {
-      const latest = UNICODE_STABLE_VERSION;
-      if (!latest) {
-        return new Response("No stable version configured", { status: 502 });
+      if (!UNICODE_STABLE_VERSION) {
+        throw new Error("No stable version configured");
       }
 
-      // eslint-disable-next-line no-console
-      console.info(`Redirecting 'latest' to stable version: ${latest}`);
       throw redirect({
-        to: pathname.replace("latest", latest),
+        to: "/v/$version",
+        params: { version: UNICODE_STABLE_VERSION },
       });
     }
 
-    // Verify requested version exists using metadata map
-    const exists = Array.isArray(UNICODE_VERSION_METADATA)
-      ? UNICODE_VERSION_METADATA.some((m) => m?.version === version)
-      : false;
+    const versions = await context.queryClient.ensureQueryData(versionsQueryOptions());
+    const exists = versions.some((v) => v.version === version);
 
     if (!exists) {
       throw notFound();
     }
 
-    return next();
+    return { crumb: `Unicode ${version}` };
   },
-);
-
-export const Route = createFileRoute("/(app)/v/$version")({
-  component: VersionLayoutComponent,
-  notFoundComponent: VersionNotFoundBoundary,
-  server: {
-    middleware: [validateVersionMiddleware],
-  },
+  loader: ({ context }) => ({ crumb: context.crumb }),
 });
 
 function VersionLayoutComponent() {

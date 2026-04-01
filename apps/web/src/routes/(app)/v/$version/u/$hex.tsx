@@ -1,11 +1,8 @@
 import { characterQueryOptions } from "#apis/characters";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
-import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import * as React from "react";
 
@@ -13,6 +10,7 @@ export const Route = createFileRoute("/(app)/v/$version/u/$hex")({
   component: CharacterPage,
   loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));
+    return { crumb: `U+${params.hex.toUpperCase()}` };
   },
 });
 
@@ -28,40 +26,7 @@ function CharacterPage() {
   };
 
   return (
-    <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/">Home</Link>} />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={(
-                  <Link to="/v/$version" params={{ version }}>
-                    Unicode
-                    {" "}
-                    {version}
-                  </Link>
-                )}
-                />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>{character.codepoint}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+    <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Back button */}
         <div>
           <Button
@@ -186,8 +151,7 @@ function CharacterPage() {
             </Card>
           </div>
         </section>
-      </div>
-    </>
+    </div>
   );
 }
 
