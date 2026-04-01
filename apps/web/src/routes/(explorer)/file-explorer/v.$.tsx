@@ -15,6 +15,10 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   async beforeLoad({ params }) {
     const path = params._splat || "";
 
+    if (path.includes("..") || path.includes("//") || path.includes("%2e") || path.includes("%2f")) {
+      throw new Error("Invalid file path");
+    }
+
     const { statType, size } = await getFileHeadInfo({ data: { path } });
 
     if (statType !== "file") {
@@ -122,10 +126,8 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
   return (
     <FileViewer
       fileUrl=""
-      html={data.content}
-      // contentType={data.contentType}
+      html={data.html}
       fileName={fileName}
-      // filePath={path}
     />
   );
 }
