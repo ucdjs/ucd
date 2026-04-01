@@ -11,7 +11,7 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/dialog";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { AlertTriangle, ChevronDown, ChevronRight, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 type SourceIssue = SourceResponse["errors"][number];
 
@@ -30,7 +30,7 @@ export function SourceIssuesDialog({
   const [filter, setFilter] = useState("");
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
-  const groups = useMemo(() => {
+  const groups = (() => {
     const nextGroups = new Map<string, SourceIssue[]>();
     const normalizedFilter = filter.trim().toLowerCase();
 
@@ -56,7 +56,7 @@ export function SourceIssuesDialog({
     }
 
     return [...nextGroups.entries()];
-  }, [filter, issues]);
+  })();
 
   function toggleGroup(path: string) {
     setCollapsedGroups((current) => ({

@@ -12,7 +12,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { AlertTriangle, FileCode2, LayoutGrid, LayoutList, Workflow as PipelineIcon, Play, Search } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/s/$sourceId/")({
   loader: async ({ context, params }) => {
@@ -33,21 +33,21 @@ function RouteComponent() {
 
   const totalPipelines = source.files.reduce((sum, file) => sum + file.pipelines.length, 0);
 
-  const filtered = useMemo(() => {
-    if (!search) return source.files;
-    const lower = search.toLowerCase();
-    return source.files
-      .map((file) => {
-        const fileMatches = file.label.toLowerCase().includes(lower) || file.path.toLowerCase().includes(lower);
-        const matchingPipelines = file.pipelines.filter(
-          (p) => (p.name || p.id).toLowerCase().includes(lower) || p.id.toLowerCase().includes(lower),
-        );
-        if (fileMatches) return file;
-        if (matchingPipelines.length > 0) return { ...file, pipelines: matchingPipelines };
-        return null;
-      })
-      .filter(Boolean) as typeof source.files;
-  }, [source.files, search]);
+  const sourceFiles = source.files;
+  const filtered = !search
+    ? sourceFiles
+    : sourceFiles
+        .map((file) => {
+          const lower = search.toLowerCase();
+          const fileMatches = file.label.toLowerCase().includes(lower) || file.path.toLowerCase().includes(lower);
+          const matchingPipelines = file.pipelines.filter(
+            (p) => (p.name || p.id).toLowerCase().includes(lower) || p.id.toLowerCase().includes(lower),
+          );
+          if (fileMatches) return file;
+          if (matchingPipelines.length > 0) return { ...file, pipelines: matchingPipelines };
+          return null;
+        })
+        .filter((v): v is typeof sourceFiles[number] => v != null);
 
   return (
     <div className="flex-1 overflow-auto bg-background">

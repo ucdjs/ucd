@@ -4,7 +4,7 @@ import { formatBytes } from "#lib/format";
 import { executionLogsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LogDetails } from "./log-details";
 import { LEVEL_PILL, LEVEL_PILL_ACTIVE } from "./log-level-styles";
 import { LogRow } from "./log-row";
@@ -43,7 +43,7 @@ export function LogsViewer({
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const isRunning = data.status === "running";
-  const hasUnknownLevel = useMemo(() => data.logs.some((l) => l.level == null), [data.logs]);
+  const hasUnknownLevel = data.logs.some((l) => l.level == null);
 
   useEffect(() => {
     if (isRunning && scrollRef.current) {

@@ -11,7 +11,6 @@ import {
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ChevronRight, FileCode, Workflow } from "lucide-react";
-import { useCallback, useMemo } from "react";
 
 export interface SourceFileListProps {
   sourceId: string;
@@ -59,7 +58,7 @@ function getFileName(file: SourceFileInfo): string {
 
 export function SourceFileList(props: SourceFileListProps) {
   const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId: props.sourceId }));
-  const tree = useMemo(() => buildFileTree(data?.files ?? []), [data?.files]);
+  const tree = buildFileTree(data?.files ?? []);
 
   if (isLoading) {
     return (
@@ -116,9 +115,9 @@ function FileNode({ file, ...props }: { file: SourceFileInfo } & SourceFileListP
   const isOpen = props.expanded[stateKey] ?? isActive;
   const hasPipelines = file.pipelines.length > 0;
 
-  const handleToggle = useCallback(() => {
+  const handleToggle = () => {
     props.toggle(stateKey, isOpen);
-  }, [props, stateKey, isOpen]);
+  };
 
   return (
     <SidebarMenuItem>

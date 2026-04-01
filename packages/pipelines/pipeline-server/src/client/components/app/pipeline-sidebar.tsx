@@ -21,7 +21,6 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ArrowLeft, BookOpen, ClipboardList, ExternalLink, Eye, FileCode2, GitBranch, Hash, Layers, Workflow as PipelineIcon, Play, Tag } from "lucide-react";
 import * as React from "react";
-import { useCallback } from "react";
 import { SourceFileList } from "./source-file-list";
 import { SourceSwitcher } from "./source-switcher";
 
@@ -54,9 +53,9 @@ export function PipelineSidebar({
 
   const [expanded, setExpanded] = React.useState<Record<string, boolean>>({});
 
-  const toggle = React.useCallback((key: string, isOpen: boolean) => {
+  const toggle = (key: string, isOpen: boolean) => {
     setExpanded((prev) => ({ ...prev, [key]: !isOpen }));
-  }, []);
+  };
 
   const isPipelineView = currentSourceId && currentFileId && currentPipelineId;
 
@@ -190,7 +189,7 @@ function PipelineView({ sourceId, fileId, pipelineId }: PipelineViewProps) {
   const { selectedVersions } = usePipelineVersions(versionStorageKey, pipeline.versions);
   const lastHotkeyExecuteAtRef = React.useRef(0);
 
-  const handleExecute = useCallback(async () => {
+  const handleExecute = async () => {
     const result = await execute(sourceId, fileId, pipelineId, [...selectedVersions]);
     if (result.success && result.executionId) {
       navigate({
@@ -203,7 +202,7 @@ function PipelineView({ sourceId, fileId, pipelineId }: PipelineViewProps) {
         },
       });
     }
-  }, [execute, navigate, fileId, pipelineId, selectedVersions, sourceId]);
+  };
 
   useHotkey("Mod+E", () => {
     const now = Date.now();

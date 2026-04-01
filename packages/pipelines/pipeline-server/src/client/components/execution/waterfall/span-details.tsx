@@ -29,6 +29,8 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
   const attributes = node?.raw.attributes
     ? Object.entries(node.raw.attributes as Record<string, unknown>)
     : [];
+  // eslint-disable-next-line react/purity -- React Compiler handles memoization
+  const absoluteStart = node ? formatTimestamp(new Date(node.startMs).toISOString()) : "";
 
   return (
     <Sheet open={node !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -95,7 +97,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
                       </TimingRow>
                     )}
                     <TimingRow label="Absolute start">
-                      {formatTimestamp(new Date(node.startMs).toISOString())}
+                      {absoluteStart}
                     </TimingRow>
                   </div>
                 </section>

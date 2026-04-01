@@ -4,7 +4,7 @@ import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflo
 import { applyDefinitionLayout, definitionGraphToFlow, filterToNeighbors } from "#lib/graph-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { DefinitionOutputNodeRenderer, DefinitionRouteNodeRenderer } from "./definition-node";
 import "@xyflow/react/dist/style.css";
 
@@ -36,12 +36,12 @@ export function DefinitionGraph({
   mode = "full",
   className,
 }: DefinitionGraphProps) {
-  const { allNodes, allEdges } = useMemo(() => {
+  const { allNodes, allEdges } = (() => {
     const { nodes, edges } = definitionGraphToFlow(pipeline, { includeOutputs });
     return { allNodes: nodes, allEdges: edges };
-  }, [pipeline, includeOutputs]);
+  })();
 
-  const { initialNodes, initialEdges } = useMemo(() => {
+  const { initialNodes, initialEdges } = (() => {
     let layoutNodes = allNodes;
     let layoutEdges = allEdges;
 
@@ -53,37 +53,39 @@ export function DefinitionGraph({
 
     const positioned = applyDefinitionLayout(layoutNodes, layoutEdges);
     return { initialNodes: positioned, initialEdges: layoutEdges };
-  }, [allNodes, allEdges, mode, selectedRouteId]);
+  })();
 
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
 
+  // XYFlow requires mutable state for drag interactions (applyNodeChanges/applyEdgeChanges),
+  // so we can't use initialNodes/initialEdges directly. This effect syncs the computed layout
+  // back into state when the graph data, mode, or selection changes.
   useEffect(() => {
+    // eslint-disable-next-line react/set-state-in-effect
     setNodes(initialNodes);
+    // eslint-disable-next-line react/set-state-in-effect
     setEdges(initialEdges);
   }, [initialNodes, initialEdges]);
 
-  const handleNodeClick: NodeMouseHandler<FlowNode> = useCallback(
-    (_event, node) => {
-      const data = node.data as FlowNodeData;
-      if (data.kind === "definition-output") {
-        onOutputSelect?.(data.outputKey);
-      } else if (data.kind === "definition-route") {
-        onRouteSelect(data.routeId);
-      }
-    },
-    [onRouteSelect, onOutputSelect],
-  );
+  const handleNodeClick: NodeMouseHandler<FlowNode> = (_event, node) => {
+    const data = node.data as FlowNodeData;
+    if (data.kind === "definition-output") {
+      onOutputSelect?.(data.outputKey);
+    } else if (data.kind === "definition-route") {
+      onRouteSelect(data.routeId);
+    }
+  };
 
-  const handleNodesChange = useCallback((changes: NodeChange<FlowNode>[]) => {
+  const handleNodesChange = (changes: NodeChange<FlowNode>[]) => {
     setNodes((current) => applyNodeChanges(changes, current));
-  }, []);
+  };
 
-  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
+  const handleEdgesChange = (changes: EdgeChange[]) => {
     setEdges((current) => applyEdgeChanges(changes, current));
-  }, []);
+  };
 
-  const dimmedNodeIds = useMemo(() => {
+  const dimmedNodeIds = (() => {
     if (mode !== "full" || !selectedRouteId) return new Set<string>();
 
     const neighborIds = new Set<string>([selectedRouteId]);
@@ -93,9 +95,9 @@ export function DefinitionGraph({
     }
 
     return new Set(allNodes.filter((n) => !neighborIds.has(n.id)).map((n) => n.id));
-  }, [mode, selectedRouteId, allNodes, allEdges]);
+  })();
 
-  const styledNodes = useMemo(() => {
+  const styledNodes = (() => {
     if (dimmedNodeIds.size === 0 && !selectedRouteId) return nodes;
 
     return nodes.map((node) => ({
@@ -103,7 +105,7 @@ export function DefinitionGraph({
       selected: node.id === selectedRouteId,
       style: dimmedNodeIds.has(node.id) ? { opacity: 0.35 } : undefined,
     }));
-  }, [nodes, dimmedNodeIds, selectedRouteId]);
+  })();
 
   return (
     <div className={cn("h-full w-full", className)}>
