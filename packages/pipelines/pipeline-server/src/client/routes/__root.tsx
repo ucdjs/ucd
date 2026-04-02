@@ -9,7 +9,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/components";
 import { lazy, Suspense } from "react";
 
 const PipelineCommandPalette = lazy(() =>

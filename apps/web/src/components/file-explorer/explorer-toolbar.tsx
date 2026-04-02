@@ -1,18 +1,7 @@
 import type { SearchQueryParams } from "../../lib/file-explorer";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
+import { Badge, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@ucdjs-internal/shared-ui/components";
 import {
   ArrowUpDown,
   File,

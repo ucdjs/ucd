@@ -2,9 +2,7 @@ import type { ExecutionSummaryItem } from "#queries/execution";
 import { StatusBadge } from "#components/execution/status-badge";
 import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { Link, useParams } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { Boxes, ChartSpline, Clock3, Database, History, Layers3, Route as RouteIcon } from "lucide-react";
 
 export interface LatestExecutionProps {

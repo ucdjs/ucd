@@ -1,6 +1,6 @@
 import type { SourceFileInfo } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Badge } from "@ucdjs-internal/shared-ui/components";
 import {
   FileCode2,
   FolderTree,

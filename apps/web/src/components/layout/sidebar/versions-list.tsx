@@ -8,7 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@ucdjs-internal/shared-ui/ui/sidebar";
+} from "@ucdjs-internal/shared-ui/components";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { UVersion } from "../../u-version";

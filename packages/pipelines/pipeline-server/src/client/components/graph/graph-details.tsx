@@ -2,7 +2,7 @@ import type { ExecutionGraphDetailField, ExecutionGraphNodeView } from "#shared/
 import { getGraphNodeConfig, getNodeBadgeClassName } from "#shared/lib/graph";
 import { useNavigate } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Button } from "@ucdjs-internal/shared-ui/components";
 import { X } from "lucide-react";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {

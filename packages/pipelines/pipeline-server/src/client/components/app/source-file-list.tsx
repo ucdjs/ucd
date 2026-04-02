@@ -9,7 +9,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@ucdjs-internal/shared-ui/ui/sidebar";
+} from "@ucdjs-internal/shared-ui/components";
 import { ChevronRight, FileCode, Workflow } from "lucide-react";
 
 export interface SourceFileListProps {

@@ -1,7 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Button, Card, CardContent, CardHeader, CardTitle, Input } from "@ucdjs-internal/shared-ui/components";
 
 export const Route = createFileRoute("/(app)/search")({
   component: GlobalSearchPage,

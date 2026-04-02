@@ -1,6 +1,6 @@
 import type { SourceFileInfo } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Badge } from "@ucdjs-internal/shared-ui/components";
 import { ChevronDown, ChevronRight, FileCode2, FolderTree, Layers3, Workflow as PipelineIcon, Spline } from "lucide-react";
 import { useState } from "react";
 

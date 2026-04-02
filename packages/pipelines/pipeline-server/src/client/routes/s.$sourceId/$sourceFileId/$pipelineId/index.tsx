@@ -5,8 +5,7 @@ import { PipelineSummary } from "#components/pipeline/pipeline-summary";
 import { executionsQueryOptions } from "#queries/execution";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, getRouteApi, Link } from "@tanstack/react-router";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight } from "lucide-react";
 
 const ParentRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");

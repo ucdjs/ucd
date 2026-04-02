@@ -7,7 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+} from "@ucdjs-internal/shared-ui/components";
 import { FileCode2 } from "lucide-react";
 
 export interface PipelineHeaderProps {

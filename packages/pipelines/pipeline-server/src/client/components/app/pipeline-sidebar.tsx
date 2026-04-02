@@ -5,10 +5,9 @@ import { sourceQueryOptions } from "#queries/source";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
+  Badge,
+  Button,
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -18,8 +17,23 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { ArrowLeft, BookOpen, ClipboardList, ExternalLink, Eye, FileCode2, GitBranch, Hash, Layers, Workflow as PipelineIcon, Play, Tag } from "lucide-react";
+  ThemeToggle,
+  UcdLogo,
+} from "@ucdjs-internal/shared-ui/components";
+import {
+  ArrowLeft,
+  BookOpen,
+  ClipboardList,
+  ExternalLink,
+  Eye,
+  FileCode2,
+  GitBranch,
+  Hash,
+  Layers,
+  Workflow as PipelineIcon,
+  Play,
+  Tag,
+} from "lucide-react";
 import * as React from "react";
 import { SourceFileList } from "./source-file-list";
 import { SourceSwitcher } from "./source-switcher";

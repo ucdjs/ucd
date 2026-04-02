@@ -5,8 +5,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+  Skeleton,
+} from "@ucdjs-internal/shared-ui/components";
 import { Check, ChevronsUpDown, GitBranch, Search } from "lucide-react";
 import * as React from "react";
 

@@ -1,5 +1,5 @@
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Badge } from "@ucdjs-internal/shared-ui/components";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {
   completed: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",

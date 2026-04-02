@@ -1,15 +1,5 @@
 import type { SourceResponse } from "#shared/schemas/source";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dialog";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input } from "@ucdjs-internal/shared-ui/components";
 import { AlertTriangle, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { useState } from "react";
 

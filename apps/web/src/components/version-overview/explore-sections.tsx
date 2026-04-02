@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
 import { Grid3X3, Lightbulb } from "lucide-react";
 
 const SECTIONS = [
