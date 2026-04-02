@@ -6,9 +6,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
-import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
-import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
+  Separator,
+  SidebarTrigger,
+} from "@ucdjs-internal/shared-ui/components";
 import { Fragment } from "react";
 
 export function AppHeader() {

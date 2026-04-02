@@ -7,7 +7,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   Command,
   useCommandActions,
-} from "@ucdjs-internal/shared-ui/ui/command";
+} from "@ucdjs-internal/shared-ui/components";
 import { Loader2, Play, Search, Spline, Terminal } from "lucide-react";
 import { useState } from "react";
 

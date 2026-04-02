@@ -2,7 +2,7 @@ import { DefinitionGraph } from "#components/inspect/definition-graph";
 import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
 import { pipelineQueryOptions } from "#queries/pipeline";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/")({
   loader: async ({ context, params }) => {

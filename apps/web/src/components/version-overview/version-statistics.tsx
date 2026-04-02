@@ -1,6 +1,6 @@
 import { versionDetailsQueryOptions } from "#functions/versions";
 import { useQuery } from "@tanstack/react-query";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { StatBadge } from "./stat-badge";
 
 export function VersionStatistics({ version }: { version: string }) {

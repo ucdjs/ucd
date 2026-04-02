@@ -1,8 +1,7 @@
 import { blocksQueryOptions } from "#functions/blocks";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { Card, CardContent, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight } from "lucide-react";
 
 const FEATURED_BLOCK_IDS = [

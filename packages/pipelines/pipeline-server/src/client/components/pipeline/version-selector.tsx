@@ -1,16 +1,6 @@
 import { usePipelineVersions } from "#hooks/use-pipeline-versions";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
+import { buttonVariants, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@ucdjs-internal/shared-ui/components";
 import { ChevronsUpDown } from "lucide-react";
 
 export interface VersionSelectorProps {

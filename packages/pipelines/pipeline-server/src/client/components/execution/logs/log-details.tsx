@@ -1,18 +1,16 @@
 import type { ExecutionLogItem } from "#shared/schemas/execution";
 import { formatTimestamp } from "#lib/format";
-import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@ucdjs-internal/shared-ui/ui/collapsible";
-import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
-import {
+  ScrollArea,
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
-} from "@ucdjs-internal/shared-ui/ui/sheet";
+} from "@ucdjs-internal/shared-ui/components";
+import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import { Check, ChevronDown, Copy } from "lucide-react";
 import { LogLevelBadge } from "./log-level-badge";
 

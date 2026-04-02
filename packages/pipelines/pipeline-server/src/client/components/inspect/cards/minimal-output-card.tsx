@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Button } from "@ucdjs-internal/shared-ui/components";
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 

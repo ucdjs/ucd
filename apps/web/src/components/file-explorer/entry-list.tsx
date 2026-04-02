@@ -2,8 +2,7 @@ import { filesQueryOptions } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { Button, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { FolderOpen } from "lucide-react";
 import { ExplorerEntry } from "./explorer-entry";
 

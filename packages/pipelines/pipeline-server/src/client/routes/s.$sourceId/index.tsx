@@ -9,8 +9,7 @@ import { sourceQueryOptions } from "#queries/source";
 import { sourceOverviewQueryOptions } from "#queries/source-overview";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { AlertTriangle, FileCode2, LayoutGrid, LayoutList, Workflow as PipelineIcon, Play, Search } from "lucide-react";
 import { useState } from "react";
 

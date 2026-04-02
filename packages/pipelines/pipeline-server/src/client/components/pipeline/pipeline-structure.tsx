@@ -1,6 +1,5 @@
 import { Link, useParams } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight, Boxes, FolderTree, Layers3 } from "lucide-react";
 import { RouteStructureMetrics } from "./route-structure-metrics";
 

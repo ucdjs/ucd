@@ -4,7 +4,7 @@ import { executionGraphQueryOptions } from "#queries/execution";
 import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Button } from "@ucdjs-internal/shared-ui/components";
 import { ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({

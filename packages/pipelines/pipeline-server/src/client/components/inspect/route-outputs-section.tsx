@@ -1,6 +1,6 @@
 import type { PipelineDetails } from "#shared/schemas/pipeline";
 import { Link, useParams } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight, FolderOutput } from "lucide-react";
 
 export interface RouteOutputsSectionProps {

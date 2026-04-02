@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { FileCode2, FolderInput } from "lucide-react";
 
 export interface PipelineSummaryProps {

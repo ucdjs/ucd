@@ -2,16 +2,7 @@ import { VersionCardItem } from "#components/home/versions/version-card-item";
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ClientOnly, createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
-import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { Button, Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton, ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight, ArrowUpRight, Check, ChevronsUpDown, Code2, Layers, Search, Terminal } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 

@@ -1,8 +1,7 @@
 import { blocksQueryOptions } from "#functions/blocks";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Card, CardContent, Input } from "@ucdjs-internal/shared-ui/components";
 import { Grid3X3, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 

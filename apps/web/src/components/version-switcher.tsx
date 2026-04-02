@@ -1,9 +1,7 @@
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, SidebarMenu, SidebarMenuButton, SidebarMenuItem, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { ChevronsUpDown, Layers } from "lucide-react";
 import * as React from "react";
 

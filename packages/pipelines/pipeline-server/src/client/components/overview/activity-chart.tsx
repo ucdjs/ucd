@@ -1,5 +1,5 @@
 import type { OverviewActivityDay, OverviewExecutionSummary } from "#shared/schemas/overview";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { PlayCircle } from "lucide-react";
 import { useState } from "react";

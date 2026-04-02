@@ -1,7 +1,7 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Badge } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight, Calendar, Code, Sparkles, Tag } from "lucide-react";
 
 function getBadgeLabel(type: UnicodeVersion["type"]) {

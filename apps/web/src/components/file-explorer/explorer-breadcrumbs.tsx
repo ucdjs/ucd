@@ -1,5 +1,4 @@
 import { Link, useMatch } from "@tanstack/react-router";
-import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,8 +6,9 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+  Button,
+} from "@ucdjs-internal/shared-ui/components";
+import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import { ChevronRight, Copy, CopyCheck, CopyX, FolderOpen } from "lucide-react";
 import { Fragment } from "react";
 

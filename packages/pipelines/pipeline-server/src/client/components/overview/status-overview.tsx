@@ -1,6 +1,6 @@
 import type { OverviewExecutionSummary } from "#shared/schemas/overview";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
 import { getStateCount, overviewStates } from "./shared";
 
 interface StatusOverviewProps {

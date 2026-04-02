@@ -1,8 +1,7 @@
 import { characterQueryOptions } from "#apis/characters";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import * as React from "react";
 

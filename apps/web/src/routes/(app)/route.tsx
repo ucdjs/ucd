@@ -1,7 +1,7 @@
 import { AppHeader } from "#components/layout/app-header";
 import { AppSidebar } from "#components/layout/sidebar/app-sidebar";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/components";
 
 export const Route = createFileRoute("/(app)")({
   component: AppLayout,

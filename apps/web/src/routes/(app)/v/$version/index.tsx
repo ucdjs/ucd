@@ -6,7 +6,7 @@ import { blocksQueryOptions } from "#functions/blocks";
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Input } from "@ucdjs-internal/shared-ui/components";
 import { BookOpen, Search } from "lucide-react";
 import { Suspense, useState } from "react";
 

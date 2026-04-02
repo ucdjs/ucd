@@ -1,7 +1,6 @@
 import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
 import { Link, useParams } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Card, CardContent, CardHeader, CardTitle, Input } from "@ucdjs-internal/shared-ui/components";
 import { FolderOutput, Workflow as PipelineIcon, Shuffle, Spline } from "lucide-react";
 import { useState } from "react";
 import { SidebarOutputsList } from "./list/sidebar-outputs-list";

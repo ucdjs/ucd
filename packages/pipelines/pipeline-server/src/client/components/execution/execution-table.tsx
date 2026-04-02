@@ -2,15 +2,7 @@ import type { ExecutionSummaryItem } from "#shared/schemas/execution";
 import { StatusIcon } from "#components/execution/status-icon";
 import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@ucdjs-internal/shared-ui/ui/table";
+import { Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/components";
 import { ChartSpline, Play } from "lucide-react";
 
 interface ExecutionTableProps {

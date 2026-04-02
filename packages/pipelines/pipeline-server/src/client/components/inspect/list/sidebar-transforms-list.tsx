@@ -1,6 +1,6 @@
 import type { PipelineDetails } from "#shared/schemas/pipeline";
 import { Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Badge } from "@ucdjs-internal/shared-ui/components";
 import { Shuffle } from "lucide-react";
 import { deriveTransforms, SIDEBAR_ACTIVE_LINK_CLASS } from "./sidebar-shared";
 

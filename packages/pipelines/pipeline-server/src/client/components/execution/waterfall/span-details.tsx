@@ -1,20 +1,8 @@
 import type { WaterfallNode } from "#lib/waterfall";
 import { formatDuration, formatTimestamp } from "#lib/format";
 import { getSpanColor } from "#lib/waterfall";
+import { Badge, Collapsible, CollapsibleContent, CollapsibleTrigger, ScrollArea, Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/components";
 import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@ucdjs-internal/shared-ui/ui/collapsible";
-import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@ucdjs-internal/shared-ui/ui/sheet";
 import { Check, ChevronDown, Copy } from "lucide-react";
 
 interface SpanDetailsProps {

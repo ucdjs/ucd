@@ -1,8 +1,6 @@
 import { usePipelineRouteData } from "#hooks/use-pipeline-route-data";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { buttonVariants } from "@ucdjs-internal/shared-ui/ui/button";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { Badge, buttonVariants, Card, CardContent } from "@ucdjs-internal/shared-ui/components";
 import { ArrowRight, FolderOutput, Link2, Shuffle, Spline } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName")({

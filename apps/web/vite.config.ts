@@ -77,7 +77,7 @@ export default defineConfig((env) => ({
   build: {
     rolldownOptions: {
       experimental: {
-        lazyBarrel: false,
+        lazyBarrel: true,
       },
     },
     minify: env.mode === "build",
