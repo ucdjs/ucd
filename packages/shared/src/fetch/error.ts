@@ -48,9 +48,10 @@ export class FetchError<T = any> extends Error {
       ctx.error ? { cause: ctx.error } : undefined,
     );
 
+    const { schema: _schema, ...safeOptions } = ctx.options ?? {};
     Object.assign(fetchError, {
       request: ctx.request,
-      options: ctx.options,
+      options: safeOptions,
       response: ctx.response,
       data: ctx.response?.data,
       status: ctx.response?.status,
