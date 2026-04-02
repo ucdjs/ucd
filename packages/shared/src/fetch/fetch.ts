@@ -87,9 +87,10 @@ function createCustomFetch(): CustomFetch {
     if (context.error instanceof FetchError) {
       error = context.error as FetchError<T>;
       // Ensure common fields are attached for consumers
+      const { schema: _schema, ...safeOptions } = context.options ?? {};
       Object.assign(error, {
         request: (error as any).request ?? context.request,
-        options: (error as any).options ?? context.options,
+        options: (error as any).options ?? safeOptions,
         response: (error as any).response ?? context.response,
         data: (error as any).data ?? context.response?.data,
         status: (error as any).status ?? context.response?.status,
@@ -263,12 +264,13 @@ function createCustomFetch(): CustomFetch {
       };
     } catch (err) {
       if (!(err instanceof FetchError)) {
+        const { schema: _schema, ...safeOptions } = options ?? {};
         return {
           data: null,
           error: FetchError.from({
             request,
             options: {
-              ...options,
+              ...safeOptions,
               headers: new Headers(options?.headers || {}),
             },
             response: undefined,
