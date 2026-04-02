@@ -48,7 +48,6 @@ export function listVersionFilesQueryOptions(version: string) {
   return queryOptions({
     queryKey: ["version-files", version],
     queryFn: () => listVersionFiles({ data: { version } }),
-    staleTime: 1000 * 60 * 60, // 1 hour
     enabled: Boolean(version),
   });
 }
@@ -81,7 +80,6 @@ export function getVersionFileQueryOptions(version: string, path: string) {
   return queryOptions({
     queryKey: ["version-file", version, path],
     queryFn: () => getVersionFile({ data: { version, path } }),
-    staleTime: 1000 * 60 * 60, // 1 hour
     enabled: Boolean(version && path),
   });
 }

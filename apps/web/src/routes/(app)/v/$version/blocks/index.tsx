@@ -8,8 +8,8 @@ import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/(app)/v/$version/blocks/")({
   component: BlocksPage,
-  loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(blocksQueryOptions(params.version));
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(blocksQueryOptions(params.version));
     return { crumb: "Blocks" };
   },
 });

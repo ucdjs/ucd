@@ -24,7 +24,6 @@ export function versionsQueryOptions() {
   return queryOptions({
     queryKey: ["versions"],
     queryFn: () => fetchAllVersions(),
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -53,7 +52,6 @@ export function versionDetailsQueryOptions(version: string) {
   return queryOptions({
     queryKey: ["version-details", version],
     queryFn: () => fetchVersion({ data: { version } }),
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -81,6 +79,5 @@ export function versionFileTreeQueryOptions(version: string) {
   return queryOptions({
     queryKey: ["version-file-tree", version],
     queryFn: () => fetchVersionFileTree({ data: { version } }),
-    staleTime: 1000 * 60 * 60,
   });
 }

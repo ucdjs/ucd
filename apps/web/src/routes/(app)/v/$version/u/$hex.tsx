@@ -8,8 +8,8 @@ import * as React from "react";
 
 export const Route = createFileRoute("/(app)/v/$version/u/$hex")({
   component: CharacterPage,
-  loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));
     return { crumb: `U+${params.hex.toUpperCase()}` };
   },
 });

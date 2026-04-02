@@ -50,6 +50,5 @@ export function characterQueryOptions(hex: string, version: string) {
   return queryOptions({
     queryKey: ["character", version, hex],
     queryFn: () => fetchCharacter(hex, version),
-    staleTime: 1000 * 60 * 60,
   });
 }

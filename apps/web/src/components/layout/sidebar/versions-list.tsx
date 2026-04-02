@@ -82,7 +82,7 @@ export function VersionsList() {
 }
 
 VersionsList.Skeleton = function VersionsListSkeleton() {
-  const skeletonRows = useState(() => Array.from({ length: 5 }, (_, index) => `version-skeleton-${index}`))[0];
+  const [skeletonRows] = useState(() => Array.from({ length: 5 }, (_, index) => `version-skeleton-${index}`));
 
   return (
     <SidebarGroup className="mt-auto animate-pulse">
