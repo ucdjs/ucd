@@ -8,7 +8,7 @@ import { applyExecutionLayout, executionGraphToFlow, filterNodesByType, getNodeC
 import { getFlowNodeType, graphNodeTypes } from "#shared/lib/graph";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./graph-details";
 import { PipelineGraphFilters } from "./graph-filters";
 import { PipelineNodeRenderer } from "./nodes";
@@ -41,17 +41,17 @@ export function PipelineGraph({
   className,
 }: PipelineGraphProps) {
   // Convert the persisted pipeline graph into React Flow primitives once per graph payload.
-  const { allNodes, allEdges } = (() => {
+  const { allNodes, allEdges } = useMemo(() => {
     const { nodes, edges } = executionGraphToFlow(graph);
     return { allNodes: nodes, allEdges: edges };
-  })();
+  }, [graph]);
 
   const [visibleTypes, setVisibleTypes] = useState<Set<PipelineGraphNodeType>>(
     () => new Set(defaultVisibleTypes),
   );
   const [selectedNode, setSelectedNode] = useState<ExecutionGraphNodeView | null>(null);
 
-  const { initialNodes, initialEdges } = (() => {
+  const { initialNodes, initialEdges } = useMemo(() => {
     const { nodes: filteredNodes, edges: filteredEdges } = filterNodesByType(
       allNodes,
       allEdges,
@@ -59,7 +59,7 @@ export function PipelineGraph({
     );
     const positioned = applyExecutionLayout(filteredNodes, filteredEdges);
     return { initialNodes: positioned, initialEdges: filteredEdges };
-  })();
+  }, [allNodes, allEdges, visibleTypes]);
 
   const [nodes, setNodes] = useState<FlowNode[]>(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
