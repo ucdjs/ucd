@@ -138,7 +138,6 @@ export function blocksQueryOptions(version: string) {
   return queryOptions({
     queryKey: ["blocks", version],
     queryFn: () => fetchBlocks({ data: { version } }),
-    staleTime: 1000 * 60 * 60,
   });
 }
 
@@ -146,6 +145,5 @@ export function blockQueryOptions(version: string, id: string) {
   return queryOptions({
     queryKey: ["block", version, id],
     queryFn: () => fetchBlock({ data: { version, id } }),
-    staleTime: 1000 * 60 * 60,
   });
 }

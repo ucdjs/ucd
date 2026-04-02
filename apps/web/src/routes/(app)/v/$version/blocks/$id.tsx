@@ -7,8 +7,8 @@ import { ArrowLeft, Grid3X3 } from "lucide-react";
 
 export const Route = createFileRoute("/(app)/v/$version/blocks/$id")({
   component: BlockDetailPage,
-  loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(blockQueryOptions(params.version, params.id));
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(blockQueryOptions(params.version, params.id));
     return { crumb: params.id };
   },
 });

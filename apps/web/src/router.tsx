@@ -6,7 +6,13 @@ import { UNICODE_STABLE_VERSION } from "@unicode-utils/core";
 import { routeTree } from "./routeTree.gen";
 
 export function getRouter() {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 60, // 1 hour
+      },
+    },
+  });
 
   const router = createRouter({
     routeTree,
