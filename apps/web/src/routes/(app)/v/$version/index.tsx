@@ -1,6 +1,6 @@
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { BookOpen, Search } from "lucide-react";

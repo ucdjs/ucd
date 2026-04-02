@@ -61,6 +61,10 @@ function HomePage() {
   const currentVersion = availableVersions.has(selectedVersion)
     ? selectedVersion
     : latestStable?.version || "";
+  const currentVersionData = versions.find((v) => v.version === currentVersion);
+  const currentBadge = currentVersionData
+    ? getVersionBadge(currentVersionData.date ?? undefined, currentVersionData.type === "draft")
+    : null;
   const recentVersions = useMemo(() => versions.slice(0, 4), [versions]);
   const visibleVersions = showAllVersions ? versions : recentVersions;
 
@@ -99,16 +103,11 @@ function HomePage() {
                         v
                         {currentVersion}
                       </span>
-                      {(() => {
-                        const v = versions.find((ver) => ver.version === currentVersion);
-                        if (!v) return null;
-                        const badge = getVersionBadge(v.date ?? undefined, v.type === "draft");
-                        return (
-                          <span className={`text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
-                            {badge.label}
-                          </span>
-                        );
-                      })()}
+                      {currentBadge && (
+                        <span className={`text-[11px] px-2 py-0.5 rounded-full ${currentBadge.cls}`}>
+                          {currentBadge.label}
+                        </span>
+                      )}
                     </span>
                     <ChevronsUpDown className="size-4 text-muted-foreground" />
                   </DropdownMenuTrigger>
