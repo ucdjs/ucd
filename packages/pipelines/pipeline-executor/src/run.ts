@@ -1,6 +1,7 @@
 import type { Span } from "@opentelemetry/api";
 import type {
   AnyPipelineDefinition,
+  AnyPipelineRouteDefinition,
   FileContext,
   NormalizedRouteOutputDefinition,
   PipelineLogger,
