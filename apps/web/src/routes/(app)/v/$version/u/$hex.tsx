@@ -27,130 +27,130 @@ function CharacterPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Back button */}
-        <div>
+      {/* Back button */}
+      <div>
+        <Button
+          variant="ghost"
+          size="sm"
+          render={(
+            <Link to="/v/$version" params={{ version }}>
+              <ArrowLeft className="mr-1 size-4" />
+              Back to Unicode
+              {" "}
+              {version}
+            </Link>
+          )}
+        />
+      </div>
+
+      {/* Character Display */}
+      <div className="flex flex-col items-center gap-4 py-8">
+        <div className="relative">
+          <div className="text-9xl leading-none select-all">
+            {character.character}
+          </div>
           <Button
-            variant="ghost"
-            size="sm"
-            render={(
-              <Link to="/v/$version" params={{ version }}>
-                <ArrowLeft className="mr-1 size-4" />
-                Back to Unicode
-                {" "}
-                {version}
-              </Link>
-            )}
-          />
+            variant="outline"
+            size="icon"
+            className="absolute -top-2 -right-2 size-8"
+            onClick={copyCharacter}
+          >
+            {copied
+              ? (
+                  <Check className="size-4 text-green-500" />
+                )
+              : (
+                  <Copy className="size-4" />
+                )}
+          </Button>
         </div>
-
-        {/* Character Display */}
-        <div className="flex flex-col items-center gap-4 py-8">
-          <div className="relative">
-            <div className="text-9xl leading-none select-all">
-              {character.character}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute -top-2 -right-2 size-8"
-              onClick={copyCharacter}
-            >
-              {copied
-                ? (
-                    <Check className="size-4 text-green-500" />
-                  )
-                : (
-                    <Copy className="size-4" />
-                  )}
-            </Button>
-          </div>
-          <div className="text-center">
-            <h1 className="text-xl font-bold font-mono">{character.codepoint}</h1>
-            <p className="text-muted-foreground">{character.name}</p>
-          </div>
+        <div className="text-center">
+          <h1 className="text-xl font-bold font-mono">{character.codepoint}</h1>
+          <p className="text-muted-foreground">{character.name}</p>
         </div>
+      </div>
 
-        {/* Character Properties */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold">Properties</h2>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">General</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="grid gap-3">
-                  <PropertyRow label="Category" value={character.category} />
-                  <PropertyRow label="Block" value={character.block} />
-                  <PropertyRow label="Script" value={character.script} />
-                  <PropertyRow label="Age" value={character.age} />
-                </dl>
-              </CardContent>
-            </Card>
+      {/* Character Properties */}
+      <section>
+        <h2 className="mb-4 text-lg font-semibold">Properties</h2>
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">General</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3">
+                <PropertyRow label="Category" value={character.category} />
+                <PropertyRow label="Block" value={character.block} />
+                <PropertyRow label="Script" value={character.script} />
+                <PropertyRow label="Age" value={character.age} />
+              </dl>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Bidirectional</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="grid gap-3">
-                  <PropertyRow label="Bidi Class" value={character.bidirectional} />
-                  <PropertyRow
-                    label="Decomposition"
-                    value={character.decomposition || "None"}
-                  />
-                </dl>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Bidirectional</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3">
+                <PropertyRow label="Bidi Class" value={character.bidirectional} />
+                <PropertyRow
+                  label="Decomposition"
+                  value={character.decomposition || "None"}
+                />
+              </dl>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Case Mapping</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="grid gap-3">
-                  <PropertyRow
-                    label="Uppercase"
-                    value={character.uppercase || "N/A"}
-                  />
-                  <PropertyRow
-                    label="Lowercase"
-                    value={character.lowercase || "N/A"}
-                  />
-                  <PropertyRow
-                    label="Titlecase"
-                    value={character.titlecase || "N/A"}
-                  />
-                </dl>
-              </CardContent>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Case Mapping</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3">
+                <PropertyRow
+                  label="Uppercase"
+                  value={character.uppercase || "N/A"}
+                />
+                <PropertyRow
+                  label="Lowercase"
+                  value={character.lowercase || "N/A"}
+                />
+                <PropertyRow
+                  label="Titlecase"
+                  value={character.titlecase || "N/A"}
+                />
+              </dl>
+            </CardContent>
+          </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Encodings</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="grid gap-3">
-                  <PropertyRow
-                    label="UTF-8"
-                    value={getUtf8Encoding(character.character)}
-                    mono
-                  />
-                  <PropertyRow
-                    label="UTF-16"
-                    value={getUtf16Encoding(character.character)}
-                    mono
-                  />
-                  <PropertyRow
-                    label="Decimal"
-                    value={character.character.codePointAt(0)?.toString() || ""}
-                    mono
-                  />
-                </dl>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Encodings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3">
+                <PropertyRow
+                  label="UTF-8"
+                  value={getUtf8Encoding(character.character)}
+                  mono
+                />
+                <PropertyRow
+                  label="UTF-16"
+                  value={getUtf16Encoding(character.character)}
+                  mono
+                />
+                <PropertyRow
+                  label="Decimal"
+                  value={character.character.codePointAt(0)?.toString() || ""}
+                  mono
+                />
+              </dl>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }

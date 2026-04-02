@@ -1,7 +1,6 @@
 import type { Span } from "@opentelemetry/api";
 import type {
   AnyPipelineDefinition,
-  AnyPipelineAnyPipelineRouteDefinitioninition,
   FileContext,
   NormalizedRouteOutputDefinition,
   PipelineLogger,
@@ -25,7 +24,6 @@ import { executeParseResolve } from "./run/route";
 import { buildRouteOutputs, buildRoutesByLayer, createSummary, resolveVersions } from "./run/setup";
 import { createSourceAdapter, isSourceFileContext } from "./run/source";
 import { createPipelineLogger } from "./runtime";
-
 
 export interface RunPipelineOptions {
   pipeline: AnyPipelineDefinition;
