@@ -1,5 +1,5 @@
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { standardParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { standardParser } from "@ucdjs/pipeline-presets";
 import { colorsSource } from "../shared/sources";
 
 // eslint-disable-next-line ts/explicit-function-return-type

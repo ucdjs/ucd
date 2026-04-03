@@ -1,5 +1,5 @@
-import type { FileContext } from "@ucdjs/pipelines-core";
-import { definePipeline } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipeline-core";
+import { definePipeline } from "@ucdjs/pipeline-core";
 import { describe, expect, it } from "vitest";
 import { createPipelineExecutor } from "../src/executor";
 import { createMockFile, createTestRoute, createTestSource } from "./helpers";

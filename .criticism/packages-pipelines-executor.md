@@ -1,4 +1,4 @@
-# Critique: `packages/pipelines/pipeline-executor` (`@ucdjs/pipelines-executor`)
+# Critique: `packages/pipelines/pipeline-executor` (`@ucdjs/pipeline-executor`)
 
 ## Validation
 

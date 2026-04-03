@@ -1,4 +1,4 @@
-# Critique: `packages/pipelines/pipeline-server` (`@ucdjs/pipelines-server`)
+# Critique: `packages/pipelines/pipeline-server` (`@ucdjs/pipeline-server`)
 
 ## Validation
 

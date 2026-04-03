@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-presets",
+  "name": "@ucdjs/pipeline-presets",
   "version": "0.0.1-beta.8",
   "type": "module",
   "author": {
@@ -37,7 +37,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipeline-core": "workspace:*",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import type { PipelineDetails, PipelineInfo } from "#shared/schemas/pipeline";
-import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipelines-core";
-import { getFilterDescription, normalizeRouteOutputs, parseDependency } from "@ucdjs/pipelines-core";
+import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipeline-core";
+import { getFilterDescription, normalizeRouteOutputs, parseDependency } from "@ucdjs/pipeline-core";
 
 export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
   return {

@@ -1,4 +1,4 @@
-import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipeline-core";
 
 const TXT_EXTENSION_RE = /\.txt$/;
 

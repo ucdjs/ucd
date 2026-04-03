@@ -1,4 +1,4 @@
-import type { ParseContext, ParsedRow, PropertyJson } from "@ucdjs/pipelines-core";
+import type { ParseContext, ParsedRow, PropertyJson } from "@ucdjs/pipeline-core";
 import {
   byExt,
   byName,
@@ -6,8 +6,8 @@ import {
   definePipelineRoute,
   filesystemSink,
   pipelineOutputSource,
-} from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+} from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 import { colorsSource, sizesSource } from "../shared/sources";
 
 const outputBaseDir = ".tmp/pipeline-playground-outputs";

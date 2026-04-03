@@ -1,4 +1,4 @@
-import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
+import { EXECUTION_STATUSES } from "@ucdjs/pipeline-executor";
 import z from "zod";
 import { ExecutionGraphViewSchema } from "./graph";
 

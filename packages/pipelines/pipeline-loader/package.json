@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-loader",
+  "name": "@ucdjs/pipeline-loader",
   "version": "0.0.1-beta.8",
   "type": "module",
   "author": {
@@ -40,7 +40,7 @@
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
-    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipeline-core": "workspace:*",
     "nanotar": "catalog:build",
     "rolldown": "catalog:build",
     "tinyglobby": "catalog:build"

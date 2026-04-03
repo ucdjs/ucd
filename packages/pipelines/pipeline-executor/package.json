@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-executor",
+  "name": "@ucdjs/pipeline-executor",
   "version": "0.0.1-beta.9",
   "type": "module",
   "author": {
@@ -41,8 +41,8 @@
   "dependencies": {
     "@opentelemetry/api": "catalog:runtime",
     "@ucdjs/fs-backend": "workspace:*",
-    "@ucdjs/pipelines-core": "workspace:*",
-    "@ucdjs/pipelines-graph": "workspace:*"
+    "@ucdjs/pipeline-core": "workspace:*",
+    "@ucdjs/pipeline-graph": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",

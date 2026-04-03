@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus } from "@ucdjs/pipeline-executor";
 import { Badge } from "@ucdjs-internal/shared-ui/components";
 
 const STATUS_BADGE_STYLES: Record<string, string> = {

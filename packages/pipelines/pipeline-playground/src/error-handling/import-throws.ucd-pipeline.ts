@@ -1,4 +1,4 @@
-import { definePipeline } from "@ucdjs/pipelines-core";
+import { definePipeline } from "@ucdjs/pipeline-core";
 
 const pipeline = definePipeline({
   id: "import-throws",

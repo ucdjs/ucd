@@ -12,9 +12,9 @@ The canonical example is `source-and-route.ucd-pipeline.ts` from the pipeline pl
 ## Start from the simplest shape
 
 ```ts
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { createMemorySource } from "@ucdjs/pipelines-core/sources";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { createMemorySource } from "@ucdjs/pipeline-core/sources";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 
 const colorsSource = createMemorySource({
   id: "colors",

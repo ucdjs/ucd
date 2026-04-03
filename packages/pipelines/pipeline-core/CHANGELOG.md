@@ -1,6 +1,6 @@
-# @ucdjs/pipelines-core
+# @ucdjs/pipeline-core
 
-## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.8...@ucdjs/pipelines-core@0.0.1-beta.8) (2026-03-29)
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.8...@ucdjs/pipeline-core@0.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -14,23 +14,23 @@
 * replace regex-based dash trimming with plain string scan ([2c9bb4cc](https://github.com/ucdjs/ucd/commit/2c9bb4cc4550d05265dc95c8010076448d197889)) (by [@luxass](https://github.com/luxass))
 * address remaining PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([34a6f4ce](https://github.com/ucdjs/ucd/commit/34a6f4ce9d8cc1c086ffdb6d2e0f61ec3f5da99e)) (by [@luxass](https://github.com/luxass))
 * address PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([562a1ddc](https://github.com/ucdjs/ucd/commit/562a1ddcf5a7937f1cf36586ad40eda3d15d86de)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.6...@ucdjs/pipelines-core@0.0.1-beta.7) (2026-02-27)
+## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.6...@ucdjs/pipeline-core@0.0.1-beta.7) (2026-02-27)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.6...@ucdjs/pipelines-core@0.0.1-beta.7)
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.6...@ucdjs/pipeline-core@0.0.1-beta.7)
 
 
-## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.5...@ucdjs/pipelines-core@0.0.1-beta.6) (2026-02-19)
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.5...@ucdjs/pipeline-core@0.0.1-beta.6) (2026-02-19)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.5...@ucdjs/pipelines-core@0.0.1-beta.6)
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.5...@ucdjs/pipeline-core@0.0.1-beta.6)
 
 
-## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.4...@ucdjs/pipelines-core@0.0.1-beta.5) (2026-02-16)
+## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.4...@ucdjs/pipeline-core@0.0.1-beta.5) (2026-02-16)
 
 
 
@@ -40,7 +40,7 @@
 * No significant commits in this release.
 
 
-## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.3...@ucdjs/pipelines-core@0.0.1-beta.4) (2026-02-15)
+## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.3...@ucdjs/pipeline-core@0.0.1-beta.4) (2026-02-15)
 
 
 
@@ -50,7 +50,7 @@
 * No significant commits in this release.
 
 
-## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.2...@ucdjs/pipelines-core@0.0.1-beta.2) (2026-02-15)
+## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.2...@ucdjs/pipeline-core@0.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -65,7 +65,7 @@
 
 ### 🐞 Bug Fixes
 * improve error handling in parseDependency function ([ded8b302](https://github.com/ucdjs/ucd/commit/ded8b30216048a174944d19ad642d675ab24b6af)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1-beta.0...@ucdjs/pipelines-core@0.0.1-beta.1) (2026-02-15)
+## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.0...@ucdjs/pipeline-core@0.0.1-beta.1) (2026-02-15)
 
 
 ### 🚀 Features
@@ -82,7 +82,7 @@
 * improve error handling in parseDependency function ([ded8b302](https://github.com/ucdjs/ucd/commit/ded8b30216048a174944d19ad642d675ab24b6af)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-core@0.0.1...@ucdjs/pipelines-core@0.0.1-beta.0) (2026-02-15)
+## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1...@ucdjs/pipeline-core@0.0.1-beta.0) (2026-02-15)
 
 
 ### 🚀 Features

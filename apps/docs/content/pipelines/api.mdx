@@ -11,24 +11,24 @@ This page is a compact reference for the pipeline authoring surface that exists 
 
 | Package | API | Purpose |
 |---|---|---|
-| `@ucdjs/pipelines-core` | `definePipeline(...)` | Create a pipeline definition with sources, routes, versions, and execution options |
-| `@ucdjs/pipelines-core` | `definePipelineRoute(...)` | Create a route with a filter, parser, optional transforms, resolver, dependencies, and outputs |
-| `@ucdjs/pipelines-core` | `definePipelineSource(...)` | Create a source definition around a backend |
-| `@ucdjs/pipelines-core` | `definePipelineTransform(...)` | Create a reusable transform that runs between parser and resolver |
-| `@ucdjs/pipelines-core` | `pipelineOutputSource(...)` | Consume published outputs from another pipeline |
-| `@ucdjs/pipelines-core` | `filesystemSink(...)` | Persist route outputs to the filesystem |
+| `@ucdjs/pipeline-core` | `definePipeline(...)` | Create a pipeline definition with sources, routes, versions, and execution options |
+| `@ucdjs/pipeline-core` | `definePipelineRoute(...)` | Create a route with a filter, parser, optional transforms, resolver, dependencies, and outputs |
+| `@ucdjs/pipeline-core` | `definePipelineSource(...)` | Create a source definition around a backend |
+| `@ucdjs/pipeline-core` | `definePipelineTransform(...)` | Create a reusable transform that runs between parser and resolver |
+| `@ucdjs/pipeline-core` | `pipelineOutputSource(...)` | Consume published outputs from another pipeline |
+| `@ucdjs/pipeline-core` | `filesystemSink(...)` | Persist route outputs to the filesystem |
 
 ## Source helpers
 
 | Import | Purpose |
 |---|---|
-| `createMemorySource` from `@ucdjs/pipelines-core/sources` | Best option for tests, examples, and small local fixtures |
-| `createHttpSource` from `@ucdjs/pipelines-core/sources` | HTTP-backed source helper for custom backends and controlled file enumeration |
-| `createUnicodeOrgSource` from `@ucdjs/pipelines-core/sources` | Preconfigured HTTP helper targeting `https://www.unicode.org/Public/` |
+| `createMemorySource` from `@ucdjs/pipeline-core/sources` | Best option for tests, examples, and small local fixtures |
+| `createHttpSource` from `@ucdjs/pipeline-core/sources` | HTTP-backed source helper for custom backends and controlled file enumeration |
+| `createUnicodeOrgSource` from `@ucdjs/pipeline-core/sources` | Preconfigured HTTP helper targeting `https://www.unicode.org/Public/` |
 
 ## Filter helpers
 
-Common helpers from `@ucdjs/pipelines-core`:
+Common helpers from `@ucdjs/pipeline-core`:
 
 - `byName(...)`
 - `byDir(...)`
@@ -47,7 +47,7 @@ See [/pipelines/filters](/pipelines/filters) for examples and guidance on when t
 
 ## Built-in transforms
 
-Common helpers from `@ucdjs/pipelines-core/transforms`:
+Common helpers from `@ucdjs/pipeline-core/transforms`:
 
 - `createSortTransform(...)`
 - `createDeduplicateTransform(...)`
@@ -60,7 +60,7 @@ Common helpers from `@ucdjs/pipelines-core/transforms`:
 
 ## Presets
 
-Useful exports from `@ucdjs/pipelines-presets`:
+Useful exports from `@ucdjs/pipeline-presets`:
 
 | Category | Examples |
 |---|---|
@@ -82,10 +82,10 @@ Inside filters and transforms you also receive the logger, file metadata, versio
 
 ## Execution API
 
-Programmatic execution lives in `@ucdjs/pipelines-executor`:
+Programmatic execution lives in `@ucdjs/pipeline-executor`:
 
 ```ts
-import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import { createPipelineExecutor } from "@ucdjs/pipeline-executor";
 
 const executor = createPipelineExecutor({});
 const results = await executor.run([pipeline], {

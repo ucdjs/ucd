@@ -2,8 +2,8 @@ import {
   byGlob,
   byName,
   definePipelineRoute,
-} from "@ucdjs/pipelines-core";
-import { normalizeCodePoints, sortByCodePoint } from "@ucdjs/pipelines-core/transforms";
+} from "@ucdjs/pipeline-core";
+import { normalizeCodePoints, sortByCodePoint } from "@ucdjs/pipeline-core/transforms";
 import { standardParser } from "../parsers/standard";
 import { unicodeDataParser } from "../parsers/unicode-data";
 import { createGroupedResolver } from "../resolvers/grouped";

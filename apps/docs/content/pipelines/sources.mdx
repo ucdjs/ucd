@@ -10,7 +10,7 @@ Sources define where versioned files come from. A pipeline definition lists sour
 A source definition wraps a backend:
 
 ```ts
-import { definePipelineSource } from "@ucdjs/pipelines-core";
+import { definePipelineSource } from "@ucdjs/pipeline-core";
 
 const mySource = definePipelineSource({
   id: "custom-source",
@@ -45,7 +45,7 @@ Source definitions can also add:
 This is the best authoring helper for examples, tests, and playground pipelines:
 
 ```ts
-import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+import { createMemorySource } from "@ucdjs/pipeline-core/sources";
 
 const colorsSource = createMemorySource({
   id: "colors",
@@ -63,7 +63,7 @@ const colorsSource = createMemorySource({
 These helpers create HTTP-backed sources:
 
 ```ts
-import { createUnicodeOrgSource } from "@ucdjs/pipelines-core/sources";
+import { createUnicodeOrgSource } from "@ucdjs/pipeline-core/sources";
 
 const unicodeOrgSource = createUnicodeOrgSource();
 ```
@@ -75,7 +75,7 @@ Use them when HTTP transport is the right abstraction for your environment. They
 Source-level `includes` and `excludes` run before route matching. That makes them useful for broad source shaping, such as limiting a large source to one directory or excluding generated files.
 
 ```ts
-import { byGlob, definePipelineSource } from "@ucdjs/pipelines-core";
+import { byGlob, definePipelineSource } from "@ucdjs/pipeline-core";
 
 const source = definePipelineSource({
   id: "custom-source",
@@ -89,7 +89,7 @@ const source = definePipelineSource({
 `pipelineOutputSource(...)` creates a synthetic source backed by outputs from an upstream pipeline:
 
 ```ts
-import { pipelineOutputSource } from "@ucdjs/pipelines-core";
+import { pipelineOutputSource } from "@ucdjs/pipeline-core";
 
 const publishedColorsInput = pipelineOutputSource({
   pipelineId: "traced-outputs",

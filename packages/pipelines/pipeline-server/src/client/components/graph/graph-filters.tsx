@@ -1,4 +1,4 @@
-import type { PipelineGraphNodeType } from "@ucdjs/pipelines-graph";
+import type { PipelineGraphNodeType } from "@ucdjs/pipeline-graph";
 import { getGraphNodeConfig, graphNodeTypes } from "#shared/lib/graph";
 import { cn } from "@ucdjs-internal/shared-ui";
 

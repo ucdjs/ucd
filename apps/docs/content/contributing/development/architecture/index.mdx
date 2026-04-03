@@ -26,14 +26,14 @@ graph TD
   end
 
   subgraph L4["Layer 4 - Processing"]
-    PC["@ucdjs/pipelines-core"]
-    PL["@ucdjs/pipelines-loader"]
-    PE["@ucdjs/pipelines-executor"]
+    PC["@ucdjs/pipeline-core"]
+    PL["@ucdjs/pipeline-loader"]
+    PE["@ucdjs/pipeline-executor"]
   end
 
   subgraph L5["Layer 5 - Serving & Consumption"]
     CL["@ucdjs/client"]
-    PS["@ucdjs/pipelines-server"]
+    PS["@ucdjs/pipeline-server"]
   end
 
   subgraph L6["Layer 6 - User Interface"]

@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-playground",
+  "name": "@ucdjs/pipeline-playground",
   "version": "0.0.0",
   "type": "module",
   "private": true,
@@ -37,8 +37,8 @@
   },
   "dependencies": {
     "@ucdjs/fs-backend": "workspace:*",
-    "@ucdjs/pipelines-core": "workspace:*",
-    "@ucdjs/pipelines-presets": "workspace:*",
+    "@ucdjs/pipeline-core": "workspace:*",
+    "@ucdjs/pipeline-presets": "workspace:*",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
 import type { Span } from "@opentelemetry/api";
-import type { PipelineLogger } from "@ucdjs/pipelines-core";
+import type { PipelineLogger } from "@ucdjs/pipeline-core";
 import type {
   PipelineLogEntry,
   PipelineLogLevel,

@@ -15,7 +15,7 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
 ## Core Systems
 
 - Storage and filesystem: @ucdjs/ucd-store, @ucdjs/fs-backend, @ucdjs/lockfile
-- Pipelines: @ucdjs/pipelines-* (internal extraction/build path)
+- Pipelines: @ucdjs/pipeline-* (internal extraction/build path)
 - API and Store: apps/api, apps/store
 - CLI and Apps: @ucdjs/cli, apps/web, apps/docs
 - Schemas and generation: @ucdjs/schemas, @ucdjs/schema-gen
@@ -55,12 +55,12 @@ Use cases:
 Pipelines are an internal extraction/build path. They define how data is processed and outputs are produced. Pipelines are split into dedicated packages for core types, loading, execution, graph ordering, presets, and the Pipeline Server UI.
 
 Key packages:
-- @ucdjs/pipelines-core
-- @ucdjs/pipelines-loader
-- @ucdjs/pipelines-executor
-- @ucdjs/pipelines-graph
-- @ucdjs/pipelines-presets
-- @ucdjs/pipelines-server
+- @ucdjs/pipeline-core
+- @ucdjs/pipeline-loader
+- @ucdjs/pipeline-executor
+- @ucdjs/pipeline-graph
+- @ucdjs/pipeline-presets
+- @ucdjs/pipeline-server
 
 Most consumers do not run pipelines directly.
 

@@ -2,19 +2,19 @@ import type {
   FileContext,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
-} from "@ucdjs/pipelines-core";
-import type { ResolvedOutputDestination } from "@ucdjs/pipelines-core/outputs";
-import type { PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
+} from "@ucdjs/pipeline-core";
+import type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
+import type { PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
 import { trace } from "@opentelemetry/api";
 import {
   getOutputProperty,
   resolveOutputDestination,
   serializeOutputValue,
-} from "@ucdjs/pipelines-core/outputs";
+} from "@ucdjs/pipeline-core/outputs";
 
-export type { ResolvedOutputDestination } from "@ucdjs/pipelines-core/outputs";
-export { DEFAULT_FALLBACK_OUTPUTS, getOutputProperty, renderOutputPathTemplate, resolveOutputDestination, serializeOutputValue } from "@ucdjs/pipelines-core/outputs";
+export type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
+export { DEFAULT_FALLBACK_OUTPUTS, getOutputProperty, renderOutputPathTemplate, resolveOutputDestination, serializeOutputValue } from "@ucdjs/pipeline-core/outputs";
 
 export async function writeOutputToSink(
   sink: OutputSinkDefinition | undefined,

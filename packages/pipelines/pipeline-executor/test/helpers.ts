@@ -6,8 +6,8 @@ import type {
   PipelineFilter,
   PipelineRouteDefinition,
   PipelineSourceDefinition,
-} from "@ucdjs/pipelines-core";
-import { definePipelineRoute, definePipelineSource } from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
+import { definePipelineRoute, definePipelineSource } from "@ucdjs/pipeline-core";
 import { vi } from "vitest";
 
 export function createMockFile(name: string, dir: string = "ucd"): FileContext {

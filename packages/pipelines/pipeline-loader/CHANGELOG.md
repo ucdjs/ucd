@@ -1,6 +1,6 @@
-# @ucdjs/pipelines-loader
+# @ucdjs/pipeline-loader
 
-## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.8...@ucdjs/pipelines-loader@0.0.1-beta.8) (2026-03-29)
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.8...@ucdjs/pipeline-loader@0.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -9,7 +9,7 @@
 ### 🐞 Bug Fixes
 * normalize file path in test assertion ([acb4f52c](https://github.com/ucdjs/ucd/commit/acb4f52c5750ba1b444a0b8d2c6c2076e8fb3009)) (by [@luxass](https://github.com/luxass))
 * remove internal entry from build config and exports ([0f3de293](https://github.com/ucdjs/ucd/commit/0f3de2939243e0ff60abae26972c64760913b876)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.6...@ucdjs/pipelines-loader@0.0.1-beta.7) (2026-02-27)
+## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.6...@ucdjs/pipeline-loader@0.0.1-beta.7) (2026-02-27)
 
 
 ### 🚀 Features
@@ -19,25 +19,15 @@
 * prevent path traversal in GitHub and GitLab repo downloads ([c16492f3](https://github.com/ucdjs/ucd/commit/c16492f3771e8ed2098477ebeca7b852ae8cfa9c)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.5...@ucdjs/pipelines-loader@0.0.1-beta.6) (2026-02-19)
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.5...@ucdjs/pipeline-loader@0.0.1-beta.6) (2026-02-19)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.5...@ucdjs/pipelines-loader@0.0.1-beta.6)
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.5...@ucdjs/pipeline-loader@0.0.1-beta.6)
 
 
-## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.4...@ucdjs/pipelines-loader@0.0.1-beta.5) (2026-02-16)
-
-
-
-
-### Notes
-
-* No significant commits in this release.
-
-
-## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.3...@ucdjs/pipelines-loader@0.0.1-beta.4) (2026-02-15)
+## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.4...@ucdjs/pipeline-loader@0.0.1-beta.5) (2026-02-16)
 
 
 
@@ -47,7 +37,17 @@
 * No significant commits in this release.
 
 
-## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.2...@ucdjs/pipelines-loader@0.0.1-beta.2) (2026-02-15)
+## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.3...@ucdjs/pipeline-loader@0.0.1-beta.4) (2026-02-15)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
+## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.2...@ucdjs/pipeline-loader@0.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -60,7 +60,7 @@
 ### 🐞 Bug Fixes
 * use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
 * update URL in test for rejecting full URL import specifiers ([362a359c](https://github.com/ucdjs/ucd/commit/362a359cb741fe32ac292023c559fc2c3f851143)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.0...@ucdjs/pipelines-loader@0.0.1-beta.1) (2026-02-15)
+## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.0...@ucdjs/pipeline-loader@0.0.1-beta.1) (2026-02-15)
 
 
 ### 🚀 Features
@@ -75,7 +75,7 @@
 * update URL in test for rejecting full URL import specifiers ([362a359c](https://github.com/ucdjs/ucd/commit/362a359cb741fe32ac292023c559fc2c3f851143)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1...@ucdjs/pipelines-loader@0.0.1-beta.0) (2026-02-15)
+## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1...@ucdjs/pipeline-loader@0.0.1-beta.0) (2026-02-15)
 
 
 ### 🚀 Features

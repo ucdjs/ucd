@@ -1,6 +1,6 @@
-import type { ParsedRow, PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
-import { byName, definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
-import { standardParser } from "@ucdjs/pipelines-presets";
+import type { ParsedRow, PropertyJson, ResolvedEntry } from "@ucdjs/pipeline-core";
+import { byName, definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipeline-core";
+import { standardParser } from "@ucdjs/pipeline-presets";
 import { planetsSource } from "../shared/sources";
 
 const loggingTransform = definePipelineTransform<ParsedRow, ParsedRow>({

@@ -1,7 +1,7 @@
-import type { ParsedRow } from "@ucdjs/pipelines-core";
-import { byName, definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipelines-core";
-import { createDeduplicateTransform, createSortTransform } from "@ucdjs/pipelines-core/transforms";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+import type { ParsedRow } from "@ucdjs/pipeline-core";
+import { byName, definePipeline, definePipelineRoute, definePipelineTransform } from "@ucdjs/pipeline-core";
+import { createDeduplicateTransform, createSortTransform } from "@ucdjs/pipeline-core/transforms";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 import { colorsSource, sizesSource } from "../shared/sources";
 
 /**

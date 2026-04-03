@@ -8,7 +8,7 @@ import { Callout } from 'fumadocs-ui/components/callout';
 
 # Running Pipelines
 
-Pipelines can be executed either through the CLI or programmatically with `@ucdjs/pipelines-executor`.
+Pipelines can be executed either through the CLI or programmatically with `@ucdjs/pipeline-executor`.
 
 <Tabs items={["CLI", "Programmatic"]}>
   <Tab value="CLI">
@@ -26,10 +26,10 @@ Pipelines can be executed either through the CLI or programmatically with `@ucdj
     ```
   </Tab>
   <Tab value="Programmatic">
-    Programmatic execution lives in `@ucdjs/pipelines-executor`.
+    Programmatic execution lives in `@ucdjs/pipeline-executor`.
 
     ```ts
-    import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+    import { createPipelineExecutor } from "@ucdjs/pipeline-executor";
 
     const executor = createPipelineExecutor({
       onLog(entry) {

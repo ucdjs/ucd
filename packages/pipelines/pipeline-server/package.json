@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-server",
+  "name": "@ucdjs/pipeline-server",
   "version": "0.0.1-beta.10",
   "type": "module",
   "author": {
@@ -86,10 +86,10 @@
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/moonbeam": "workspace:*",
-    "@ucdjs/pipelines-core": "workspace:*",
-    "@ucdjs/pipelines-executor": "workspace:*",
-    "@ucdjs/pipelines-graph": "workspace:*",
-    "@ucdjs/pipelines-loader": "workspace:*",
+    "@ucdjs/pipeline-core": "workspace:*",
+    "@ucdjs/pipeline-executor": "workspace:*",
+    "@ucdjs/pipeline-graph": "workspace:*",
+    "@ucdjs/pipeline-loader": "workspace:*",
     "@vitejs/plugin-react": "catalog:build",
     "@xyflow/react": "catalog:frontend",
     "chokidar": "catalog:build",

@@ -1,5 +1,5 @@
 import type { OverviewResponse } from "#shared/schemas/overview";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus } from "@ucdjs/pipeline-executor";
 import { schema } from "#server/db";
 import { listExecutionIdsWithTraces } from "#server/db/execution-traces";
 import { and, desc, eq, gte } from "drizzle-orm";

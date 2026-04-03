@@ -2,9 +2,9 @@ import type {
   AnyPipelineDefinition,
   AnyPipelineRouteDefinition,
   NormalizedRouteOutputDefinition,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import type { PipelineSummary } from "../types";
-import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipelines-core";
+import { getExecutionLayers, normalizeRouteOutputs } from "@ucdjs/pipeline-core";
 
 export type { PipelineExecutorRunOptions } from "../types";
 

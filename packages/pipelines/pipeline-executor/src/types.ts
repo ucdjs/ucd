@@ -1,9 +1,9 @@
-import type { AnyPipelineDefinition, PipelineLogLevel } from "@ucdjs/pipelines-core";
-import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
+import type { AnyPipelineDefinition, PipelineLogLevel } from "@ucdjs/pipeline-core";
+import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
 import type { CacheStore } from "./cache";
 import type { PipelineExecutionRuntime } from "./runtime";
 
-export type { PipelineLogLevel } from "@ucdjs/pipelines-core";
+export type { PipelineLogLevel } from "@ucdjs/pipeline-core";
 
 export interface PipelineSummary {
   versions: string[];

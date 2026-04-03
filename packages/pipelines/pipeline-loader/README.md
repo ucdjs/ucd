@@ -1,4 +1,4 @@
-# @ucdjs/pipelines-loader
+# @ucdjs/pipeline-loader
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -10,8 +10,8 @@ Discovers, bundles, and loads pipeline definition files for the UCD pipeline sys
 
 ## What It Does
 
-`@ucdjs/pipelines-loader` takes a local path or remote repository reference and turns it into
-loaded `PipelineDefinition` objects that `@ucdjs/pipelines-executor` can run.
+`@ucdjs/pipeline-loader` takes a local path or remote repository reference and turns it into
+loaded `PipelineDefinition` objects that `@ucdjs/pipeline-executor` can run.
 
 It is responsible for:
 
@@ -21,7 +21,7 @@ It is responsible for:
 - bundling TypeScript pipeline files into ESM using Rolldown
 - importing the bundled code via `data:` URLs and extracting pipeline definitions
 
-It does not execute pipelines. Execution is handled by `@ucdjs/pipelines-executor`.
+It does not execute pipelines. Execution is handled by `@ucdjs/pipeline-executor`.
 
 ## Locator Format
 
@@ -51,7 +51,7 @@ import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
   parsePipelineLocator,
-} from "@ucdjs/pipelines-loader";
+} from "@ucdjs/pipeline-loader";
 
 const locator = parsePipelineLocator("./my-pipelines");
 const { repositoryPath, issues } = await materializePipelineLocator(locator);
@@ -72,7 +72,7 @@ import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
   parsePipelineLocator,
-} from "@ucdjs/pipelines-loader";
+} from "@ucdjs/pipeline-loader";
 
 const locator = parsePipelineLocator("github://owner/repo?ref=main");
 
@@ -102,7 +102,7 @@ A `.ucd-cache.json` marker tracks the commit SHA and sync timestamp. Subsequent 
 download when the cached SHA matches the remote.
 
 ```ts
-import { checkRemoteLocatorUpdates, clearRemoteSourceCache, listCachedSources } from "@ucdjs/pipelines-loader";
+import { checkRemoteLocatorUpdates, clearRemoteSourceCache, listCachedSources } from "@ucdjs/pipeline-loader";
 
 // List all cached repositories
 const cached = await listCachedSources();
@@ -136,14 +136,14 @@ The package provides two entry points:
 ## Installation
 
 ```bash
-npm install @ucdjs/pipelines-loader
+npm install @ucdjs/pipeline-loader
 ```
 
 ## License
 
 Published under [MIT License](./LICENSE).
 
-[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipelines-loader?style=flat&colorA=18181B&colorB=4169E1
-[npm-version-href]: https://npmjs.com/package/@ucdjs/pipelines-loader
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipelines-loader?style=flat&colorA=18181B&colorB=4169E1
-[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipelines-loader
+[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipeline-loader?style=flat&colorA=18181B&colorB=4169E1
+[npm-version-href]: https://npmjs.com/package/@ucdjs/pipeline-loader
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipeline-loader?style=flat&colorA=18181B&colorB=4169E1
+[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipeline-loader

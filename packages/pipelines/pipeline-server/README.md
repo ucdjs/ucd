@@ -1,4 +1,4 @@
-# @ucdjs/pipelines-server
+# @ucdjs/pipeline-server
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -8,7 +8,7 @@ A pipeline development server for the UCD project. Provides a web UI and HTTP AP
 ## Installation
 
 ```bash
-npm install @ucdjs/pipelines-server
+npm install @ucdjs/pipeline-server
 ```
 
 ## Usage
@@ -16,7 +16,7 @@ npm install @ucdjs/pipelines-server
 ### Start the server
 
 ```ts
-import { startServer } from "@ucdjs/pipelines-server";
+import { startServer } from "@ucdjs/pipeline-server";
 
 await startServer({
   port: 3030,
@@ -29,7 +29,7 @@ await startServer({
 ### Embed in an existing H3 app
 
 ```ts
-import { createApp, createDatabase, runMigrations } from "@ucdjs/pipelines-server";
+import { createApp, createDatabase, runMigrations } from "@ucdjs/pipeline-server";
 
 const db = createDatabase();
 await runMigrations(db);
@@ -50,7 +50,7 @@ const app = createApp({
 
 Published under [MIT License](./LICENSE).
 
-[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipelines-server?style=flat&colorA=18181B&colorB=4169E1
-[npm-version-href]: https://npmjs.com/package/@ucdjs/pipelines-server
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipelines-server?style=flat&colorA=18181B&colorB=4169E1
-[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipelines-server
+[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipeline-server?style=flat&colorA=18181B&colorB=4169E1
+[npm-version-href]: https://npmjs.com/package/@ucdjs/pipeline-server
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipeline-server?style=flat&colorA=18181B&colorB=4169E1
+[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipeline-server

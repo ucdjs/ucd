@@ -785,10 +785,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@ucdjs/pipelines-loader':
+      '@ucdjs/pipeline-loader':
         specifier: workspace:*
         version: link:../pipelines/pipeline-loader
-      '@ucdjs/pipelines-server':
+      '@ucdjs/pipeline-server':
         specifier: workspace:*
         version: link:../pipelines/pipeline-server
     devDependencies:
@@ -825,7 +825,7 @@ importers:
       '@ucdjs/lockfile':
         specifier: workspace:*
         version: link:../lockfile
-      '@ucdjs/pipelines-executor':
+      '@ucdjs/pipeline-executor':
         specifier: workspace:*
         version: link:../pipelines/pipeline-executor
       '@ucdjs/schema-gen':
@@ -1122,10 +1122,10 @@ importers:
       '@ucdjs/fs-backend':
         specifier: workspace:*
         version: link:../../fs-backend
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
-      '@ucdjs/pipelines-graph':
+      '@ucdjs/pipeline-graph':
         specifier: workspace:*
         version: link:../pipeline-graph
     devDependencies:
@@ -1156,7 +1156,7 @@ importers:
 
   packages/pipelines/pipeline-graph:
     dependencies:
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
     devDependencies:
@@ -1190,7 +1190,7 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../../env
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
       nanotar:
@@ -1233,10 +1233,10 @@ importers:
       '@ucdjs/fs-backend':
         specifier: workspace:*
         version: link:../../fs-backend
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
-      '@ucdjs/pipelines-presets':
+      '@ucdjs/pipeline-presets':
         specifier: workspace:*
         version: link:../pipeline-presets
       zod:
@@ -1261,7 +1261,7 @@ importers:
 
   packages/pipelines/pipeline-presets:
     dependencies:
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
       zod:
@@ -1382,16 +1382,16 @@ importers:
       '@ucdjs/moonbeam':
         specifier: workspace:*
         version: link:../../../tooling/moonbeam
-      '@ucdjs/pipelines-core':
+      '@ucdjs/pipeline-core':
         specifier: workspace:*
         version: link:../pipeline-core
-      '@ucdjs/pipelines-executor':
+      '@ucdjs/pipeline-executor':
         specifier: workspace:*
         version: link:../pipeline-executor
-      '@ucdjs/pipelines-graph':
+      '@ucdjs/pipeline-graph':
         specifier: workspace:*
         version: link:../pipeline-graph
-      '@ucdjs/pipelines-loader':
+      '@ucdjs/pipeline-loader':
         specifier: workspace:*
         version: link:../pipeline-loader
       '@vitejs/plugin-react':

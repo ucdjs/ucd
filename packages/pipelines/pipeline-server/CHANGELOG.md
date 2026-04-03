@@ -1,20 +1,20 @@
-# @ucdjs/pipelines-server
+# @ucdjs/pipeline-server
 
-## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.9...@ucdjs/pipelines-server@0.0.1-beta.10) (2026-03-30)
+## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.9...@ucdjs/pipeline-server@0.0.1-beta.10) (2026-03-30)
 
 
 ### 🚀 Features
 * reorganize dependencies and update tsconfig ([77e0a979](https://github.com/ucdjs/ucd/commit/77e0a979d587058b12d25919ce24a6b446d8124d)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.9) (2026-03-30)
+## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.8...@ucdjs/pipeline-server@0.0.1-beta.9) (2026-03-30)
 
 
 ### 🐞 Bug Fixes
 * reduce unpacked dependency size by ~50MB ([cac75f1c](https://github.com/ucdjs/ucd/commit/cac75f1c6ab43ace69e841bd0dac539000d6c7d8)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.8...@ucdjs/pipelines-server@0.0.1-beta.8) (2026-03-29)
+## [0.0.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.8...@ucdjs/pipeline-server@0.0.1-beta.8) (2026-03-29)
 
 
 ### 🚀 Features
@@ -74,15 +74,15 @@
 * refresh execution views and summaries ([c62717a4](https://github.com/ucdjs/ucd/commit/c62717a4503193b309b346f4cad92f60d1be9dc3)) (by [@luxass](https://github.com/luxass))
 * fill pipeline overview sidebar ([3781d015](https://github.com/ucdjs/ucd/commit/3781d01579eb779c673822d52d21374e704a7178)) (by [@luxass](https://github.com/luxass))
 * show source labels in navigation ([36d9b08b](https://github.com/ucdjs/ucd/commit/36d9b08bdcfc317e8089bd17dcfde542b3c4b968)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.6...@ucdjs/pipelines-server@0.0.1-beta.7) (2026-02-27)
+## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.6...@ucdjs/pipeline-server@0.0.1-beta.7) (2026-02-27)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.6...@ucdjs/pipelines-server@0.0.1-beta.7)
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.6...@ucdjs/pipeline-server@0.0.1-beta.7)
 
 
-## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.5...@ucdjs/pipelines-server@0.0.1-beta.6) (2026-02-19)
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.5...@ucdjs/pipeline-server@0.0.1-beta.6) (2026-02-19)
 
 
 ### 🚀 Features
@@ -101,7 +101,7 @@
 * copy migrations folder to dist ([06dc7938](https://github.com/ucdjs/ucd/commit/06dc7938da4dfaf1d1cf22c452e496c7b14c37a0)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.4...@ucdjs/pipelines-server@0.0.1-beta.5) (2026-02-16)
+## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.4...@ucdjs/pipeline-server@0.0.1-beta.5) (2026-02-16)
 
 
 
@@ -109,7 +109,7 @@
 * add TypeScript types to exports in package.json ([395eb0bc](https://github.com/ucdjs/ucd/commit/395eb0bcc5581e5889e6c8780ee7220311983d4b)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.3...@ucdjs/pipelines-server@0.0.1-beta.4) (2026-02-15)
+## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.3...@ucdjs/pipeline-server@0.0.1-beta.4) (2026-02-15)
 
 
 
@@ -119,7 +119,7 @@
 * No significant commits in this release.
 
 
-## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.2...@ucdjs/pipelines-server@0.0.1-beta.2) (2026-02-15)
+## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.2...@ucdjs/pipeline-server@0.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -134,7 +134,7 @@
 
 ### 🐞 Bug Fixes
 * use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
-## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.0...@ucdjs/pipelines-server@0.0.1-beta.1) (2026-02-15)
+## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.0...@ucdjs/pipeline-server@0.0.1-beta.1) (2026-02-15)
 
 
 ### 🚀 Features
@@ -151,7 +151,7 @@
 * use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
 
 
-## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1...@ucdjs/pipelines-server@0.0.1-beta.0) (2026-02-15)
+## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1...@ucdjs/pipeline-server@0.0.1-beta.0) (2026-02-15)
 
 
 ### 🚀 Features

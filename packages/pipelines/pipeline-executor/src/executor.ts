@@ -1,4 +1,4 @@
-import type { AnyPipelineDefinition } from "@ucdjs/pipelines-core";
+import type { AnyPipelineDefinition } from "@ucdjs/pipeline-core";
 import type {
   PipelineExecutionResult,
   PipelineExecutor,

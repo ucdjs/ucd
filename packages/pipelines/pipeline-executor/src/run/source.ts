@@ -6,10 +6,10 @@ import type {
   PipelineLogger,
   PipelineOutputSourceDefinition,
   SourceFileContext,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import type { PipelineExecutionResult } from "../types";
-import { isPipelineOutputSource, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
-import { serializeOutputValue } from "@ucdjs/pipelines-core/outputs";
+import { isPipelineOutputSource, resolveMultipleSourceFiles } from "@ucdjs/pipeline-core";
+import { serializeOutputValue } from "@ucdjs/pipeline-core/outputs";
 
 const LINE_SPLIT_RE = /\r?\n/;
 
