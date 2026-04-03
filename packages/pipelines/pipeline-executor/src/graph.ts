@@ -1,5 +1,5 @@
-import type { PipelineGraph } from "@ucdjs/pipelines-graph";
 import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type { PipelineGraph } from "@ucdjs/pipelines-graph";
 import { PipelineGraphBuilder } from "@ucdjs/pipelines-graph";
 
 export function buildExecutionGraphFromTraces(

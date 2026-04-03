@@ -17,7 +17,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
   const attributes = node?.raw.attributes
     ? Object.entries(node.raw.attributes as Record<string, unknown>)
     : [];
-  // eslint-disable-next-line react/purity -- React Compiler handles memoization
+
   const absoluteStart = node?.raw.startTimestamp != null
     ? formatTimestamp(new Date(node.raw.startTimestamp).toISOString())
     : "";
