@@ -1,5 +1,5 @@
 import type { CLIArguments } from "../../../cli-utils";
-import { ensureRemoteLocator, parseRemoteSourceUrl } from "@ucdjs/pipelines-loader";
+import { ensureRemoteLocator, parseRemoteSourceUrl } from "@ucdjs/pipeline-loader";
 import { printHelp } from "../../../cli-utils";
 import { CLIError } from "../../../errors";
 import { blankLine, dim, green, output, yellow } from "../../../output";

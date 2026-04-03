@@ -10,15 +10,15 @@ The pipelines system is split into 9 packages:
 
 | Package | Purpose |
 |---------|---------|
-| `@ucdjs/pipelines-core` | Core types, definitions, filters, DAG execution |
-| `@ucdjs/pipelines-executor` | Pipeline execution engine with caching |
-| `@ucdjs/pipelines-loader` | Loading and resolving pipeline definitions |
-| `@ucdjs/pipelines-artifacts` | Artifact storage and retrieval |
-| `@ucdjs/pipelines-graph` | Execution graph visualization |
-| `@ucdjs/pipelines-presets` | Pre-built parsers, resolvers, and routes |
-| `@ucdjs/pipelines-ui` | React hooks and UI components |
-| `@ucdjs/pipelines-server` | Development server with UI |
-| `@ucdjs/pipelines-playground` | Interactive playground |
+| `@ucdjs/pipeline-core` | Core types, definitions, filters, DAG execution |
+| `@ucdjs/pipeline-executor` | Pipeline execution engine with caching |
+| `@ucdjs/pipeline-loader` | Loading and resolving pipeline definitions |
+| `@ucdjs/pipeline-artifacts` | Artifact storage and retrieval |
+| `@ucdjs/pipeline-graph` | Execution graph visualization |
+| `@ucdjs/pipeline-presets` | Pre-built parsers, resolvers, and routes |
+| `@ucdjs/pipeline-ui` | React hooks and UI components |
+| `@ucdjs/pipeline-server` | Development server with UI |
+| `@ucdjs/pipeline-playground` | Interactive playground |
 
 ## Core Concepts
 
@@ -31,7 +31,7 @@ A pipeline is a declarative configuration that defines:
 - **Versions** - Which Unicode versions to process
 
 ```typescript
-import { definePipeline, byExt } from '@ucdjs/pipelines-core';
+import { definePipeline, byExt } from '@ucdjs/pipeline-core';
 
 const pipeline = definePipeline({
   id: 'my-pipeline',
@@ -51,7 +51,7 @@ const pipeline = definePipeline({
 Routes match files and define how to process them:
 
 ```typescript
-import { definePipelineRoute, byName } from '@ucdjs/pipelines-core';
+import { definePipelineRoute, byName } from '@ucdjs/pipeline-core';
 import { z } from 'zod';
 
 const myRoute = definePipelineRoute({
@@ -83,7 +83,7 @@ const myRoute = definePipelineRoute({
 Sources provide files to pipelines via backends:
 
 ```typescript
-import { createMemorySource, createHttpSource } from '@ucdjs/pipelines-core';
+import { createMemorySource, createHttpSource } from '@ucdjs/pipeline-core';
 
 // Memory source (for testing)
 const memorySource = createMemorySource({
@@ -153,7 +153,7 @@ const route = definePipelineRoute({
 Routes can depend on other routes or their artifacts:
 
 ```typescript
-import { createRouteDependency, createArtifactDependency } from '@ucdjs/pipelines-core';
+import { createRouteDependency, createArtifactDependency } from '@ucdjs/pipeline-core';
 
 const route = definePipelineRoute({
   id: 'dependent',
@@ -184,7 +184,7 @@ Pipelines use DAG-based execution:
 5. Dependent routes wait for dependencies
 
 ```typescript
-import { buildDAG, getExecutionLayers } from '@ucdjs/pipelines-core';
+import { buildDAG, getExecutionLayers } from '@ucdjs/pipeline-core';
 
 const result = buildDAG(routes);
 if (!result.valid) {
@@ -213,7 +213,7 @@ import {
   not,         // Negate filter
   always,      // Match all files
   never,       // Match no files
-} from '@ucdjs/pipelines-core';
+} from '@ucdjs/pipeline-core';
 
 // Example filters
 byName('UnicodeData.txt');
@@ -228,7 +228,7 @@ and(byExt('.txt'), not(byName('ReadMe.txt')));
 Transforms process parsed rows in a chain:
 
 ```typescript
-import { definePipelineTransform, applyTransforms } from '@ucdjs/pipelines-core';
+import { definePipelineTransform, applyTransforms } from '@ucdjs/pipeline-core';
 
 const filterEmpty = definePipelineTransform({
   id: 'filter-empty',
@@ -266,7 +266,7 @@ const route = definePipelineRoute({
 ### Creating an Executor
 
 ```typescript
-import { createPipelineExecutor, createMemoryCacheStore } from '@ucdjs/pipelines-executor';
+import { createPipelineExecutor, createMemoryCacheStore } from '@ucdjs/pipeline-executor';
 
 const executor = createPipelineExecutor({
   cacheStore: createMemoryCacheStore(),
@@ -313,7 +313,7 @@ type PipelineEventType =
 The executor caches artifacts by hash:
 
 ```typescript
-import { createMemoryCacheStore, defaultHashFn } from '@ucdjs/pipelines-executor';
+import { createMemoryCacheStore, defaultHashFn } from '@ucdjs/pipeline-executor';
 
 const cache = createMemoryCacheStore({
   hashFn: defaultHashFn,   // Default: SHA-256 of inputs
@@ -328,7 +328,7 @@ const cache = createMemoryCacheStore({
 
 ## Presets
 
-The `@ucdjs/pipelines-presets` package provides pre-built components:
+The `@ucdjs/pipeline-presets` package provides pre-built components:
 
 ### Parsers
 
@@ -340,7 +340,7 @@ import {
   unicodeDataParser,        // Parses UnicodeData.txt format
   createStandardParser,     // Factory for standard parser
   createMultiPropertyParser // Factory for multi-property parser
-} from '@ucdjs/pipelines-presets';
+} from '@ucdjs/pipeline-presets';
 ```
 
 ### Resolvers
@@ -350,7 +350,7 @@ import {
   propertyJsonResolver,      // Resolves to PropertyJson[]
   createPropertyJsonResolver, // Factory with options
   createGroupedResolver       // Groups by property
-} from '@ucdjs/pipelines-presets';
+} from '@ucdjs/pipeline-presets';
 ```
 
 ### Routes
@@ -368,7 +368,7 @@ import {
   propListRoute,
   derivedCorePropertiesRoute,
   emojiDataRoute,
-} from '@ucdjs/pipelines-presets';
+} from '@ucdjs/pipeline-presets';
 ```
 
 ### Pipeline Factories
@@ -378,7 +378,7 @@ import {
   createBasicPipeline,    // Core UCD files only
   createEmojiPipeline,    // Emoji files
   createFullPipeline      // All UCD files
-} from '@ucdjs/pipelines-presets';
+} from '@ucdjs/pipeline-presets';
 
 const pipeline = createBasicPipeline({
   id: 'my-basic',
@@ -396,13 +396,13 @@ import {
   definePipelineRoute, 
   byName,
   createHttpSource 
-} from '@ucdjs/pipelines-core';
+} from '@ucdjs/pipeline-core';
 import { 
   standardParser,
   createPropertyJsonResolver,
   coreRoutes 
-} from '@ucdjs/pipelines-presets';
-import { createPipelineExecutor, createMemoryCacheStore } from '@ucdjs/pipelines-executor';
+} from '@ucdjs/pipeline-presets';
+import { createPipelineExecutor, createMemoryCacheStore } from '@ucdjs/pipeline-executor';
 import { z } from 'zod';
 
 // Define source
@@ -453,7 +453,7 @@ console.log(results[0].summary);
 ## Testing Pipelines
 
 ```typescript
-import { createMemorySource } from '@ucdjs/pipelines-core';
+import { createMemorySource } from '@ucdjs/pipeline-core';
 
 const testSource = createMemorySource({
   id: 'test',
@@ -476,7 +476,7 @@ expect(result[0].status).toBe('success');
 
 ## Best Practices
 
-1. **Use presets** - Start with `@ucdjs/pipelines-presets` before writing custom components
+1. **Use presets** - Start with `@ucdjs/pipeline-presets` before writing custom components
 2. **Define schemas** - Always use Zod schemas for artifacts to ensure type safety
 3. **Handle errors** - Check `result.errors` after execution
 4. **Enable caching** - Use cache stores for expensive operations

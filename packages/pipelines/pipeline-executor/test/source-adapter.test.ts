@@ -1,5 +1,5 @@
 import type { PipelineExecutionResult } from "../src";
-import { definePipeline, pipelineOutputSource } from "@ucdjs/pipelines-core";
+import { definePipeline, pipelineOutputSource } from "@ucdjs/pipeline-core";
 import { describe, expect, it } from "vitest";
 import { createSourceAdapter } from "../src/run/source";
 import { createMockFile, createTestSource } from "./helpers";

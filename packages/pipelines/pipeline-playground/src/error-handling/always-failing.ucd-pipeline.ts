@@ -1,4 +1,4 @@
-import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
+import { definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
 
 export const alwaysFailingPipeline = definePipeline({
   id: "always-failing",

@@ -6,9 +6,9 @@ import type {
   PipelineLogger,
   PipelineTransformDefinition,
   ResolveContext,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import type { ExecutionContext } from "./context";
-import { applyTransforms } from "@ucdjs/pipelines-core";
+import { applyTransforms } from "@ucdjs/pipeline-core";
 import { buildParseContext, buildResolveContext, buildTransformContext } from "./context";
 
 export interface ExecuteParseResolveOptions {

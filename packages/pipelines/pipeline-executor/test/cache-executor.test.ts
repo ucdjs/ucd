@@ -1,4 +1,4 @@
-import { definePipeline } from "@ucdjs/pipelines-core";
+import { definePipeline } from "@ucdjs/pipeline-core";
 import { describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";

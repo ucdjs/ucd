@@ -4,7 +4,7 @@ import type {
   PipelineLogger,
   ResolveContext,
   TransformContext,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source";
 import { trace } from "@opentelemetry/api";

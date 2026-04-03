@@ -1,6 +1,6 @@
 import type { Database } from "#server/db";
 import type { ExecutionLogPayload as NullableLogPayload } from "#shared/schemas/execution";
-import type { PipelineLogEntry, PipelineLogLevel, PipelineLogSource } from "@ucdjs/pipelines-executor";
+import type { PipelineLogEntry, PipelineLogLevel, PipelineLogSource } from "@ucdjs/pipeline-executor";
 import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";

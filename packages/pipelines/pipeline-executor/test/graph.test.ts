@@ -1,4 +1,4 @@
-import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type { PipelineTraceRecord } from "@ucdjs/pipeline-core/tracing";
 import { describe, expect, it } from "vitest";
 import { buildExecutionGraphFromTraces } from "../src/graph";
 

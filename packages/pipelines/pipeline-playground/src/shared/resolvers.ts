@@ -1,4 +1,4 @@
-import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipeline-core";
 
 /**
  * Groups entries by the first character of their value.

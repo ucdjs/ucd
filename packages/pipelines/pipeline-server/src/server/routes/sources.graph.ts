@@ -1,7 +1,7 @@
 import type { ExecutionGraphResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { buildExecutionGraphView } from "#shared/lib/graph";
-import { buildExecutionGraphFromTraces } from "@ucdjs/pipelines-executor/graph";
+import { buildExecutionGraphFromTraces } from "@ucdjs/pipeline-executor/graph";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError } from "h3";
 

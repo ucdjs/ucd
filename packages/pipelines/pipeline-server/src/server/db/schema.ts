@@ -2,13 +2,13 @@ import type { ExecutionLogPayload } from "#shared/schemas/execution";
 import type {
   PipelineTraceKind,
   PipelineTraceRecord,
-} from "@ucdjs/pipelines-core/tracing";
+} from "@ucdjs/pipeline-core/tracing";
 import type {
   ExecutionStatus,
   PipelineLogLevel,
   PipelineLogSource,
   PipelineSummary,
-} from "@ucdjs/pipelines-executor";
+} from "@ucdjs/pipeline-executor";
 import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const workspaces = sqliteTable("workspaces", {

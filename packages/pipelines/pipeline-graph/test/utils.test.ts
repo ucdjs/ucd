@@ -1,7 +1,7 @@
 import {
   buildDAG,
   definePipeline,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import { describe, expect, it } from "vitest";
 import { createMockRoute } from "../../pipeline-core/test/_test-utils";
 import {

@@ -1,7 +1,7 @@
 import type {
   DAG,
   PipelineDefinition,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import type { PipelineGraph } from "./types";
 import { PipelineGraphBuilder } from "./builder";
 

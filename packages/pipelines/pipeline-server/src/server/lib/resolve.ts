@@ -1,10 +1,10 @@
 import type { PipelineSource } from "#server/app";
-import type { LoadedPipelineFile, PipelineLoaderIssue } from "@ucdjs/pipelines-loader";
+import type { LoadedPipelineFile, PipelineLoaderIssue } from "@ucdjs/pipeline-loader";
 import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
-} from "@ucdjs/pipelines-loader";
-import { discoverPipelineFiles } from "@ucdjs/pipelines-loader/discover";
+} from "@ucdjs/pipeline-loader";
+import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { fileIdFromPath, fileLabelFromPath } from "./ids";
 
 type ResolvedSourceFile = LoadedPipelineFile & {

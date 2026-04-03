@@ -1,5 +1,5 @@
-import type { ParsedRow, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
-import { always, byExt, definePipeline } from "@ucdjs/pipelines-core";
+import type { ParsedRow, ResolveContext, ResolvedEntry } from "@ucdjs/pipeline-core";
+import { always, byExt, definePipeline } from "@ucdjs/pipeline-core";
 import { emojiSource, ucdSource } from "../shared/sources";
 import {
   auxiliaryRoute,

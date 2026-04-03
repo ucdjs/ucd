@@ -1,6 +1,6 @@
-import type { ResolvedEntry } from "@ucdjs/pipelines-core";
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { standardParser } from "@ucdjs/pipelines-presets";
+import type { ResolvedEntry } from "@ucdjs/pipeline-core";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { standardParser } from "@ucdjs/pipeline-presets";
 import { colorsSource, planetsSource, sizesSource } from "../shared/sources";
 
 /**

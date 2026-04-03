@@ -6,7 +6,7 @@ description: Guide to the UCD.js pipeline system, from core concepts to debuggin
 import { Callout } from 'fumadocs-ui/components/callout';
 import { Cards, Card } from 'fumadocs-ui/components/card';
 
-The `@ucdjs/pipelines-*` packages provide the internal extraction and data-production path for UCD.js. A pipeline definition describes:
+The `@ucdjs/pipeline-*` packages provide the internal extraction and data-production path for UCD.js. A pipeline definition describes:
 
 - which versions to process
 - which sources provide files
@@ -14,7 +14,7 @@ The `@ucdjs/pipelines-*` packages provide the internal extraction and data-produ
 - which transforms and dependencies should shape execution order
 - which outputs should be emitted or published
 
-These docs focus on the **live authoring model** used in the repo today. That means route dependencies are modeled with `depends` and `ctx.getRouteData(...)`, execution is handled by `@ucdjs/pipelines-executor`, and published results are configured through route outputs.
+These docs focus on the **live authoring model** used in the repo today. That means route dependencies are modeled with `depends` and `ctx.getRouteData(...)`, execution is handled by `@ucdjs/pipeline-executor`, and published results are configured through route outputs.
 
 ## Mental model
 
@@ -24,18 +24,18 @@ At a high level, pipeline authoring works like this:
 2. Add one or more sources that expose versioned files.
 3. Add routes with filters, parsers, optional transforms, and resolvers.
 4. Express route dependencies with `depends`.
-5. Run the definition through the CLI or `@ucdjs/pipelines-executor`.
+5. Run the definition through the CLI or `@ucdjs/pipeline-executor`.
 6. Inspect results in the Pipeline Server when you need execution-level debugging.
 
 ## Package roles
 
 The pipeline system is split across focused packages:
 
-- **`@ucdjs/pipelines-core`**: definitions, filters, route/source/output types, transforms, and helpers
-- **`@ucdjs/pipelines-executor`**: runtime execution, logging hooks, traces, caching, and pipeline ordering
-- **`@ucdjs/pipelines-loader`**: discovery and loading of `*.ucd-pipeline.ts` files from local or remote sources
-- **`@ucdjs/pipelines-presets`**: shared parsers, resolvers, routes, and pipeline factories
-- **`@ucdjs/pipelines-server`**: local UI and server for inspection, execution history, logs, traces, and graphs
+- **`@ucdjs/pipeline-core`**: definitions, filters, route/source/output types, transforms, and helpers
+- **`@ucdjs/pipeline-executor`**: runtime execution, logging hooks, traces, caching, and pipeline ordering
+- **`@ucdjs/pipeline-loader`**: discovery and loading of `*.ucd-pipeline.ts` files from local or remote sources
+- **`@ucdjs/pipeline-presets`**: shared parsers, resolvers, routes, and pipeline factories
+- **`@ucdjs/pipeline-server`**: local UI and server for inspection, execution history, logs, traces, and graphs
 
 ## Start where you need to start
 

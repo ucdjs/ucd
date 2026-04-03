@@ -1,5 +1,5 @@
-import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipelines-core";
-import { and, byDir, byExt, definePipeline } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipeline-core";
+import { and, byDir, byExt, definePipeline } from "@ucdjs/pipeline-core";
 import { sequenceParser } from "../parsers/sequence";
 import { createPropertyJsonResolver } from "../resolvers/property-json";
 import { emojiRoutes } from "../routes/common";

@@ -1,5 +1,5 @@
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 import { colorsSource } from "../shared/sources";
 
 const colorsRoute = definePipelineRoute({

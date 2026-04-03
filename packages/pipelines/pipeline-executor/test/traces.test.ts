@@ -1,4 +1,4 @@
-import type { FallbackRouteDefinition } from "@ucdjs/pipelines-core";
+import type { FallbackRouteDefinition } from "@ucdjs/pipeline-core";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -8,7 +8,7 @@ import {
   definePipelineRoute,
   filesystemSink,
   pipelineOutputSource,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import { afterEach, describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";

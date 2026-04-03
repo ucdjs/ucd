@@ -1,5 +1,5 @@
 import { SpanStatusCode } from "@opentelemetry/api";
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";

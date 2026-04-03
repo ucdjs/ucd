@@ -5,8 +5,8 @@ import type {
   FileContext,
   NormalizedRouteOutputDefinition,
   PipelineLogger,
-} from "@ucdjs/pipelines-core";
-import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipelines-core/tracing";
+} from "@ucdjs/pipeline-core";
+import type { PipelineError, PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
 import type { CacheStore } from "./cache";
 import type { ExecutionContext } from "./run/context";
 import type { SourceAdapter } from "./run/source";

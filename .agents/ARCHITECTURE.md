@@ -23,7 +23,7 @@ Consumers (API)  Artifacts / Data Packages → Consumers (NPM packages)
 ### Layer Separation
 
 1. **Storage layer**: @ucdjs/ucd-store, @ucdjs/fs-bridge, @ucdjs/lockfile
-2. **Pipeline layer**: @ucdjs/pipelines-* (core, loader, executor, artifacts, graph)
+2. **Pipeline layer**: @ucdjs/pipeline-* (core, loader, executor, artifacts, graph)
 3. **API and Store**: apps/api (OpenAPI), apps/store (direct file access)
 4. **CLI and Apps**: @ucdjs/cli, apps/web, apps/docs
 

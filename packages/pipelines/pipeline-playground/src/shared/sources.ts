@@ -1,4 +1,4 @@
-import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+import { createMemorySource } from "@ucdjs/pipeline-core/sources";
 
 export const colorsSource = createMemorySource({
   id: "colors",

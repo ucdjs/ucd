@@ -1,4 +1,4 @@
-# @ucdjs/pipelines-executor
+# @ucdjs/pipeline-executor
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -10,7 +10,7 @@ A collection of core pipeline functionalities for the UCD project.
 
 ## What It Does
 
-`@ucdjs/pipelines-executor` executes pipeline definitions from `@ucdjs/pipelines-core`.
+`@ucdjs/pipeline-executor` executes pipeline definitions from `@ucdjs/pipeline-core`.
 
 It is responsible for:
 
@@ -61,8 +61,8 @@ When a runtime provides execution context, the executor can emit:
 Node-specific output interception is configured through the `./node` runtime adapter:
 
 ```ts
-import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
-import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
+import { createPipelineExecutor } from "@ucdjs/pipeline-executor";
+import { createNodeExecutionRuntime } from "@ucdjs/pipeline-executor/node";
 
 const executor = createPipelineExecutor({
   runtime: createNodeExecutionRuntime({
@@ -81,14 +81,14 @@ responsibility of the host application.
 ## Installation
 
 ```bash
-npm install @ucdjs/pipelines-executor
+npm install @ucdjs/pipeline-executor
 ```
 
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
 
-[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipelines-executor?style=flat&colorA=18181B&colorB=4169E1
-[npm-version-href]: https://npmjs.com/package/@ucdjs/pipelines-executor
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipelines-executor?style=flat&colorA=18181B&colorB=4169E1
-[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipelines-executor
+[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/pipeline-executor?style=flat&colorA=18181B&colorB=4169E1
+[npm-version-href]: https://npmjs.com/package/@ucdjs/pipeline-executor
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/pipeline-executor?style=flat&colorA=18181B&colorB=4169E1
+[npm-downloads-href]: https://npmjs.com/package/@ucdjs/pipeline-executor

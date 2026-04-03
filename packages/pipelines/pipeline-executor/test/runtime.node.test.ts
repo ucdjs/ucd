@@ -1,4 +1,4 @@
-import type { PipelineLogEntry } from "@ucdjs/pipelines-executor";
+import type { PipelineLogEntry } from "@ucdjs/pipeline-executor";
 import { describe, expect, it } from "vitest";
 import { createNodeExecutionRuntime } from "../src/runtime/node";
 

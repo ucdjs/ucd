@@ -1,17 +1,17 @@
-import type { ResolvedEntry } from "@ucdjs/pipelines-core";
-import { and, byDir, byExt, byName, definePipelineRoute } from "@ucdjs/pipelines-core";
+import type { ResolvedEntry } from "@ucdjs/pipeline-core";
+import { and, byDir, byExt, byName, definePipelineRoute } from "@ucdjs/pipeline-core";
 import {
   createDeduplicateTransform,
   createExpandRangesTransform,
   createNormalizeTransform,
   createSortTransform,
-} from "@ucdjs/pipelines-core/transforms";
+} from "@ucdjs/pipeline-core/transforms";
 import {
   propertyJsonResolver,
   sequenceParser,
   standardParser,
   unicodeDataParser,
-} from "@ucdjs/pipelines-presets";
+} from "@ucdjs/pipeline-presets";
 import { addMetadata, filterEmptyValues } from "../shared/transforms";
 
 export const unicodeDataRoute = definePipelineRoute({

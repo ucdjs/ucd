@@ -6,7 +6,7 @@ import {
   definePipelineRoute,
   filesystemSink,
   normalizeRouteOutputs,
-} from "@ucdjs/pipelines-core";
+} from "@ucdjs/pipeline-core";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   materializeOutputs,

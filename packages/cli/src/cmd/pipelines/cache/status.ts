@@ -3,7 +3,7 @@ import {
   getRemoteSourceCacheStatus,
   listCachedSources,
   parseRemoteSourceUrl,
-} from "@ucdjs/pipelines-loader";
+} from "@ucdjs/pipeline-loader";
 import { printHelp } from "../../../cli-utils";
 import {
   blankLine,

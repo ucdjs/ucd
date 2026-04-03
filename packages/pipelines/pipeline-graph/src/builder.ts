@@ -1,4 +1,4 @@
-import type { FileContext } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipeline-core";
 import type {
   PipelineGraph,
   PipelineGraphEdge,

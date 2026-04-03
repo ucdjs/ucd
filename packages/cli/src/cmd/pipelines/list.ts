@@ -5,8 +5,8 @@ import process from "node:process";
 import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
-} from "@ucdjs/pipelines-loader";
-import { discoverPipelineFiles } from "@ucdjs/pipelines-loader/discover";
+} from "@ucdjs/pipeline-loader";
+import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import {

@@ -20,7 +20,7 @@ export default createTsdownConfig({
 
       // Keep the pipeline UI server external for now because it serves
       // its own built client assets from its package layout at runtime.
-      if (id === "@ucdjs/pipelines-server") {
+      if (id === "@ucdjs/pipeline-server") {
         return false;
       }
 

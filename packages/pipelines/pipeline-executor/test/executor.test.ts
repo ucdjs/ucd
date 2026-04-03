@@ -1,7 +1,7 @@
-import type { FileContext } from "@ucdjs/pipelines-core";
+import type { FileContext } from "@ucdjs/pipeline-core";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
 import type { PipelineSummary } from "../src/types";
-import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
+import { definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { EXECUTION_STATUSES } from "../src";
 import { createMemoryCacheStore } from "../src/cache";

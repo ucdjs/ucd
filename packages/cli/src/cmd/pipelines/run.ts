@@ -2,12 +2,12 @@ import type { CLIArguments } from "../../cli-utils";
 import type { Prettify } from "../../types";
 import path from "node:path";
 import process from "node:process";
-import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import { createPipelineExecutor } from "@ucdjs/pipeline-executor";
 import {
   loadPipelineFile,
   materializePipelineLocator,
-} from "@ucdjs/pipelines-loader";
-import { discoverPipelineFiles } from "@ucdjs/pipelines-loader/discover";
+} from "@ucdjs/pipeline-loader";
+import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
@@ -104,7 +104,7 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   }
 
   if (flags?.ui) {
-    const { startServer } = await import("@ucdjs/pipelines-server");
+    const { startServer } = await import("@ucdjs/pipeline-server");
     const port = flags?.port ?? 3030;
     output.info(`Starting Pipeline UI on port ${port}...`);
     for (const source of sources) {

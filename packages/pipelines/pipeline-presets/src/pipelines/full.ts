@@ -1,5 +1,5 @@
-import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipelines-core";
-import { byExt, definePipeline } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipeline-core";
+import { byExt, definePipeline } from "@ucdjs/pipeline-core";
 import { standardParser } from "../parsers/standard";
 import { createPropertyJsonResolver } from "../resolvers/property-json";
 import { allRoutes } from "../routes/common";

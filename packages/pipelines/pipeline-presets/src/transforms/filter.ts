@@ -1,5 +1,5 @@
-import type { ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
-import { definePipelineTransform } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PipelineFilter } from "@ucdjs/pipeline-core";
+import { definePipelineTransform } from "@ucdjs/pipeline-core";
 
 export interface RowFilterOptions {
   property?: string | RegExp;

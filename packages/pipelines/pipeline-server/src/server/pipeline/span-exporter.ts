@@ -1,7 +1,7 @@
 import type { Database } from "#server/db";
 import type { ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-node";
-import type { FileContext } from "@ucdjs/pipelines-core";
-import type { PipelineTraceKind, PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type { FileContext } from "@ucdjs/pipeline-core";
+import type { PipelineTraceKind, PipelineTraceRecord } from "@ucdjs/pipeline-core/tracing";
 import { schema } from "#server/db";
 import { SpanStatusCode } from "@opentelemetry/api";
 

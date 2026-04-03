@@ -1,5 +1,5 @@
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, sequenceParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, sequenceParser } from "@ucdjs/pipeline-presets";
 import { sequencesSource } from "../shared/sources";
 
 export const sequencePipeline = definePipeline({

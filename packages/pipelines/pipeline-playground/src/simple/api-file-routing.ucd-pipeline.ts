@@ -1,7 +1,7 @@
-import type { ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { ResolvedEntry } from "@ucdjs/pipeline-core";
 import HTTPFileSystemBackend from "@ucdjs/fs-backend/backends/http";
-import { byName, definePipeline, definePipelineRoute, definePipelineSource } from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute, definePipelineSource } from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 
 const apiSource = definePipelineSource({
   id: "api-files",

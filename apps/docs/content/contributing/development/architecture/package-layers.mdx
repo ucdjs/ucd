@@ -26,16 +26,16 @@ graph BT
   end
 
   subgraph L4["Layer 4 - Processing"]
-    PC["@ucdjs/pipelines-core"]
-    PG["@ucdjs/pipelines-graph"]
-    PL["@ucdjs/pipelines-loader"]
-    PE["@ucdjs/pipelines-executor"]
-    PP["@ucdjs/pipelines-presets"]
+    PC["@ucdjs/pipeline-core"]
+    PG["@ucdjs/pipeline-graph"]
+    PL["@ucdjs/pipeline-loader"]
+    PE["@ucdjs/pipeline-executor"]
+    PP["@ucdjs/pipeline-presets"]
   end
 
   subgraph L5["Layer 5 - Serving & Consumption"]
     CL["@ucdjs/client"]
-    PS["@ucdjs/pipelines-server"]
+    PS["@ucdjs/pipeline-server"]
   end
 
   subgraph L6["Layer 6 - User Interface"]
@@ -102,11 +102,11 @@ The lockfile is the canonical record of what has been mirrored. It is the only m
 
 | Package | Purpose |
 |---|---|
-| `@ucdjs/pipelines-core` | Pipeline DSL: `definePipeline()`, sources, routes, transforms, filters, and outputs |
-| `@ucdjs/pipelines-graph` | DAG representation of pipeline route dependencies |
-| `@ucdjs/pipelines-loader` | Discover and load pipeline definitions from the filesystem |
-| `@ucdjs/pipelines-executor` | Execute pipelines with concurrency, caching, logs, traces, and published-output ordering |
-| `@ucdjs/pipelines-presets` | Shared parsers, resolvers, routes, and pipeline factories for common UCD processing tasks |
+| `@ucdjs/pipeline-core` | Pipeline DSL: `definePipeline()`, sources, routes, transforms, filters, and outputs |
+| `@ucdjs/pipeline-graph` | DAG representation of pipeline route dependencies |
+| `@ucdjs/pipeline-loader` | Discover and load pipeline definitions from the filesystem |
+| `@ucdjs/pipeline-executor` | Execute pipelines with concurrency, caching, logs, traces, and published-output ordering |
+| `@ucdjs/pipeline-presets` | Shared parsers, resolvers, routes, and pipeline factories for common UCD processing tasks |
 
 Routes inside a pipeline form a directed acyclic graph. The executor uses `pipelines-graph` to resolve the dependency order and run routes concurrently where the graph allows it.
 
@@ -125,7 +125,7 @@ flowchart LR
 | Package | Purpose |
 |---|---|
 | `@ucdjs/client` | HTTP client with `.well-known` auto-discovery and typed resource wrappers |
-| `@ucdjs/pipelines-server` | Full-stack server for pipeline execution monitoring (React + H3 + LibSQL) |
+| `@ucdjs/pipeline-server` | Full-stack server for pipeline execution monitoring (React + H3 + LibSQL) |
 
 ## Layer 6 - User Interface
 

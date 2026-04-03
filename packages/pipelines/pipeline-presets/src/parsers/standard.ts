@@ -1,4 +1,4 @@
-import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
+import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipeline-core";
 import { splitTwoFields } from "../utils/fields";
 
 export interface StandardParserOptions {

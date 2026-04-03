@@ -18,7 +18,7 @@ Primary language for packages, apps, and tooling.
 **Key packages:**
 
 - @ucdjs/ucd-store
-- @ucdjs/pipelines-*
+- @ucdjs/pipeline-*
 - @ucdjs/cli
 - @ucdjs/client
 - @ucdjs/schemas

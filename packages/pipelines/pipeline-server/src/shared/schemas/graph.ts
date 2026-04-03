@@ -1,4 +1,4 @@
-import type { PipelineGraphEdgeType, PipelineGraphNodeType } from "@ucdjs/pipelines-graph";
+import type { PipelineGraphEdgeType, PipelineGraphNodeType } from "@ucdjs/pipeline-graph";
 import z from "zod";
 
 export const GraphDetailFieldTypeSchema = z.enum(["text", "json", "content"]);

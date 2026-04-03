@@ -1,5 +1,5 @@
-import type { ParsedRow } from "@ucdjs/pipelines-core";
-import { definePipelineTransform } from "@ucdjs/pipelines-core";
+import type { ParsedRow } from "@ucdjs/pipeline-core";
+import { definePipelineTransform } from "@ucdjs/pipeline-core";
 
 export const filterEmptyValues = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "filter-empty-values",

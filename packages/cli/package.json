@@ -40,8 +40,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-loader": "workspace:*",
-    "@ucdjs/pipelines-server": "workspace:*"
+    "@ucdjs/pipeline-loader": "workspace:*",
+    "@ucdjs/pipeline-server": "workspace:*"
   },
   "devDependencies": {
     "@clack/prompts": "catalog:runtime",
@@ -55,7 +55,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-backend": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
-    "@ucdjs/pipelines-executor": "workspace:*",
+    "@ucdjs/pipeline-executor": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",

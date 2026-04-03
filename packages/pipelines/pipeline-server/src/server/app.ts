@@ -1,5 +1,5 @@
 import type { Database } from "#server/db";
-import type { PipelineLocator } from "@ucdjs/pipelines-loader";
+import type { PipelineLocator } from "@ucdjs/pipeline-loader";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";

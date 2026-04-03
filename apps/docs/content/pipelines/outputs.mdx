@@ -29,8 +29,8 @@ import {
   byName,
   definePipelineRoute,
   filesystemSink,
-} from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
+} from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipeline-presets";
 
 const publishedColorsRoute = definePipelineRoute({
   id: "published-colors",
@@ -68,7 +68,7 @@ When `sink` is omitted, the output remains available to the current run only.
 When you want persisted files, use `filesystemSink(...)`:
 
 ```ts
-import { filesystemSink } from "@ucdjs/pipelines-core";
+import { filesystemSink } from "@ucdjs/pipeline-core";
 
 {
   id: "summary-file",
@@ -83,7 +83,7 @@ import { filesystemSink } from "@ucdjs/pipelines-core";
 Published outputs can become inputs to another pipeline through `pipelineOutputSource(...)`:
 
 ```ts
-import { pipelineOutputSource } from "@ucdjs/pipelines-core";
+import { pipelineOutputSource } from "@ucdjs/pipeline-core";
 
 const publishedColorsInput = pipelineOutputSource({
   pipelineId: "traced-outputs",

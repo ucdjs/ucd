@@ -1,4 +1,4 @@
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
 import { describe, expect, it } from "vitest";
 import { createPipelineExecutor } from "../src/executor";
 import {

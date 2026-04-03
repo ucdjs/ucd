@@ -56,15 +56,15 @@ Mock Service Worker, used for HTTP testing and request interception.
 
 ### Pipeline Definition
 
-Typed description of a pipeline, defined in @ucdjs/pipelines-core and resolved by pipelines-loader.
+Typed description of a pipeline, defined in @ucdjs/pipeline-core and resolved by pipelines-loader.
 
 ### Pipeline Executor
 
-Engine that runs pipelines and produces artifacts (@ucdjs/pipelines-executor).
+Engine that runs pipelines and produces artifacts (@ucdjs/pipeline-executor).
 
 ### Pipeline Preset
 
-Reusable pipeline configuration shared across packages (@ucdjs/pipelines-presets).
+Reusable pipeline configuration shared across packages (@ucdjs/pipeline-presets).
 
 ## Store Terms
 

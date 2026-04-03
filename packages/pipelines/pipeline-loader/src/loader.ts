@@ -1,7 +1,7 @@
-import type { PipelineDefinition } from "@ucdjs/pipelines-core";
+import type { PipelineDefinition } from "@ucdjs/pipeline-core";
 import type { PipelineLoaderIssue } from "./errors";
 import path from "node:path";
-import { isPipelineDefinition } from "@ucdjs/pipelines-core";
+import { isPipelineDefinition } from "@ucdjs/pipeline-core";
 import { bundle } from "./bundle";
 import { PipelineLoaderError, toPipelineLoaderIssue } from "./errors";
 

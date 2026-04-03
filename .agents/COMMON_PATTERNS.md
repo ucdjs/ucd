@@ -52,14 +52,14 @@ The pipeline server uses Drizzle ORM with SQLite. Schema is defined in `packages
 After modifying the schema, generate a migration with:
 
 ```sh
-pnpm --filter @ucdjs/pipelines-server db:generate
+pnpm --filter @ucdjs/pipeline-server db:generate
 ```
 
 Other useful database commands:
 
-- `pnpm --filter @ucdjs/pipelines-server db:push` - push schema changes directly (dev only)
-- `pnpm --filter @ucdjs/pipelines-server db:migrate` - apply pending migrations
-- `pnpm --filter @ucdjs/pipelines-server db:studio` - open Drizzle Studio
+- `pnpm --filter @ucdjs/pipeline-server db:push` - push schema changes directly (dev only)
+- `pnpm --filter @ucdjs/pipeline-server db:migrate` - apply pending migrations
+- `pnpm --filter @ucdjs/pipeline-server db:studio` - open Drizzle Studio
 
 Migrations live in `packages/pipelines/pipeline-server/src/server/db/migrations/` and are applied automatically in tests and at server startup via `runMigrations()`. Never create migration files manually - always use `db:generate`.
 

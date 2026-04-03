@@ -1,5 +1,5 @@
-import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { propertyJsonResolver, sequenceParser, standardParser } from "@ucdjs/pipelines-presets";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
+import { propertyJsonResolver, sequenceParser, standardParser } from "@ucdjs/pipeline-presets";
 import { groupByInitialResolver, summaryResolver } from "../shared/resolvers";
 import { colorsSource, planetsSource, sequencesSource, sizesSource } from "../shared/sources";
 

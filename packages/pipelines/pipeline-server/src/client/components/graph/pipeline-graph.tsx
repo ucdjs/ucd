@@ -2,7 +2,7 @@ import type { FlowEdge, FlowNode } from "#lib/graph-utils";
 import type { ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
 import type {
   PipelineGraphNodeType,
-} from "@ucdjs/pipelines-graph";
+} from "@ucdjs/pipeline-graph";
 import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflow/react";
 import { applyExecutionLayout, executionGraphToFlow, filterNodesByType, getNodeColor } from "#lib/graph-utils";
 import { getFlowNodeType, graphNodeTypes } from "#shared/lib/graph";

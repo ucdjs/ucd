@@ -1,8 +1,8 @@
 import type { ExecutionTrace } from "#server/db/schema";
 import type { ExecutionTracesResponse } from "#shared/schemas/execution";
-import type { PipelineTraceRecord } from "@ucdjs/pipelines-core/tracing";
+import type { PipelineTraceRecord } from "@ucdjs/pipeline-core/tracing";
 import { schema } from "#server/db";
-import { buildOutputManifestFromTraces } from "@ucdjs/pipelines-core/tracing";
+import { buildOutputManifestFromTraces } from "@ucdjs/pipeline-core/tracing";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { H3, HTTPError } from "h3";
 
