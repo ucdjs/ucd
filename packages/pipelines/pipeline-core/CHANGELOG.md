@@ -1,6 +1,6 @@
 # @ucdjs/pipeline-core
 
-## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.9...@ucdjs/pipeline-core@0.0.1-beta.10) (2026-04-03)
+## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.10...@ucdjs/pipeline-core@0.0.1-beta.10) (2026-04-03)
 
 
 ### 🚀 Features
@@ -23,8 +23,6 @@
 * address remaining PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([34a6f4ce](https://github.com/ucdjs/ucd/commit/34a6f4ce9d8cc1c086ffdb6d2e0f61ec3f5da99e)) (by [@luxass](https://github.com/luxass))
 * address PR #557 review issues ([Issue #557](https://github.com/ucdjs/ucd/issues/557)) ([562a1ddc](https://github.com/ucdjs/ucd/commit/562a1ddcf5a7937f1cf36586ad40eda3d15d86de)) (by [@luxass](https://github.com/luxass))
 * improve error handling in parseDependency function ([ded8b302](https://github.com/ucdjs/ucd/commit/ded8b30216048a174944d19ad642d675ab24b6af)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.8...@ucdjs/pipeline-core@0.0.1-beta.9) (2026-04-03)
 
 

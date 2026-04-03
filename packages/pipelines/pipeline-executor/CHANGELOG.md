@@ -1,6 +1,6 @@
 # @ucdjs/pipeline-executor
 
-## [0.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-executor@0.0.1-beta.10...@ucdjs/pipeline-executor@0.0.1-beta.11) (2026-04-03)
+## [0.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-executor@0.0.1-beta.11...@ucdjs/pipeline-executor@0.0.1-beta.11) (2026-04-03)
 
 
 ### 🚀 Features
@@ -24,8 +24,6 @@
 
 ### 🎨 Styles
 * apply linter fixes to trace-emitter ([71ef2a4f](https://github.com/ucdjs/ucd/commit/71ef2a4f448821ca3909d4fe53d44cec5ebee795)) (by [@luxass](https://github.com/luxass), Claude Opus 4.6 (1M context))
-
-
 ## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-executor@0.0.1-beta.9...@ucdjs/pipeline-executor@0.0.1-beta.10) (2026-04-03)
 
 
