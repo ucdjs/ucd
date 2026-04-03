@@ -80,7 +80,7 @@ catalogs:
   runtime:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils-old": npm:@luxass/unicode-utils@0.11.0
-    "@unicode-utils/core": 0.12.0-beta.23
+    "@unicode-utils/core": 0.12.0-beta.24
     "@luxass/utils": 2.7.3
     farver: 0.4.2
     yargs-parser: 22.0.0
