@@ -1,5 +1,12 @@
 # @ucdjs/cli
 
+## [0.3.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.10...@ucdjs/cli@0.3.1-beta.11) (2026-04-03)
+
+
+### 📚 Documentation
+* update READMEs and add pipeline-server README ([25936ff5](https://github.com/ucdjs/ucd/commit/25936ff511b9fbed286c20b811c6ef2099f9588b)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.3.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.9...@ucdjs/cli@0.3.1-beta.10) (2026-03-30)
 
 
