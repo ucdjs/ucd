@@ -243,8 +243,8 @@ catalogs:
       specifier: 2.6.1
       version: 2.6.1
     '@unicode-utils/core':
-      specifier: 0.12.0-beta.23
-      version: 0.12.0-beta.23
+      specifier: 0.12.0-beta.24
+      version: 0.12.0-beta.24
     ai:
       specifier: 6.0.138
       version: 6.0.138
@@ -426,7 +426,7 @@ importers:
         version: link:../../packages/schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -602,7 +602,7 @@ importers:
         version: link:../../packages/schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -693,7 +693,7 @@ importers:
         version: link:../../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       lucide-react:
         specifier: catalog:frontend
         version: 1.7.0(react@19.2.4)
@@ -836,7 +836,7 @@ importers:
         version: link:../ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
@@ -1569,7 +1569,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       obug:
         specifier: catalog:runtime
         version: 2.1.1
@@ -1730,7 +1730,7 @@ importers:
         version: link:../utils
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       msw:
         specifier: catalog:test
         version: 2.12.14(@types/node@25.5.0)(typescript@6.0.2)
@@ -1803,7 +1803,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1852,7 +1852,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -2066,7 +2066,7 @@ importers:
         version: link:../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.23
+        version: 0.12.0-beta.24
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.7.1
@@ -5026,14 +5026,14 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unicode-utils/core@0.12.0-beta.23':
-    resolution: {integrity: sha512-J79z/JTd0qj0eqVCOBdMZeLjLp5Bc3M08JaxEceSkKcp6XJVsJRluw010XP12UWDWWXJlrXiVgodSjfiPqiIAA==}
+  '@unicode-utils/core@0.12.0-beta.24':
+    resolution: {integrity: sha512-FKeSy33OIqAksmsJ98FQif2S3U//lA1WW1Xff4V0ksUtXRuxRIKsjB3ecFiFwpUcgEq3CMOoTUYbvDuf9h3KjQ==}
 
-  '@unicode-utils/metadata@0.12.0-beta.23':
-    resolution: {integrity: sha512-CtQh/7LoYi0gKYmazdm/X9R2Z++rnTWkRHqj4B1E5UsPWZ2JMrp/GICkrt8kQtn7lE/EV0v2vumIMcr0JtfzeQ==}
+  '@unicode-utils/metadata@0.12.0-beta.24':
+    resolution: {integrity: sha512-MMCk6qZq8//VdVzesezjBP0h/a8lERV1tOliy43AjpdyQdypqdF9GH7vePw9KfpMk8HoxprdBLd1/2hyZTZsiw==}
 
-  '@unicode-utils/parser@0.12.0-beta.23':
-    resolution: {integrity: sha512-PRgR8vIf12UEDx2VY2D65Fj9ioSbm3136cR0VBBpQ7A2ugIfRUq8zb9Rk4+id6eC43IXngVaMcpNhuwDkQnDgA==}
+  '@unicode-utils/parser@0.12.0-beta.24':
+    resolution: {integrity: sha512-suazd1BDS3jl2CTJ0Ar4JmM2dqlJqaGnpQm6nt6nd2IThjdkyIyO43ph/BEReJJFHJVl494AqEo+qha4A3l0jQ==}
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
@@ -12940,18 +12940,18 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unicode-utils/core@0.12.0-beta.23':
+  '@unicode-utils/core@0.12.0-beta.24':
     dependencies:
       '@luxass/utils': 2.7.3
-      '@unicode-utils/metadata': 0.12.0-beta.23
-      '@unicode-utils/parser': 0.12.0-beta.23
+      '@unicode-utils/metadata': 0.12.0-beta.24
+      '@unicode-utils/parser': 0.12.0-beta.24
       defu: 6.1.4
 
-  '@unicode-utils/metadata@0.12.0-beta.23':
+  '@unicode-utils/metadata@0.12.0-beta.24':
     dependencies:
       '@luxass/utils': 2.7.3
 
-  '@unicode-utils/parser@0.12.0-beta.23':
+  '@unicode-utils/parser@0.12.0-beta.24':
     dependencies:
       '@luxass/utils': 2.7.3
       defu: 6.1.4

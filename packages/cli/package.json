@@ -85,9 +85,8 @@
       "1.9.1"
     ],
     "@rolldown/pluginutils": "1.0.0-rc.12",
-    "@unicode-utils/core": "0.12.0-beta.23",
-    "@unicode-utils/metadata": "0.12.0-beta.23",
-    "@unicode-utils/parser": "0.12.0-beta.23",
+    "@unicode-utils/core": "0.12.0-beta.24",
+    "@unicode-utils/metadata": "0.12.0-beta.24",
     "@vercel/oidc": "3.1.0",
     "ai": "6.0.138",
     "defu": "6.1.4",
