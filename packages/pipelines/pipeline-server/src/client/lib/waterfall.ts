@@ -248,8 +248,8 @@ export function getSpanColor(node: { kind: string; hasError?: boolean }): string
     case "resolve": return "#a78bfa";
     case "source.listing": return "#2dd4bf";
     case "source.provided": return "#94a3b8";
-    case "output": return "#f43f5e";
-    case "error": return "#ef4444";
+    case "output": return "#06b6d4";
+    case "error": return "#f59e0b";
     case "cache.hit": return "#22c55e";
     case "cache.miss": return "#f97316";
     case "cache.store": return "#eab308";

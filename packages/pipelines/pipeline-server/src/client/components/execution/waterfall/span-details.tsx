@@ -1,7 +1,7 @@
 import type { WaterfallNode } from "#lib/waterfall";
 import { formatDuration, formatTimestamp } from "#lib/format";
 import { getSpanColor } from "#lib/waterfall";
-import { Badge, Collapsible, CollapsibleContent, CollapsibleTrigger, ScrollArea, Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/components";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, ScrollArea, Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/components";
 import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import { Check, ChevronDown, Copy } from "lucide-react";
 
@@ -18,7 +18,9 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
     ? Object.entries(node.raw.attributes as Record<string, unknown>)
     : [];
   // eslint-disable-next-line react/purity -- React Compiler handles memoization
-  const absoluteStart = node ? formatTimestamp(new Date(node.startMs).toISOString()) : "";
+  const absoluteStart = node?.raw.startTimestamp != null
+    ? formatTimestamp(new Date(node.raw.startTimestamp).toISOString())
+    : "";
 
   return (
     <Sheet open={node !== null} onOpenChange={(open) => { if (!open) onClose(); }}>
@@ -33,12 +35,19 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
                 />
                 <SheetTitle className="truncate text-sm">{node.name}</SheetTitle>
               </div>
-              <Badge variant="secondary" className="w-fit font-mono text-xs">
-                {node.kind}
-              </Badge>
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className="shrink-0 text-xs text-muted-foreground">Kind</span>
+                <code className="min-w-0 truncate font-mono text-xs">{node.kind}</code>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="shrink-0 text-xs text-muted-foreground">Status</span>
+                <span className={`text-xs font-mono ${node.hasError ? "text-destructive" : ""}`}>
+                  {node.hasError ? "error" : "ok"}
+                </span>
+              </div>
 
               {node.traceId !== null && (
-                <div className="flex items-center gap-1.5 pt-1">
+                <div className="flex items-center gap-1.5">
                   <span className="shrink-0 text-xs text-muted-foreground">Trace ID</span>
                   <code className="min-w-0 truncate font-mono text-xs">{node.traceId}</code>
                   <button
@@ -66,7 +75,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
               )}
             </SheetHeader>
 
-            <ScrollArea className="flex-1">
+            <ScrollArea className="min-h-0 flex-1">
               <div className="space-y-5 px-4 py-3">
                 <section>
                   <p className="mb-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -130,10 +139,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
                             {eventAttrs.length > 0 && (
                               <div className="mt-1.5 space-y-0.5">
                                 {eventAttrs.map(([k, v]) => (
-                                  <div key={k} className="flex items-baseline gap-2">
-                                    <span className="w-28 shrink-0 text-muted-foreground">{k}</span>
-                                    <span className="min-w-0 break-all font-mono">{String(v)}</span>
-                                  </div>
+                                  <AttributeRow key={k} label={k} value={v} />
                                 ))}
                               </div>
                             )}

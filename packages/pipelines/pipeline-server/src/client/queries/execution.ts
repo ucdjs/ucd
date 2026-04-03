@@ -197,7 +197,7 @@ export function executionLogsQueryOptions({
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs", opts],
     queryFn: () => fetchExecutionLogs({ sourceId, fileId, pipelineId, executionId, limit, offset, spanId }),
-    staleTime: 0,
+    staleTime: 5_000,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => refetchWhileExecutionActive(query),
   });
