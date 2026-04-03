@@ -1,6 +1,6 @@
 # @ucdjs/pipeline-loader
 
-## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.9...@ucdjs/pipeline-loader@0.0.1-beta.10) (2026-04-03)
+## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.10...@ucdjs/pipeline-loader@0.0.1-beta.10) (2026-04-03)
 
 
 ### 🚀 Features
@@ -21,8 +21,6 @@
 
 ### 📚 Documentation
 * rewrite README with accurate description and examples ([c50f5863](https://github.com/ucdjs/ucd/commit/c50f58639ef876d20e3f1391211f65291e21a781)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.8...@ucdjs/pipeline-loader@0.0.1-beta.9) (2026-04-03)
 
 
