@@ -1,4 +1,4 @@
-import type { FileContext } from "./types";
+import type { FileContext } from "@ucdjs/pipelines-core";
 
 export type PipelineGraphNodeType = "source" | "file" | "route" | "output";
 

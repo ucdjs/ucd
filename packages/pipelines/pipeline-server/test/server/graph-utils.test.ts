@@ -1,4 +1,4 @@
-import type { PipelineGraph } from "@ucdjs/pipelines-core";
+import type { PipelineGraph } from "@ucdjs/pipelines-graph";
 import { describe, expect, it } from "vitest";
 import {
   buildExecutionGraphView,

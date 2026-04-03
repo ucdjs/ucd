@@ -1,5 +1,5 @@
 import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
-import { splitMinFields } from "@ucdjs/pipelines-core";
+import { splitMinFields } from "../utils/fields";
 
 export interface UnicodeDataMeta {
   characterName: string;
