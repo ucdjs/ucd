@@ -1,5 +1,8 @@
-import type { FileMetadata, PipelineSourceDefinition, SourceBackend } from "../source";
+import type { BackendEntry, FileSystemBackend } from "@ucdjs/fs-backend";
+import type { PipelineSourceDefinition } from "../source";
 import type { FileContext } from "../types";
+import { defineBackend } from "@ucdjs/fs-backend";
+import { z } from "zod";
 import { definePipelineSource } from "../source";
 
 export interface MemoryFile {
@@ -12,54 +15,68 @@ export interface MemoryBackendOptions {
   files: Record<string, MemoryFile[]>;
 }
 
-function getFileContext(version: string, file: MemoryFile): FileContext {
-  const path = file.path;
-  const parts = path.split("/");
-  const name = parts.at(-1);
-  if (!name) {
-    throw new Error(`Invalid file path: ${file.path}`);
+function resolveMemoryFile(files: Record<string, MemoryFile[]>, path: string): { version: string; file: MemoryFile } | null {
+  for (const [version, versionFiles] of Object.entries(files)) {
+    const file = versionFiles.find((f) => f.path === path || `${version}/${f.path}` === path);
+    if (file) return { version, file };
   }
-  const extIndex = name.lastIndexOf(".");
-  const ext = extIndex >= 0 ? name.slice(extIndex) : "";
-  const dir = file.dir || parts[0] || "ucd";
-
-  return { version, dir, path, name, ext };
+  return null;
 }
 
-export function createMemoryBackend(options: MemoryBackendOptions): SourceBackend {
-  const { files } = options;
+const MemoryFileSystemBackend = defineBackend({
+  meta: {
+    name: "Memory File System Backend",
+    description: "An in-memory file system backend for testing and playground use.",
+  },
+  optionsSchema: z.custom<MemoryBackendOptions>(),
+  setup(options) {
+    const { files } = options;
 
-  return {
-    async listFiles(version: string): Promise<FileContext[]> {
-      const versionFiles = files[version];
-      if (!versionFiles) return [];
-      return versionFiles.map((f) => getFileContext(version, f));
-    },
+    return {
+      async read(path) {
+        const resolved = resolveMemoryFile(files, path);
+        if (!resolved) {
+          throw new Error(`File not found in memory backend: ${path}`);
+        }
+        return resolved.file.content;
+      },
+      async readBytes(path) {
+        const resolved = resolveMemoryFile(files, path);
+        if (!resolved) {
+          throw new Error(`File not found in memory backend: ${path}`);
+        }
+        return new TextEncoder().encode(resolved.file.content);
+      },
+      async list(path) {
+        const versionFiles = files[path];
+        if (!versionFiles) return [];
 
-    async readFile(file: FileContext): Promise<string> {
-      const versionFiles = files[file.version];
-      if (!versionFiles) {
-        throw new Error(`Version ${file.version} not found in memory backend`);
-      }
-      const memFile = versionFiles.find((f) => f.path === file.path);
-      if (!memFile) {
-        throw new Error(`File ${file.path} not found in version ${file.version}`);
-      }
-      return memFile.content;
-    },
+        return versionFiles.map((f): BackendEntry => {
+          const parts = f.path.split("/");
+          const name = parts.at(-1) || f.path;
+          return { type: "file", name, path: f.path };
+        });
+      },
+      async exists(path) {
+        return resolveMemoryFile(files, path) != null
+          || files[path] != null;
+      },
+      async stat(path) {
+        const resolved = resolveMemoryFile(files, path);
+        if (!resolved) {
+          throw new Error(`File not found in memory backend: ${path}`);
+        }
+        return {
+          type: "file" as const,
+          size: new TextEncoder().encode(resolved.file.content).length,
+        };
+      },
+    };
+  },
+});
 
-    async getMetadata(file: FileContext): Promise<FileMetadata> {
-      const versionFiles = files[file.version];
-      if (!versionFiles) {
-        throw new Error(`Version ${file.version} not found in memory backend`);
-      }
-      const memFile = versionFiles.find((f) => f.path === file.path);
-      if (!memFile) {
-        throw new Error(`File ${file.path} not found in version ${file.version}`);
-      }
-      return { size: new TextEncoder().encode(memFile.content).length };
-    },
-  };
+export function createMemoryBackend(options: MemoryBackendOptions): FileSystemBackend {
+  return MemoryFileSystemBackend(options);
 }
 
 export interface MemorySourceOptions {

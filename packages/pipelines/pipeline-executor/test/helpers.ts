@@ -1,3 +1,4 @@
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type {
   FileContext,
   ParseContext,
@@ -5,7 +6,6 @@ import type {
   PipelineFilter,
   PipelineRouteDefinition,
   PipelineSourceDefinition,
-  SourceBackend,
 } from "@ucdjs/pipelines-core";
 import { definePipelineRoute, definePipelineSource } from "@ucdjs/pipelines-core";
 import { vi } from "vitest";
@@ -20,12 +20,32 @@ export function createMockFile(name: string, dir: string = "ucd"): FileContext {
   };
 }
 
-export function createMockBackend(files: FileContext[], contents: Record<string, string> = {}): SourceBackend {
+export function createMockBackend(files: FileContext[], contents: Record<string, string> = {}): FileSystemBackend {
+  const entries = files.map((f) => ({
+    type: "file" as const,
+    name: f.name,
+    path: f.path,
+  }));
+
   return {
-    listFiles: vi.fn().mockResolvedValue(files),
-    readFile: vi.fn().mockImplementation((file: FileContext) => {
-      return Promise.resolve(contents[file.path] ?? "");
+    meta: { name: "mock" },
+    features: new Set(),
+    hook: () => () => {},
+    list: vi.fn().mockResolvedValue(entries),
+    read: vi.fn().mockImplementation((path: string) => {
+      // The executor prefixes with version (e.g., "16.0.0/ucd/LineBreak.txt"),
+      // but contents are keyed by relative path (e.g., "ucd/LineBreak.txt")
+      const parts = path.split("/");
+      const withoutVersion = parts.length > 1 ? parts.slice(1).join("/") : path;
+      return Promise.resolve(contents[withoutVersion] ?? contents[path] ?? "");
     }),
+    readBytes: vi.fn().mockResolvedValue(new Uint8Array()),
+    exists: vi.fn().mockResolvedValue(true),
+    stat: vi.fn().mockResolvedValue({ type: "file", size: 0 }),
+    write: vi.fn().mockResolvedValue(undefined),
+    mkdir: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+    copy: vi.fn().mockResolvedValue(undefined),
   };
 }
 

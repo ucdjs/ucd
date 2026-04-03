@@ -45,6 +45,7 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/fs-backend": "workspace:*",
     "picomatch": "catalog:runtime",
     "zod": "catalog:runtime"
   },

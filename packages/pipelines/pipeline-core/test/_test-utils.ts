@@ -1,3 +1,4 @@
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type {
   FileContext,
   ParsedRow,
@@ -5,7 +6,6 @@ import type {
   PipelineFilter,
   PipelineRouteDefinition,
   RouteOutputDefinition,
-  SourceBackend,
 } from "../src";
 import type { AnyPipelineTransformDefinition } from "../src/transform";
 import type { ParserFn, PipelineLogger, PropertyJson } from "../src/types";
@@ -25,10 +25,26 @@ type DeepPartial<T>
       : T extends object ? { [K in keyof T]?: DeepPartial<T[K]> }
         : T;
 
-export function createMockBackend(files: FileContext[]): SourceBackend {
+export function createMockBackend(files: FileContext[]): FileSystemBackend {
+  const entries = files.map((f) => ({
+    type: "file" as const,
+    name: f.name,
+    path: f.path,
+  }));
+
   return {
-    listFiles: vi.fn().mockResolvedValue(files),
-    readFile: vi.fn().mockResolvedValue("file content"),
+    meta: { name: "mock" },
+    features: new Set(),
+    hook: () => () => {},
+    list: vi.fn().mockResolvedValue(entries),
+    read: vi.fn().mockResolvedValue("file content"),
+    readBytes: vi.fn().mockResolvedValue(new Uint8Array()),
+    exists: vi.fn().mockResolvedValue(true),
+    stat: vi.fn().mockResolvedValue({ type: "file", size: 0 }),
+    write: vi.fn().mockResolvedValue(undefined),
+    mkdir: vi.fn().mockResolvedValue(undefined),
+    remove: vi.fn().mockResolvedValue(undefined),
+    copy: vi.fn().mockResolvedValue(undefined),
   };
 }
 

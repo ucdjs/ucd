@@ -1,10 +1,10 @@
+import type { FileSystemBackend } from "@ucdjs/fs-backend";
 import type {
   FileContext,
   ParseContext,
   PipelineDefinition,
   PipelineLogger,
   PipelineOutputSourceDefinition,
-  SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
 import type { PipelineExecutionResult } from "../types";
@@ -51,7 +51,7 @@ export function createSourceAdapter(
   logger: PipelineLogger,
   options: CreateSourceAdapterOptions = {},
 ): SourceAdapter {
-  const backends = new Map<string, SourceBackend>();
+  const backends = new Map<string, FileSystemBackend>();
   const publishedOutputFiles = new Map<string, PublishedOutputFileEntry[]>();
 
   for (const input of pipeline.inputs) {
@@ -101,13 +101,13 @@ export function createSourceAdapter(
 
         const backend = backends.get(file.source.id);
         if (backend) {
-          return backend.readFile(file);
+          return backend.read(`${file.version}/${file.path}`);
         }
       }
 
       const firstBackend = backends.values().next().value;
       if (firstBackend) {
-        return firstBackend.readFile(file);
+        return firstBackend.read(`${file.version}/${file.path}`);
       }
 
       throw new Error(`No backend found for file: ${file.path}`);

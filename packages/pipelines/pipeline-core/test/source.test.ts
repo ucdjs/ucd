@@ -107,8 +107,8 @@ describe("resolveSourceFiles", () => {
     const result = await resolveSourceFiles(source, "16.0.0", sourceContext);
 
     expect(result).toHaveLength(2);
-    expect(backend.listFiles).toHaveBeenCalledWith("16.0.0");
-    expect(backend.listFiles).toHaveBeenCalledTimes(1);
+    expect(backend.list).toHaveBeenCalledWith("16.0.0", { recursive: true });
+    expect(backend.list).toHaveBeenCalledTimes(1);
 
     expectTypeOf(result).toEqualTypeOf<SourceFileContext[]>();
   });
@@ -178,7 +178,7 @@ describe("resolveSourceFiles", () => {
   });
 
   it("should return empty array when no files match filters", async () => {
-    const files = [createFile({ dir: "emoji" })];
+    const files = [createFile({ dir: "emoji", path: "emoji/data.txt", name: "data.txt", ext: ".txt" })];
     const backend = createMockBackend(files);
     const includes = (ctx: any) => ctx.file.dir === "ucd";
 
@@ -228,10 +228,10 @@ describe("resolveSourceFiles", () => {
     const source = definePipelineSource({ id: "test", backend });
 
     await resolveSourceFiles(source, "15.0.0", sourceContext);
-    expect(backend.listFiles).toHaveBeenCalledWith("15.0.0");
+    expect(backend.list).toHaveBeenCalledWith("15.0.0", { recursive: true });
 
     await resolveSourceFiles(source, "16.0.0", sourceContext);
-    expect(backend.listFiles).toHaveBeenCalledWith("16.0.0");
+    expect(backend.list).toHaveBeenCalledWith("16.0.0", { recursive: true });
   });
 });
 

@@ -1076,6 +1076,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../../shared
+      '@ucdjs/fs-backend':
+        specifier: workspace:*
+        version: link:../../fs-backend
       picomatch:
         specifier: catalog:runtime
         version: 4.0.4
@@ -1227,6 +1230,9 @@ importers:
 
   packages/pipelines/pipeline-playground:
     dependencies:
+      '@ucdjs/fs-backend':
+        specifier: workspace:*
+        version: link:../../fs-backend
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
