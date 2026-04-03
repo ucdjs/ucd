@@ -10,6 +10,7 @@ export interface WaterfallNode {
   startMs: number; // relative to traceStartMs
   durationMs: number; // 0 for instant events
   isInstant: boolean;
+  hasError: boolean;
   depth: number;
   hasChildren: boolean;
   children: WaterfallNode[];
@@ -65,6 +66,7 @@ export function buildWaterfallTree(spans: ExecutionSpanItem[], traceId: string |
       startMs,
       durationMs,
       isInstant,
+      hasError: span.events.some((e) => e.kind === "error"),
       depth: 0,
       hasChildren: false,
       children: [],
@@ -235,8 +237,10 @@ export function getSpanName(span: ExecutionSpanItem): string {
   return span.kind;
 }
 
-export function getSpanColor(kind: string): string {
-  switch (kind) {
+export function getSpanColor(node: { kind: string; hasError?: boolean }): string {
+  if (node.hasError) return "#ef4444";
+
+  switch (node.kind) {
     case "pipeline": return "#3b82f6";
     case "version": return "#60a5fa";
     case "file.route": return "#0ea5e9";

@@ -84,7 +84,7 @@ export function SpanWaterfall({
       const w = node.isInstant
         ? 1
         : Math.max(1, (node.durationMs / totalDurationMs) * canvasWidth);
-      ctx.fillStyle = getSpanColor(node.kind);
+      ctx.fillStyle = getSpanColor(node);
       ctx.fillRect(x, i * rowH, w, rowH);
     }
   }, [nodes, totalDurationMs, canvasWidth]);

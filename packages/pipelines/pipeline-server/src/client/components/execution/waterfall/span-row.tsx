@@ -20,7 +20,7 @@ export function SpanRow({
   onSelect,
   onToggle,
 }: SpanRowProps) {
-  const color = getSpanColor(node.kind);
+  const color = getSpanColor(node);
 
   const bounds = viewedBounds(node.startMs, node.startMs + node.durationMs);
   const leftPct = clamp(bounds.start, 0, 1);
