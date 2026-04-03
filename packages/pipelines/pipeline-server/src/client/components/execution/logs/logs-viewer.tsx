@@ -110,7 +110,7 @@ export function LogsViewer({
               className="ml-1 text-muted-foreground hover:text-foreground"
               aria-label="Clear span filter"
             >
-              ×
+              x
             </button>
           </div>
         )}
