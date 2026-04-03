@@ -86,15 +86,12 @@ export type {
 export { definePipelineRoute } from "./route";
 
 export type {
-  FileMetadata,
   InferSourceId,
   InferSourceIds,
   PipelineOutputSourceDefinition,
   PipelineSourceDefinition,
   ResolveSourceContext,
-  SourceBackend,
   SourceFileContext,
-  StreamOptions,
 } from "./source";
 
 export {

@@ -1,27 +1,9 @@
+import type { BackendEntry, FileSystemBackend } from "@ucdjs/fs-backend";
 import type { FileContext, PipelineFilter, PipelineLogger } from "./types";
-
-export interface StreamOptions {
-  chunkSize?: number;
-  start?: number;
-  end?: number;
-}
-
-export interface FileMetadata {
-  size: number;
-  hash?: string;
-  lastModified?: string;
-}
-
-export interface SourceBackend {
-  listFiles: (version: string) => Promise<FileContext[]>;
-  readFile: (file: FileContext) => Promise<string>;
-  readFileStream?: (file: FileContext, options?: StreamOptions) => AsyncIterable<Uint8Array>;
-  getMetadata?: (file: FileContext) => Promise<FileMetadata>;
-}
 
 export interface PipelineSourceDefinition<TId extends string = string> {
   id: TId;
-  backend: SourceBackend;
+  backend: FileSystemBackend;
   includes?: PipelineFilter;
   excludes?: PipelineFilter;
   kind?: "standard" | "pipeline-output";
@@ -49,13 +31,21 @@ export function definePipelineSource<const TId extends string>(
   return definition;
 }
 
-const unsupportedPipelineOutputBackend: SourceBackend = {
-  listFiles: async () => {
-    throw new Error("Pipeline output sources are resolved by the executor and cannot be listed directly.");
-  },
-  readFile: async () => {
-    throw new Error("Pipeline output sources are resolved by the executor and cannot be read directly.");
-  },
+const UNSUPPORTED_MSG = "Pipeline output sources are resolved by the executor and cannot be accessed directly.";
+
+const unsupportedPipelineOutputBackend: FileSystemBackend = {
+  meta: { name: "unsupported-pipeline-output" },
+  features: new Set(),
+  hook: () => () => {},
+  read: async () => { throw new Error(UNSUPPORTED_MSG); },
+  readBytes: async () => { throw new Error(UNSUPPORTED_MSG); },
+  list: async () => { throw new Error(UNSUPPORTED_MSG); },
+  exists: async () => { throw new Error(UNSUPPORTED_MSG); },
+  stat: async () => { throw new Error(UNSUPPORTED_MSG); },
+  write: async () => { throw new Error(UNSUPPORTED_MSG); },
+  mkdir: async () => { throw new Error(UNSUPPORTED_MSG); },
+  remove: async () => { throw new Error(UNSUPPORTED_MSG); },
+  copy: async () => { throw new Error(UNSUPPORTED_MSG); },
 };
 
 export function pipelineOutputSource<const TId extends string = string>(
@@ -80,6 +70,34 @@ export function isPipelineOutputSource(
   return source.kind === "pipeline-output";
 }
 
+function backendEntryToFileContext(entry: BackendEntry, version: string): FileContext {
+  let path = entry.path;
+  // Strip leading slash (HTTP backend returns absolute paths like "/16.0.0/ucd/file.txt")
+  if (path.startsWith("/")) path = path.slice(1);
+  // Strip version prefix if present (e.g., "16.0.0/ucd/file.txt" → "ucd/file.txt")
+  if (path.startsWith(`${version}/`)) path = path.slice(version.length + 1);
+
+  const name = entry.name;
+  const extIndex = name.lastIndexOf(".");
+  const ext = extIndex > 0 ? name.slice(extIndex) : "";
+  const parts = path.split("/");
+  const dir = parts[0] || "ucd";
+
+  return { version, dir, path, name, ext };
+}
+
+function flattenEntries(entries: BackendEntry[]): BackendEntry[] {
+  const result: BackendEntry[] = [];
+  for (const entry of entries) {
+    if (entry.type === "file") {
+      result.push(entry);
+    } else if (entry.type === "directory" && entry.children) {
+      result.push(...flattenEntries(entry.children));
+    }
+  }
+  return result;
+}
+
 export async function resolveSourceFiles(
   source: PipelineSourceDefinition,
   version: string,
@@ -89,7 +107,9 @@ export async function resolveSourceFiles(
     return [];
   }
 
-  const allFiles = await source.backend.listFiles(version);
+  const entries = await source.backend.list(version, { recursive: true });
+  const fileEntries = flattenEntries(entries);
+  const allFiles = fileEntries.map((entry) => backendEntryToFileContext(entry, version));
 
   const filteredFiles = allFiles.filter((file) => {
     const ctx = { file, logger };
