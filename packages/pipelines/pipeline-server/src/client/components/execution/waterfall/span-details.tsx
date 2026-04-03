@@ -29,7 +29,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
               <div className="flex items-center gap-2 pr-8">
                 <span
                   className="inline-block h-2.5 w-2.5 shrink-0 rounded-full"
-                  style={{ backgroundColor: getSpanColor(node.kind) }}
+                  style={{ backgroundColor: getSpanColor(node) }}
                 />
                 <SheetTitle className="truncate text-sm">{node.name}</SheetTitle>
               </div>
