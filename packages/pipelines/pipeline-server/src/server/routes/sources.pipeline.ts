@@ -142,10 +142,17 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     await tracerProvider.forceFlush();
 
     const pipelineResult = execResult.find((r) => r.id === pipelineId);
+    const status = pipelineResult?.status ?? "failed";
+
+    if (status === "failed" && pipelineResult?.errors?.length) {
+      for (const err of pipelineResult.errors) {
+        console.error(`[pipeline] "${pipelineId}" failed (${err.scope}): ${err.message}`);
+      }
+    }
 
     await db.update(schema.executions)
       .set({
-        status: pipelineResult?.status ?? "failed",
+        status,
         completedAt: new Date(),
         summary: pipelineResult?.summary ?? null,
       })
@@ -157,6 +164,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     return { success: true, executionId } satisfies ExecutePipelineResponse;
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
+    console.error(`[pipeline] "${pipelineId}" execution threw:`, errorMessage);
 
     await tracerProvider.forceFlush().catch(() => {});
 
