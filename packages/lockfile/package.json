@@ -56,5 +56,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "inlinedDependencies": {
+    "hookable": "6.1.0"
   }
 }
