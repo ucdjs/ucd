@@ -6,6 +6,8 @@ engineStrict: true
 ignoreScripts: true
 minimumReleaseAge: 5760 # 4 days
 trustPolicy: "no-downgrade"
+strictDepBuilds: true
+blockExoticSubdeps: true
 
 minimumReleaseAgeExclude:
   - "@luxass/eslint-config"

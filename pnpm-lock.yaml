@@ -1382,6 +1382,9 @@ importers:
       '@ucdjs/pipelines-executor':
         specifier: workspace:*
         version: link:../pipeline-executor
+      '@ucdjs/pipelines-graph':
+        specifier: workspace:*
+        version: link:../pipeline-graph
       '@ucdjs/pipelines-loader':
         specifier: workspace:*
         version: link:../pipeline-loader
