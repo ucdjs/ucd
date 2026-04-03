@@ -87,6 +87,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/moonbeam": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipelines-graph": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
     "@ucdjs/pipelines-loader": "workspace:*",
     "@vitejs/plugin-react": "catalog:build",
