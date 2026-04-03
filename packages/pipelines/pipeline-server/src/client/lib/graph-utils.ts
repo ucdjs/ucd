@@ -1,6 +1,6 @@
 import type { ExecutionGraphEdgeView, ExecutionGraphNodeView, ExecutionGraphView } from "#shared/schemas/graph";
 import type { PipelineDetails } from "#shared/schemas/pipeline";
-import type { PipelineGraphNodeType } from "@ucdjs/pipelines-core";
+import type { PipelineGraphNodeType } from "@ucdjs/pipelines-graph";
 import type { Edge, Node } from "@xyflow/react";
 import { getGraphEdgeStyle, getNodeColor } from "#shared/lib/graph";
 import { applyLayeredLayout } from "./graph-layout";

@@ -43,14 +43,6 @@ export {
 } from "./filters";
 
 export type {
-  PipelineGraph,
-  PipelineGraphEdge,
-  PipelineGraphEdgeType,
-  PipelineGraphNode,
-  PipelineGraphNodeType,
-} from "./graph";
-
-export type {
   FilesystemOutputSinkDefinition,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
@@ -140,8 +132,3 @@ export type {
   ResolvedEntry,
   RowContext,
 } from "./types";
-
-export {
-  splitMinFields,
-  splitTwoFields,
-} from "./utils";

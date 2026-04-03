@@ -9,3 +9,11 @@ export {
   findEdges,
   toVisualTree,
 } from "./graph-utils";
+
+export type {
+  PipelineGraph,
+  PipelineGraphEdge,
+  PipelineGraphEdgeType,
+  PipelineGraphNode,
+  PipelineGraphNodeType,
+} from "./types";
