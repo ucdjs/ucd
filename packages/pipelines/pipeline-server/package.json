@@ -1,6 +1,6 @@
 {
   "name": "@ucdjs/pipeline-server",
-  "version": "0.0.1-beta.11",
+  "version": "0.0.1-beta.12",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
