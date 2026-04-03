@@ -4,7 +4,7 @@ import type { EdgeChange, NodeChange, NodeMouseHandler, NodeTypes } from "@xyflo
 import { applyDefinitionLayout, definitionGraphToFlow, filterToNeighbors } from "#lib/graph-utils";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { applyEdgeChanges, applyNodeChanges, Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DefinitionOutputNodeRenderer, DefinitionRouteNodeRenderer } from "./definition-node";
 import "@xyflow/react/dist/style.css";
 
@@ -36,12 +36,12 @@ export function DefinitionGraph({
   mode = "full",
   className,
 }: DefinitionGraphProps) {
-  const { allNodes, allEdges } = (() => {
+  const { allNodes, allEdges } = useMemo(() => {
     const { nodes, edges } = definitionGraphToFlow(pipeline, { includeOutputs });
     return { allNodes: nodes, allEdges: edges };
-  })();
+  }, [pipeline, includeOutputs]);
 
-  const { initialNodes, initialEdges } = (() => {
+  const { initialNodes, initialEdges } = useMemo(() => {
     let layoutNodes = allNodes;
     let layoutEdges = allEdges;
 
@@ -53,7 +53,7 @@ export function DefinitionGraph({
 
     const positioned = applyDefinitionLayout(layoutNodes, layoutEdges);
     return { initialNodes: positioned, initialEdges: layoutEdges };
-  })();
+  }, [allNodes, allEdges, mode, selectedRouteId]);
 
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
