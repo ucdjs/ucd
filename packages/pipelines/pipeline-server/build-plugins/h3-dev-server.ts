@@ -91,8 +91,12 @@ export function h3DevServerPlugin(): Plugin {
           return next();
         }
 
+        const start = performance.now();
+
         // If database failed to initialize, return error
         if (!db) {
+          // eslint-disable-next-line no-console
+          console.log(`[h3-dev-server] ${req.method} ${req.url} -> 500 (database not initialized)`);
           res.statusCode = 500;
           res.setHeader("content-type", "application/json");
           res.end(JSON.stringify({
@@ -122,6 +126,10 @@ export function h3DevServerPlugin(): Plugin {
             }),
           );
 
+          const duration = (performance.now() - start).toFixed(1);
+          // eslint-disable-next-line no-console
+          console.log(`[h3-dev-server] ${req.method} ${req.url} -> ${response.status} (${duration}ms)`);
+
           res.statusCode = response.status;
           response.headers.forEach((value, key) => {
             res.setHeader(key, value);
@@ -133,6 +141,8 @@ export function h3DevServerPlugin(): Plugin {
             res.end();
           }
         } catch (err) {
+          const duration = (performance.now() - start).toFixed(1);
+          console.error(`[h3-dev-server] ${req.method} ${req.url} -> 500 (${duration}ms)`, err);
           if (!res.headersSent) {
             res.statusCode = 500;
             res.setHeader("content-type", "application/json");
