@@ -1,5 +1,15 @@
 # @ucdjs/client
 
+## [0.1.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.8...@ucdjs/client@0.1.1-beta.9) (2026-04-03)
+
+
+### 🚀 Features
+* remove deprecated client.manifest.get method ([5c6d01a0](https://github.com/ucdjs/ucd/commit/5c6d01a05b78e7725c5ed60543c5405286e2d6bd)) (by [@luxass](https://github.com/luxass))
+
+### 📚 Documentation
+* update READMEs and add pipeline-server README ([25936ff5](https://github.com/ucdjs/ucd/commit/25936ff511b9fbed286c20b811c6ef2099f9588b)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.8...@ucdjs/client@0.1.1-beta.8) (2026-03-29)
 
 
