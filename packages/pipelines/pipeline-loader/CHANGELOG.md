@@ -1,5 +1,28 @@
 # @ucdjs/pipeline-loader
 
+## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.9...@ucdjs/pipeline-loader@0.0.1-beta.10) (2026-04-03)
+
+
+### 🚀 Features
+* typed errors, bundle error classification, non-throwing findPipelineFiles ([f18f5e4b](https://github.com/ucdjs/ucd/commit/f18f5e4bfcb05121279fa350689e224726ba4ebd)) (by [@luxass](https://github.com/luxass))
+* implement bundling and internal exports ([0b8affd2](https://github.com/ucdjs/ucd/commit/0b8affd2a80b5a94bed4c6a9a8f479af2a01a072)) (by [@luxass](https://github.com/luxass))
+* implement remote module bundling and loading functionality ([ce41583d](https://github.com/ucdjs/ucd/commit/ce41583daa9c5ae2ad2e6c2ff860eae40ac80bda)) (by [@luxass](https://github.com/luxass))
+* add oxc-parser and picomatch dependencies ([f22052af](https://github.com/ucdjs/ucd/commit/f22052af0b7c39d908eee5fd480e89c2acc614df)) (by [@luxass](https://github.com/luxass))
+* add tests for loading pipelines from remote sources ([b3a5b527](https://github.com/ucdjs/ucd/commit/b3a5b5272d0b3b97bad07a1adc99656bb36b0c83)) (by [@luxass](https://github.com/luxass))
+* add remote and insecure modules with loading functionality ([41eec65a](https://github.com/ucdjs/ucd/commit/41eec65a492f424072eef3d0ff8e74e2ddb7de3b)) (by [@luxass](https://github.com/luxass))
+* initialize pipeline packages with basic structure ([18995811](https://github.com/ucdjs/ucd/commit/18995811e25bef40443dc2db62c07aa5d0aaf985)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* normalize file path in test assertion ([acb4f52c](https://github.com/ucdjs/ucd/commit/acb4f52c5750ba1b444a0b8d2c6c2076e8fb3009)) (by [@luxass](https://github.com/luxass))
+* remove internal entry from build config and exports ([0f3de293](https://github.com/ucdjs/ucd/commit/0f3de2939243e0ff60abae26972c64760913b876)) (by [@luxass](https://github.com/luxass))
+* prevent path traversal in GitHub and GitLab repo downloads ([c16492f3](https://github.com/ucdjs/ucd/commit/c16492f3771e8ed2098477ebeca7b852ae8cfa9c)) (by [@luxass](https://github.com/luxass))
+* use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
+* update URL in test for rejecting full URL import specifiers ([362a359c](https://github.com/ucdjs/ucd/commit/362a359cb741fe32ac292023c559fc2c3f851143)) (by [@luxass](https://github.com/luxass))
+
+### 📚 Documentation
+* rewrite README with accurate description and examples ([c50f5863](https://github.com/ucdjs/ucd/commit/c50f58639ef876d20e3f1391211f65291e21a781)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.9](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.8...@ucdjs/pipeline-loader@0.0.1-beta.9) (2026-04-03)
 
 
