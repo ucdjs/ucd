@@ -31,9 +31,9 @@ Parse standard UCD file formats:
 
 ```ts
 import {
-  standardParser,
   multiPropertyParser,
   sequenceParser,
+  standardParser,
   unicodeDataParser,
 } from "@ucdjs/pipeline-presets";
 ```
@@ -60,9 +60,9 @@ import {
   allRoutes,
   coreRoutes,
   emojiRoutes,
-  unicodeDataRoute,
   generalCategoryRoute,
   scriptsRoute,
+  unicodeDataRoute,
 } from "@ucdjs/pipeline-presets";
 ```
 
