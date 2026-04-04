@@ -1,5 +1,13 @@
 # @ucdjs/pipeline-server
 
+## [0.0.1-beta.13](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.12...@ucdjs/pipeline-server@0.0.1-beta.13) (2026-04-04)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.12...@ucdjs/pipeline-server@0.0.1-beta.13)
+
+
 ## [0.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.12...@ucdjs/pipeline-server@0.0.1-beta.12) (2026-04-03)
 
 

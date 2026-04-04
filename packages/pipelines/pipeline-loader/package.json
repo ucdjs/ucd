@@ -1,6 +1,6 @@
 {
   "name": "@ucdjs/pipeline-loader",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.11",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
