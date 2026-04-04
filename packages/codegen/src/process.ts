@@ -4,17 +4,31 @@ import { RawDataFile } from "@unicode-utils/core";
 
 const TXT_EXTENSION_RE = /\.txt$/;
 
-export interface CodegenFile {
-  /**
-   * The file path to the UCD data file.
-   */
-  filePath: string;
-
-  /**
-   * The Unicode version this file belongs to.
-   */
-  version: string;
-}
+export type CodegenFile =
+  | {
+    /**
+     * The file path to the UCD data file on disk.
+     */
+    filePath: string;
+    /**
+     * The Unicode version this file belongs to.
+     */
+    version: string;
+  }
+  | {
+    /**
+     * Pre-loaded file content. When provided, no disk read is performed.
+     */
+    content: string;
+    /**
+     * The file name (without extension) used to derive the interface and constant names.
+     */
+    fileName: string;
+    /**
+     * The Unicode version this file belongs to.
+     */
+    version: string;
+  };
 
 export type ProcessDataFile<T> = (datafile: RawDataFile, fileName: string, version: string) => Promise<T | null>;
 

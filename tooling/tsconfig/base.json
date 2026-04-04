@@ -7,6 +7,7 @@
       "@ucdjs/env": ["../../packages/env/src/index.ts"],
       "@ucdjs/client": ["../../packages/client/src/index.ts"],
       "@ucdjs/codegen": ["../../packages/codegen/src/index.ts"],
+      "@ucdjs/codegen/fields": ["../../packages/codegen/src/fields/run.ts"],
       "@ucdjs/lockfile": ["../../packages/lockfile/src/index.ts"],
       "@ucdjs/lockfile/test-utils": ["../../packages/lockfile/src/test-utils/index.ts"],
       "@ucdjs/schemas": ["../../packages/schemas/src/index.ts"],
