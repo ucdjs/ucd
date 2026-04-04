@@ -1,9 +1,9 @@
-import type { RawDataFile } from "@unicode-utils/core";
 import type { LanguageModel } from "ai";
 import type { CodegenFile } from "../process";
 import { createOpenAI } from "@ai-sdk/openai";
 import { sanitizeIdentifier, toPascalCase, toSnakeCase } from "@luxass/utils";
 import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
+import { RawDataFile } from "@unicode-utils/core";
 import { buildInterface, buildStringArray } from "../knitwork";
 import { processFile } from "../process";
 import { generateFields } from "./generate";
@@ -86,10 +86,17 @@ export async function runFieldsCodegen(options: FieldsCodegenOptions): Promise<P
   const model = options.model ?? createOpenAI({ apiKey: options.openaiKey })(options.modelId ?? "gpt-4o-mini");
   const limit = createConcurrencyLimiter(10);
 
-  const processPromises = options.files.map(({ filePath, version }) =>
-    limit(() => processFile(filePath, version, (datafile, fileName, ver) =>
-      generateFieldsCode(datafile, fileName, ver, model))),
-  );
+  const processPromises = options.files.map((file) => {
+    if ("content" in file) {
+      return limit(async () => {
+        const datafile = new RawDataFile(file.content);
+        return generateFieldsCode(datafile, file.fileName, file.version, model);
+      });
+    }
+    return limit(() =>
+      processFile(file.filePath, file.version, (datafile, fileName, ver) =>
+        generateFieldsCode(datafile, fileName, ver, model)));
+  });
 
   return Promise.all(processPromises)
     .then((results) => results.filter((r): r is ProcessedFieldsFile => r !== null));

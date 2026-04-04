@@ -1,10 +1,14 @@
+import type { CodegenFile } from "@ucdjs/codegen";
 import type { ProcessedFieldsFile } from "@ucdjs/codegen/fields";
 import type { CLIArguments } from "../../cli-utils";
-import { existsSync } from "node:fs";
-import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
+import { trimLeadingSlash } from "@luxass/utils";
+import { flattenFilePaths } from "@ucdjs-internal/shared";
+import { createUCDClient } from "@ucdjs/client";
 import { runFieldsCodegen } from "@ucdjs/codegen/fields";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
@@ -14,61 +18,130 @@ export interface CLICodegenFieldsCmdOptions {
     openaiKey?: string;
     outputDir?: string;
     bundle?: boolean | string;
+    storeDir?: string;
+    baseUrl?: string;
   }>;
-  inputPath: string;
+  versions: string[];
 }
 
 function flattenVersion(version: string): string {
-  // split version into parts
   const parts = version.split(".");
-  // remove trailing zeros
   while (parts.length > 1 && parts.at(-1) === "0") {
     parts.pop();
   }
   return parts.join(".");
 }
 
-interface FileWithVersion {
-  filePath: string;
-  version: string;
-}
+const VERSION_DIR_RE = /^\d+\.\d+\.\d+$/;
 
-const VERSION_PATTERN_RE = /v(\d+\.\d+\.\d+)/;
+async function collectRemoteFiles(
+  versions: string[],
+  baseUrl: string,
+): Promise<CodegenFile[]> {
+  const client = await createUCDClient(baseUrl);
 
-async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
-  const resolvedInputPath = path.resolve(inputPath);
-  const isDirectory = (await stat(resolvedInputPath)).isDirectory();
-  const filesWithVersion: FileWithVersion[] = [];
+  let resolvedVersions = versions;
+  if (resolvedVersions.length === 0) {
+    const { data, error } = await client.versions.list();
+    if (error || !data) {
+      throw new CLIError("Failed to fetch available Unicode versions from the API.", {
+        details: [error?.message ?? "No data returned."],
+      });
+    }
+    resolvedVersions = data.map((v) => v.version);
+  }
 
-  if (!isDirectory) {
-    // single file case - look for version in parent directory name
-    const parentDir = path.dirname(resolvedInputPath);
-    const versionMatch = parentDir.match(VERSION_PATTERN_RE);
-    const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
-    filesWithVersion.push({ filePath: resolvedInputPath, version });
-  } else {
-    const dir = await readdir(resolvedInputPath, {
-      withFileTypes: true,
-      recursive: true,
-    });
+  output.info(`Processing ${resolvedVersions.length} version(s): ${resolvedVersions.join(", ")}`);
 
-    for (const file of dir) {
-      if (!file.isFile() || !file.name.endsWith(".txt") || file.name.endsWith("Test.txt")) {
+  const files: CodegenFile[] = [];
+
+  for (const version of resolvedVersions) {
+    const { data: tree, error: treeError } = await client.versions.getFileTree(version);
+    if (treeError || !tree) {
+      output.warning(`Could not get file tree for version ${version}, skipping.`);
+      continue;
+    }
+
+    const paths = flattenFilePaths(tree);
+    const txtPaths = paths.filter((p) => p.endsWith(".txt") && !p.endsWith("Test.txt"));
+
+    output.info(`Found ${txtPaths.length} file(s) for version ${version}.`);
+
+    for (const treePath of txtPaths) {
+      const cleanPath = trimLeadingSlash(treePath);
+      const { data: content, error: fileError } = await client.files.get(cleanPath);
+
+      if (fileError || content == null || typeof content !== "string") {
+        output.warning(`Could not fetch ${cleanPath}, skipping.`);
         continue;
       }
 
-      const filePath = path.join(file.parentPath, file.name);
-      // extract version from path (e.g., v16.0.0)
-      const versionMatch = filePath.match(VERSION_PATTERN_RE);
-      const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
-      filesWithVersion.push({ filePath, version });
+      files.push({
+        content,
+        fileName: path.basename(cleanPath, ".txt"),
+        version: flattenVersion(version),
+      });
     }
   }
 
-  return filesWithVersion;
+  return files;
 }
 
-// write bundled files concurrently
+async function collectLocalFiles(
+  storeDir: string,
+  versions: string[],
+): Promise<CodegenFile[]> {
+  const resolvedStoreDir = path.resolve(storeDir);
+
+  let resolvedVersions = versions;
+  if (resolvedVersions.length === 0) {
+    const entries = await readdir(resolvedStoreDir, { withFileTypes: true });
+    resolvedVersions = entries
+      .filter((e) => e.isDirectory() && VERSION_DIR_RE.test(e.name))
+      .map((e) => e.name);
+
+    if (resolvedVersions.length === 0) {
+      throw new CLIError(`No version directories found in ${storeDir}.`, {
+        details: ["Expected directories named like 16.0.0, 15.0.0, etc."],
+      });
+    }
+  }
+
+  output.info(`Processing ${resolvedVersions.length} version(s): ${resolvedVersions.join(", ")}`);
+
+  const files: CodegenFile[] = [];
+
+  for (const version of resolvedVersions) {
+    const versionDir = path.join(resolvedStoreDir, version);
+    let entries;
+
+    try {
+      entries = await readdir(versionDir, { withFileTypes: true, recursive: true });
+    } catch {
+      output.warning(`Could not read directory ${versionDir}, skipping version ${version}.`);
+      continue;
+    }
+
+    const txtEntries = entries.filter(
+      (e) => e.isFile() && e.name.endsWith(".txt") && !e.name.endsWith("Test.txt"),
+    );
+
+    output.info(`Found ${txtEntries.length} file(s) for version ${version}.`);
+
+    for (const entry of txtEntries) {
+      const filePath = path.join(entry.parentPath, entry.name);
+      const content = await readFile(filePath, "utf-8");
+      files.push({
+        content,
+        fileName: path.basename(entry.name, ".txt"),
+        version: flattenVersion(version),
+      });
+    }
+  }
+
+  return files;
+}
+
 async function writeBundledFile(
   version: string,
   results: ProcessedFieldsFile[],
@@ -79,14 +152,12 @@ async function writeBundledFile(
   bundledCode += `// Unicode Version: ${version}\n\n`;
 
   for (const result of results) {
-    const relativePath = path.relative(process.cwd(), result.fileName);
-    bundledCode += `\n// #region ${relativePath}\n`;
+    bundledCode += `\n// #region ${result.fileName}\n`;
     bundledCode += result.code;
     bundledCode += `\n// #endregion\n`;
   }
 
   const bundleFileName = bundleTemplate.replace("{version}", version);
-  // handle absolute and relative paths differently than bare filenames
   let bundlePath;
   if (path.isAbsolute(bundleFileName) || bundleFileName.startsWith("./") || bundleFileName.startsWith("../")) {
     bundlePath = path.resolve(bundleFileName);
@@ -96,33 +167,28 @@ async function writeBundledFile(
     bundlePath = path.resolve(bundleFileName);
   }
 
-  // ensure .ts extension
   if (!bundlePath.endsWith(".ts")) {
     bundlePath += ".ts";
   }
 
-  // ensure directory exists
   await mkdir(path.dirname(bundlePath), { recursive: true });
-
-  await writeFile(
-    bundlePath,
-    bundledCode,
-    "utf-8",
-  );
+  await writeFile(bundlePath, bundledCode, "utf-8");
   output.success(`Generated bundled fields for Unicode ${version} in ${bundlePath}`);
 }
 
-export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdOptions) {
+export async function runFieldCodegen({ versions, flags }: CLICodegenFieldsCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
-      headline: "Generate Unicode Data Files",
+      headline: "Generate TypeScript field definitions from Unicode data files",
       commandName: "ucd codegen fields",
-      usage: "<input> [...flags]",
+      usage: "[versions...] [...flags]",
       tables: {
         Flags: [
           ["--openai-key (-k)", "The OpenAI API key to use. (can also be set using OPENAI_API_KEY env var)"],
-          ["--output-dir", "Specify the output directory for generated files (defaults to .codegen)"],
-          ["--bundle <filename>", "Combine generated files into a single file per version. Use {version} placeholder for version-specific naming"],
+          ["--store-dir", "Read files from a local UCD store directory instead of the remote API."],
+          ["--base-url", "Base URL for the remote UCD API. (default: api.ucdjs.dev)"],
+          ["--output-dir", "Output directory for generated files. (default: .codegen)"],
+          ["--bundle <filename>", "Combine generated files into a single file per version. Use {version} for version-specific naming."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -137,63 +203,41 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     });
   }
 
-  if (inputPath == null) {
-    throw new CLIError("No input path provided.", {
-      details: ["Please provide an input path as the first argument."],
-    });
+  const files = flags.storeDir
+    ? await collectLocalFiles(flags.storeDir, versions)
+    : await collectRemoteFiles(versions, flags.baseUrl ?? UCDJS_API_BASE_URL);
+
+  if (files.length === 0) {
+    output.warning("No files found to process.");
+    return;
   }
 
-  const resolvedInputPath = path.resolve(inputPath);
+  output.info(`Found ${files.length} files to process.`);
 
-  if (!existsSync(resolvedInputPath)) {
-    throw new CLIError(`Invalid input path: ${inputPath}`, {
-      details: ["The specified input path does not exist. Please provide a valid input path."],
-    });
-  }
+  const results = await runFieldsCodegen({ files, openaiKey });
 
   const shouldBundle = typeof flags.bundle === "string" || flags.bundle === true;
   const bundleTemplate = typeof flags.bundle === "string" ? flags.bundle : "index.ts";
 
-  // extract output directory from bundle path if it's relative/absolute
   let outputDir = flags.outputDir;
   if (!outputDir) {
     if (shouldBundle && (path.isAbsolute(bundleTemplate) || bundleTemplate.startsWith("./") || bundleTemplate.startsWith("../"))) {
       outputDir = path.dirname(bundleTemplate);
     } else {
-      outputDir = path.join(path.dirname(resolvedInputPath), ".codegen");
+      outputDir = path.join(process.cwd(), ".codegen");
     }
   }
 
-  if (outputDir) {
-    await mkdir(outputDir, { recursive: true });
-  }
-
-  // STEP 1: Scan files without concurrency limits
-  const filesWithVersion = await scanFiles(inputPath);
-
-  output.info(`Found ${filesWithVersion.length} files to process.`);
-
-  const results = await runFieldsCodegen({
-    files: filesWithVersion,
-    openaiKey,
-  });
-
-  const writePromises = [];
+  await mkdir(outputDir, { recursive: true });
 
   if (!shouldBundle) {
-    // write individual files with concurrency limit
-    writePromises.push(...results.map((result: ProcessedFieldsFile) => writeFile(
-      path.join(outputDir, `${result.fileName}.ts`),
-      result.code,
-      "utf-8",
-    )));
-
-    await Promise.all(writePromises);
+    await Promise.all(results.map((result: ProcessedFieldsFile) =>
+      writeFile(path.join(outputDir, `${result.fileName}.ts`), result.code, "utf-8"),
+    ));
     output.success(`Generated fields for ${results.length} files in ${outputDir}`);
     return;
   }
 
-  // group results by version
   const resultsByVersion = new Map<string, ProcessedFieldsFile[]>();
   for (const result of results) {
     const versionResults = resultsByVersion.get(result.version) ?? [];
@@ -201,8 +245,8 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     resultsByVersion.set(result.version, versionResults);
   }
 
-  // write bundled files with concurrency limit
-  const bundlePromises = Array.from(resultsByVersion.entries(), ([version, versionResults]) => writeBundledFile(version, versionResults, bundleTemplate, outputDir));
-
-  await Promise.all(bundlePromises);
+  await Promise.all(
+    Array.from(resultsByVersion.entries(), ([version, versionResults]) =>
+      writeBundledFile(version, versionResults, bundleTemplate, outputDir)),
+  );
 }
