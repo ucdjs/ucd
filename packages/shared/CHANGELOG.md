@@ -1,5 +1,13 @@
 # @ucdjs-internal/shared
 
+## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.10...@ucdjs-internal/shared@0.2.0) (2026-04-04)
+
+
+### 🚀 Features
+* introduce codegen package ([a182c590](https://github.com/ucdjs/ucd/commit/a182c590f0cea081e2019d2200af40fe31dc460f)) (by [@luxass](https://github.com/luxass))
+* introduce codegen package ([a182c590](https://github.com/ucdjs/ucd/commit/a182c590f0cea081e2019d2200af40fe31dc460f)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.10...@ucdjs-internal/shared@0.1.1-beta.10) (2026-04-03)
 
 
