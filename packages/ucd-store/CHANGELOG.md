@@ -1,6 +1,14 @@
 # @ucdjs/ucd-store
 
-## [1.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.11...@ucdjs/ucd-store@1.0.1-beta.11) (2026-04-04)
+## [1.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.11...@ucdjs/ucd-store@1.0.1-beta.12) (2026-04-04)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.11...@ucdjs/ucd-store@1.0.1-beta.12)
+
+
+## [1.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.11...@ucdjs/ucd-store@1.0.1-beta.11) (2026-04-03)
 
 
 *No significant changes*

@@ -76,7 +76,7 @@
     "version": "0.1.0"
   },
   "@ucdjs/ucd-store": {
-    "type": "none",
-    "version": "1.0.1-beta.11"
+    "type": "patch",
+    "version": "1.0.1-beta.12"
   }
 }
