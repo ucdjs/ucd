@@ -1,10 +1,10 @@
-import type { ProcessedFile } from "@ucdjs/schema-gen";
+import type { ProcessedFile } from "@ucdjs/codegen";
 import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { runSchemagen } from "@ucdjs/schema-gen";
+import { runCodegen } from "@ucdjs/codegen";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
@@ -173,7 +173,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
   output.info(`Found ${filesWithVersion.length} files to process.`);
 
-  const results = await runSchemagen({
+  const results = await runCodegen({
     files: filesWithVersion,
     openaiKey,
   });

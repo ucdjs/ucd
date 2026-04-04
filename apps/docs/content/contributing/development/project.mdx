@@ -18,7 +18,7 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
 - Pipelines: @ucdjs/pipeline-* (internal extraction/build path)
 - API and Store: apps/api, apps/store
 - CLI and Apps: @ucdjs/cli, apps/web, apps/docs
-- Schemas and generation: @ucdjs/schemas, @ucdjs/schema-gen
+- Schemas and generation: @ucdjs/schemas, @ucdjs/codegen
 
 ## High-Level Flow
 
@@ -93,7 +93,7 @@ Example (API access via CLI):
 
 ## Schemas and Generation
 
-@ucdjs/schemas provides Zod schemas for Unicode data files, and @ucdjs/schema-gen generates schemas from raw Unicode data. The OpenAPI spec is generated from Zod schemas and drives @ucdjs/client.
+@ucdjs/schemas provides Zod schemas for Unicode data files, and @ucdjs/codegen generates TypeScript field definitions from raw Unicode data using AI. The OpenAPI spec is generated from Zod schemas and drives @ucdjs/client.
 
 ## Tooling and Development Utilities
 

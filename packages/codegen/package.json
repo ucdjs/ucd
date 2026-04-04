@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/schema-gen",
-  "version": "0.2.3-beta.10",
+  "name": "@ucdjs/codegen",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/schema-gen"
+    "directory": "packages/codegen"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
@@ -38,11 +38,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "catalog:runtime",
-    "@luxass/unicode-utils-old": "catalog:runtime",
     "@luxass/utils": "catalog:runtime",
     "@ucdjs-internal/shared": "workspace:*",
+    "@unicode-utils/core": "catalog:runtime",
     "ai": "catalog:runtime",
-    "knitwork": "catalog:runtime",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

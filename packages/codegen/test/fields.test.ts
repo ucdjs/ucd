@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { RawDataFile } from "@luxass/unicode-utils-old";
+import { RawDataFile } from "@unicode-utils/core";
 import { MockLanguageModelV3 } from "ai/test";
 import { describe, expect, it } from "vitest";
 import { generateFields } from "../src/fields";
@@ -10,37 +10,9 @@ import { generateFields } from "../src/fields";
 const ROOT_UCD_FILES_PATH = fileURLToPath(new URL("../../../test/ucd-files", import.meta.url));
 
 describe("generateFields", () => {
-  it("should return null when datafile has no heading", async () => {
-    const result = await generateFields({
-      datafile: new RawDataFile("TEST", "TEST"),
-      model: new MockLanguageModelV3({
-        doGenerate: async () => ({
-          finishReason: { raw: undefined, unified: "stop" },
-          usage: {
-            inputTokens: {
-              total: 5000,
-              noCache: 5000,
-              cacheRead: undefined,
-              cacheWrite: undefined,
-            },
-            outputTokens: {
-              total: 20,
-              text: 20,
-              reasoning: undefined,
-            },
-          },
-          warnings: [],
-          content: [{ type: "text", text: `{"fields": []}` }],
-        }),
-      }),
-    });
-
-    expect(result).toBeNull();
-  });
-
   it("should return null when neither apiKey nor model is provided", async () => {
     const result = await generateFields({
-      datafile: new RawDataFile("# TEST", "TEST"),
+      datafile: new RawDataFile("# TEST"),
     });
 
     expect(result).toBeNull();
@@ -50,7 +22,7 @@ describe("generateFields", () => {
     const arabicShapingContent = await readFile(path.join(ROOT_UCD_FILES_PATH, "./v16/ArabicShaping.txt"), "utf-8");
 
     const result = await generateFields({
-      datafile: new RawDataFile(arabicShapingContent, "ArabicShaping"),
+      datafile: new RawDataFile(arabicShapingContent),
       model: new MockLanguageModelV3({
         doGenerate: async () => ({
           finishReason: { raw: undefined, unified: "stop" },

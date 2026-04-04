@@ -44,8 +44,8 @@ catalogs:
       specifier: 1.167.12
       version: 1.167.12
     '@ucdjs/release-scripts':
-      specifier: 0.1.2
-      version: 0.1.2
+      specifier: 0.1.7
+      version: 0.1.7
     '@vitejs/plugin-react':
       specifier: 6.0.1
       version: 6.0.1
@@ -221,9 +221,6 @@ catalogs:
     '@luxass/msw-utils':
       specifier: 0.6.1
       version: 0.6.1
-    '@luxass/unicode-utils-old':
-      specifier: npm:@luxass/unicode-utils@0.11.0
-      version: 0.11.0
     '@luxass/utils':
       specifier: 2.7.3
       version: 2.7.3
@@ -243,8 +240,8 @@ catalogs:
       specifier: 2.6.1
       version: 2.6.1
     '@unicode-utils/core':
-      specifier: 0.12.0-beta.24
-      version: 0.12.0-beta.24
+      specifier: 0.12.0-beta.27
+      version: 0.12.0-beta.27
     ai:
       specifier: 6.0.138
       version: 6.0.138
@@ -263,9 +260,6 @@ catalogs:
     hookable:
       specifier: 6.1.0
       version: 6.1.0
-    knitwork:
-      specifier: 1.3.0
-      version: 1.3.0
     obug:
       specifier: 2.1.1
       version: 2.1.1
@@ -378,7 +372,7 @@ importers:
         version: 22.19.15
       '@ucdjs/release-scripts':
         specifier: catalog:build
-        version: 0.1.2
+        version: 0.1.7
       '@ucdjs/ucdjs-scripts':
         specifier: workspace:*
         version: link:packages/ucdjs-scripts
@@ -426,7 +420,7 @@ importers:
         version: link:../../packages/schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -602,7 +596,7 @@ importers:
         version: link:../../packages/schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -693,7 +687,7 @@ importers:
         version: link:../../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       lucide-react:
         specifier: catalog:frontend
         version: 1.7.0(react@19.2.4)
@@ -816,6 +810,9 @@ importers:
       '@ucdjs/client':
         specifier: workspace:*
         version: link:../client
+      '@ucdjs/codegen':
+        specifier: workspace:*
+        version: link:../codegen
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -828,15 +825,12 @@ importers:
       '@ucdjs/pipeline-executor':
         specifier: workspace:*
         version: link:../pipelines/pipeline-executor
-      '@ucdjs/schema-gen':
-        specifier: workspace:*
-        version: link:../schema-gen
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       eslint:
         specifier: catalog:lint
         version: 10.1.0(jiti@2.6.1)
@@ -901,6 +895,52 @@ importers:
       tsx:
         specifier: catalog:build
         version: 4.21.0
+      typescript:
+        specifier: catalog:build
+        version: 6.0.2
+      vitest-testdirs:
+        specifier: catalog:test
+        version: 4.4.3(vitest@4.1.2)
+
+  packages/codegen:
+    dependencies:
+      '@ai-sdk/openai':
+        specifier: catalog:runtime
+        version: 3.0.48(zod@4.3.6)
+      '@luxass/utils':
+        specifier: catalog:runtime
+        version: 2.7.3
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@unicode-utils/core':
+        specifier: catalog:runtime
+        version: 0.12.0-beta.27
+      ai:
+        specifier: catalog:runtime
+        version: 6.0.138(zod@4.3.6)
+      zod:
+        specifier: catalog:runtime
+        version: 4.3.6
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.4.2(@eslint-react/eslint-plugin@3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@vue/compiler-sfc@3.5.31)(eslint-plugin-format@2.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(vitest@4.1.2)
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:lint
+        version: 10.1.0(jiti@2.6.1)
+      publint:
+        specifier: catalog:build
+        version: 0.3.18
+      tsdown:
+        specifier: catalog:build
+        version: 0.21.7(publint@0.3.18)(synckit@0.11.12)(typescript@6.0.2)
       typescript:
         specifier: catalog:build
         version: 6.0.2
@@ -1476,55 +1516,6 @@ importers:
         specifier: catalog:runtime
         version: 4.3.6
 
-  packages/schema-gen:
-    dependencies:
-      '@ai-sdk/openai':
-        specifier: catalog:runtime
-        version: 3.0.48(zod@4.3.6)
-      '@luxass/unicode-utils-old':
-        specifier: catalog:runtime
-        version: '@luxass/unicode-utils@0.11.0'
-      '@luxass/utils':
-        specifier: catalog:runtime
-        version: 2.7.3
-      '@ucdjs-internal/shared':
-        specifier: workspace:*
-        version: link:../shared
-      ai:
-        specifier: catalog:runtime
-        version: 6.0.138(zod@4.3.6)
-      knitwork:
-        specifier: catalog:runtime
-        version: 1.3.0
-      zod:
-        specifier: catalog:runtime
-        version: 4.3.6
-    devDependencies:
-      '@luxass/eslint-config':
-        specifier: catalog:lint
-        version: 7.4.2(@eslint-react/eslint-plugin@3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/rule-tester@8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@typescript-eslint/typescript-estree@8.58.0(typescript@6.0.2))(@typescript-eslint/utils@8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2))(@vue/compiler-sfc@3.5.31)(eslint-plugin-format@2.0.1(eslint@10.1.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.2(eslint@10.1.0(jiti@2.6.1)))(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)(vitest@4.1.2)
-      '@ucdjs-tooling/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@ucdjs-tooling/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
-      eslint:
-        specifier: catalog:lint
-        version: 10.1.0(jiti@2.6.1)
-      publint:
-        specifier: catalog:build
-        version: 0.3.18
-      tsdown:
-        specifier: catalog:build
-        version: 0.21.7(publint@0.3.18)(synckit@0.11.12)(typescript@6.0.2)
-      typescript:
-        specifier: catalog:build
-        version: 6.0.2
-      vitest-testdirs:
-        specifier: catalog:test
-        version: 4.4.3(vitest@4.1.2)
-
   packages/schemas:
     dependencies:
       '@luxass/utils':
@@ -1569,7 +1560,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       obug:
         specifier: catalog:runtime
         version: 2.1.1
@@ -1730,7 +1721,7 @@ importers:
         version: link:../utils
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       msw:
         specifier: catalog:test
         version: 2.12.14(@types/node@25.5.0)(typescript@6.0.2)
@@ -1803,7 +1794,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1852,7 +1843,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -2066,7 +2057,7 @@ importers:
         version: link:../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.24
+        version: 0.12.0-beta.27
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.7.1
@@ -3128,9 +3119,6 @@ packages:
 
   '@luxass/spectral-ruleset@1.1.1':
     resolution: {integrity: sha512-Zkh66bEjI4Tq0+CBjWJbWafkSayuna+WLQQsWBDbht5ZOO1YLv3rk8CUHnKrZaGZeyLlbbjItNT/vDbhGRhTeQ==}
-
-  '@luxass/unicode-utils@0.11.0':
-    resolution: {integrity: sha512-SjXHMnldUuqYY4NcyD8peL3HJglYxSgGHzpjqkAzG6gwyvlJSnZgmoz5UcFuuxpk0aM9flY5QcWOnx/080zDfA==}
 
   '@luxass/utils@2.7.3':
     resolution: {integrity: sha512-+1ZqFLZAmPjtBhEjotGuXSwh/tGPn2Q03L+gUY3RM0psLYpnLpec3SFNOLOoEJDtX+9+5dInuD8GFrCqWgw4Mw==}
@@ -5020,20 +5008,20 @@ packages:
     resolution: {integrity: sha512-CI0NhTrz4EBaa0U+HaaUZrJhPoso8sG7ZFya8uQoBA57fjzrjRSv87ekCjLZOFExN+gXE/z0xuN2QfH4H2HrLQ==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.2':
-    resolution: {integrity: sha512-mQtLQLrt4AYR7DqVcmQOvxmHfG95c5uoJnagdkxDtygw/ex4yLkzpJ/5BKRZ1qfvDSBmiZgVsIbc+EgsNR5QgA==}
+  '@ucdjs/release-scripts@0.1.7':
+    resolution: {integrity: sha512-jRmHo5H2PQ5Rj6OAvMk21uYAOwCf21Us8XHTCe7Dzaga1L/52JBFpYEZM77+x24xjgunwdrEjauwnRwGTbObZQ==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unicode-utils/core@0.12.0-beta.24':
-    resolution: {integrity: sha512-FKeSy33OIqAksmsJ98FQif2S3U//lA1WW1Xff4V0ksUtXRuxRIKsjB3ecFiFwpUcgEq3CMOoTUYbvDuf9h3KjQ==}
+  '@unicode-utils/core@0.12.0-beta.27':
+    resolution: {integrity: sha512-N5iVKgFnpW1fvh1hGW9oCwlw2kDqOOD36LQ7w1QgaAK1VaGgWQL8p+g+TPHu7lJLZyg2Rov3y/D6nwKJPVp9+Q==}
 
-  '@unicode-utils/metadata@0.12.0-beta.24':
-    resolution: {integrity: sha512-MMCk6qZq8//VdVzesezjBP0h/a8lERV1tOliy43AjpdyQdypqdF9GH7vePw9KfpMk8HoxprdBLd1/2hyZTZsiw==}
+  '@unicode-utils/metadata@0.12.0-beta.27':
+    resolution: {integrity: sha512-zlaU00eLPLFo1+n2hP1KDZ3QFIfym5PdCddHv0oPQh1bdVyReIqBqBJUKg2bNv/ZNSUtkyLOBsakk4bR4j/wXQ==}
 
-  '@unicode-utils/parser@0.12.0-beta.24':
-    resolution: {integrity: sha512-suazd1BDS3jl2CTJ0Ar4JmM2dqlJqaGnpQm6nt6nd2IThjdkyIyO43ph/BEReJJFHJVl494AqEo+qha4A3l0jQ==}
+  '@unicode-utils/parser@0.12.0-beta.27':
+    resolution: {integrity: sha512-CBuTy4x4PKBkpZpuvdupeP8YTK2bTYwjWUdsifkmmyB1U7c1I+UTTPQJMiw19b06cBuHmoOZ47gx1MAs4DSRNw==}
 
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
@@ -7394,9 +7382,6 @@ packages:
   kleur@4.1.5:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
-
-  knitwork@1.3.0:
-    resolution: {integrity: sha512-4LqMNoONzR43B1W0ek0fhXMsDNW/zxa1NdFAVMY+k28pgZLovR4G3PB5MrpTxCy1QaZCqNoiaKPr5w5qZHfSNw==}
 
   langium@4.2.1:
     resolution: {integrity: sha512-zu9QWmjpzJcomzdJQAHgDVhLGq5bLosVak1KVa40NzQHXfqr4eAHupvnPOVXEoLkg6Ocefvf/93d//SB7du4YQ==}
@@ -10345,9 +10330,9 @@ snapshots:
 
   '@eslint-react/ast@3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)':
     dependencies:
-      '@typescript-eslint/types': 8.57.2
+      '@typescript-eslint/types': 8.58.0
       '@typescript-eslint/typescript-estree': 8.57.2(typescript@6.0.2)
-      '@typescript-eslint/utils': 8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
+      '@typescript-eslint/utils': 8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       eslint: 10.1.0(jiti@2.6.1)
       string-ts: 2.3.1
       typescript: 6.0.2
@@ -10359,9 +10344,9 @@ snapshots:
       '@eslint-react/ast': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@eslint-react/shared': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@eslint-react/var': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@typescript-eslint/scope-manager': 8.57.2
-      '@typescript-eslint/types': 8.57.2
-      '@typescript-eslint/utils': 8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
+      '@typescript-eslint/scope-manager': 8.58.0
+      '@typescript-eslint/types': 8.58.0
+      '@typescript-eslint/utils': 8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       eslint: 10.1.0(jiti@2.6.1)
       ts-pattern: 5.9.0
       typescript: 6.0.2
@@ -10400,9 +10385,9 @@ snapshots:
     dependencies:
       '@eslint-react/ast': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       '@eslint-react/shared': 3.0.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
-      '@typescript-eslint/scope-manager': 8.57.2
-      '@typescript-eslint/types': 8.57.2
-      '@typescript-eslint/utils': 8.57.2(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
+      '@typescript-eslint/scope-manager': 8.58.0
+      '@typescript-eslint/types': 8.58.0
+      '@typescript-eslint/utils': 8.58.0(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2)
       eslint: 10.1.0(jiti@2.6.1)
       ts-pattern: 5.9.0
       typescript: 6.0.2
@@ -10776,10 +10761,6 @@ snapshots:
       msw: 2.12.14(@types/node@25.5.0)(typescript@6.0.2)
 
   '@luxass/spectral-ruleset@1.1.1': {}
-
-  '@luxass/unicode-utils@0.11.0':
-    dependencies:
-      '@luxass/utils': 2.7.3
 
   '@luxass/utils@2.7.3':
     dependencies:
@@ -12784,7 +12765,7 @@ snapshots:
   '@typescript-eslint/project-service@8.57.2(typescript@6.0.2)':
     dependencies:
       '@typescript-eslint/tsconfig-utils': 8.57.2(typescript@6.0.2)
-      '@typescript-eslint/types': 8.57.2
+      '@typescript-eslint/types': 8.58.0
       debug: 4.4.3(supports-color@10.2.2)
       typescript: 6.0.2
     transitivePeerDependencies:
@@ -12929,7 +12910,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.2':
+  '@ucdjs/release-scripts@0.1.7':
     dependencies:
       '@luxass/utils': 2.7.3
       commit-parser: 1.3.1
@@ -12940,18 +12921,18 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unicode-utils/core@0.12.0-beta.24':
+  '@unicode-utils/core@0.12.0-beta.27':
     dependencies:
       '@luxass/utils': 2.7.3
-      '@unicode-utils/metadata': 0.12.0-beta.24
-      '@unicode-utils/parser': 0.12.0-beta.24
+      '@unicode-utils/metadata': 0.12.0-beta.27
+      '@unicode-utils/parser': 0.12.0-beta.27
       defu: 6.1.4
 
-  '@unicode-utils/metadata@0.12.0-beta.24':
+  '@unicode-utils/metadata@0.12.0-beta.27':
     dependencies:
       '@luxass/utils': 2.7.3
 
-  '@unicode-utils/parser@0.12.0-beta.24':
+  '@unicode-utils/parser@0.12.0-beta.27':
     dependencies:
       '@luxass/utils': 2.7.3
       defu: 6.1.4
@@ -15555,8 +15536,6 @@ snapshots:
   kleur@3.0.3: {}
 
   kleur@4.1.5: {}
-
-  knitwork@1.3.0: {}
 
   langium@4.2.1:
     dependencies:

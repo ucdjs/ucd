@@ -1,0 +1,49 @@
+---
+title: Codegen
+description: AI-powered TypeScript field generation
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Codegen
+
+AI-powered TypeScript field generation for Unicode data files.
+
+## Installation
+
+```package-install
+@ucdjs/codegen
+```
+
+## Overview
+
+The `@ucdjs/codegen` package provides tools to automatically generate TypeScript interfaces and field definitions from raw Unicode data files using AI models.
+
+## Usage
+
+The primary function is `runCodegen`, which processes a list of files and generates TypeScript code.
+
+```typescript title="generate.ts"
+import { runCodegen } from "@ucdjs/codegen";
+
+const results = await runCodegen({
+  files: [
+    {
+      filePath: "./data/UnicodeData.txt",
+      version: "15.1.0"
+    }
+  ],
+  openaiKey: process.env.OPENAI_API_KEY,
+  // Alternatively, provide a custom AI model
+  // model: myCustomModel
+});
+
+for (const result of results) {
+  console.log(`Generated code for ${result.fileName}:`);
+  console.log(result.code);
+}
+```
+
+<Callout type="info">
+  You must provide either an `openaiKey` or a custom `model` (from the AI SDK) to use the code generator.
+</Callout>

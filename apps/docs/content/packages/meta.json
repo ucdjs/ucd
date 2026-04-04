@@ -9,7 +9,7 @@
     "client",
     "ucd-store",
     "schemas",
-    "schema-gen",
+    "codegen",
     "fs-backend",
     "---Utilities---",
     "path-utils",

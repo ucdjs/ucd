@@ -1,4 +1,4 @@
-import type { RawDataFile } from "@luxass/unicode-utils-old";
+import type { RawDataFile } from "@unicode-utils/core";
 import type { LanguageModel } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { dedent } from "@luxass/utils";
@@ -187,10 +187,6 @@ export interface GenerateFieldsOptions {
 // eslint-disable-next-line ts/explicit-function-return-type
 export async function generateFields(options: GenerateFieldsOptions) {
   const { datafile, apiKey, model } = options;
-
-  if (datafile.heading == null) {
-    return null;
-  }
 
   if (!apiKey && !model) {
     return null;
