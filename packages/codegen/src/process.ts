@@ -4,8 +4,8 @@ import { RawDataFile } from "@unicode-utils/core";
 
 const TXT_EXTENSION_RE = /\.txt$/;
 
-export type CodegenFile =
-  | {
+export type CodegenFile
+  = | {
     /**
      * The file path to the UCD data file on disk.
      */
