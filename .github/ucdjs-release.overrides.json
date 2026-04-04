@@ -67,10 +67,6 @@
     "type": "patch",
     "version": "1.0.1"
   },
-  "@ucdjs/ucd-store": {
-    "type": "none",
-    "version": "1.0.1-beta.11"
-  },
   "@ucdjs/utils": {
     "type": "patch",
     "version": "0.2.1"
@@ -78,5 +74,9 @@
   "@ucdjs-internal/worker-utils": {
     "type": "minor",
     "version": "0.1.0"
+  },
+  "@ucdjs/ucd-store": {
+    "type": "none",
+    "version": "1.0.1-beta.11"
   }
 }
