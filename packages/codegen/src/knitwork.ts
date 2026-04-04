@@ -10,5 +10,5 @@ export function buildStringArray(values: string[]): string {
   if (values.length === 0) {
     return "[]";
   }
-  return `[${values.map(v => `"${v}"`).join(", ")}]`;
+  return `[${values.map((v) => `"${v}"`).join(", ")}]`;
 }
