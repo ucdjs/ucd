@@ -9,7 +9,7 @@
     "fs-backend",
     "lockfile",
     "path-utils",
-    "schema-gen",
+    "codegen",
     "schemas",
     "shared",
     "shared-ui",

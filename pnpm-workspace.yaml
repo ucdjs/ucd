@@ -27,7 +27,7 @@ packages:
 catalogs:
   build:
     turbo: 2.9.1
-    "@ucdjs/release-scripts": 0.1.2
+    "@ucdjs/release-scripts": 0.1.7
     tsdown: 0.21.7
     typescript: 6.0.2
     publint: 0.3.18
@@ -42,13 +42,11 @@ catalogs:
     "@tailwindcss/vite": 4.2.2
     "@vitejs/plugin-react": 6.0.1
     vite: 8.0.3
-    "@cloudflare/vite-plugin": 1.30.2
     "@tanstack/router-plugin": 1.167.12
     "@tanstack/devtools-vite": 0.6.0
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     drizzle-kit: 1.0.0-beta.20
-    oxc-transform: 0.121.0
     tinyglobby: 0.2.15
     "@ucdjs/textmate-grammars": 0.0.0
     "@rolldown/plugin-babel": 0.2.2
@@ -78,9 +76,9 @@ catalogs:
     eslint-plugin-react-refresh: 0.5.2
 
   runtime:
-    # merge these together when heading inference is implemented better
-    "@luxass/unicode-utils-old": npm:@luxass/unicode-utils@0.11.0
-    "@unicode-utils/core": 0.12.0-beta.24
+    "@unicode-utils/core": 0.12.0-beta.27
+    "@unicode-utils/parser": 0.12.0-beta.27
+    "@unicode-utils/metadata": 0.12.0-beta.27
     "@luxass/utils": 2.7.3
     farver: 0.4.2
     yargs-parser: 22.0.0
@@ -88,7 +86,6 @@ catalogs:
     zod: 4.3.6
     "@ai-sdk/openai": 3.0.48
     ai: 6.0.138
-    knitwork: 1.3.0
     picomatch: 4.0.4
     apache-autoindex-parse: 5.0.2
     pathe: 2.0.3
@@ -98,13 +95,11 @@ catalogs:
     hookable: 6.1.0
     cac: 7.0.0
     shiki: 4.0.2
-    std-env: 4.0.0
     "@opentelemetry/api": 1.9.1
     "@opentelemetry/context-async-hooks": 2.6.1
     "@opentelemetry/exporter-trace-otlp-http": 0.214.0
     "@opentelemetry/sdk-trace-node": 2.6.1
     "@opentelemetry/resources": 2.6.1
-    "@opentelemetry/semantic-conventions": 1.40.0
 
   backend:
     wrangler: 4.78.0

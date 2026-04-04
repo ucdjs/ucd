@@ -26,7 +26,6 @@ export default createTsdownConfig({
   ],
   deps: {
     onlyBundle: [
-      "std-env",
       "pathe",
     ],
   },
