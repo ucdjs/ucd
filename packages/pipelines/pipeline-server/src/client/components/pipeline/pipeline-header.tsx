@@ -21,7 +21,9 @@ export function PipelineHeader({
   sourceLabel,
   filePath,
 }: PipelineHeaderProps) {
-  const { sourceId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
+  const { sourceId } = useParams({
+    from: "/s/$sourceId/$sourceFileId/$pipelineId",
+  });
 
   return (
     <div className="border-b border-border/60 bg-background px-4 py-4 sm:px-6">

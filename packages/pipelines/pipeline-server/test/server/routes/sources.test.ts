@@ -1,6 +1,6 @@
 import { sourcesIndexRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "./helpers";
+import { createTestRoutesApp } from "../helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources", () => {

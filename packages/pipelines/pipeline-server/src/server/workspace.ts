@@ -109,3 +109,24 @@ export async function ensureWorkspaceExists(
     target: schema.workspaces.id,
   });
 }
+
+export function resolvePipelineSources(sources: PipelineSource[] = []): PipelineSource[] {
+  if (sources.length > 0) {
+    return sources;
+  }
+
+  const cwd = process.cwd();
+  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
+    return [{
+      kind: "local",
+      id: "local",
+      path: path.join(import.meta.dirname, "../../../pipeline-playground"),
+    }];
+  }
+
+  return [{
+    kind: "local",
+    id: "local",
+    path: cwd,
+  }];
+}

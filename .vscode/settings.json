@@ -21,7 +21,7 @@
   },
   "workbench.editor.customLabels.enabled": true,
   "workbench.editor.customLabels.patterns": {
-    "**/pipeline-server/src/server/routes/**/*.ts": "pipeline-server • ${extname(1)}",
+    "**/pipeline-server/src/server/routes/**/*.ts": "pipeline-server • ${filename}",
     "**/api/src/routes/**/*.ts": "api • ${dirname} • ${filename}",
     "**/store/src/routes/**/*.ts": "store • ${filename}",
   },

@@ -8,14 +8,14 @@ import { setupLiveUpdates } from "#server/live";
 import {
   sourcesExecutionsRouter,
   sourcesGraphRouter,
-  sourcesIndexRouter,
   sourcesLogsRouter,
   sourcesOverviewRouter,
   sourcesPipelineRouter,
+  sourcesRouter,
   sourcesSourceRouter,
   sourcesTracesRouter,
 } from "#server/routes";
-import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "#server/workspace";
+import { ensureWorkspace, recoverStaleExecutions, resolvePipelineSources, resolveWorkspace } from "#server/workspace";
 import { context } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { getUcdConfigDir } from "@ucdjs/env";
@@ -45,27 +45,6 @@ declare module "h3" {
   }
 }
 
-export function resolvePipelineSources(sources: PipelineSource[] = []): PipelineSource[] {
-  if (sources.length > 0) {
-    return sources;
-  }
-
-  const cwd = process.cwd();
-  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-    return [{
-      kind: "local",
-      id: "local",
-      path: path.join(import.meta.dirname, "../../../pipeline-playground"),
-    }];
-  }
-
-  return [{
-    kind: "local",
-    id: "local",
-    path: cwd,
-  }];
-}
-
 export function createApp(options: AppOptions = {}): H3 {
   const { sources = [], db, workspaceId } = options;
 
@@ -93,7 +72,7 @@ export function createApp(options: AppOptions = {}): H3 {
     version,
   }));
 
-  app.mount("/api/sources", sourcesIndexRouter);
+  app.mount("/api/sources", sourcesRouter);
   app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesPipelineRouter);

@@ -2,9 +2,9 @@ import type { SourceSummary, SourceType } from "#shared/schemas/source";
 import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import { H3 } from "h3";
 
-export const sourcesIndexRouter: H3 = new H3();
+export const sourcesRouter: H3 = new H3();
 
-sourcesIndexRouter.get("/", async (event) => {
+sourcesRouter.get("/", async (event) => {
   const { sources } = event.context;
 
   const results = await Promise.allSettled(

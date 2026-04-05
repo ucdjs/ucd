@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createTestRoutesApp } from "./helpers";
+import { createTestRoutesApp } from "../helpers";
 
 const { resolveSourceFilesMock, toPipelineInfoMock, sourceLabelMock } = vi.hoisted(() => ({
   resolveSourceFilesMock: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("#shared/lib/pipeline-utils", () => ({
   toPipelineInfo: toPipelineInfoMock,
 }));
 
-const { sourcesSourceRouter } = await import("#server/routes/sources.source");
+const { sourcesSourceRouter } = await import("#server/routes/source");
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId", () => {
