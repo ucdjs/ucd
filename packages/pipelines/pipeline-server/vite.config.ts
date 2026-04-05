@@ -6,7 +6,6 @@ import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
-
 import { getChunkName, libChunkName, NODE_MODULES_RE } from "./build-plugins/chunk-naming";
 import { h3DevServerPlugin } from "./build-plugins/h3-dev-server";
 
