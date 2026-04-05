@@ -41,11 +41,11 @@ jobs:
       matrix:
         runs:
           - name: ubuntu
-            os: blacksmith-4vcpu-ubuntu-2404
+            os: ubuntu-latest
           - name: macos
-            os: blacksmith-6vcpu-macos-26
+            os: macos-latest
           - name: windows
-            os: blacksmith-4vcpu-windows-2025
+            os: windows-latest
     steps:
       - name: Harden the runner (Audit all outbound calls)
         uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
