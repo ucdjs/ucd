@@ -4,10 +4,10 @@ import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import {
-  createTestRoutesApp,
+  createTestApp,
   DEFAULT_DISCOVERABLE_FILE_ID,
   DEFAULT_DISCOVERABLE_PIPELINE_ID,
-} from "../helpers";
+} from "../_server-helpers";
 
 vi.mock("@ucdjs/env", async () => {
   const actual = await vi.importActual("@ucdjs/env");
@@ -26,7 +26,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
   });
 
   it("returns exactly the pipeline payload", async () => {
-    const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesPipelineRouter],
+    });
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}`,
@@ -43,7 +45,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
   });
 
   it("returns 404 for an unknown pipeline", async () => {
-    const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesPipelineRouter],
+    });
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/missing`,
@@ -60,7 +64,9 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   });
 
   it("starts an execution for a local source", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app, db } = await createTestApp({
+      routers: [sourcesPipelineRouter],
+    });
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/${DEFAULT_DISCOVERABLE_PIPELINE_ID}/execute`,
@@ -96,7 +102,9 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   });
 
   it("recreates a missing workspace row before starting an execution", async () => {
-    const { app, db } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app, db } = await createTestApp({
+      routers: [sourcesPipelineRouter],
+    });
 
     await db.delete(schema.workspaces).where(eq(schema.workspaces.id, "test"));
 
@@ -152,7 +160,8 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
 
     getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
 
-    const { app } = await createTestRoutesApp([sourcesPipelineRouter], {
+    const { app } = await createTestApp({
+      routers: [sourcesPipelineRouter],
       sources: [{
         kind: "remote",
         id: "remote",
@@ -180,7 +189,9 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
   });
 
   it("returns 404 for an unknown pipeline", async () => {
-    const { app } = await createTestRoutesApp([sourcesPipelineRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesPipelineRouter],
+    });
 
     const res = await app.fetch(new Request(
       `http://localhost/api/sources/local/files/${DEFAULT_DISCOVERABLE_FILE_ID}/pipelines/missing/execute`,

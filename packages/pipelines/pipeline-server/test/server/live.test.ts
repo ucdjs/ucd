@@ -6,7 +6,7 @@ import chokidar from "chokidar";
 import { H3 } from "h3";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createTestApp } from "./helpers";
+import { createTestApp } from "./_server-helpers";
 
 const WORKSPACE_ID = "test";
 const LOCAL_SOURCE_ID = "local";

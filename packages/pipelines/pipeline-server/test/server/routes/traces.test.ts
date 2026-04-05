@@ -1,6 +1,6 @@
 import { sourcesTracesRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "../helpers";
+import { createTestApp } from "../_server-helpers";
 
 const TRACE_ID = "abc123";
 const SPAN_ID_PIPELINE = "span-pipeline";
@@ -18,7 +18,8 @@ const file = {
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces", () => {
   it("returns spans with nested events and a derived output manifest", async () => {
     const now = Date.now();
-    const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesTracesRouter],
       seed: {
         executions: [{
           traces: [
@@ -165,7 +166,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns empty spans when execution has no traces", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesTracesRouter],
       seed: {
         executions: [{}],
       },
@@ -189,7 +191,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 for a missing execution", async () => {
-    const { app } = await createTestRoutesApp([sourcesTracesRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesTracesRouter],
+    });
 
     const res = await app.fetch(new Request(
       "http://localhost/api/sources/local/files/simple/pipelines/simple/executions/missing/traces",
@@ -199,7 +203,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when execution belongs to another pipeline", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesTracesRouter],
       seed: {
         executions: [{ pipelineId: "other" }],
       },
@@ -215,7 +220,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
 
   it("strips base fields from span attributes", async () => {
     const now = Date.now();
-    const { app, seeded } = await createTestRoutesApp([sourcesTracesRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesTracesRouter],
       seed: {
         executions: [{
           traces: [{

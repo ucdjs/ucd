@@ -12,7 +12,6 @@ import {
   sourcesOverviewRouter,
   sourcesPipelineRouter,
   sourcesRouter,
-  sourcesSourceRouter,
   sourcesTracesRouter,
 } from "#server/routes";
 import { ensureWorkspace, recoverStaleExecutions, resolvePipelineSources, resolveWorkspace } from "#server/workspace";
@@ -73,7 +72,6 @@ export function createApp(options: AppOptions = {}): H3 {
   }));
 
   app.mount("/api/sources", sourcesRouter);
-  app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionsRouter);

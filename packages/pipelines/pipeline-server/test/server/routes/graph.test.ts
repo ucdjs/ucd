@@ -1,85 +1,82 @@
 import { sourcesGraphRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "../helpers";
+import { createTestApp } from "../_server-helpers";
+
+const TRACE_ID = "trace-graph-1";
+const SPAN_ID_PIPELINE = "span-pipeline";
+const SPAN_ID_ROUTE = "span-route";
+
+const file = {
+  version: "1.0.0",
+  dir: "ucd",
+  path: "ucd/colors.txt",
+  name: "colors.txt",
+  ext: ".txt",
+};
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/graph", () => {
   it("returns graph data and status", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+    const now = Date.now();
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesGraphRouter],
       seed: {
         executions: [{
           traces: [
             {
               kind: "source.provided",
+              traceId: TRACE_ID,
+              spanId: SPAN_ID_PIPELINE,
+              endTimestamp: new Date(now),
               data: {
-                id: "trace-1",
+                id: "t-1",
                 kind: "source.provided",
                 pipelineId: "simple",
-                timestamp: Date.now(),
+                traceId: TRACE_ID,
+                spanId: SPAN_ID_PIPELINE,
+                timestamp: now,
                 version: "1.0.0",
-                file: {
-                  version: "1.0.0",
-                  dir: "ucd",
-                  path: "ucd/colors.txt",
-                  name: "colors.txt",
-                  ext: ".txt",
-                },
+                file,
               },
             },
             {
               kind: "file.matched",
+              traceId: TRACE_ID,
+              spanId: SPAN_ID_ROUTE,
+              parentSpanId: SPAN_ID_PIPELINE,
+              endTimestamp: new Date(now + 10),
               data: {
-                id: "trace-2",
+                id: "t-2",
                 kind: "file.matched",
                 pipelineId: "simple",
-                timestamp: Date.now(),
+                traceId: TRACE_ID,
+                spanId: SPAN_ID_ROUTE,
+                parentSpanId: SPAN_ID_PIPELINE,
+                timestamp: now + 10,
                 version: "1.0.0",
+                file,
                 routeId: "basic-route",
-                file: {
-                  version: "1.0.0",
-                  dir: "ucd",
-                  path: "ucd/colors.txt",
-                  name: "colors.txt",
-                  ext: ".txt",
-                },
-              },
-            },
-            {
-              kind: "output.produced",
-              data: {
-                id: "trace-3",
-                kind: "output.produced",
-                pipelineId: "simple",
-                timestamp: Date.now(),
-                version: "1.0.0",
-                routeId: "basic-route",
-                file: {
-                  version: "1.0.0",
-                  dir: "ucd",
-                  path: "ucd/colors.txt",
-                  name: "colors.txt",
-                  ext: ".txt",
-                },
-                outputIndex: 0,
-                property: "Colors",
               },
             },
             {
               kind: "output",
+              traceId: TRACE_ID,
+              spanId: "span-output",
+              parentSpanId: SPAN_ID_ROUTE,
+              startTimestamp: now + 20,
+              durationMs: 10,
+              endTimestamp: new Date(now + 30),
               data: {
-                id: "trace-4",
+                id: "t-3",
                 kind: "output",
                 pipelineId: "simple",
-                timestamp: Date.now(),
+                traceId: TRACE_ID,
+                spanId: "span-output",
+                parentSpanId: SPAN_ID_ROUTE,
+                timestamp: now + 30,
                 version: "1.0.0",
                 routeId: "basic-route",
-                file: {
-                  version: "1.0.0",
-                  dir: "ucd",
-                  path: "ucd/colors.txt",
-                  name: "colors.txt",
-                  ext: ".txt",
-                },
+                file,
                 outputIndex: 0,
                 outputId: "filesystem-archive",
                 property: "Colors",
@@ -88,10 +85,34 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
                 locator: "/tmp/archive/colors.json",
               },
             },
+            {
+              kind: "output.written",
+              traceId: TRACE_ID,
+              spanId: SPAN_ID_ROUTE,
+              endTimestamp: new Date(now + 35),
+              data: {
+                id: "t-4",
+                kind: "output.written",
+                pipelineId: "simple",
+                traceId: TRACE_ID,
+                spanId: SPAN_ID_ROUTE,
+                timestamp: now + 35,
+                version: "1.0.0",
+                routeId: "basic-route",
+                file,
+                outputIndex: 0,
+                outputId: "filesystem-archive",
+                property: "Colors",
+                sink: "filesystem",
+                locator: "/tmp/archive/colors.json",
+                status: "written",
+              },
+            },
           ],
         }],
       },
     });
+
     const executionId = seeded.executionIds[0]!;
 
     const res = await app.fetch(new Request(
@@ -222,7 +243,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns null when the execution has no graph", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesGraphRouter],
       seed: {
         executions: [{}],
       },
@@ -243,7 +265,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 for a missing execution", async () => {
-    const { app } = await createTestRoutesApp([sourcesGraphRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesGraphRouter],
+    });
 
     const res = await app.fetch(new Request(
       "http://localhost/api/sources/local/files/simple/pipelines/simple/executions/missing/graph",
@@ -253,7 +277,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution belongs to another pipeline", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesGraphRouter],
       seed: {
         executions: [{
           pipelineId: "other",
@@ -270,7 +295,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution belongs to another source or file", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesGraphRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesGraphRouter],
       seed: {
         executions: [{
           sourceId: "other-source",
