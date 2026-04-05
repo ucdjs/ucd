@@ -1,4 +1,5 @@
 import type { PipelineDefinition } from "@ucdjs/pipeline-core";
+import type { BundleOptions } from "./bundle";
 import type { PipelineLoaderIssue } from "./errors";
 import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipeline-core";
@@ -17,10 +18,24 @@ export interface LoadPipelinesResult {
   issues: PipelineLoaderIssue[];
 }
 
-export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
+export interface LoadPipelineFileOptions {
+  filePath: string;
+  bundleOptions?: BundleOptions["buildOptions"];
+}
+
+/**
+ * @deprecated Use `loadPipelineFile({ filePath })` instead.
+ */
+export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile>;
+export async function loadPipelineFile(options: LoadPipelineFileOptions): Promise<LoadedPipelineFile>;
+export async function loadPipelineFile(filePathOrOptions: string | LoadPipelineFileOptions): Promise<LoadedPipelineFile> {
+  const filePath = typeof filePathOrOptions === "string" ? filePathOrOptions : filePathOrOptions.filePath;
+  const bundleOptions = typeof filePathOrOptions === "string" ? undefined : filePathOrOptions.bundleOptions;
+
   const bundleResult = await bundle({
     entryPath: filePath,
     cwd: path.dirname(filePath),
+    buildOptions: bundleOptions,
   });
 
   let module: Record<string, unknown>;
@@ -28,7 +43,7 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
     module = await import(/* @vite-ignore */ bundleResult.dataUrl);
   } catch (err) {
     const cause = err instanceof Error ? err : new Error(String(err));
-    throw new PipelineLoaderError("IMPORT_FAILED", `Failed to import ${filePath}: ${cause.message}`, {
+    throw new PipelineLoaderError("IMPORT_FAILED", `Failed to import ${filePathOrOptions}: ${cause.message}`, {
       cause,
     });
   }
@@ -52,7 +67,7 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
 }
 
 export async function loadPipelinesFromPaths(filePaths: string[]): Promise<LoadPipelinesResult> {
-  const settled = await Promise.allSettled(filePaths.map((filePath) => loadPipelineFile(filePath)));
+  const settled = await Promise.allSettled(filePaths.map((filePath) => loadPipelineFile({ filePath })));
 
   const files: LoadedPipelineFile[] = [];
   const issues: PipelineLoaderIssue[] = [];
