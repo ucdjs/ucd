@@ -140,7 +140,7 @@ describe("loadPipelineFile", () => {
       bundleOptions: {
         resolve: {
           alias: {
-            "@my/config": `${dir}/config.ts`,
+            "@luxass/config": `${dir}/config.ts`,
           },
         },
       },
