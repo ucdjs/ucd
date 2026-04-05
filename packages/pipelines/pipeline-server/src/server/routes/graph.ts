@@ -10,14 +10,14 @@ export const sourcesGraphRouter: H3 = new H3();
 sourcesGraphRouter.get(
   "/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/graph",
   async (event) => {
-    const { db } = event.context;
-    const { workspaceId, sourceId, fileId, pipelineId, executionId } = event.context.params! as {
-      workspaceId: string;
+    const { db, workspaceId } = event.context;
+    const { sourceId, fileId, pipelineId, executionId } = event.context.params as {
       sourceId: string;
       fileId: string;
       pipelineId: string;
-      executionId: string;
+      executionId?: string;
     };
+
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }

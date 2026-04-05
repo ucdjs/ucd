@@ -1,29 +1,31 @@
 import type { PipelineExecutionLogList } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { and, asc, eq, sql } from "drizzle-orm";
-import { getQuery, H3, HTTPError } from "h3";
+import { getQuery, getValidatedQuery, H3, HTTPError } from "h3";
+import z from "zod";
 
 export const sourcesLogsRouter: H3 = new H3();
 
 sourcesLogsRouter.get(
   "/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/logs",
   async (event) => {
-    const { db } = event.context;
-    const workspaceId = event.context.workspaceId;
-    const sourceId = event.context.params!.sourceId!;
-    const fileId = event.context.params!.fileId!;
-    const pipelineId = event.context.params!.pipelineId!;
-    const executionId = event.context.params?.executionId;
+    const { db, workspaceId } = event.context;
+    const { sourceId, fileId, pipelineId, executionId } = event.context.params as {
+      sourceId: string;
+      fileId: string;
+      pipelineId: string;
+      executionId?: string;
+    };
+
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }
 
-    const query = getQuery(event);
-    const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 200;
-    const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
-    const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 200, 1000);
-    const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
-    const spanId = typeof query.spanId === "string" ? query.spanId : undefined;
+    const { limit, offset, spanId } = await getValidatedQuery(event, z.object({
+      limit: z.coerce.number().min(1).max(1000).catch(200),
+      offset: z.coerce.number().min(0).catch(0),
+      spanId: z.string().optional(),
+    }));
 
     const [execution] = await db
       .select({
