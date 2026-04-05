@@ -1,6 +1,6 @@
 import { sourcesTracesRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "./helpers";
+import { createTestRoutesApp } from "../helpers";
 
 const TRACE_ID = "abc123";
 const SPAN_ID_PIPELINE = "span-pipeline";

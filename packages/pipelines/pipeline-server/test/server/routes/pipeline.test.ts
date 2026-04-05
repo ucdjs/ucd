@@ -7,7 +7,7 @@ import {
   createTestRoutesApp,
   DEFAULT_DISCOVERABLE_FILE_ID,
   DEFAULT_DISCOVERABLE_PIPELINE_ID,
-} from "./helpers";
+} from "../helpers";
 
 vi.mock("@ucdjs/env", async () => {
   const actual = await vi.importActual("@ucdjs/env");
