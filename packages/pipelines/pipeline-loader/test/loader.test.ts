@@ -36,6 +36,119 @@ describe("loadPipelineFile", () => {
     expect(result.pipelines[0]?.id).toBe("test");
     expect(result.exportNames).toEqual(["testPipeline"]);
   });
+
+  it("loads a pipeline file using the options object", async () => {
+    const dir = await testdir({
+      "opts.ucd-pipeline.ts": /* ts */`
+        export const optsPipeline = {
+          _type: "pipeline-definition",
+          id: "opts",
+          name: "Options Pipeline",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelineFile({
+      filePath: `${dir}/opts.ucd-pipeline.ts`,
+    });
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("opts");
+    expect(result.exportNames).toEqual(["optsPipeline"]);
+  });
+
+  it("resolves external packages when marked in bundleOptions", async () => {
+    const dir = await testdir({
+      "ext.ucd-pipeline.ts": /* ts */`
+        import { something } from "external-lib";
+        export const extPipeline = {
+          _type: "pipeline-definition",
+          id: "ext",
+          name: "External",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelineFile({
+      filePath: `${dir}/ext.ucd-pipeline.ts`,
+      bundleOptions: {
+        external: ["external-lib"],
+      },
+    });
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("ext");
+  });
+
+  it("injects compile-time constants via bundleOptions.define", async () => {
+    const dir = await testdir({
+      "define.ucd-pipeline.ts": /* ts */`
+        const version = __PIPELINE_VERSION__;
+        export const definePipeline = {
+          _type: "pipeline-definition",
+          id: "define-test",
+          name: version,
+          versions: [version],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelineFile({
+      filePath: `${dir}/define.ucd-pipeline.ts`,
+      bundleOptions: {
+        transform: {
+          define: {
+            __PIPELINE_VERSION__: JSON.stringify("99.0.0"),
+          },
+        },
+      },
+    });
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.name).toBe("99.0.0");
+    expect(result.pipelines[0]?.versions).toEqual(["99.0.0"]);
+  });
+
+  it("resolves aliased imports via bundleOptions.resolve", async () => {
+    const dir = await testdir({
+      "alias.ucd-pipeline.ts": /* ts */`
+        import { pipelineName } from "@my/config";
+        export const aliasPipeline = {
+          _type: "pipeline-definition",
+          id: "alias-test",
+          name: pipelineName,
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+      "config.ts": /* ts */`
+        export const pipelineName = "Aliased Pipeline";
+      `,
+    });
+
+    const result = await loadPipelineFile({
+      filePath: `${dir}/alias.ucd-pipeline.ts`,
+      bundleOptions: {
+        resolve: {
+          alias: {
+            "@my/config": `${dir}/config.ts`,
+          },
+        },
+      },
+    });
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.name).toBe("Aliased Pipeline");
+  });
 });
 
 describe("loadPipelinesFromPaths", () => {

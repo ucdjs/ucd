@@ -1,4 +1,4 @@
-import type { RolldownOutput } from "rolldown";
+import type { InputOptions, RolldownOutput } from "rolldown";
 import { build } from "rolldown";
 import { BundleError, BundleResolveError, BundleTransformError } from "./errors";
 
@@ -11,20 +11,33 @@ export interface BundleResult {
   dataUrl: string;
 }
 
-export async function bundle(options: {
+export interface BundleOptions {
   entryPath: string;
   cwd: string;
-}): Promise<BundleResult> {
+  buildOptions?: Omit<InputOptions, "input" | "cwd" | "tsconfig" | "onLog">;
+}
+
+export async function bundle(options: BundleOptions): Promise<BundleResult> {
   let result: RolldownOutput | undefined;
 
   try {
     result = await build({
+      ...options.buildOptions,
       input: options.entryPath,
       write: false,
       output: {
         format: "esm",
       },
       cwd: options.cwd,
+      tsconfig: true,
+      onLog(level, log, defaultHandler) {
+        if (level === "warn") {
+          // If we receive a warning, treat it as an error since it likely indicates a problem with the code that could lead to runtime issues.
+          throw new Error(log.message);
+        }
+
+        defaultHandler(level, log);
+      },
     });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
