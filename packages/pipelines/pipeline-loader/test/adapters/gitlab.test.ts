@@ -1,8 +1,8 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { resolveGitLabRef } from "../src/adapters/gitlab";
-import { materializePipelineLocator } from "../src/materialize";
+import { resolveGitLabRef } from "../../src/adapters/gitlab";
+import { materializePipelineLocator } from "../../src/materialize";
 
 vi.mock("@ucdjs/env", async () => {
   const actual = await vi.importActual("@ucdjs/env");
