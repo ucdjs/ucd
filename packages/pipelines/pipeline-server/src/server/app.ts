@@ -14,7 +14,12 @@ import {
   sourcesRouter,
   sourcesTracesRouter,
 } from "#server/routes";
-import { ensureWorkspace, recoverStaleExecutions, resolvePipelineSources, resolveWorkspace } from "#server/workspace";
+import {
+  ensureWorkspace,
+  recoverStaleExecutions,
+  resolvePipelineSources,
+  resolveWorkspace,
+} from "#server/workspace";
 import { context } from "@opentelemetry/api";
 import { AsyncLocalStorageContextManager } from "@opentelemetry/context-async-hooks";
 import { getUcdConfigDir } from "@ucdjs/env";
