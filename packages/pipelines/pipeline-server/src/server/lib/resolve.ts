@@ -1,17 +1,12 @@
 import type { PipelineSource } from "#server/app";
-import type { LoadedPipelineFile, PipelineLoaderIssue } from "@ucdjs/pipeline-loader";
+import type { PipelineLoaderIssue } from "@ucdjs/pipeline-loader";
 import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
+
 } from "@ucdjs/pipeline-loader";
 import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { fileIdFromPath, fileLabelFromPath } from "./ids";
-
-type ResolvedSourceFile = LoadedPipelineFile & {
-  id: string;
-  label: string;
-  relativePath: string;
-};
 
 function resolveDiscoveredFile(filePath: string, relativePath: string) {
   return {
@@ -22,10 +17,7 @@ function resolveDiscoveredFile(filePath: string, relativePath: string) {
   };
 }
 
-async function discoverSourceFiles(source: PipelineSource): Promise<{
-  files: Array<ReturnType<typeof resolveDiscoveredFile>>;
-  issues: PipelineLoaderIssue[];
-}> {
+export async function discoverSourceFiles(source: PipelineSource) {
   const { id: _id, ...locator } = source;
   const materialized = await materializePipelineLocator(locator);
 
@@ -51,7 +43,7 @@ async function discoverSourceFiles(source: PipelineSource): Promise<{
         scope: "repository",
         message: `Source "${source.id}" could not be materialized.`,
         locator,
-      }],
+      }] satisfies PipelineLoaderIssue[],
     };
   }
 
@@ -71,10 +63,7 @@ export function sourceLabel(source: PipelineSource): string {
   return `${source.owner}/${source.repo}`;
 }
 
-export async function resolveSourceFiles(source: PipelineSource): Promise<{
-  files: ResolvedSourceFile[];
-  issues: PipelineLoaderIssue[];
-}> {
+export async function resolveSourceFiles(source: PipelineSource) {
   const discovery = await discoverSourceFiles(source);
   const filePaths = discovery.files.map((file) => file.filePath);
 

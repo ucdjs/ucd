@@ -1,5 +1,6 @@
 import type { PipelineSource } from "#server/app";
 import type { Database } from "#server/db";
+import type { InsertExecution, InsertExecutionLog, InsertExecutionTrace } from "#server/db/schema";
 import type { H3 } from "h3";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,11 @@ import { createDatabase, runMigrations, schema } from "#server/db";
 import { ensureWorkspace } from "#server/workspace";
 import { H3 as H3App } from "h3";
 
-const playgroundPath = fileURLToPath(new URL("../../../pipeline-playground/src", import.meta.url));
+const playgroundPath = fileURLToPath(new URL(
+  "../../../pipeline-playground/src",
+  import.meta.url,
+));
+
 export const DEFAULT_DISCOVERABLE_FILE_ID = "simple~logging";
 export const DEFAULT_DISCOVERABLE_PIPELINE_ID = "with-logging";
 const defaultSources: PipelineSource[] = [{
@@ -16,20 +21,21 @@ const defaultSources: PipelineSource[] = [{
   path: playgroundPath,
 }];
 
-type ExecutionInsert = typeof schema.executions.$inferInsert;
-type LogInsert = typeof schema.executionLogs.$inferInsert;
-type TraceInsert = typeof schema.executionTraces.$inferInsert;
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
 
-type SeedExecutionOptions = Partial<Omit<ExecutionInsert, "id">> & { id?: string };
-type SeedExecutionLogOptions = Pick<LogInsert, "executionId" | "message"> & Partial<Omit<LogInsert, "id" | "executionId" | "message">>;
-type SeedExecutionTraceOptions = Pick<TraceInsert, "executionId" | "kind" | "data"> & Partial<Omit<TraceInsert, "id" | "executionId" | "kind" | "data">>;
+type SeedExecutionOptions = Prettify<Partial<Omit<InsertExecution, "id">> & { id?: string }>;
+type SeedExecutionLogOptions = Prettify<Pick<InsertExecutionLog, "executionId" | "message"> & Partial<Omit<InsertExecutionLog, "id" | "executionId" | "message">>>;
+type SeedExecutionTraceOptions = Prettify<Pick<InsertExecutionTrace, "executionId" | "kind" | "data"> & Partial<Omit<InsertExecutionTrace, "id" | "executionId" | "kind" | "data">>>;
 
 interface SeedExecutionInput extends SeedExecutionOptions {
   logs?: Omit<SeedExecutionLogOptions, "executionId">[];
   traces?: Omit<SeedExecutionTraceOptions, "executionId">[];
 }
 
-interface CreateTestRoutesAppOptions {
+interface CreateTestAppOptions {
+  routers?: H3[];
   sources?: PipelineSource[];
   seed?: {
     executions?: SeedExecutionInput[];
@@ -38,79 +44,93 @@ interface CreateTestRoutesAppOptions {
   };
 }
 
-export async function createTestApp(options: { sources?: PipelineSource[] } = {}) {
-  const { createApp } = await import("#server/app");
+export async function createTestApp(options: CreateTestAppOptions = {}) {
   const db = createDatabase({ url: ":memory:" });
   await runMigrations(db);
   await ensureWorkspace(db, "test", playgroundPath);
 
+  const sources = options.sources ?? defaultSources;
+  const seeded = await seedTestData(db, options.seed);
+
+  if (options.routers) {
+    const app = new H3App({ debug: true });
+
+    app.use("/**", (event, next) => {
+      event.context.sources = sources;
+      event.context.db = db;
+      event.context.workspaceId = "test";
+      next();
+    });
+
+    for (const router of options.routers) {
+      app.mount("/api/sources", router);
+    }
+
+    return {
+      app,
+      db,
+      storePath: playgroundPath,
+      workspaceId: "test" as const,
+      seeded,
+    };
+  }
+
+  const { createApp } = await import("#server/app");
+
   const app = createApp({
-    sources: options.sources ?? defaultSources,
+    sources,
     db,
     workspaceId: "test",
   });
-
-  return { app, db, storePath: playgroundPath, workspaceId: "test" as const };
-}
-
-export async function createTestRoutesApp(routers: H3[], options: CreateTestRoutesAppOptions = {}) {
-  const db = createDatabase({ url: ":memory:" });
-  await runMigrations(db);
-  await ensureWorkspace(db, "test", playgroundPath);
-
-  const app = new H3App({ debug: true });
-  app.use("/**", (event, next) => {
-    event.context.sources = options.sources ?? defaultSources;
-    event.context.db = db;
-    event.context.workspaceId = "test";
-    next();
-  });
-
-  for (const router of routers) {
-    app.mount("/api/sources", router);
-  }
-
-  const executionIds: string[] = [];
-
-  if (options.seed) {
-    for (const execution of options.seed.executions ?? []) {
-      const { logs, traces, ...executionOptions } = execution;
-      const executionId = await seedExecution(db, executionOptions);
-      executionIds.push(executionId);
-
-      for (const log of logs ?? []) {
-        await seedExecutionLog(db, {
-          ...log,
-          executionId,
-        });
-      }
-
-      for (const trace of traces ?? []) {
-        await seedExecutionTrace(db, {
-          ...trace,
-          executionId,
-        });
-      }
-    }
-
-    for (const log of options.seed.logs ?? []) {
-      await seedExecutionLog(db, log);
-    }
-
-    for (const trace of options.seed.traces ?? []) {
-      await seedExecutionTrace(db, trace);
-    }
-  }
 
   return {
     app,
     db,
     storePath: playgroundPath,
     workspaceId: "test" as const,
-    seeded: {
-      executionIds,
-    },
+    seeded,
   };
+}
+
+async function seedTestData(
+  db: Database,
+  seed: CreateTestAppOptions["seed"] | undefined,
+) {
+  const executionIds: string[] = [];
+
+  if (!seed) {
+    return { executionIds };
+  }
+
+  for (const execution of seed.executions ?? []) {
+    const { logs, traces, ...executionOptions } = execution;
+    const executionId = await seedExecution(db, executionOptions);
+    executionIds.push(executionId);
+
+    for (const log of logs ?? []) {
+      await seedExecutionLog(db, {
+        ...log,
+        executionId,
+      });
+    }
+
+    for (const trace of traces ?? []) {
+      await seedExecutionTrace(db, {
+        ...trace,
+        executionId,
+      });
+    }
+  }
+
+  for (const log of seed.logs ?? []) {
+    await seedExecutionLog(db, log);
+  }
+
+  for (const trace of seed.traces ?? []) {
+    await seedExecutionTrace(db, trace);
+  }
+
+  return { executionIds };
 }
 
 export async function createTestExecution(app: H3) {

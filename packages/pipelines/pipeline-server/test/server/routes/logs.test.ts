@@ -1,21 +1,21 @@
 import { sourcesLogsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "../helpers";
+import { createTestApp } from "../_server-helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/logs", () => {
   it("returns paginated logs and supports span filtering", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesLogsRouter],
       seed: {
         executions: [{
           logs: [
             {
               spanId: "span-1",
               message: "first log",
+              level: "info",
+              source: "stdio",
               payload: {
-                message: "first log",
-                level: "info",
-                source: "stdio",
                 truncated: true,
                 originalSize: 2048,
               },
@@ -68,7 +68,9 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 for a missing execution", async () => {
-    const { app } = await createTestRoutesApp([sourcesLogsRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesLogsRouter],
+    });
 
     const res = await app.fetch(new Request(
       "http://localhost/api/sources/local/files/simple/pipelines/simple/executions/missing/logs",
@@ -78,7 +80,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns 404 when the execution route context does not match", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesLogsRouter],
       seed: {
         executions: [{
           sourceId: "other-source",
@@ -97,7 +100,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("falls back to safe defaults for invalid pagination values", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesLogsRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesLogsRouter],
       seed: {
         executions: [{
           logs: [{

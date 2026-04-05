@@ -19,6 +19,7 @@ export const workspaces = sqliteTable("workspaces", {
 });
 
 export type Workspace = typeof workspaces.$inferSelect;
+export type InsertWorkspace = typeof workspaces.$inferInsert;
 
 export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
@@ -39,6 +40,7 @@ export const executions = sqliteTable("executions", {
 ]);
 
 export type Execution = typeof executions.$inferSelect;
+export type InsertExecution = typeof executions.$inferInsert;
 
 export const executionTraces = sqliteTable("execution_traces", {
   id: text("id").primaryKey(),
@@ -60,6 +62,7 @@ export const executionTraces = sqliteTable("execution_traces", {
 ]);
 
 export type ExecutionTrace = typeof executionTraces.$inferSelect;
+export type InsertExecutionTrace = typeof executionTraces.$inferInsert;
 
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),
@@ -80,3 +83,4 @@ export const executionLogs = sqliteTable("execution_logs", {
 ]);
 
 export type ExecutionLog = typeof executionLogs.$inferSelect;
+export type InsertExecutionLog = typeof executionLogs.$inferInsert;

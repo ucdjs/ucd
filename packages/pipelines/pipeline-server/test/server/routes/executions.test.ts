@@ -1,11 +1,13 @@
 import { sourcesExecutionsRouter } from "#server/routes/executions";
 import { describe, expect, it } from "vitest";
-import { createTestRoutesApp } from "../helpers";
+import { createTestApp } from "../_server-helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => {
   it("returns an empty list when no executions exist", async () => {
-    const { app } = await createTestRoutesApp([sourcesExecutionsRouter]);
+    const { app } = await createTestApp({
+      routers: [sourcesExecutionsRouter],
+    });
 
     const res = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/executions"));
 
@@ -24,7 +26,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("returns executions ordered by most recent start time", async () => {
-    const { app, seeded } = await createTestRoutesApp([sourcesExecutionsRouter], {
+    const { app, seeded } = await createTestApp({
+      routers: [sourcesExecutionsRouter],
       seed: {
         executions: [
           {
@@ -89,7 +92,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("scopes executions to the requested source and file", async () => {
-    const { app } = await createTestRoutesApp([sourcesExecutionsRouter], {
+    const { app } = await createTestApp({
+      routers: [sourcesExecutionsRouter],
       seed: {
         executions: [
           {
@@ -120,7 +124,8 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
   });
 
   it("falls back to safe defaults for invalid pagination values", async () => {
-    const { app } = await createTestRoutesApp([sourcesExecutionsRouter], {
+    const { app } = await createTestApp({
+      routers: [sourcesExecutionsRouter],
       seed: {
         executions: [{}],
       },
