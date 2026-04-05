@@ -8,9 +8,11 @@ import { ensureWorkspace, recoverStaleExecutions, resolveWorkspace } from "../sr
 
 const appModuleId = "/src/server/app.ts";
 const dbModuleId = "/src/server/db/index.ts";
+const workspaceModuleId = "/src/server/workspace.ts";
 
 type DatabaseModuleType = typeof import("../src/server/db");
 type AppModuleType = typeof import("../src/server/app");
+type WorkspaceModuleType = typeof import("../src/server/workspace");
 
 export function h3DevServerPlugin(): Plugin {
   return {
@@ -39,6 +41,10 @@ export function h3DevServerPlugin(): Plugin {
         }
       }
 
+      async function getWorkspaceModule(): Promise<WorkspaceModuleType> {
+        return server.ssrLoadModule(workspaceModuleId) as any;
+      }
+
       async function getAppModule(): Promise<AppModuleType> {
         return server.ssrLoadModule(appModuleId) as any;
       }
@@ -54,11 +60,12 @@ export function h3DevServerPlugin(): Plugin {
       await initialDatabase();
 
       const appMod = await getAppModule();
+      const workspaceMod = await getWorkspaceModule();
 
       const app = await getApp();
 
       if (db && server.httpServer) {
-        const sources = appMod.resolvePipelineSources();
+        const sources = workspaceMod.resolvePipelineSources();
         const live = appMod.setupLiveUpdates(app, {
           sources,
           workspaceId: workspace.workspaceId,
