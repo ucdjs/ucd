@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 // @ts-check
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, globSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -38,25 +38,19 @@ function findWorkspaceRoot(startDir = __dirname) {
  */
 function discoverWorkspacePackages(workspaceRoot) {
   const packages = new Map();
-  const packagesDir = path.join(workspaceRoot, "packages");
 
-  if (existsSync(packagesDir)) {
-    const entries = readdirSync(packagesDir, { withFileTypes: true });
+  const packageJsonFiles = globSync("packages/**/package.json", {
+    cwd: workspaceRoot,
+    exclude: (p) => p.includes("node_modules"),
+  });
 
-    for (const entry of entries) {
-      if (entry.isDirectory()) {
-        const packageJsonPath = path.join(packagesDir, entry.name, "package.json");
-
-        if (existsSync(packageJsonPath)) {
-          try {
-            const pkg = JSON.parse(readFileSync(packageJsonPath, "utf8"));
-            if (pkg.name) {
-              packages.set(pkg.name, `packages/${entry.name}`);
-            }
-          } catch { }
-        }
+  for (const relPath of packageJsonFiles) {
+    try {
+      const pkg = JSON.parse(readFileSync(path.join(workspaceRoot, relPath), "utf8"));
+      if (pkg.name) {
+        packages.set(pkg.name, path.dirname(relPath));
       }
-    }
+    } catch { }
   }
 
   return packages;
@@ -120,6 +114,34 @@ export async function resolve(specifier, context, nextResolve) {
           shortCircuit: true,
           url: pathToFileURL(distPath).href,
         };
+      }
+    }
+  }
+
+  // resolve extensionless relative imports by trying TypeScript extensions
+  // (needed when vite.config.ts is loaded via Node's native ESM with --configLoader native)
+  if (specifier.startsWith("./") || specifier.startsWith("../")) {
+    const parentPath = context.parentURL ? fileURLToPath(context.parentURL) : null;
+    if (parentPath) {
+      const base = path.resolve(path.dirname(parentPath), specifier);
+      for (const ext of [".ts", ".tsx", ".mts", ".js", ".jsx", ".mjs"]) {
+        const candidate = base + ext;
+        if (existsSync(candidate)) {
+          return {
+            shortCircuit: true,
+            url: pathToFileURL(candidate).href,
+          };
+        }
+      }
+      // also try as a directory index
+      for (const ext of [".ts", ".tsx", ".mts", ".js", ".mjs"]) {
+        const candidate = path.join(base, `index${ext}`);
+        if (existsSync(candidate)) {
+          return {
+            shortCircuit: true,
+            url: pathToFileURL(candidate).href,
+          };
+        }
       }
     }
   }
