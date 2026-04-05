@@ -3,7 +3,6 @@ import type { PipelineLoaderIssue } from "@ucdjs/pipeline-loader";
 import {
   loadPipelinesFromPaths,
   materializePipelineLocator,
-
 } from "@ucdjs/pipeline-loader";
 import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { fileIdFromPath, fileLabelFromPath } from "./ids";

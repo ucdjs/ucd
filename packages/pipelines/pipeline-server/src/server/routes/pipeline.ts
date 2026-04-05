@@ -23,9 +23,11 @@ const BASE = "/:sourceId/files/:fileId/pipelines/:pipelineId";
 
 async function resolvePipelineRoute(event: H3Event) {
   const { sources } = event.context;
-  const sourceId = event.context.params?.sourceId;
-  const fileId = event.context.params?.fileId;
-  const pipelineId = event.context.params?.pipelineId;
+  const { sourceId, fileId, pipelineId } = event.context.params as {
+    sourceId: string;
+    fileId: string;
+    pipelineId: string;
+  };
 
   if (!sourceId) {
     throw HTTPError.status(400, "Source ID is required");
@@ -65,8 +67,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
-  const { db } = event.context;
-  const workspaceId = event.context.workspaceId;
+  const { db, workspaceId } = event.context;
   const { file, pipeline, pipelineId, source } = await resolvePipelineRoute(event);
 
   const body = await readValidatedBody(event, z.object({

@@ -7,20 +7,17 @@ import z from "zod";
 
 export const sourcesExecutionsRouter: H3 = new H3();
 
-const stringToNumber = z.string().regex(/^\d+$/, "Must be a number string").transform(Number);
-
 sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/executions", async (event) => {
-  const { db } = event.context;
-  const { workspaceId, sourceId, fileId, pipelineId } = event.context.params! as {
-    workspaceId: string;
+  const { db, workspaceId } = event.context;
+  const { sourceId, fileId, pipelineId } = event.context.params! as {
     sourceId: string;
     fileId: string;
     pipelineId: string;
   };
 
   const { limit, offset } = await getValidatedQuery(event, z.object({
-    limit: stringToNumber.optional().default(50).pipe(z.number().min(1).max(100)),
-    offset: stringToNumber.optional().default(0).pipe(z.number().min(0)),
+    limit: z.coerce.number().min(1).max(100).catch(50),
+    offset: z.coerce.number().min(0).catch(0),
   }));
 
   const where = and(

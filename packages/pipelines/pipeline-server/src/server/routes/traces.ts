@@ -11,13 +11,13 @@ export const sourcesTracesRouter: H3 = new H3();
 sourcesTracesRouter.get(
   "/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/traces",
   async (event) => {
-    const { db } = event.context;
-    const workspaceId = event.context.workspaceId;
-    const sourceId = event.context.params!.sourceId!;
-    const fileId = event.context.params!.fileId!;
-    const pipelineId = event.context.params!.pipelineId!;
-    const executionId = event.context.params?.executionId;
-
+    const { db, workspaceId } = event.context;
+    const { sourceId, fileId, pipelineId, executionId } = event.context.params as {
+      sourceId: string;
+      fileId: string;
+      pipelineId: string;
+      executionId?: string;
+    };
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }
