@@ -1,4 +1,4 @@
-import type { ExecutionGraphResponse } from "#shared/schemas/execution";
+import type { PipelineExecutionGraphResult } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { buildExecutionGraphView } from "#shared/lib/graph";
 import { buildExecutionGraphFromTraces } from "@ucdjs/pipeline-executor/graph";
@@ -11,11 +11,13 @@ sourcesGraphRouter.get(
   "/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/graph",
   async (event) => {
     const { db } = event.context;
-    const workspaceId = event.context.workspaceId;
-    const sourceId = event.context.params!.sourceId!;
-    const fileId = event.context.params!.fileId!;
-    const pipelineId = event.context.params!.pipelineId!;
-    const executionId = event.context.params?.executionId;
+    const { workspaceId, sourceId, fileId, pipelineId, executionId } = event.context.params! as {
+      workspaceId: string;
+      sourceId: string;
+      fileId: string;
+      pipelineId: string;
+      executionId: string;
+    };
     if (!executionId) {
       throw HTTPError.status(400, "Execution ID is required");
     }
@@ -64,6 +66,6 @@ sourcesGraphRouter.get(
             pipelineId,
           })
         : null,
-    } satisfies ExecutionGraphResponse;
+    } satisfies PipelineExecutionGraphResult;
   },
 );

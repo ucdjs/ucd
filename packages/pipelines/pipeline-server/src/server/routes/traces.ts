@@ -1,5 +1,5 @@
 import type { ExecutionTrace } from "#server/db/schema";
-import type { ExecutionTracesResponse } from "#shared/schemas/execution";
+import type { PipelineExecutionTracesList } from "#shared/schemas/execution";
 import type { PipelineTraceRecord } from "@ucdjs/pipeline-core/tracing";
 import { schema } from "#server/db";
 import { buildOutputManifestFromTraces } from "@ucdjs/pipeline-core/tracing";
@@ -127,6 +127,6 @@ sourcesTracesRouter.get(
       durationMs: rootSpan?.durationMs ?? null,
       spans,
       outputManifest,
-    } satisfies ExecutionTracesResponse;
+    } satisfies PipelineExecutionTracesList;
   },
 );
