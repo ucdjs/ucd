@@ -43,7 +43,7 @@ export const ExecutionSummaryItemSchema = z.object({
   error: z.string().nullable(),
 });
 
-export const ExecutionsResponseSchema = z.object({
+export const PipelineExecutionListSchema = z.object({
   executions: z.array(ExecutionSummaryItemSchema),
   pagination: PaginationSchema,
 });
@@ -83,7 +83,7 @@ export const ExecutionLogItemSchema = z.object({
   payload: ExecutionLogPayloadSchema,
 });
 
-export const ExecutionLogsResponseSchema = z.object({
+export const PipelineExecutionLogListSchema = z.object({
   executionId: z.string(),
   pipelineId: z.string(),
   status: ExecutionStatusSchema,
@@ -94,7 +94,7 @@ export const ExecutionLogsResponseSchema = z.object({
   pagination: PaginationSchema,
 });
 
-export const ExecutionGraphResponseSchema = z.object({
+export const PipelineExecutionGraphResultSchema = z.object({
   executionId: z.string(),
   pipelineId: z.string(),
   status: ExecutionStatusSchema,
@@ -115,7 +115,7 @@ export const OutputManifestItemSchema = z.object({
   error: z.string().optional(),
 });
 
-export const ExecutionTracesResponseSchema = z.object({
+export const PipelineExecutionTracesListSchema = z.object({
   executionId: z.string(),
   pipelineId: z.string(),
   status: ExecutionStatusSchema,
@@ -128,12 +128,12 @@ export const ExecutionTracesResponseSchema = z.object({
 
 export type ExecutePipelineResponse = z.infer<typeof ExecutePipelineResponseSchema>;
 export type ExecutionSummaryItem = z.infer<typeof ExecutionSummaryItemSchema>;
-export type ExecutionsResponse = z.infer<typeof ExecutionsResponseSchema>;
+export type PipelineExecutionList = z.infer<typeof PipelineExecutionListSchema>;
 export type ExecutionLogPayload = z.infer<typeof ExecutionLogPayloadSchema>;
 export type ExecutionLogItem = z.infer<typeof ExecutionLogItemSchema>;
-export type ExecutionLogsResponse = z.infer<typeof ExecutionLogsResponseSchema>;
-export type ExecutionGraphResponse = z.infer<typeof ExecutionGraphResponseSchema>;
+export type PipelineExecutionLogList = z.infer<typeof PipelineExecutionLogListSchema>;
+export type PipelineExecutionGraphResult = z.infer<typeof PipelineExecutionGraphResultSchema>;
 export type SpanEvent = z.infer<typeof SpanEventSchema>;
 export type ExecutionSpanItem = z.infer<typeof ExecutionSpanItemSchema>;
 export type OutputManifestItem = z.infer<typeof OutputManifestItemSchema>;
-export type ExecutionTracesResponse = z.infer<typeof ExecutionTracesResponseSchema>;
+export type PipelineExecutionTracesList = z.infer<typeof PipelineExecutionTracesListSchema>;

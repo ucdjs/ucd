@@ -1,4 +1,4 @@
-import type { ExecutionLogsResponse } from "#shared/schemas/execution";
+import type { PipelineExecutionLogList } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
@@ -148,6 +148,6 @@ sourcesLogsRouter.get(
       capturedSize,
       originalSize: originalSize > 0 ? originalSize : null,
       pagination: { total, limit, offset, hasMore: offset + limit < total },
-    } satisfies ExecutionLogsResponse;
+    } satisfies PipelineExecutionLogList;
   },
 );

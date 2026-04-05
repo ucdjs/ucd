@@ -1,20 +1,20 @@
 import type {
   ExecutePipelineResponse,
-  ExecutionGraphResponse,
-  ExecutionLogsResponse,
   ExecutionSpanItem,
-  ExecutionsResponse,
   ExecutionSummaryItem,
-  ExecutionTracesResponse,
+  PipelineExecutionGraphResult,
+  PipelineExecutionList,
+  PipelineExecutionLogList,
+  PipelineExecutionTracesList,
 } from "#shared/schemas/execution";
 import type { ExecuteResult } from "#shared/types";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   ExecutePipelineResponseSchema,
-  ExecutionGraphResponseSchema,
-  ExecutionLogsResponseSchema,
-  ExecutionsResponseSchema,
-  ExecutionTracesResponseSchema,
+  PipelineExecutionGraphResultSchema,
+  PipelineExecutionListSchema,
+  PipelineExecutionLogListSchema,
+  PipelineExecutionTracesListSchema,
 } from "#shared/schemas/execution";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
@@ -22,12 +22,12 @@ import { refetchWhileExecutionActive } from "./utils";
 
 export type {
   ExecutePipelineResponse,
-  ExecutionGraphResponse,
-  ExecutionLogsResponse,
   ExecutionSpanItem,
-  ExecutionsResponse,
   ExecutionSummaryItem,
-  ExecutionTracesResponse,
+  PipelineExecutionTracesList as ExecutionTracesResponse,
+  PipelineExecutionGraphResult,
+  PipelineExecutionList,
+  PipelineExecutionLogList,
 };
 
 interface ExecutePipelineRequest {
@@ -128,7 +128,7 @@ export async function fetchExecutions({
   pipelineId,
   limit,
   offset,
-}: ExecutionsParams): Promise<ExecutionsResponse> {
+}: ExecutionsParams): Promise<PipelineExecutionList> {
   const params = new URLSearchParams();
   if (limit != null) params.set("limit", String(limit));
   if (offset != null) params.set("offset", String(offset));
@@ -136,8 +136,8 @@ export async function fetchExecutions({
   const qs = params.toString();
   const url = `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions${qs ? `?${qs}` : ""}`;
 
-  return (await customFetch<ExecutionsResponse>(url, {
-    schema: ExecutionsResponseSchema,
+  return (await customFetch<PipelineExecutionList>(url, {
+    schema: PipelineExecutionListSchema,
   })).data!;
 }
 
@@ -166,7 +166,7 @@ export async function fetchExecutionLogs({
   limit,
   offset,
   spanId,
-}: ExecutionLogsParams): Promise<ExecutionLogsResponse> {
+}: ExecutionLogsParams): Promise<PipelineExecutionLogList> {
   const params = new URLSearchParams();
   if (limit != null) params.set("limit", String(limit));
   if (offset != null) params.set("offset", String(offset));
@@ -174,10 +174,10 @@ export async function fetchExecutionLogs({
   const qs = params.toString();
 
   return (
-    await customFetch<ExecutionLogsResponse>(
+    await customFetch<PipelineExecutionLogList>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/logs${qs ? `?${qs}` : ""}`,
       {
-        schema: ExecutionLogsResponseSchema,
+        schema: PipelineExecutionLogListSchema,
       },
     )
   ).data!;
@@ -208,12 +208,12 @@ export async function fetchExecutionGraph({
   fileId,
   pipelineId,
   executionId,
-}: ExecutionGraphParams): Promise<ExecutionGraphResponse> {
+}: ExecutionGraphParams): Promise<PipelineExecutionGraphResult> {
   return (
-    await customFetch<ExecutionGraphResponse>(
+    await customFetch<PipelineExecutionGraphResult>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/graph`,
       {
-        schema: ExecutionGraphResponseSchema,
+        schema: PipelineExecutionGraphResultSchema,
       },
     )
   ).data!;
@@ -239,12 +239,12 @@ export async function fetchExecutionTraces({
   fileId,
   pipelineId,
   executionId,
-}: ExecutionTracesParams): Promise<ExecutionTracesResponse> {
+}: ExecutionTracesParams): Promise<PipelineExecutionTracesList> {
   return (
-    await customFetch<ExecutionTracesResponse>(
+    await customFetch<PipelineExecutionTracesList>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/traces`,
       {
-        schema: ExecutionTracesResponseSchema,
+        schema: PipelineExecutionTracesListSchema,
       },
     )
   ).data!;

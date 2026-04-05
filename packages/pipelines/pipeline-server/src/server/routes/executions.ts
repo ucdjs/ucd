@@ -1,23 +1,27 @@
-import type { ExecutionsResponse } from "#shared/schemas/execution";
+import type { PipelineExecutionList } from "#queries/execution";
 import { schema } from "#server/db";
 import { listExecutionIdsWithTraces } from "#server/db/execution-traces";
 import { and, desc, eq, sql } from "drizzle-orm";
-import { getQuery, H3 } from "h3";
+import { getValidatedQuery, H3 } from "h3";
+import z from "zod";
 
 export const sourcesExecutionsRouter: H3 = new H3();
 
+const stringToNumber = z.string().regex(/^\d+$/, "Must be a number string").transform(Number);
+
 sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/executions", async (event) => {
   const { db } = event.context;
-  const workspaceId = event.context.workspaceId;
-  const sourceId = event.context.params!.sourceId!;
-  const fileId = event.context.params!.fileId!;
-  const pipelineId = event.context.params!.pipelineId!;
+  const { workspaceId, sourceId, fileId, pipelineId } = event.context.params! as {
+    workspaceId: string;
+    sourceId: string;
+    fileId: string;
+    pipelineId: string;
+  };
 
-  const query = getQuery(event);
-  const parsedLimit = typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 50;
-  const parsedOffset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
-  const limit = Math.min(Number.isFinite(parsedLimit) ? parsedLimit : 50, 100);
-  const offset = Number.isFinite(parsedOffset) ? parsedOffset : 0;
+  const { limit, offset } = await getValidatedQuery(event, z.object({
+    limit: stringToNumber.optional().default(50).pipe(z.number().min(1).max(100)),
+    offset: stringToNumber.optional().default(0).pipe(z.number().min(0)),
+  }));
 
   const where = and(
     eq(schema.executions.workspaceId, workspaceId),
@@ -58,6 +62,11 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
       hasTraces: tracedExecutionIds.has(exec.id),
       error: exec.error ?? null,
     })),
-    pagination: { total, limit, offset, hasMore: offset + limit < total },
-  } satisfies ExecutionsResponse;
+    pagination: {
+      total,
+      limit,
+      offset,
+      hasMore: offset + limit < total,
+    },
+  } satisfies PipelineExecutionList;
 });
