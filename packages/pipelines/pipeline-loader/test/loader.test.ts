@@ -63,7 +63,7 @@ describe("loadPipelineFile", () => {
   it("resolves external packages when marked in bundleOptions", async () => {
     const dir = await testdir({
       "ext.ucd-pipeline.ts": /* ts */`
-        import { something } from "external-lib";
+        import { something } from "@luxass/external-lib";
         export const extPipeline = {
           _type: "pipeline-definition",
           id: "ext",
@@ -120,7 +120,7 @@ describe("loadPipelineFile", () => {
   it("resolves aliased imports via bundleOptions.resolve", async () => {
     const dir = await testdir({
       "alias.ucd-pipeline.ts": /* ts */`
-        import { pipelineName } from "@my/config";
+        import { pipelineName } from "@luxass/config";
         export const aliasPipeline = {
           _type: "pipeline-definition",
           id: "alias-test",
@@ -212,5 +212,82 @@ describe("loadPipelinesFromPaths", () => {
     expect(result.issues).toHaveLength(1);
     expect(result.issues[0]?.scope).toBe("bundle");
     expect(result.issues[0]?.code).toBe("BUNDLE_TRANSFORM_FAILED");
+  });
+
+  it("loads multiple files using the options object", async () => {
+    const dir = await testdir({
+      "alpha.ucd-pipeline.ts": /* ts */`
+        export const alpha = {
+          _type: "pipeline-definition",
+          id: "alpha",
+          name: "Alpha",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+      "beta.ucd-pipeline.ts": /* ts */`
+        export const beta = {
+          _type: "pipeline-definition",
+          id: "beta",
+          name: "Beta",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelinesFromPaths({
+      filePaths: [
+        `${dir}/alpha.ucd-pipeline.ts`,
+        `${dir}/beta.ucd-pipeline.ts`,
+      ],
+    });
+
+    expect(result.issues).toEqual([]);
+    expect(result.files).toHaveLength(2);
+    expect(result.pipelines.map((pipeline) => pipeline.id).sort()).toEqual(["alpha", "beta"]);
+  });
+
+  it("passes bundleOptions to all files via the options object", async () => {
+    const dir = await testdir({
+      "a.ucd-pipeline.ts": /* ts */`
+        import { something } from "@luxass/shared-external";
+        export const a = {
+          _type: "pipeline-definition",
+          id: "a",
+          name: "A",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+      "b.ucd-pipeline.ts": /* ts */`
+        import { other } from "@luxass/shared-external";
+        export const b = {
+          _type: "pipeline-definition",
+          id: "b",
+          name: "B",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelinesFromPaths({
+      filePaths: [
+        `${dir}/a.ucd-pipeline.ts`,
+        `${dir}/b.ucd-pipeline.ts`,
+      ],
+      bundleOptions: {
+        external: ["shared-external"],
+      },
+    });
+
+    expect(result.issues).toEqual([]);
+    expect(result.files).toHaveLength(2);
+    expect(result.pipelines.map((pipeline) => pipeline.id).sort()).toEqual(["a", "b"]);
   });
 });
