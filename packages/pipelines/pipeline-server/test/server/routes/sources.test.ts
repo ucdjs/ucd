@@ -1,11 +1,11 @@
-import { sourcesIndexRouter } from "#server/routes";
+import { sourcesRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
 import { createTestRoutesApp } from "../helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources", () => {
   it("lists sources with labels, counts, and serialized issues", async () => {
-    const { app } = await createTestRoutesApp([sourcesIndexRouter], {
+    const { app } = await createTestRoutesApp([sourcesRouter], {
       sources: [
         {
           kind: "local",
@@ -40,7 +40,7 @@ describe("GET /api/sources", () => {
   });
 
   it("lists the default local source with file and pipeline counts", async () => {
-    const { app } = await createTestRoutesApp([sourcesIndexRouter]);
+    const { app } = await createTestRoutesApp([sourcesRouter]);
 
     const res = await app.fetch(new Request("http://localhost/api/sources"));
 
