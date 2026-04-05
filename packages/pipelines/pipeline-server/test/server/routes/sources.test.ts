@@ -1,21 +1,7 @@
 import { sourcesRouter } from "#server/routes";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
+import { testdir } from "vitest-testdirs";
 import { createTestApp } from "../_server-helpers";
-
-const { resolveSourceFilesMock, toPipelineInfoMock, sourceLabelMock } = vi.hoisted(() => ({
-  resolveSourceFilesMock: vi.fn(),
-  toPipelineInfoMock: vi.fn(),
-  sourceLabelMock: vi.fn(),
-}));
-
-vi.mock("#server/lib/resolve", () => ({
-  resolveSourceFiles: resolveSourceFilesMock,
-  sourceLabel: sourceLabelMock,
-}));
-
-vi.mock("#shared/lib/pipeline-utils", () => ({
-  toPipelineInfo: toPipelineInfoMock,
-}));
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources", () => {
@@ -79,75 +65,90 @@ describe("GET /api/sources", () => {
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId", () => {
-  beforeEach(() => {
-    resolveSourceFilesMock.mockReset();
-    toPipelineInfoMock.mockReset();
-    sourceLabelMock.mockReset();
-
-    resolveSourceFilesMock.mockResolvedValue({
-      files: [{
-        id: "simple",
-        relativePath: "simple.ucd-pipeline.ts",
-        label: "simple",
-        pipelines: [{ id: "simple-definition" }],
-      }],
-      issues: [{
-        code: "IMPORT_FAILED",
-        scope: "import",
-        message: "Import failed",
-        cause: new Error("boom"),
-      }],
+  it("returns files with ids, labels, and pipelines", async () => {
+    const dir = await testdir({
+      "valid.ucd-pipeline.ts": /* ts */`
+        export const validPipeline = {
+          _type: "pipeline-definition",
+          id: "valid",
+          name: "Valid Pipeline",
+          versions: ["16.0.0"],
+          inputs: [{ id: "local" }],
+          routes: [{ id: "route-1", filter: "*.txt", outputs: [] }],
+        };
+      `,
     });
-    toPipelineInfoMock.mockReturnValue({
-      id: "simple",
-      name: "Simple",
-      versions: ["16.0.0"],
-      routeCount: 1,
-      sourceCount: 1,
-      sourceId: "local",
-    });
-    sourceLabelMock.mockReturnValue("local");
-  });
 
-  it("returns files with ids and labels", async () => {
     const { app } = await createTestApp({
       routers: [sourcesRouter],
       sources: [{
         kind: "local",
-        id: "local",
-        path: "/tmp/local-source",
+        id: "test-source",
+        path: dir,
       }],
     });
 
-    const res = await app.fetch(new Request("http://localhost/api/sources/local"));
+    const res = await app.fetch(new Request("http://localhost/api/sources/test-source"));
 
     expect(res.status).toBe(200);
 
     const data = await res.json();
-    expect(data).toEqual(expect.objectContaining({
-      id: "local",
+    expect(data).toEqual({
+      id: "test-source",
       type: "local",
-      files: expect.arrayContaining([
-        expect.objectContaining({
-          id: "simple",
-          path: "simple.ucd-pipeline.ts",
-          label: "simple",
-          pipelines: expect.arrayContaining([
-            expect.objectContaining({
-              id: "simple",
-              versions: expect.any(Array),
-            }),
-          ]),
-        }),
-      ]),
-      errors: expect.arrayContaining([
-        expect.objectContaining({
-          code: expect.any(String),
-          scope: expect.any(String),
-          message: expect.any(String),
-        }),
-      ]),
-    }));
+      label: "local",
+      files: [
+        {
+          id: "valid",
+          path: "valid.ucd-pipeline.ts",
+          label: "valid",
+          pipelines: [{
+            id: "valid",
+            name: "Valid Pipeline",
+            description: undefined,
+            tags: undefined,
+            versions: ["16.0.0"],
+            routeCount: 1,
+            sourceCount: 1,
+            sourceId: "local",
+          }],
+        },
+      ],
+      errors: [],
+    });
+  });
+
+  it("strips cause from loader errors in the response", async () => {
+    const dir = await testdir({
+      "broken.ucd-pipeline.ts": /* ts */`
+        import { missing } from "nonexistent-package";
+        export const brokenPipeline = missing;
+      `,
+    });
+
+    const { app } = await createTestApp({
+      routers: [sourcesRouter],
+      sources: [{
+        kind: "local",
+        id: "test-source",
+        path: dir,
+      }],
+    });
+
+    const res = await app.fetch(new Request("http://localhost/api/sources/test-source"));
+
+    expect(res.status).toBe(200);
+
+    const data = await res.json();
+    expect(data.errors.length).toBeGreaterThan(0);
+    for (const error of data.errors) {
+      expect(error).not.toHaveProperty("cause");
+      expect(error).toEqual(expect.objectContaining({
+        code: expect.any(String),
+        scope: expect.any(String),
+        message: expect.any(String),
+      }));
+    }
   });
 
   it("returns 404 for an unknown source", async () => {
