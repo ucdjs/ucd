@@ -23,9 +23,6 @@ export interface LoadPipelineFileOptions {
   bundleOptions?: BundleOptions["buildOptions"];
 }
 
-/**
- * @deprecated Use `loadPipelineFile({ filePath })` instead.
- */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile>;
 export async function loadPipelineFile(options: LoadPipelineFileOptions): Promise<LoadedPipelineFile>;
 export async function loadPipelineFile(filePathOrOptions: string | LoadPipelineFileOptions): Promise<LoadedPipelineFile> {
@@ -66,8 +63,18 @@ export async function loadPipelineFile(filePathOrOptions: string | LoadPipelineF
   };
 }
 
-export async function loadPipelinesFromPaths(filePaths: string[]): Promise<LoadPipelinesResult> {
-  const settled = await Promise.allSettled(filePaths.map((filePath) => loadPipelineFile({ filePath })));
+export interface LoadPipelinesFromPathsOptions {
+  filePaths: string[];
+  bundleOptions?: BundleOptions["buildOptions"];
+}
+
+export async function loadPipelinesFromPaths(filePaths: string[]): Promise<LoadPipelinesResult>;
+export async function loadPipelinesFromPaths(options: LoadPipelinesFromPathsOptions): Promise<LoadPipelinesResult>;
+export async function loadPipelinesFromPaths(filePathsOrOptions: string[] | LoadPipelinesFromPathsOptions): Promise<LoadPipelinesResult> {
+  const filePaths = Array.isArray(filePathsOrOptions) ? filePathsOrOptions : filePathsOrOptions.filePaths;
+  const bundleOptions = Array.isArray(filePathsOrOptions) ? undefined : filePathsOrOptions.bundleOptions;
+
+  const settled = await Promise.allSettled(filePaths.map((filePath) => loadPipelineFile({ filePath, bundleOptions })));
 
   const files: LoadedPipelineFile[] = [];
   const issues: PipelineLoaderIssue[] = [];
