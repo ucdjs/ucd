@@ -1,7 +1,7 @@
 import type { PipelineExecutionLogList } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { and, asc, eq, sql } from "drizzle-orm";
-import { getQuery, getValidatedQuery, H3, HTTPError } from "h3";
+import { getValidatedQuery, H3, HTTPError } from "h3";
 import z from "zod";
 
 export const sourcesLogsRouter: H3 = new H3();
