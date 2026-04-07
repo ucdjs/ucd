@@ -60,7 +60,7 @@ const { files } = await discoverPipelineFiles({ repositoryPath });
 const result = await loadPipelinesFromPaths(files.map((f) => f.filePath));
 
 // result.pipelines — loaded PipelineDefinition[]
-// result.issues   — any files that failed to load
+// result.issues   — any files that failed validation/loading
 ```
 
 ### From a remote source
@@ -116,8 +116,9 @@ await clearRemoteSourceCache({ provider: "github", owner: "org", repo: "repo", r
 
 ## Error Handling
 
-The loader uses `Promise.allSettled` internally so a single failing file does not prevent others
-from loading. Consumers should always check `result.issues` alongside `result.pipelines`.
+`loadPipelineFile()` and `loadPipelinesFromPaths()` report file-level problems through
+structured `issues` arrays instead of throwing for expected load/validation failures.
+Consumers should always check `result.issues` alongside `result.pipelines`.
 
 Structured `PipelineLoaderIssue` objects carry a typed `code` and `scope`:
 
@@ -125,6 +126,7 @@ Structured `PipelineLoaderIssue` objects carry a typed `code` and `scope`:
 - `BUNDLE_RESOLVE_FAILED` — an import could not be resolved during bundling
 - `BUNDLE_TRANSFORM_FAILED` — a parse or syntax error in the source file
 - `IMPORT_FAILED` — dynamic import of the bundled module failed
+- `INVALID_EXPORT` — the module loaded, but exposed no valid named `PipelineDefinition` exports
 
 ## Exports
 

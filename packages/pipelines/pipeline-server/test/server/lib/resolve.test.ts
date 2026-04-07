@@ -313,8 +313,9 @@ describe("resolveSourceFiles", () => {
       path: dir,
     });
 
-    expect(result.files).toHaveLength(1);
-    expect(result.files[0]!.id).toBe("good");
+    expect(result.files).toHaveLength(2);
+    expect(result.files.find((file) => file.id === "good")!.pipelines).toHaveLength(1);
+    expect(result.files.find((file) => file.id === "bad")!.pipelines).toEqual([]);
     expect(result.issues.length).toBeGreaterThan(0);
   });
 });

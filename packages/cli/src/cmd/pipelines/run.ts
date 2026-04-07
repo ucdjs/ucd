@@ -157,12 +157,9 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
 
   const allPipelines = [];
   for (const filePath of pipelinePaths) {
-    try {
-      const result = await loadPipelineFile({ filePath });
-      allPipelines.push(...result.pipelines);
-    } catch (error) {
-      loadErrors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
-    }
+    const result = await loadPipelineFile({ filePath });
+    allPipelines.push(...result.pipelines);
+    loadErrors.push(...result.issues.map((issue) => issue.filePath ? `${issue.filePath}: ${issue.message}` : issue.message));
   }
 
   if (allPipelines.length === 0) {
@@ -185,6 +182,13 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
 
   if (selectedPipelines.length === 0) {
     throw new CLIError("No pipelines matched the provided selectors.");
+  }
+
+  if (loadErrors.length > 0) {
+    output.warning("Some pipeline files were skipped:");
+    for (const message of loadErrors) {
+      output.warning(`  ${message}`);
+    }
   }
 
   output.info(`Executing ${selectedPipelines.length} pipeline(s)...`);
