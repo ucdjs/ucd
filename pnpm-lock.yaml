@@ -913,6 +913,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.27

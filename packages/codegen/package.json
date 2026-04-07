@@ -41,6 +41,7 @@
     "@ai-sdk/openai": "catalog:runtime",
     "@luxass/utils": "catalog:runtime",
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "ai": "catalog:runtime",
     "zod": "catalog:runtime"

@@ -1,3 +1,5 @@
+export type { BundleOptions } from "./bundle";
+export { bundleCodegen } from "./bundle";
 export type {
   FieldsCodegenOptions,
   GenerateFieldsOptions,
@@ -7,6 +9,5 @@ export {
   generateFields,
   runFieldsCodegen,
 } from "./fields/run";
-
-export type { CodegenFile, ProcessDataFile } from "./process";
-export { processFile } from "./process";
+export type { BundleableFile, CodegenFile } from "./types";
+export { flattenVersion } from "./utils";
