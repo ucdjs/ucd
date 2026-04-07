@@ -1,9 +1,13 @@
 export {
   type StoreError,
+  UCDStoreApiFallbackError,
   UCDStoreBaseError,
   UCDStoreBridgeUnsupportedOperation,
   UCDStoreFileNotFoundError,
+  UCDStoreFilterError,
   UCDStoreGenericError,
+  UCDStoreInvalidManifestError,
+  UCDStoreNotInitializedError,
   UCDStoreVersionNotFoundError,
 } from "./errors";
 
