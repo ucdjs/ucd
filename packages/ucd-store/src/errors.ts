@@ -149,4 +149,5 @@ export type StoreError
     | UCDStoreBridgeUnsupportedOperation
     | UCDStoreInvalidManifestError
     | UCDStoreNotInitializedError
+    | UCDStoreFilterError
     | UCDStoreApiFallbackError;
