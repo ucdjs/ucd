@@ -113,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [detect-changes]
     if: |
-      always() && (
+      !cancelled() && (
         github.event_name == 'pull_request' &&
         github.repository == 'ucdjs/ucd' &&
         needs.detect-changes.result == 'success'
@@ -179,7 +179,7 @@ jobs:
     needs: [detect-changes, upsert-deployment-comment]
     timeout-minutes: 10
     if: |
-      always() && (
+      !cancelled() && (
         github.repository == 'ucdjs/ucd' &&
         (
           github.event_name == 'workflow_dispatch' ||
@@ -209,7 +209,7 @@ jobs:
       - upsert-deployment-comment
       - preview-approval
     if: |
-      always() && (
+      !cancelled() && (
         needs.preview-approval.result == 'success' &&
         github.repository == 'ucdjs/ucd'
       )
@@ -245,7 +245,7 @@ jobs:
     needs:
       - deploy
     if: |
-      always() && (
+      !cancelled() && (
         github.event_name == 'pull_request' &&
         github.repository == 'ucdjs/ucd' &&
         needs.deploy.result == 'success'

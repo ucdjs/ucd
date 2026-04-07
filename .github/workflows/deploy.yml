@@ -108,7 +108,7 @@ jobs:
     needs: [detect-changes]
     timeout-minutes: 10
     if: |
-      always() && (
+      !cancelled() && (
         github.repository == 'ucdjs/ucd' &&
         (
           github.event_name == 'workflow_dispatch' ||
@@ -130,7 +130,7 @@ jobs:
       - detect-changes
       - production-approval
     if: |
-      always() && (
+      !cancelled() && (
         needs.production-approval.result == 'success' &&
         github.repository == 'ucdjs/ucd'
       )
