@@ -17,6 +17,8 @@ minimumReleaseAgeExclude:
   # Unicode Related Packages
   - "@unicode-utils/*"
   - "@ucdjs/*"
+  # Renovate security update: defu@6.1.5
+  - defu@6.1.5
 
 packages:
   - "packages/**"
