@@ -102,6 +102,7 @@ describe("pipeline-loader examples", () => {
 
     expect(loaded.filePath).toBe(materialized.filePath);
     expect(loaded.exportNames).toEqual(["simple"]);
+    expect(loaded.issues).toEqual([]);
     expect(loaded.pipelines.map((pipeline) => pipeline.id)).toEqual(["simple"]);
   });
 
@@ -271,6 +272,7 @@ describe("pipeline-loader examples", () => {
 
     const loaded = await loadPipelineFile(materialized.filePath!);
 
+    expect(loaded.issues).toEqual([]);
     expect(loaded.pipelines.map((pipeline) => pipeline.id)).toEqual(["simple"]);
   });
 

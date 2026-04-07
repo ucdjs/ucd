@@ -159,11 +159,10 @@ The loader uses structured `PipelineLoaderIssue` objects instead of throwing at 
 
 ```mermaid
 flowchart TD
-  A["loadPipelinesFromPaths()"] --> B["Promise.allSettled() over all files"]
-  B --> C["Fulfilled → add to files array"]
-  B --> D["Rejected → convert to PipelineLoaderIssue"]
-  C --> E["Return { pipelines, files, issues }"]
-  D --> E
+  A["loadPipelinesFromPaths()"] --> B["loadPipelineFile() for each file"]
+  B --> C["Return LoadedPipelineFile { pipelines, exportNames, issues }"]
+  C --> D["Flatten pipelines and issues"]
+  D --> E["Return { pipelines, files, issues }"]
 ```
 
 ### Issue codes
@@ -195,4 +194,4 @@ PipelineLoaderError (base)
 
 - Pipeline files must use the `.ucd-pipeline.ts` suffix to be discovered automatically. Custom glob patterns can be passed to `discoverPipelineFiles()`.
 - The loader skips `default` exports - only named exports are inspected for pipeline definitions.
-- `loadPipelinesFromPaths()` uses `Promise.allSettled` so a single failing file does not prevent other files from loading. Consumers should always check `result.issues`.
+- `loadPipelineFile()` reports expected bundle/import/validation problems through `issues` instead of throwing. Consumers should always check `result.issues`.

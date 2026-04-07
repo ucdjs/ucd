@@ -127,6 +127,7 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
     return {
       relativePath: discovered?.relativePath ?? file.filePath,
       exportNames: file.exportNames,
+      issues: file.issues,
       pipelines: file.pipelines.map((pipeline) => ({
         name: pipeline.name ?? pipeline.id,
         id: pipeline.id,
@@ -148,8 +149,9 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
   for (const file of loadedFiles) {
     output.info(`${dim("•")} ${cyan(file.relativePath)}`);
 
-    if (file.exportNames.length === 0) {
-      output.info(`  ${dim("(no pipeline exports found)")}`);
+    if (file.pipelines.length === 0) {
+      const onlyInvalidExportIssues = file.issues.length > 0 && file.issues.every((issue) => issue.code === "INVALID_EXPORT");
+      output.info(`  ${dim(onlyInvalidExportIssues ? "(no valid pipeline exports found)" : "(failed to load; see errors below)")}`);
       continue;
     }
 

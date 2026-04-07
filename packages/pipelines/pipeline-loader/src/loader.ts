@@ -1,15 +1,16 @@
 import type { PipelineDefinition } from "@ucdjs/pipeline-core";
-import type { BundleOptions } from "./bundle";
+import type { BundleOptions, BundleResult } from "./bundle";
 import type { PipelineLoaderIssue } from "./errors";
 import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipeline-core";
 import { bundle } from "./bundle";
-import { PipelineLoaderError, toPipelineLoaderIssue } from "./errors";
+import { toPipelineLoaderIssue } from "./errors";
 
 export interface LoadedPipelineFile {
   filePath: string;
   pipelines: PipelineDefinition[];
   exportNames: string[];
+  issues: PipelineLoaderIssue[];
 }
 
 export interface LoadPipelinesResult {
@@ -23,26 +24,52 @@ export interface LoadPipelineFileOptions {
   bundleOptions?: BundleOptions["buildOptions"];
 }
 
+function createInvalidExportIssue(filePath: string, exportNames: string[]): PipelineLoaderIssue {
+  return {
+    code: "INVALID_EXPORT",
+    scope: "import",
+    message: "No named PipelineDefinition exports found.",
+    filePath,
+    meta: {
+      exportNames,
+    },
+  };
+}
+
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile>;
 export async function loadPipelineFile(options: LoadPipelineFileOptions): Promise<LoadedPipelineFile>;
 export async function loadPipelineFile(filePathOrOptions: string | LoadPipelineFileOptions): Promise<LoadedPipelineFile> {
   const filePath = typeof filePathOrOptions === "string" ? filePathOrOptions : filePathOrOptions.filePath;
   const bundleOptions = typeof filePathOrOptions === "string" ? undefined : filePathOrOptions.bundleOptions;
 
-  const bundleResult = await bundle({
-    entryPath: filePath,
-    cwd: path.dirname(filePath),
-    buildOptions: bundleOptions,
-  });
+  let bundleResult: BundleResult;
+  try {
+    bundleResult = await bundle({
+      entryPath: filePath,
+      cwd: path.dirname(filePath),
+      buildOptions: bundleOptions,
+    });
+  } catch (err) {
+    const cause = err instanceof Error ? err : new Error(String(err));
+    return {
+      filePath,
+      pipelines: [],
+      exportNames: [],
+      issues: [toPipelineLoaderIssue(cause, filePath)],
+    };
+  }
 
   let module: Record<string, unknown>;
   try {
     module = await import(/* @vite-ignore */ bundleResult.dataUrl);
   } catch (err) {
     const cause = err instanceof Error ? err : new Error(String(err));
-    throw new PipelineLoaderError("IMPORT_FAILED", `Failed to import ${filePathOrOptions}: ${cause.message}`, {
-      cause,
-    });
+    return {
+      filePath,
+      pipelines: [],
+      exportNames: [],
+      issues: [toPipelineLoaderIssue(cause, filePath)],
+    };
   }
 
   const pipelines: PipelineDefinition[] = [];
@@ -60,6 +87,7 @@ export async function loadPipelineFile(filePathOrOptions: string | LoadPipelineF
     filePath,
     pipelines,
     exportNames,
+    issues: pipelines.length === 0 ? [createInvalidExportIssue(filePath, exportNames)] : [],
   };
 }
 
@@ -74,23 +102,8 @@ export async function loadPipelinesFromPaths(filePathsOrOptions: string[] | Load
   const filePaths = Array.isArray(filePathsOrOptions) ? filePathsOrOptions : filePathsOrOptions.filePaths;
   const bundleOptions = Array.isArray(filePathsOrOptions) ? undefined : filePathsOrOptions.bundleOptions;
 
-  const settled = await Promise.allSettled(filePaths.map((filePath) => loadPipelineFile({ filePath, bundleOptions })));
-
-  const files: LoadedPipelineFile[] = [];
-  const issues: PipelineLoaderIssue[] = [];
-
-  for (const [index, result] of settled.entries()) {
-    if (result.status === "fulfilled") {
-      files.push(result.value);
-      continue;
-    }
-
-    const cause = result.reason instanceof Error
-      ? result.reason
-      : new Error(String(result.reason));
-
-    issues.push(toPipelineLoaderIssue(cause, filePaths[index]!));
-  }
+  const files = await Promise.all(filePaths.map((filePath) => loadPipelineFile({ filePath, bundleOptions })));
+  const issues = files.flatMap((file) => file.issues);
 
   return {
     pipelines: files.flatMap((file) => file.pipelines),
