@@ -17,6 +17,8 @@ minimumReleaseAgeExclude:
   # Unicode Related Packages
   - "@unicode-utils/*"
   - "@ucdjs/*"
+  # Renovate security update: vite@8.0.5
+  - vite@8.0.5
 
 packages:
   - "packages/**"
