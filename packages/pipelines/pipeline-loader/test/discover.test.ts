@@ -43,6 +43,22 @@ describe("discoverPipelineFiles", () => {
     expect(discovered.files[0]?.relativePath).toBe("beta.custom.ts");
   });
 
+  it("returns absolute file paths using native platform separators", async () => {
+    const dir = await testdir({
+      pipelines: {
+        "alpha.ucd-pipeline.ts": "",
+      },
+    });
+
+    const discovered = await discoverPipelineFiles({
+      repositoryPath: path.join(dir, "pipelines"),
+    });
+
+    expect(discovered.issues).toEqual([]);
+    expect(discovered.files).toHaveLength(1);
+    expect(discovered.files[0]?.filePath).toBe(path.normalize(path.join(dir, "pipelines", "alpha.ucd-pipeline.ts")));
+  });
+
   it("includes origin metadata with the discovered relative path", async () => {
     const dir = await testdir({
       pipelines: {

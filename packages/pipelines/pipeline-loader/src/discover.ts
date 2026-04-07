@@ -1,5 +1,5 @@
 import type { PipelineLoaderIssue } from "./errors";
-import { relative } from "node:path";
+import { normalize, relative } from "node:path";
 import { glob } from "tinyglobby";
 
 const TRAILING_SLASH_RE = /\/$/;
@@ -55,9 +55,10 @@ export async function discoverPipelineFiles(
 
     return {
       files: files.map((filePath) => {
-        const relativePath = relative(options.repositoryPath, filePath).replace(BACKSLASH_RE, "/");
+        const normalizedFilePath = normalize(filePath);
+        const relativePath = relative(options.repositoryPath, normalizedFilePath).replace(BACKSLASH_RE, "/");
         return {
-          filePath,
+          filePath: normalizedFilePath,
           relativePath,
           origin: joinOriginPath(options.origin, relativePath),
         };
