@@ -5,14 +5,45 @@ description: Architecture notes for the pipeline package family
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
 
-This section groups the pipeline architecture pages under one nested package family.
+This section is the package-family table of contents for the pipeline toolchain.
+
+## Start Here
+
+If you are new to the pipeline system, read the pages in this order:
+
+1. `Core` for the DSL and definition model
+2. `Loader` for discovery and import
+3. `Executor` for runtime behavior
+4. `Graph` for inspection and visualization
+5. `Presets` and `Playground` for reusable examples
+6. `Server` for the UI and control plane
+
+## Runtime Building Blocks
 
 <Cards>
-  <Card title="Core" href="/architecture/packages/pipelines/core" description="Pipeline DSL and route model" />
-  <Card title="Executor" href="/architecture/packages/pipelines/executor" description="Pipeline execution runtime" />
-  <Card title="Graph" href="/architecture/packages/pipelines/graph" description="Dependency graph model" />
-  <Card title="Loader" href="/architecture/packages/pipelines/loader" description="Definition discovery and loading" />
-  <Card title="Playground" href="/architecture/packages/pipelines/playground" description="Reference and demo pipeline definitions" />
-  <Card title="Presets" href="/architecture/packages/pipelines/presets" description="Opinionated UCD pipeline building blocks" />
-  <Card title="Server" href="/architecture/packages/pipelines/server" description="Pipeline UI and server boundary" />
+  <Card title="Core" href="/architecture/packages/pipelines/core" description="Pipeline definitions, sources, routes, filters, transforms, and DAG validation." />
+  <Card title="Loader" href="/architecture/packages/pipelines/loader" description="Discovery, bundling, and import of pipeline definition files." />
+  <Card title="Executor" href="/architecture/packages/pipelines/executor" description="Pipeline execution runtime with caching, summaries, and tracing." />
+  <Card title="Graph" href="/architecture/packages/pipelines/graph" description="Graph representations used for inspection and visualization." />
 </Cards>
+
+## Authoring Aids
+
+<Cards>
+  <Card title="Presets" href="/architecture/packages/pipelines/presets" description="Reusable parsers, resolvers, routes, and full-pipeline builders." />
+  <Card title="Playground" href="/architecture/packages/pipelines/playground" description="Example pipeline files for demos, tests, and development." />
+</Cards>
+
+## Product Surface
+
+<Cards>
+  <Card title="Server" href="/architecture/packages/pipelines/server" description="Local UI, API server, workspace management, and live updates." />
+</Cards>
+
+## Common Entry Points
+
+- author a DSL pipeline in [Core](/architecture/packages/pipelines/core)
+- discover `.ucd-pipeline.ts` files with [Loader](/architecture/packages/pipelines/loader)
+- execute definitions with [Executor](/architecture/packages/pipelines/executor)
+- inspect topology with [Graph](/architecture/packages/pipelines/graph)
+- run the full UI/control plane through [Server](/architecture/packages/pipelines/server)

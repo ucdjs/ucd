@@ -3,14 +3,112 @@ title: Pipeline Core
 description: Architecture notes for @ucdjs/pipeline-core
 ---
 
-`@ucdjs/pipeline-core` defines the pipeline DSL and route model.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-core` defines the pipeline DSL used to describe Unicode data processing.
 
 ## Role
 
-- Provides sources, routes, transforms, filters, and outputs.
-- Defines the core concepts used by every other pipeline package.
-- Owns the shape of pipeline definitions before loading or execution.
+- Defines pipelines, sources, routes, filters, transforms, outputs, and tracing shapes.
+- Validates route dependency graphs at definition time.
+- Provides the pure data model that executors and visualizers consume.
 
-## Notes
+## Related Docs
 
-Use this page for DSL boundaries, type-model notes, and pipeline-definition decisions.
+<Cards>
+  <Card title="Pipeline Executor" href="/architecture/packages/pipelines/executor" description="The executor runs the definitions produced by pipeline-core." />
+  <Card title="Pipeline Graph" href="/architecture/packages/pipelines/graph" description="Graph tools visualize and analyze the dependency model defined here." />
+  <Card title="Pipeline Presets" href="/architecture/packages/pipelines/presets" description="Presets package prebuilds common sources, parsers, and routes on top of the DSL." />
+  <Card title="Pipeline Loader" href="/architecture/packages/pipelines/loader" description="The loader discovers files that export pipeline definitions from this package." />
+</Cards>
+
+## Mental Model
+
+`pipeline-core` is definition-time code, not runtime orchestration.
+
+The key concepts are:
+
+- pipeline: a complete processing plan across versions
+- source: where files come from
+- route: how matching files are parsed and resolved
+- fallback: what happens to unmatched files
+- DAG: route dependency order
+
+The package returns immutable data structures that other packages execute.
+
+## Method Flows
+
+### `definePipeline()`
+
+```mermaid
+sequenceDiagram
+  actor Author
+  participant Define as definePipeline()
+  participant DAG as buildDAG()
+
+  Author->>Define: definePipeline({ id, inputs, routes, ... })
+  Define->>DAG: build route dependency graph
+  alt invalid dependencies
+    DAG-->>Define: validation errors
+    Define-->>Author: throw invalid route dependency error
+  else valid DAG
+    DAG-->>Define: dag
+    Define->>Define: apply defaults for strict, concurrency, tags
+    Define-->>Author: PipelineDefinition
+  end
+```
+
+### Route execution contract
+
+```mermaid
+sequenceDiagram
+  actor Executor
+  participant Route as PipelineRouteDefinition
+  participant Parse as parser
+  participant Xform as transforms
+  participant Resolve as resolver
+
+  Executor->>Route: execute matched file
+  Route->>Parse: parser(ParseContext)
+  Parse-->>Route: AsyncIterable<ParsedRow>
+  opt transforms present
+    Route->>Xform: applyTransforms(rows)
+    Xform-->>Route: transformed row stream
+  end
+  Route->>Resolve: resolver(ResolveContext, rows)
+  Resolve-->>Executor: route output
+```
+
+### Source and dependency model
+
+```mermaid
+sequenceDiagram
+  actor Pipeline
+  participant Source as definePipelineSource()
+  participant Route as definePipelineRoute()
+  participant Dep as createRouteDependency()
+
+  Pipeline->>Source: declare inputs
+  Pipeline->>Route: declare routes with filters/parsers/resolvers
+  opt route depends on prior route data
+    Route->>Dep: depends: [createRouteDependency("other-route")]
+    Dep-->>Route: typed dependency token
+  end
+  Route-->>Pipeline: route definition
+  Pipeline-->>Pipeline: DAG captures dependency order
+```
+
+## Design Notes
+
+- Definition-time validation is deliberate so invalid pipelines fail before execution starts.
+- The package does not know about filesystem layout, caching, or UI.
+- `PipelineDefinition` is intentionally pure data plus precomputed DAG metadata.
+- The DSL is expressive enough for both tiny sample pipelines and large preset-driven pipelines.
+
+## Testing Use
+
+- invalid DAG detection
+- filter composition and matching behavior
+- route dependency typing and ordering
+- output normalization contracts
+- transform chaining and fallback behavior

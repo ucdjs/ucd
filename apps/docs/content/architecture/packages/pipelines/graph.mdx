@@ -3,14 +3,100 @@ title: Pipeline Graph
 description: Architecture notes for @ucdjs/pipeline-graph
 ---
 
-`@ucdjs/pipeline-graph` models route dependency graphs for pipelines.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-graph` builds graph representations of pipeline definitions for analysis and visualization.
 
 ## Role
 
-- Represents route dependencies as a DAG.
-- Supports ordering and visualization of pipeline structure.
-- Keeps graph-specific logic separate from the pipeline DSL and executor.
+- Converts sources, files, routes, and outputs into graph nodes and edges.
+- Supports server/UI features that inspect pipeline topology and execution structure.
+- Keeps graph-building logic out of the executor and UI layers.
 
-## Notes
+## Related Docs
 
-Use this page for dependency-graph and visualization notes.
+<Cards>
+  <Card title="Pipeline Core" href="/architecture/packages/pipelines/core" description="Graph nodes are derived from pipeline-core definitions and file contexts." />
+  <Card title="Pipeline Executor" href="/architecture/packages/pipelines/executor" description="The executor follows dependency order while graph tools render and inspect it." />
+  <Card title="Pipeline Server" href="/architecture/packages/pipelines/server" description="The pipeline UI uses graph outputs to visualize relationships." />
+  <Card title="Pipelines Overview" href="/architecture/packages/pipelines" description="Return to the pipeline package-family index." />
+</Cards>
+
+## Mental Model
+
+This package is a view-model builder for pipelines.
+
+The core builder turns four kinds of entities into nodes:
+
+- source/version nodes
+- file nodes
+- route nodes
+- output nodes
+
+Edges describe how data moves between them.
+
+## Method Flows
+
+### Graph builder lifecycle
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Builder as PipelineGraphBuilder
+
+  Caller->>Builder: createPipelineGraphBuilder()
+  Caller->>Builder: addSourceNode(version)
+  Caller->>Builder: addFileNode(file)
+  Caller->>Builder: addRouteNode(routeId, version)
+  Caller->>Builder: addOutputNode(outputIndex, version, ...)
+  Caller->>Builder: addEdge(from, to, type)
+  Caller->>Builder: build()
+  Builder-->>Caller: { nodes, edges }
+```
+
+### Node creation rules
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Builder as PipelineGraphBuilder
+
+  Caller->>Builder: addSourceNode("16.0.0")
+  Builder-->>Caller: source:16.0.0
+  Caller->>Builder: addFileNode(file)
+  Builder-->>Caller: file:16.0.0:path
+  Caller->>Builder: addRouteNode("general-category", "16.0.0")
+  Builder-->>Caller: route:16.0.0:general-category
+  Caller->>Builder: addOutputNode(0, "16.0.0", property, outputId, locator)
+  Builder-->>Caller: output:16.0.0:<qualified-id>
+```
+
+### Deduplicated edge building
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Builder as PipelineGraphBuilder
+
+  Caller->>Builder: addEdge(from, to, type)
+  Builder->>Builder: compute edge key from|to|type
+  alt key already seen
+    Builder-->>Caller: ignore duplicate
+  else new edge
+    Builder-->>Caller: edge stored
+  end
+```
+
+## Design Notes
+
+- Node IDs are deterministic so multiple graph passes can merge or compare safely.
+- Output nodes can carry richer metadata like property names, output IDs, and locators.
+- The builder is mutable during construction but returns plain graph data on `build()`.
+- This package stays intentionally narrow: graph modeling, not execution or layout physics.
+
+## Testing Use
+
+- stable node ID generation
+- edge deduplication
+- output-node metadata merging
+- server/UI graph conversion utilities on top of the raw builder

@@ -3,14 +3,127 @@ title: Pipeline Executor
 description: Architecture notes for @ucdjs/pipeline-executor
 ---
 
-`@ucdjs/pipeline-executor` runs pipelines and manages execution behavior.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-executor` is the runtime that executes pipeline definitions against source files.
 
 ## Role
 
-- Resolves route order and executes work with concurrency.
-- Owns runtime concerns such as logs, traces, and published outputs.
-- Bridges pipeline definitions to host-specific execution environments.
+- Orders pipelines and routes, resolves versions, and executes matched files.
+- Applies caching, tracing, logging, and output materialization.
+- Turns pure pipeline definitions into concrete execution results.
 
-## Notes
+## Related Docs
 
-Use this page for execution-model, runtime, and observability decisions.
+<Cards>
+  <Card title="Pipeline Core" href="/architecture/packages/pipelines/core" description="The executor consumes definitions created by pipeline-core." />
+  <Card title="Pipeline Graph" href="/architecture/packages/pipelines/graph" description="Graph tools explain the dependency structure that the executor follows." />
+  <Card title="Pipeline Server" href="/architecture/packages/pipelines/server" description="The server package visualizes and runs executions powered by this runtime." />
+  <Card title="Pipeline Presets" href="/architecture/packages/pipelines/presets" description="Preset pipelines are a common input to the executor." />
+</Cards>
+
+## Mental Model
+
+The executor has two layers:
+
+- `createPipelineExecutor()` orders multiple pipelines and wraps execution in runtime logging
+- `run()` executes one pipeline version-by-version and route-by-route
+
+The critical runtime responsibilities are:
+
+- source listing
+- route matching
+- parse/transform/resolve execution
+- cache lookup and writeback
+- output materialization and summary creation
+
+## Method Flows
+
+### `createPipelineExecutor().run()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Exec as createPipelineExecutor()
+  participant Order as orderPipelinesByPublishedOutputDependencies()
+  participant Run as run()
+  participant Runtime as PipelineExecutionRuntime
+
+  Caller->>Exec: createPipelineExecutor({ runtime, cacheStore, onLog })
+  Caller->>Exec: executor.run(pipelines, options)
+  Exec->>Runtime: runWithLogHandler(onLog)
+  Exec->>Order: topologically order pipelines by pipeline-output deps
+  loop each ordered pipeline
+    Exec->>Run: run single pipeline
+    Run-->>Exec: PipelineExecutionResult
+  end
+  Exec-->>Caller: result[]
+```
+
+### Single pipeline execution
+
+```mermaid
+sequenceDiagram
+  actor Executor
+  participant Run as run()
+  participant Ctx as createRunCtx()
+  participant Source as SourceAdapter
+  participant Queue as processing queue
+
+  Executor->>Run: run({ pipeline, runOptions, cacheStore, runtime })
+  Run->>Ctx: resolve versions, routesByLayer, outputs, source adapter
+  loop each version
+    Run->>Source: listFiles(version)
+    Source-->>Run: FileContext[]
+    Run->>Run: apply global include filter
+    loop each route layer
+      Run->>Queue: enqueue matched files up to concurrency
+      Queue-->>Run: executeMatchedFile()
+    end
+    Run->>Run: execute unmatched-file fallback or strict failure
+  end
+  Run-->>Executor: outputs, errors, summary, status
+```
+
+### Matched file execution
+
+```mermaid
+sequenceDiagram
+  actor Runtime
+  participant Match as executeMatchedFile()
+  participant Cache as cache store
+  participant Route as executeParseResolve()
+  participant Outputs as materializeOutputs()
+
+  Runtime->>Match: route matched file
+  opt cache enabled
+    Match->>Cache: tryLoadCachedResult(cacheKey)
+  end
+  alt cached result hit
+    Cache-->>Match: cached outputs
+    Match-->>Runtime: reuse cached data
+  else cache miss
+    Match->>Route: parse -> transforms -> resolver
+    Route-->>Match: route outputs
+    Match->>Outputs: materialize output definitions
+    opt cache enabled
+      Match->>Cache: storeCacheEntry()
+    end
+    Match-->>Runtime: new outputs + manifest entries
+  end
+```
+
+## Design Notes
+
+- Pipeline ordering happens before execution so pipeline-output dependencies can cross pipeline boundaries.
+- Route ordering happens inside a pipeline through the DAG layers from pipeline-core.
+- The runtime abstraction owns spans, logging, and output capture so execution remains portable.
+- Errors are accumulated into execution results instead of crashing the whole batch whenever possible.
+
+## Testing Use
+
+- pipeline ordering and circular dependency failures
+- route-layer execution and concurrency behavior
+- cache hit/miss behavior
+- fallback and strict unmatched-file handling
+- summary accounting, tracing, and failure accumulation

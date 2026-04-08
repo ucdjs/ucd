@@ -3,14 +3,96 @@ title: Shared UI
 description: Architecture notes for @ucdjs-internal/shared-ui
 ---
 
-`@ucdjs-internal/shared-ui` contains internal shared UI primitives and styles.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs-internal/shared-ui` is the internal component and theme package used by UI-facing apps.
 
 ## Role
 
-- Provides reusable UI components, hooks, and styling entrypoints for workspace apps.
-- Keeps shared frontend primitives out of individual app folders.
-- Exists as an internal package, not as a stable external design-system product.
+- Provides reusable UI primitives and styled components for docs and pipeline UIs.
+- Centralizes theme bootstrapping, utility helpers, and base shared styles.
+- Keeps app code focused on composition instead of duplicating component scaffolding.
 
-## Notes
+## Related Docs
 
-Use this page for UI-boundary notes and shared frontend decisions.
+<Cards>
+  <Card title="Docs App" href="/architecture/apps/docs" description="The docs site consumes shared layout and styling patterns." />
+  <Card title="Pipeline Server" href="/architecture/packages/pipelines/server" description="The pipeline UI also benefits from shared UI primitives and patterns." />
+  <Card title="Shared" href="/architecture/packages/shared" description="Compare this UI-focused package with the non-visual internal helper package." />
+  <Card title="Packages Overview" href="/architecture/packages" description="Return to the grouped package architecture index." />
+</Cards>
+
+## Mental Model
+
+This package has three families of exports:
+
+- UI primitives under `src/ui/*`
+- higher-level components like `ThemeToggle`, `ShikiCode`, and `UCDLogo`
+- tiny shared client helpers like theme bootstrapping and class-name utilities
+
+It is not a design system with business logic. It is a shared presentation layer.
+
+## Method Flows
+
+### Theme bootstrap
+
+```mermaid
+sequenceDiagram
+  actor Browser
+  participant Script as createThemeScript()
+  participant Storage as localStorage
+  participant Media as prefers-color-scheme
+  participant Root as document.documentElement
+
+  Browser->>Script: inline theme script executes
+  Script->>Storage: getItem("theme")
+  Script->>Media: match dark-mode preference
+  Script->>Script: resolve light/dark/system
+  alt dark
+    Script->>Root: add .dark and color-scheme: dark
+  else light
+    Script->>Root: remove .dark and set color-scheme: light
+  end
+```
+
+### Shared component consumption
+
+```mermaid
+sequenceDiagram
+  actor App
+  participant UI as @ucdjs-internal/shared-ui
+  participant Comp as exported component
+
+  App->>UI: import { Button, ThemeToggle, UCDLogo }
+  UI->>Comp: re-export component module
+  Comp-->>App: styled React component
+  App-->>App: compose app-specific screens from shared primitives
+```
+
+### Syntax-highlighted code block path
+
+```mermaid
+sequenceDiagram
+  actor App
+  participant Shiki as ShikiCode
+  participant Theme as theme state
+
+  App->>Shiki: render code block
+  Shiki->>Theme: resolve current theme
+  Theme-->>Shiki: light/dark mode
+  Shiki-->>App: highlighted code UI
+```
+
+## Design Notes
+
+- The package is intentionally internal so apps can evolve shared visuals without a public API promise.
+- Theme bootstrapping is defensive and safe to inline before React hydrates.
+- Most exports are composable primitives; app-level data fetching and navigation stay outside this package.
+- Shared styles are useful only when the consuming app accepts the same visual language.
+
+## Testing Use
+
+- theme-script output and root-class toggling
+- component rendering for shared primitives
+- app integration points that depend on light/dark behavior
+- regression tests for exported component surface and utility helpers

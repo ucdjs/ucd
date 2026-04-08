@@ -3,14 +3,105 @@ title: Test Utils
 description: Architecture notes for @ucdjs/test-utils
 ---
 
-`@ucdjs/test-utils` centralizes reusable test helpers for the monorepo.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/test-utils` provides reusable mocks, fixtures, and matchers for package and app tests across the monorepo.
 
 ## Role
 
-- Provides shared fixtures, matchers, mock-store helpers, and MSW support.
-- Reduces duplicated test setup across apps and packages.
-- Defines common testing building blocks for storage, API, and pipeline code.
+- Supplies mock store APIs and subdomain handlers for client and store tests.
+- Provides reusable backend fixtures and async helpers so tests do not rebuild plumbing each time.
+- Encodes project-specific testing patterns in one place.
 
-## Notes
+## Related Docs
 
-Use this page for test-helper boundaries and testing-lane documentation.
+<Cards>
+  <Card title="Public Package Docs" href="/packages/test-utils" description="User-facing overview of mock store helpers and testing utilities." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="Many store tests rely on mock store handlers and test backends from this package." />
+  <Card title="Client" href="/architecture/packages/client" description="Client tests use the mock API surface defined here." />
+  <Card title="FS Backend" href="/architecture/packages/fs-backend" description="Test backends exercise the same feature contract as production backends." />
+</Cards>
+
+## Mental Model
+
+The package organizes around three needs:
+
+- fake HTTP surfaces with MSW
+- fake filesystems/backends for storage tests
+- shared assertions and tiny async helpers
+
+The most important entrypoint is `mockStoreApi()`, which stands up the canonical mocked UCD API.
+
+## Method Flows
+
+### `mockStoreApi(config)`
+
+```mermaid
+sequenceDiagram
+  actor Test
+  participant Mock as mockStoreApi()
+  participant Routes as MOCK_ROUTES
+  participant Setup as setupMockRoute()
+  participant MSW as mockFetch()
+
+  Test->>Mock: mockStoreApi({ versions, files, responses })
+  Mock->>Mock: normalize baseUrl and defaults
+  loop each canonical route
+    Mock->>Routes: iterate route definitions
+    Routes-->>Mock: route
+    Mock->>Setup: configure route response
+    Setup->>MSW: register GET/HEAD handler
+  end
+  opt customResponses provided
+    Mock->>MSW: register additional handlers
+  end
+  Mock-->>Test: mocked API ready
+```
+
+### Mocked request handling
+
+```mermaid
+sequenceDiagram
+  actor Consumer
+  participant MSW as mock handler
+  participant Files as configured mock files
+  participant Hooks as before/after hooks
+
+  Consumer->>MSW: request mocked endpoint
+  MSW->>Hooks: optional before hook + latency
+  MSW->>Files: resolve version/path or default response
+  Files-->>MSW: body + metadata
+  MSW->>Hooks: optional after hook
+  MSW-->>Consumer: HttpResponse with headers/status/body
+```
+
+### Store subdomain mocking
+
+```mermaid
+sequenceDiagram
+  actor Test
+  participant Mock as mockStoreSubdomain()
+  participant MSW as catch-all subdomain handler
+  participant Tree as mock file tree
+
+  Test->>Mock: mockStoreSubdomain({ files })
+  Mock->>MSW: register /:wildcard* handler
+  Test->>MSW: GET https://ucd-store.../{version}/{path}
+  MSW->>Tree: resolve file or directory entry
+  Tree-->>MSW: content or listing metadata
+  MSW-->>Test: file text, directory JSON, HEAD metadata, or 404
+```
+
+## Design Notes
+
+- The mock API tracks the real endpoint shape, including the manifest route compatibility layer.
+- Store-subdomain mocking exists because the HTTP backend talks to the hosted store directly, not only the API app.
+- Default files are included so tests can start from a realistic baseline without a lot of fixture setup.
+- The package is opinionated toward this monorepo’s testing style rather than being generic.
+
+## Testing Use
+
+- end-to-end client/store tests using realistic route mocks
+- backend feature tests using memory or read-only test backends
+- matcher setup for response and schema assertions
+- latency, error, and custom-response branches for HTTP consumers

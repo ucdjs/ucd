@@ -3,14 +3,98 @@ title: Pipeline Presets
 description: Architecture notes for @ucdjs/pipeline-presets
 ---
 
-`@ucdjs/pipeline-presets` provides opinionated UCD pipeline building blocks.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-presets` provides reusable parsers, routes, resolvers, transforms, and ready-made pipelines for Unicode data processing.
 
 ## Role
 
-- Encodes common parsers, resolvers, and higher-level pipeline helpers.
-- Sits above pipeline-core as the reusable opinionated path.
-- Keeps common UCD-specific pipeline patterns out of app code.
+- Encapsulates common UCD parsing strategies and route definitions.
+- Lets authors build useful pipelines quickly without recreating the standard building blocks.
+- Bridges raw Unicode text formats and the generic pipeline DSL.
 
-## Notes
+## Related Docs
 
-Use this page for preset boundaries and reusable UCD-processing patterns.
+<Cards>
+  <Card title="Pipeline Core" href="/architecture/packages/pipelines/core" description="Presets are composed entirely on top of the pipeline DSL." />
+  <Card title="Pipeline Executor" href="/architecture/packages/pipelines/executor" description="Preset pipelines are common runtime inputs to the executor." />
+  <Card title="Pipeline Playground" href="/architecture/packages/pipelines/playground" description="Playground examples import these presets for realistic sample pipelines." />
+  <Card title="Codegen" href="/architecture/packages/codegen" description="Both packages transform Unicode files, but presets target pipeline execution rather than TS code emission." />
+</Cards>
+
+## Mental Model
+
+The package is a toolbox with three levels:
+
+- low-level parsers and resolvers
+- reusable route definitions and transforms
+- complete preset pipelines like `createFullPipeline()`
+
+It exists so most pipeline authors can compose, not invent.
+
+## Method Flows
+
+### `createFullPipeline()`
+
+```mermaid
+sequenceDiagram
+  actor Author
+  participant Full as createFullPipeline()
+  participant Resolver as createPropertyJsonResolver()
+  participant Routes as allRoutes
+  participant Core as definePipeline()
+
+  Author->>Full: createFullPipeline({ versions, strict, concurrency })
+  Full->>Resolver: createPropertyJsonResolver()
+  Full->>Routes: include common preset routes
+  Full->>Core: definePipeline({ include: byExt('.txt'), fallback, routes })
+  Core-->>Full: PipelineDefinition
+  Full-->>Author: full UCD pipeline
+```
+
+### Standard route processing
+
+```mermaid
+sequenceDiagram
+  actor Executor
+  participant Route as preset route
+  participant Parser as standardParser()/unicodeDataParser()
+  participant Resolver as propertyJsonResolver()/groupedResolver()
+
+  Executor->>Route: execute matched file
+  Route->>Parser: parse raw UCD file
+  Parser-->>Route: ParsedRow stream
+  Route->>Resolver: resolve rows into property JSON
+  Resolver-->>Executor: normalized output entries
+```
+
+### Transform composition
+
+```mermaid
+sequenceDiagram
+  actor Author
+  participant Filter as createRowFilter()
+  participant Route as route definition
+  participant Executor as pipeline-executor
+
+  Author->>Filter: configure row filtering transform
+  Filter-->>Author: PipelineTransformDefinition
+  Author->>Route: attach transforms to route
+  Executor->>Route: run parser output through transforms
+  Route-->>Executor: transformed rows for resolver
+```
+
+## Design Notes
+
+- Presets should encode common Unicode patterns, not every possible pipeline style.
+- Ready-made pipelines like `createFullPipeline()` are intentionally opinionated.
+- The package keeps raw-format knowledge close to the parser/resolver layer instead of scattering it across apps.
+- Authors can always drop down to pipeline-core when presets are too constraining.
+
+## Testing Use
+
+- parser correctness for common UCD file formats
+- resolver output normalization
+- ready-made pipeline assembly
+- transform behavior in preset routes
+- compatibility with executor and playground example pipelines
