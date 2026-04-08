@@ -1,0 +1,53 @@
+---
+title: Architecture
+description: Overview of the main systems and package layers in UCD.js
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+This section is the reference entrypoint for UCD.js architecture.
+Use it as a table of contents for system flow, package boundaries, app boundaries,
+and deeper package-level internals.
+
+## Start Here
+
+If you are trying to orient yourself quickly:
+
+1. Read [Data Flow](/architecture/data-flow) for the end-to-end system picture.
+2. Read [Package Layers](/architecture/package-layers) for dependency direction and package roles.
+3. Use [Apps](/architecture/apps) or [Packages](/architecture/packages) for deeper notes on a specific area.
+
+## System Views
+
+<Cards>
+  <Card title="Data Flow" href="/architecture/data-flow" description="End-to-end flow from raw UCD files to client consumption" />
+  <Card title="Package Layers" href="/architecture/package-layers" description="Detailed package dependency graph organized by layer" />
+</Cards>
+
+## Architecture Areas
+
+<Cards>
+  <Card title="Apps" href="/architecture/apps" description="Per-app architecture notes and boundaries" />
+  <Card title="Packages" href="/architecture/packages" description="Per-package architecture notes and extension points" />
+</Cards>
+
+## Common Entry Points
+
+These are the pages you will likely want most often when working in the repo:
+
+<Cards>
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="Store internals, lockfile lifecycle, and method-level sequence diagrams." />
+  <Card title="FS Backend" href="/architecture/packages/fs-backend" description="Backend abstraction used by lockfile and ucd-store." />
+  <Card title="Lockfile" href="/architecture/packages/lockfile" description="Canonical on-disk state for mirrored versions and snapshots." />
+  <Card title="Client" href="/architecture/packages/client" description="Endpoint discovery and typed HTTP resource wrappers." />
+  <Card title="Pipeline Server" href="/architecture/packages/pipelines/server" description="Execution UI, server boundary, and inspection model." />
+  <Card title="API App" href="/architecture/apps/api" description="Public serving layer and API-facing application boundary." />
+</Cards>
+
+## By Intent
+
+- Learn how data moves through the system: [Data Flow](/architecture/data-flow)
+- Understand dependency direction and layering: [Package Layers](/architecture/package-layers)
+- Inspect an app boundary: [Apps](/architecture/apps)
+- Inspect a package boundary: [Packages](/architecture/packages)
+- Jump straight to store internals: [UCD Store](/architecture/packages/ucd-store)

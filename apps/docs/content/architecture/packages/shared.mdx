@@ -1,0 +1,171 @@
+---
+title: Shared
+description: Architecture notes for @ucdjs-internal/shared
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs-internal/shared` holds internal cross-package helpers.
+
+## Role
+
+- Provides reusable internal utilities for async work, fetch behavior, filtering, files, guards, and hashing.
+- Supports workspace packages without promising external stability.
+- Sits below domain packages such as client, store, and pipeline tooling.
+
+## Related Docs
+
+<Cards>
+  <Card title="Utils" href="/architecture/packages/utils" description="The stable public facade re-exports a small subset of shared helpers." />
+  <Card title="Client" href="/architecture/packages/client" description="Client resources rely on customFetch and guards from shared." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="Store operations depend heavily on wrapTry, path filters, and file helpers." />
+  <Card title="Package Layers" href="/architecture/package-layers" description="See why shared stays internal and below business packages." />
+</Cards>
+
+## Mental Model
+
+This package is the workspace’s implementation toolbox.
+
+It is deliberately broad, but the exports still cluster into a few clear families:
+
+- async helpers: concurrency limiting, `wrapTry`, `tryOr`
+- fetch helpers: `customFetch`, normalized fetch errors, schema-aware responses
+- path/file helpers: flattening, normalization, tree filtering
+- glob and filter helpers
+- small guards and serialization helpers
+
+## Helper Families
+
+```mermaid
+flowchart TD
+  Shared["@ucdjs-internal/shared"]
+  Shared --> Async["async/*"]
+  Shared --> Fetch["fetch/*"]
+  Shared --> Files["files.ts"]
+  Shared --> Filter["filter.ts / glob.ts"]
+  Shared --> Guards["guards.ts"]
+  Shared --> Json["json.ts"]
+  Shared --> Version["version.ts"]
+```
+
+## Method Flows
+
+### `customFetch.safe()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Safe as customFetch.safe()
+  participant Exec as executeFetch()
+  participant Net as fetch()
+  participant Schema as optional schema validation
+
+  Caller->>Safe: customFetch.safe(request, options)
+  Safe->>Exec: executeFetch(...)
+  Exec->>Net: fetch(request, normalized options)
+
+  alt network/request failure
+    Net-->>Exec: throw / reject
+    Exec-->>Safe: normalized FetchError
+    Safe-->>Caller: { data: null, error }
+  else HTTP response received
+    Net-->>Exec: Response
+    Exec->>Exec: parse body by response type
+    opt schema provided and success status
+      Exec->>Schema: safeParseAsync(response.data)
+      alt schema invalid
+        Schema-->>Exec: validation issues
+        Exec-->>Safe: FetchSchemaValidationError
+        Safe-->>Caller: { data: null, error }
+      end
+    end
+    alt HTTP status >= 400
+      Exec-->>Safe: FetchError
+      Safe-->>Caller: { data: null, error, response }
+    else success
+      Exec-->>Safe: FetchResponse
+      Safe-->>Caller: { data, error: null, response }
+    end
+  end
+```
+
+### `createPathFilter(options)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Factory as createPathFilter()
+  participant Config as filter config
+  participant Match as picomatch
+
+  Caller->>Factory: createPathFilter({ include, exclude, disableDefaultExclusions })
+  Factory->>Config: normalize include/exclude patterns
+  Factory->>Config: apply default excluded extensions unless disabled
+  Factory-->>Caller: filter function
+
+  Caller->>Caller: filter(path, extraOptions)
+  Caller->>Match: evaluate normalized path against include + exclude rules
+  Match-->>Caller: true / false
+```
+
+### `wrapTry(operation)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Wrap as wrapTry()
+  participant Op as operation
+
+  Caller->>Wrap: wrapTry(operation)
+  Wrap->>Op: execute operation
+
+  alt sync or async success
+    Op-->>Wrap: value
+    Wrap-->>Caller: [value, null]
+  else sync or async failure
+    Op-->>Wrap: throw / reject
+    Wrap-->>Caller: [null, error]
+  end
+```
+
+### `tryOr({ try, err })`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Try as tryOr()
+  participant Op as try handler
+  participant Err as err handler
+
+  Caller->>Try: tryOr({ try, err })
+  Try->>Op: execute try handler
+
+  alt try succeeds
+    Op-->>Try: value
+    Try-->>Caller: value
+  else try fails
+    Op-->>Try: throw / reject
+    Try->>Err: execute err handler
+    Err-->>Try: fallback value
+    Try-->>Caller: fallback value
+  end
+```
+
+## Internal Boundary
+
+```mermaid
+flowchart LR
+  Shared["shared internal helpers"] --> Client["client"]
+  Shared --> Store["ucd-store"]
+  Shared --> Tooling["tooling / tests / pipelines"]
+  Shared -.not stable public API.-> External["external consumers"]
+```
+
+## Testing Use
+
+The highest-value tests here are:
+
+- fetch normalization, retry, timeout, and schema-validation branches
+- filter/path matching edge cases and default exclusions
+- `wrapTry` / `tryOr` sync and async behavior
+- file tree normalization and flattening helpers

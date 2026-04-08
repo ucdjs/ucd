@@ -1,0 +1,105 @@
+---
+title: Docs
+description: Architecture notes for apps/docs
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`apps/docs` is the documentation site for package guides, pipelines, and architecture notes.
+
+## Role
+
+- Loads MDX content from `apps/docs/content`.
+- Renders it through TanStack Router and Fumadocs.
+- Defines the navigation model that connects public docs, pipeline docs, and architecture docs.
+
+## Related Docs
+
+<Cards>
+  <Card title="Architecture Index" href="/architecture" description="Top-level architecture entrypoint rendered by this app." />
+  <Card title="Packages Overview" href="/architecture/packages" description="Grouped package architecture pages served by the docs app." />
+  <Card title="Apps Overview" href="/architecture/apps" description="Application architecture pages served by the docs app." />
+  <Card title="Shared UI" href="/architecture/packages/shared-ui" description="UI primitives and theme behavior that support docs rendering." />
+</Cards>
+
+## Mental Model
+
+The docs app is a content-driven SPA with SSR support:
+
+- Fumadocs indexes the MDX content tree
+- TanStack Router serves a catch-all docs route
+- the route resolves a page, serializes the page tree, and renders the MDX module
+
+The page structure is largely data-driven by the content tree and `meta.json` files.
+
+## Request Flows
+
+### App bootstrap
+
+```mermaid
+sequenceDiagram
+  actor Browser
+  participant Router as getRouter()
+  participant Tree as routeTree.gen
+  participant Root as __root.tsx
+
+  Browser->>Router: initialize app
+  Router->>Tree: create TanStack router from generated routes
+  Router-->>Browser: router instance
+  Browser->>Root: render root document shell
+  Root-->>Browser: global CSS, provider, scripts, devtools
+```
+
+### Docs page request
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant Route as /$ route
+  participant Source as docs-loader source
+  participant Loader as serverLoader
+  participant Client as Fumadocs client loader
+
+  User->>Route: navigate to /architecture/packages/fs-backend
+  Route->>Loader: derive slug array
+  Loader->>Source: getPage(slugs)
+  alt page missing
+    Source-->>Loader: null
+    Loader-->>Route: notFound()
+  else page found
+    Source-->>Loader: page + pageTree
+    Loader->>Client: preload MDX content module
+    Client-->>Route: page content ready
+    Route-->>User: DocsLayout + rendered MDX page
+  end
+```
+
+### Navigation model
+
+```mermaid
+sequenceDiagram
+  actor Reader
+  participant Layout as baseOptions()
+  participant Tree as source.getPageTree()
+  participant Section as getSection()
+
+  Reader->>Layout: open docs sidebar
+  Layout->>Tree: read page tree from content source
+  Layout->>Section: map top-level path to section color
+  Tree-->>Layout: tabs + nodes + metadata
+  Layout-->>Reader: sectioned sidebar and page navigation
+```
+
+## Design Notes
+
+- The content tree is the source of truth for docs navigation.
+- The catch-all route keeps the docs surface simple while still allowing section-aware behavior.
+- Architecture discoverability depends as much on `meta.json` structure as on page prose.
+- This app is a documentation renderer, not a place for package logic.
+
+## Testing Use
+
+- catch-all route loading and 404 behavior
+- page-tree serialization
+- section/tab mapping for packages, pipelines, architecture, and contributing
+- rendering of MDX components and cross-page navigation

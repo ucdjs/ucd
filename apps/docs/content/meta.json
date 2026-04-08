@@ -3,8 +3,8 @@
   "pages": [
     "(general)",
     "pipelines",
-    "architecture",
     "packages",
+    "architecture",
     "contributing"
   ]
 }

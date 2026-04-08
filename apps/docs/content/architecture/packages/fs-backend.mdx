@@ -1,0 +1,157 @@
+---
+title: FS Backend
+description: Architecture notes for @ucdjs/fs-backend
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/fs-backend` is the filesystem abstraction layer used across the storage stack.
+
+## Role
+
+- Defines the common backend contract used by `ucd-store`, `lockfile`, and test helpers.
+- Lets higher-level storage code work against one capability model instead of hard-coding Node or HTTP.
+- Centralizes path safety, feature detection, and backend-specific error normalization.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/fs-backend" description="User-facing overview of the backend contract and built-in backends." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="See how the store consumes backend features for reads, mirroring, and sync." />
+  <Card title="Lockfile" href="/architecture/packages/lockfile" description="See how lockfile reads and writes depend on backend mutability." />
+  <Card title="Path Utils" href="/architecture/packages/path-utils" description="Path normalization and traversal protection used by the built-in backends." />
+</Cards>
+
+## Mental Model
+
+`fs-backend` has three layers:
+
+- `defineBackend()` turns a small backend definition into a full `FileSystemBackend`
+- built-in backends implement the actual operations
+- consumers branch on `features` instead of checking environment type directly
+
+The important distinction is capability, not platform:
+
+- Node backend: mutable, directory-aware, sandboxed to a base path
+- HTTP backend: read-only, request-based, safe-path constrained to a base URL
+- custom backends: anything that can satisfy the contract
+
+## Method Flows
+
+### `defineBackend()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Define as defineBackend()
+  participant Zod as optionsSchema
+  participant Setup as backend.setup()
+  participant Hooks as HookableCore
+
+  Caller->>Define: factory(options)
+  Define->>Zod: safeParse(options)
+
+  alt invalid options
+    Zod-->>Define: parse error
+    Define-->>Caller: throw invalid options error
+  else valid options
+    Zod-->>Define: parsed options
+    Define->>Setup: setup(parsed options)
+    alt setup throws
+      Setup-->>Define: error
+      Define-->>Caller: BackendSetupError
+    else setup succeeds
+      Setup-->>Define: operations
+      Define->>Hooks: create hook registry
+      Define->>Define: infer features from implemented operations
+      Define->>Define: wrap read/list/stat/write/... with hooks
+      Define-->>Caller: FileSystemBackend
+    end
+  end
+```
+
+### Node backend read and write flow
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Node as Node backend
+  participant Path as resolveSandboxedPath()
+  participant FS as node:fs/promises
+  participant Real as symlink guard
+
+  Caller->>Node: read(path) or write(path, data)
+  Node->>Path: resolveSafePath(basePath, path)
+  Path->>Real: assert real path stays inside sandbox
+
+  alt traversal or symlink escape
+    Real-->>Node: PathTraversalError
+    Node-->>Caller: throw
+  else safe path
+    alt read
+      Node->>FS: readFile(resolvedPath)
+      FS-->>Node: content or ENOENT/EISDIR
+      Node-->>Caller: content or normalized backend error
+    else write
+      Node->>FS: mkdir(parent, recursive)
+      Node->>FS: writeFile(resolvedPath, data)
+      Node-->>Caller: success
+    end
+  end
+```
+
+### HTTP backend read and list flow
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Http as HTTP backend
+  participant Path as resolveSafePath()
+  participant Fetch as fetch()
+  participant Schema as BackendEntryListSchema
+
+  Caller->>Http: read(path) or list(path)
+  Http->>Path: resolve request path under baseUrl
+
+  alt read
+    Http->>Fetch: GET file URL
+    Fetch-->>Http: response
+    alt 404
+      Http-->>Caller: BackendFileNotFound
+    else non-ok
+      Http-->>Caller: generic remote read error
+    else ok
+      Http-->>Caller: response text/bytes
+    end
+  else list
+    Http->>Fetch: GET directory URL with Accept: application/json
+    Fetch-->>Http: JSON response
+    Http->>Schema: validate entry list
+    alt invalid schema
+      Schema-->>Http: validation error
+      Http-->>Caller: invalid response error
+    else recursive=false
+      Http-->>Caller: normalized entries
+    else recursive=true
+      Http->>Http: recursively list child directories
+      Http-->>Caller: tree-shaped entries
+    end
+  end
+```
+
+## Design Notes
+
+- Feature detection is inferred from the operations actually implemented, which keeps custom backends honest.
+- The Node backend applies both lexical path checks and real-path symlink checks.
+- The HTTP backend is intentionally read-only and uses headers to infer `stat()` information.
+- `ucd-store` should branch on `features` and `isHttpBackend()` rather than directly inspecting backend names.
+
+## Testing Use
+
+The highest-value backend tests map to these buckets:
+
+- invalid factory options and setup failures
+- traversal protection and symlink escape rejection
+- Node error normalization for missing files vs wrong entry type
+- HTTP `read`, `list`, `exists`, and `stat` behavior with 404 and schema failures
+- feature inference and hook wrapping for custom backends

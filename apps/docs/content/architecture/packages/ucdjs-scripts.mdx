@@ -1,0 +1,125 @@
+---
+title: UCDJS Scripts
+description: Architecture notes for @ucdjs/ucdjs-scripts
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/ucdjs-scripts` packages operational scripts for manifest generation and local environment seeding.
+
+## Role
+
+- Provides repo-specific operational commands that are too workflow-oriented for the public CLI package.
+- Generates manifests, uploads them through task endpoints, and seeds local dev environments.
+- Encodes deployment-oriented config resolution and upload behavior in one place.
+
+## Related Docs
+
+<Cards>
+  <Card title="Codegen" href="/architecture/packages/codegen" description="Both packages transform raw Unicode inputs into higher-level artifacts, but this one is operational." />
+  <Card title="API App" href="/architecture/apps/api" description="Manifest uploads target task endpoints exposed by the API worker." />
+  <Card title="Store App" href="/architecture/apps/store" description="Uploaded manifests and snapshots ultimately feed the hosted store." />
+  <Card title="Data Flow" href="/architecture/data-flow" description="See where manifest refresh and upload fits into the wider system." />
+</Cards>
+
+## Mental Model
+
+This package is an operations CLI with two main workflows:
+
+- `setup-dev`: spin up the real API worker locally and seed a set of versions
+- `refresh-manifests`: generate manifests, compare ETags, queue uploads, and wait for completion
+
+It is not the general user CLI. It is repo automation for maintainers.
+
+## Method Flows
+
+### `setup-dev`
+
+```mermaid
+sequenceDiagram
+  actor Maintainer
+  participant Setup as setupDev()
+  participant Worker as unstable_startWorker()
+  participant Gen as generateManifests()
+  participant Upload as uploadManifest()
+  participant Wait as waitForUploadCompletion()
+
+  Maintainer->>Setup: ucdjs-scripts setup-dev
+  Setup->>Setup: resolve versions and monorepo paths
+  Setup->>Worker: start real local API worker
+  Setup->>Gen: generate manifests for versions
+
+  loop each manifest
+    Setup->>Upload: upload tar to local tasks endpoint
+    Upload-->>Setup: workflowId
+    Setup->>Wait: poll workflow completion
+    Wait-->>Setup: completed status
+  end
+
+  Setup->>Worker: dispose()
+  Setup-->>Maintainer: local environment seeded
+```
+
+### `refresh-manifests`
+
+```mermaid
+sequenceDiagram
+  actor Maintainer
+  participant Refresh as refreshManifests()
+  participant Config as resolveConfig()
+  participant Gen as generateManifests()
+  participant Remote as getRemoteManifestEtag()
+  participant Upload as uploadManifest()
+  participant Wait as waitForUploadCompletion()
+
+  Maintainer->>Refresh: refresh-manifests --env preview
+  Refresh->>Config: resolve baseUrl + taskKey + apiBaseUrl
+  Refresh->>Gen: generate manifests
+
+  loop each manifest
+    Refresh->>Remote: fetch remote ETag
+    alt same ETag
+      Remote-->>Refresh: unchanged
+      Refresh-->>Maintainer: skip version
+    else changed
+      Refresh->>Upload: queue upload workflow
+      Upload-->>Refresh: workflowId
+      Refresh->>Wait: wait for completion
+      Wait-->>Refresh: success or failure
+    end
+  end
+
+  Refresh-->>Maintainer: summary report
+```
+
+### CLI bootstrap
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant CAC as cac()
+  participant Cmd as command action
+  participant Impl as imported command module
+
+  User->>CAC: run ucdjs-scripts <command>
+  CAC->>Cmd: parse options and select command
+  Cmd->>Cmd: apply log level
+  Cmd->>Impl: dynamic import("./commands/<name>")
+  Impl-->>Cmd: setupDev() or refreshManifests()
+  Cmd-->>User: logs and result
+```
+
+## Design Notes
+
+- Upload workflows are task-driven so large manifest refreshes do not need to complete in one request.
+- `setup-dev` starts the actual worker entrypoint instead of faking the tasks API.
+- ETag comparison avoids unnecessary uploads when manifests have not changed.
+- This package is intentionally operational and repo-specific, so a stable public API matters less than correct workflow behavior.
+
+## Testing Use
+
+- config resolution and environment overrides
+- dry-run vs upload behavior
+- ETag skip logic
+- task queue / completion polling
+- local worker bootstrap for development seeding

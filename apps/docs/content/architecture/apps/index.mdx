@@ -1,0 +1,38 @@
+---
+title: Overview
+description: Architecture notes for each application in the monorepo
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+This section is the application-level table of contents for UCD.js.
+
+## Start Here
+
+Read these pages in this order if you want to understand the deployed surfaces first:
+
+1. `API` for the canonical public HTTP entrypoint
+2. `Store` for the filesystem-style hosted read surface
+3. `Web` for the product frontend
+4. `Docs` for the documentation app and navigation model
+
+## By Surface
+
+<Cards>
+  <Card title="API" href="/architecture/apps/api" description="Public API worker, discovery endpoints, and OpenAPI surface." />
+  <Card title="Store" href="/architecture/apps/store" description="Hosted read-only store surface used by the HTTP backend." />
+</Cards>
+
+## By Product UI
+
+<Cards>
+  <Card title="Web" href="/architecture/apps/web" description="End-user frontend that consumes store-backed data through server functions." />
+  <Card title="Docs" href="/architecture/apps/docs" description="Docs renderer for package, pipeline, and architecture content." />
+</Cards>
+
+## Common Entry Points
+
+- `/api/v1/...` and `/.well-known/...` start in [API](/architecture/apps/api)
+- `/.ucd-store.lock` and `/:version/:path*` start in [Store](/architecture/apps/store)
+- browser navigation and server functions start in [Web](/architecture/apps/web)
+- content-driven page rendering starts in [Docs](/architecture/apps/docs)

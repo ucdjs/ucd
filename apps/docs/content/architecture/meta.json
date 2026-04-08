@@ -1,0 +1,15 @@
+{
+  "title": "Architecture",
+  "description": "Architecture notes for apps, packages, and system boundaries",
+  "root": true,
+  "icon": "Brain",
+  "pages": [
+    "index",
+    "data-flow",
+    "package-layers",
+    "---Packages---",
+    "...packages",
+    "---Apps---",
+    "...apps"
+  ]
+}
