@@ -87,7 +87,7 @@ function HomePage() {
             <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center">
               <div className="flex-1">
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-base ring-offset-background">
+                  <DropdownMenuTrigger className="flex h-10 w-full items-center justify-between rounded-sm border border-input bg-background px-3 text-base ring-offset-background">
                     <span className="flex items-center gap-2">
                       <Layers className="size-4 text-muted-foreground" />
                       <span>
@@ -95,7 +95,7 @@ function HomePage() {
                         {currentVersion}
                       </span>
                       {currentBadge && (
-                        <span className={`text-[11px] px-2 py-0.5 rounded-full ${currentBadge.cls}`}>
+                        <span className={`text-[11px] px-2 py-0.5 rounded-sm ${currentBadge.cls}`}>
                           {currentBadge.label}
                         </span>
                       )}
@@ -127,7 +127,7 @@ function HomePage() {
                             v
                             {version.version}
                           </span>
-                          <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
+                          <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-sm ${badge.cls}`}>
                             {badge.label}
                           </span>
                         </DropdownMenuItem>
@@ -139,7 +139,7 @@ function HomePage() {
               <Button
                 size="default"
                 nativeButton={false}
-                className="justify-center sm:min-w-40"
+                className="h-10 justify-center sm:min-w-40"
                 render={(
                   <Link to="/v/$version" params={{ version: currentVersion }}>
                     Explore version

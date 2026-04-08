@@ -63,7 +63,7 @@ export function VersionSwitcher() {
                 size="lg"
                 className="w-full data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-md">
                   <Layers className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
@@ -99,7 +99,7 @@ export function VersionSwitcher() {
                     v
                     {version.version}
                   </span>
-                  <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
+                  <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-sm ${badge.cls}`}>
                     {badge.label}
                   </span>
                 </DropdownMenuItem>
@@ -116,8 +116,8 @@ VersionSwitcher.Skeleton = function VersionSwitcherSkeleton() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-sidebar/60 px-3 py-2">
-          <Skeleton className="h-8 w-8 rounded-lg" />
+        <div className="flex items-center gap-2 rounded-md border border-border bg-sidebar/60 px-3 py-2">
+          <Skeleton className="h-8 w-8 rounded-md" />
           <div className="flex flex-col gap-1 flex-1">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="h-3 w-12" />

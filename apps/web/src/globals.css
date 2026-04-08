@@ -1,5 +1,9 @@
 @import "@ucdjs-internal/shared-ui/styles.css";
 
+:root {
+  --radius: 0.25rem;
+}
+
 .app-shell {
   position: relative;
   min-height: 100%;

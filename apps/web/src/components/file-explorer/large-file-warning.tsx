@@ -17,7 +17,7 @@ export function LargeFileWarning({ fileName, size, downloadUrl, contentType }: L
 
   return (
     <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-yellow-200 bg-yellow-50 p-8 dark:border-yellow-800 dark:bg-yellow-950">
-      <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
+      <div className="rounded-md bg-yellow-100 p-3 dark:bg-yellow-900">
         <Download className="size-6 text-yellow-600 dark:text-yellow-400" />
       </div>
 

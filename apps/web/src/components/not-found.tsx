@@ -13,7 +13,7 @@ export function NotFoundLayout({ title, description, hint, actions }: NotFoundLa
   return (
     <div className="flex flex-1 items-center justify-center p-8">
       <div className="max-w-lg space-y-5 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
+        <div className="inline-flex items-center gap-2 rounded-sm bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
           <AlertCircle className="size-4" />
           Page not found
         </div>

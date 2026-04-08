@@ -50,7 +50,7 @@ function VersionPage() {
               {version}
             </h1>
             {isLatest && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-sm">
                 Latest
               </span>
             )}

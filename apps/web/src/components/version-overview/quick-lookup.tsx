@@ -36,7 +36,7 @@ export function QuickLookup({ version }: { version: string }) {
             key={sample.hex}
             to="/v/$version/u/$hex"
             params={{ version, hex: sample.hex }}
-            className="group flex items-center gap-2 rounded-lg border bg-card px-3 py-2 transition-colors hover:bg-muted/50 hover:border-primary/30"
+            className="group flex items-center gap-2 rounded-sm border bg-card px-3 py-2 transition-colors hover:bg-muted/50 hover:border-primary/30"
           >
             <span className="text-xl leading-none">{sample.char}</span>
             <div className="flex flex-col">
