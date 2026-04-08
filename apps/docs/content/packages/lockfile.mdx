@@ -1,0 +1,109 @@
+---
+title: Lockfile
+description: Read, validate, and write UCD store lockfiles and snapshots
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+# Lockfile
+
+The `@ucdjs/lockfile` package owns the metadata files used by UCD stores:
+
+- `.ucd-store.lock` for store-level version metadata
+- `{version}/snapshot.json` for per-version file hashes and sizes
+
+## Installation
+
+```package-install
+@ucdjs/lockfile
+```
+
+## Related Docs
+
+<Cards>
+  <Card title="Architecture Notes" href="/architecture/packages/lockfile" description="Internal lifecycle, sequence diagrams, and design notes for lockfile handling." />
+  <Card title="UCD Store" href="/packages/ucd-store" description="The store package reads and writes lockfiles as part of mirror, sync, and verify." />
+  <Card title="Store CLI" href="/packages/cli/lockfile" description="Inspect, validate, and hash lockfile-related data from the terminal." />
+  <Card title="Schemas" href="/packages/schemas" description="The lockfile and snapshot formats are validated with shared Zod schemas." />
+</Cards>
+
+## Overview
+
+Use this package when you need to work with store metadata directly instead of going through the full `@ucdjs/ucd-store` API.
+
+It supports two main workflows:
+
+- strict parsing and validation
+- writing lockfiles and snapshots to a writable backend
+
+## Core APIs
+
+```ts
+import {
+  parseLockfile,
+  parseLockfileOrUndefined,
+  readLockfile,
+  readLockfileOrUndefined,
+  validateLockfile,
+  writeLockfile,
+  readSnapshot,
+  readSnapshotOrUndefined,
+  parseSnapshot,
+  parseSnapshotOrUndefined,
+  writeSnapshot,
+  getLockfilePath,
+  getSnapshotPath,
+} from "@ucdjs/lockfile";
+```
+
+## Common Use Cases
+
+### Validate raw lockfile data
+
+```ts
+import { validateLockfile } from "@ucdjs/lockfile";
+
+const result = validateLockfile(someUnknownData);
+
+if (!result.valid) {
+  console.error(result.errors);
+}
+```
+
+### Parse lockfile content from HTTP or memory
+
+```ts
+import { parseLockfile } from "@ucdjs/lockfile";
+
+const content = await fetch("https://example.com/.ucd-store.lock").then((r) => r.text());
+const lockfile = parseLockfile(content);
+```
+
+### Read and write with a filesystem backend
+
+```ts
+import NodeFileSystemBackend from "@ucdjs/fs-backend/backends/node";
+import { readLockfile, writeLockfile } from "@ucdjs/lockfile";
+
+const fs = NodeFileSystemBackend({ basePath: "./ucd-data" });
+
+await writeLockfile(fs, ".ucd-store.lock", {
+  lockfileVersion: 1,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  versions: {},
+});
+
+const lockfile = await readLockfile(fs, ".ucd-store.lock");
+```
+
+## Notes
+
+- write operations are skipped automatically when the backend does not support `write` and `mkdir`
+- the `OrUndefined` helpers are useful for best-effort reads during store initialization
+- snapshots are version-scoped and live at `{version}/snapshot.json`
+
+<Callout type="info">
+  If you want the full store lifecycle, prefer <a href="/packages/ucd-store"><code>@ucdjs/ucd-store</code></a>. Use <code>@ucdjs/lockfile</code> when you specifically need direct metadata access.
+</Callout>
