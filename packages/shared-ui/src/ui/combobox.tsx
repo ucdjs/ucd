@@ -1,8 +1,5 @@
-"use client";
-
 import { cn } from "#lib/utils";
 import { Button } from "#ui/button";
-
 import {
   InputGroup,
   InputGroupAddon,
@@ -293,5 +290,6 @@ export {
   ComboboxSeparator,
   ComboboxTrigger,
   ComboboxValue,
+  // eslint-disable-next-line react-refresh/only-export-components
   useComboboxAnchor,
 };
