@@ -43,6 +43,35 @@ describe("v1_files", () => {
         expect(content).toBe(mockFileContent);
       });
 
+      it("should resolve legacy Unicode versions to their mapped UCD directory for files", async () => {
+        const mockFileContent = "# Unicode Character Database\n# Version 4.0-Update1\n";
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public/4.0-Update1/UnicodeData.txt", () => {
+            return HttpResponse.text(mockFileContent, {
+              headers: {
+                "content-type": "text/plain; charset=utf-8",
+              },
+            });
+          }],
+        ]);
+
+        const { response, text } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files/4.0.1/UnicodeData.txt"),
+          env,
+        );
+
+        expect(response).toMatchResponse({
+          status: 200,
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8",
+          },
+          cache: true,
+        });
+
+        expect(await text()).toBe(mockFileContent);
+      });
+
       it("should not forward content-length for streamed GET responses", async () => {
         const mockFileContent = "Plain text content";
 
@@ -293,6 +322,47 @@ describe("v1_files", () => {
         const files = await json<FileEntryList>();
         expect(files).toHaveLength(2);
         expect(files.map((f) => f.name)).toEqual(["Blocks.txt", "UnicodeData.txt"]);
+      });
+
+      it("should preserve the requested Unicode version in directory listing paths for mapped legacy versions", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "SpecialCasing.txt", path: "SpecialCasing.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public/4.0-Update1", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files/4.0.1"),
+          env,
+        );
+
+        expect(response).toMatchResponse({
+          status: 200,
+          json: true,
+        });
+
+        const files = await json<FileEntryList>();
+        expect(files).toEqual([
+          {
+            lastModified: expect.any(Number),
+            name: "SpecialCasing.txt",
+            path: "/4.0.1/SpecialCasing.txt",
+            type: "file",
+          },
+          {
+            lastModified: expect.any(Number),
+            name: "UnicodeData.txt",
+            path: "/4.0.1/UnicodeData.txt",
+            type: "file",
+          },
+        ]);
       });
 
       it("should filter directory listing by prefix pattern Uni*", async () => {

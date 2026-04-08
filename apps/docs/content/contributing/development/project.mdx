@@ -74,7 +74,7 @@ The Store (apps/store) provides direct access to UCD files and metadata via the 
 
 API and Store do not expose the same file path shape.
 
-- The API file surface maps directly to the upstream Unicode.org layout. A request for `/api/v1/files/17.0.0/...` resolves against `https://unicode.org/Public/17.0.0/...`.
+- The API file surface uses public Unicode versions in request paths. For most versions this matches the upstream Unicode.org layout directly, while legacy versions with a different UCD directory name are resolved internally.
 - Store is the HTTP file-store boundary used by `@ucdjs/fs-backend`, and it exposes store-style paths as `/{version}/{filepath}`.
 - For versions that have a `ucd/` directory, Store inserts that segment when resolving upstream paths.
 - For older versions that do not have a `ucd/` directory, Store resolves the same store path directly under the version root.

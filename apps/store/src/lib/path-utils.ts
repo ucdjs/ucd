@@ -4,8 +4,9 @@ import { hasUCDFolderPath } from "@unicode-utils/core";
 const UCD_PREFIX_SEGMENTS_RE = /(?:\/ucd)+\//g;
 
 /**
- * Transforms a file path for fetching from Unicode.org
- * Adds /ucd/ prefix for modern versions (>=6.0)
+ * Transforms a store file path into the API files path shape.
+ * Adds /ucd/ prefix for versions that use that directory.
+ * Legacy Unicode-version aliases are resolved by the API boundary.
  *
  * @example
  * transformPathForUnicodeOrg("17.0.0", "Blocks.txt")
