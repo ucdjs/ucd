@@ -1,0 +1,255 @@
+---
+title: UCD Store
+description: Architecture notes for @ucdjs/ucd-store
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/ucd-store` is the high-level storage coordination layer for UCD.js.
+
+## Role
+
+- Coordinates file access, mirroring, sync, verification, and reporting.
+- Works across different backend types through `@ucdjs/fs-backend`.
+- Bridges store metadata, local state, and remote file access behavior.
+
+## Notes
+
+Use this page for mode boundaries, metadata authority, and store-lifecycle notes.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/ucd-store" description="User-facing overview of the store package and its main lifecycle." />
+  <Card title="Architecture Index" href="/architecture" description="Top-level architecture entrypoint for data flow, apps, and package notes." />
+  <Card title="Package Layers" href="/architecture/package-layers" description="Dependency-layer view showing how ucd-store relates to lockfile and fs-backend." />
+  <Card title="Data Flow" href="/architecture/data-flow" description="System-level flow from Unicode sources into storage and API consumers." />
+</Cards>
+
+## Method Flows
+
+The diagrams below focus on the runtime behavior of the main store entrypoints.
+They are intentionally close to the current implementation so they can be used
+as both design docs and test-planning references.
+
+### `createUCDStore()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Store as createUCDStore()
+  participant Disc as Endpoint discovery
+  participant Client as UCD client
+  participant FS as Filesystem backend
+  participant Lock as Lockfile
+  participant Verify as verify()
+
+  Caller->>Store: createUCDStore(options)
+  Store->>Store: normalize defaults + build path filter
+
+  alt no endpointConfig and no client
+    Store->>Disc: discoverEndpointsFromConfig(baseUrl)
+    Disc-->>Store: endpoint config or default config
+  end
+
+  alt no client provided
+    Store->>Client: createUCDClientWithConfig(...)
+    Client-->>Store: client instance
+  end
+
+  Store->>FS: create backend from fs factory
+  Store->>Store: detect lockfile support + path
+  Store->>Client: versions.list() for early validation
+  Client-->>Store: available versions
+
+  alt writable backend with existing lockfile
+    Store->>Lock: readLockfileOrUndefined()
+    Lock-->>Store: lockfile versions
+    alt user provided versions
+      Store->>Lock: handleVersionConflict(strategy)
+      Lock-->>Store: resolved versions
+    else no user versions
+      Store->>Store: use lockfile/config versions
+    end
+  else writable backend without lockfile
+    alt requireExistingStore
+      Store-->>Caller: throw missing lockfile error
+    else initialize automatically
+      Store->>Lock: initLockfile()
+      Lock-->>Store: empty/new lockfile written
+    end
+  else read-only backend
+    Store->>Store: resolve versions from input or config
+    alt no versions resolved
+      Store-->>Caller: throw read-only backend error
+    end
+  end
+
+  opt verify enabled and versions resolved
+    Store->>Verify: verify(context)
+    Verify-->>Store: validation result
+    alt invalid versions
+      Store-->>Caller: throw verification error
+    end
+  end
+
+  Store-->>Caller: store with files/get/list/tree + mirror/sync/analyze/compare
+```
+
+### `files.get()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Get as files.get()
+  participant Filter as Path filter
+  participant FS as Filesystem backend
+  participant API as UCD client files.get()
+
+  Caller->>Get: files.get(version, filePath, options)
+  Get->>Get: validate version is resolved
+
+  alt version missing
+    Get-->>Caller: UCDStoreVersionNotFoundError
+  end
+
+  Get->>Filter: match global + per-call filters
+  alt filtered out
+    Filter-->>Get: blocked
+    Get-->>Caller: UCDStoreFilterError
+  end
+
+  Get->>FS: exists(version/filePath)
+  alt local file exists
+    Get->>FS: read(version/filePath)
+    alt local read succeeds
+      FS-->>Get: file content
+      Get-->>Caller: { data, error: null }
+    else local read fails and allowApi is false
+      Get-->>Caller: UCDStoreGenericError
+    end
+  end
+
+  alt local file missing or unreadable and allowApi is true
+    Get->>API: get(version/ucd/filePath)
+    alt API error
+      API-->>Get: error
+      Get-->>Caller: UCDStoreApiFallbackError
+    else API returns no data
+      API-->>Get: null
+      Get-->>Caller: UCDStoreApiFallbackError
+    else API succeeds
+      API-->>Get: string or JSON content
+      Get-->>Caller: { data, error: null }
+    end
+  else local file missing and allowApi is false
+    Get-->>Caller: UCDStoreGenericError
+  end
+```
+
+### `mirror()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Mirror as mirror()
+  participant API as UCD client
+  participant Filter as Tree filter
+  participant FS as Filesystem backend
+  participant Snap as Snapshot writer
+  participant Lock as Lockfile writer
+
+  Caller->>Mirror: mirror({ versions, filters, force, concurrency })
+  Mirror->>Mirror: validate fs supports mkdir + write
+
+  alt no versions selected
+    Mirror-->>Caller: empty MirrorReport
+  end
+
+  loop each version
+    Mirror->>API: versions.getFileTree(version)
+    API-->>Mirror: file tree
+    Mirror->>Filter: normalize + filter tree
+    Filter-->>Mirror: file paths to mirror
+    Mirror->>Mirror: queue directories + files
+  end
+
+  Mirror->>FS: create missing directories
+
+  par queued files with concurrency limit
+    Mirror->>FS: exists(localPath)
+    alt file exists and not force
+      FS-->>Mirror: skip
+    else download file
+      Mirror->>API: files.get(remotePath)
+      API-->>Mirror: file contents
+      Mirror->>FS: write(localPath, content)
+    end
+  end
+
+  loop each mirrored version
+    Mirror->>FS: read mirrored files
+    Mirror->>Snap: writeSnapshot(version, hashes + sizes)
+    Snap-->>Mirror: snapshot written
+  end
+
+  Mirror->>Lock: writeLockfile(updated versions + filters)
+  Lock-->>Mirror: lockfile updated
+  Mirror-->>Caller: MirrorReport
+```
+
+### `sync()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Sync as sync()
+  participant API as UCD client
+  participant Lock as Lockfile
+  participant Mirror as mirror()
+  participant FS as Filesystem backend
+  participant List as listFiles()
+
+  Caller->>Sync: sync({ versions, force, removeUnavailable, cleanOrphaned })
+  Sync->>Sync: validate fs supports mkdir + write
+  Sync->>API: versions.list()
+  API-->>Sync: available API versions
+  Sync->>Lock: readLockfileOrUndefined()
+  Lock-->>Sync: current lockfile state
+
+  Sync->>Sync: compute added / removed / unchanged / finalVersions
+  Sync->>Lock: write updated lockfile
+  Lock-->>Sync: lockfile persisted
+
+  Sync->>Sync: compute versionsToSync
+  alt no versions need mirroring
+    Sync-->>Caller: SyncResult with empty MirrorReport
+  else versions need mirroring
+    Sync->>Mirror: mirror({ versions: versionsToSync, ... })
+    Mirror-->>Sync: MirrorReport
+  end
+
+  opt cleanOrphaned
+    loop each synced version
+      alt snapshot exists
+        Sync->>FS: readSnapshot(version)
+      else no snapshot
+        Sync->>API: versions.getManifest(version)
+      end
+      Sync->>List: listFiles(version, { allowApi: false })
+      List-->>Sync: actual local files
+      Sync->>FS: remove orphaned files
+    end
+  end
+
+  Sync-->>Caller: SyncResult
+```
+
+## Testing Use
+
+These sequence diagrams are also the right place to derive scenario matrices:
+
+- initialization mode matrix: writable, read-only, lockfile present, lockfile absent
+- file read matrix: local hit, filtered, local miss, API fallback success, API fallback failure
+- mirror matrix: empty version set, skips, force re-download, API/tree failure, snapshot update
+- sync matrix: add/remove versions, force mirror, remove unavailable, orphan cleanup

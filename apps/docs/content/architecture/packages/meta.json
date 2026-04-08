@@ -3,21 +3,26 @@
   "description": "Architecture notes for each package",
   "pages": [
     "index",
+    "---Core Runtime---",
     "cli",
     "client",
     "env",
+    "schemas",
+    "utils",
+    "---Storage & Filesystem---",
     "fs-backend",
     "lockfile",
     "path-utils",
+    "ucd-store",
+    "---Build & Generation---",
     "codegen",
-    "schemas",
+    "ucdjs-scripts",
+    "---Internal Packages---",
     "shared",
     "shared-ui",
     "test-utils",
-    "ucd-store",
-    "ucdjs-scripts",
-    "utils",
     "worker-utils",
-    "pipelines"
+    "---Pipelines---",
+    "...pipelines"
   ]
 }
