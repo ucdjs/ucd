@@ -112,7 +112,7 @@ export function SourceIssuesDialog({
         <div className="min-h-0 overflow-y-auto px-5 py-4">
           <div className="grid gap-4">
             {groups.length === 0 && (
-              <div className="rounded-md border border-dashed border-border/70 bg-muted/10 px-4 py-10 text-center text-sm text-muted-foreground">
+              <div className="border border-dashed border-border/70 bg-muted/10 px-4 py-10 text-center text-sm text-muted-foreground">
                 No issues match the current filter.
               </div>
             )}
@@ -124,7 +124,7 @@ export function SourceIssuesDialog({
                   <button
                     type="button"
                     onClick={() => toggleGroup(path)}
-                    className="flex items-start justify-between gap-3 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-left transition-colors hover:bg-muted/35"
+                    className="flex items-start justify-between gap-3 border border-border/60 bg-muted/20 px-3 py-2 text-left transition-colors hover:bg-muted/35"
                   >
                     <div className="min-w-0">
                       <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">File</div>
@@ -146,7 +146,7 @@ export function SourceIssuesDialog({
                       {groupedIssues.map((issue) => (
                         <div
                           key={`${path}:${issue.code}:${issue.message}:${issue.scope}`}
-                          className="rounded-lg border border-destructive/20 bg-destructive/5 p-4"
+                          className="border border-destructive/20 bg-destructive/5 p-4"
                         >
                           <div className="flex items-start gap-3">
                             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
@@ -154,12 +154,12 @@ export function SourceIssuesDialog({
                               <p className="text-sm font-medium text-foreground">{issue.message}</p>
 
                               <div className="flex flex-wrap gap-2 text-xs">
-                                <span className="rounded-md border border-border/70 bg-background px-2 py-1 text-muted-foreground">
+                                <span className="border border-border/70 bg-background px-2 py-1 text-muted-foreground">
                                   code:
                                   {" "}
                                   <span className="text-foreground">{issue.code}</span>
                                 </span>
-                                <span className="rounded-md border border-border/70 bg-background px-2 py-1 text-muted-foreground">
+                                <span className="border border-border/70 bg-background px-2 py-1 text-muted-foreground">
                                   scope:
                                   {" "}
                                   <span className="text-foreground">{issue.scope}</span>
@@ -169,7 +169,7 @@ export function SourceIssuesDialog({
                               {issue.meta && Object.keys(issue.meta).length > 0 && (
                                 <div className="grid gap-1">
                                   <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Meta</div>
-                                  <pre className="overflow-x-auto rounded-md border border-border/70 bg-background p-3 text-xs text-foreground">
+                                  <pre className="overflow-x-auto border border-border/70 bg-background p-3 text-xs text-foreground">
                                     {JSON.stringify(issue.meta, null, 2)}
                                   </pre>
                                 </div>

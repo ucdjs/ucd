@@ -126,7 +126,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
                           ? Object.entries(event.attributes as Record<string, unknown>)
                           : [];
                         return (
-                          <div key={i} className="rounded-md border px-3 py-2 text-xs">
+                          <div key={i} className="border px-3 py-2 text-xs">
                             <div className="flex items-center justify-between gap-2">
                               <span className="font-mono font-medium">{event.kind}</span>
                               {offsetMs != null && (
@@ -157,7 +157,7 @@ export function SpanDetails({ node, onClose }: SpanDetailsProps) {
                       Raw JSON
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <pre className="mt-2 overflow-auto rounded-md bg-muted px-3 py-2 text-xs">
+                      <pre className="mt-2 overflow-auto bg-muted px-3 py-2 text-xs">
                         {JSON.stringify(node.raw.attributes, null, 2)}
                       </pre>
                     </CollapsibleContent>

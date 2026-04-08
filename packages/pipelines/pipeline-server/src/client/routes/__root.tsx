@@ -100,12 +100,12 @@ function RootErrorComponent({ error }: { error: Error }) {
           <h1 className="text-2xl font-bold text-destructive mb-2">Something went wrong</h1>
           <p className="text-muted-foreground">The application encountered an unexpected error.</p>
         </div>
-        <div className="bg-muted/50 rounded-lg p-4">
+        <div className="bg-muted/50 p-4">
           <code className="text-sm text-destructive break-all">{error.message}</code>
         </div>
         <button
           onClick={() => window.location.reload()}
-          className="w-full px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          className="w-full px-4 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
         >
           Reload Application
         </button>

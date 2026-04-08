@@ -65,7 +65,7 @@ export function LogsViewer({
           type="button"
           onClick={() => setLevelFilter(null)}
           className={cn(
-            "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+            "px-2 py-0.5 text-xs font-medium transition-colors",
             levelFilter === null
               ? "bg-muted text-foreground"
               : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -80,7 +80,7 @@ export function LogsViewer({
             type="button"
             onClick={() => setLevelFilter(levelFilter === lvl ? null : lvl)}
             className={cn(
-              "rounded px-2 py-0.5 text-xs font-medium uppercase transition-colors",
+              "px-2 py-0.5 text-xs font-medium uppercase transition-colors",
               levelFilter === lvl ? LEVEL_PILL_ACTIVE[lvl] : LEVEL_PILL[lvl],
             )}
           >
@@ -93,7 +93,7 @@ export function LogsViewer({
             type="button"
             onClick={() => setLevelFilter(levelFilter === "unknown" ? null : "unknown")}
             className={cn(
-              "rounded px-2 py-0.5 text-xs font-medium transition-colors",
+              "px-2 py-0.5 text-xs font-medium transition-colors",
               levelFilter === "unknown" ? LEVEL_PILL_ACTIVE.unknown : LEVEL_PILL.unknown,
             )}
           >
@@ -102,7 +102,7 @@ export function LogsViewer({
         )}
 
         {selectedSpanId != null && (
-          <div className="flex items-center gap-1 rounded border border-border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 border border-border bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
             <span>Filtered by span</span>
             <button
               type="button"

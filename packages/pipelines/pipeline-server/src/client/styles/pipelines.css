@@ -263,7 +263,6 @@
 .pipeline-graph .react-flow__controls {
   overflow: hidden;
   border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
   background: hsl(var(--card) / 0.95);
   box-shadow: 0 10px 25px -15px rgb(0 0 0 / 0.45);
 }
@@ -288,7 +287,6 @@
 
 .pipeline-graph .react-flow__minimap {
   border: 1px solid hsl(var(--border));
-  border-radius: 0.75rem;
   background: hsl(var(--card) / 0.92);
   box-shadow: 0 10px 25px -15px rgb(0 0 0 / 0.45);
 }

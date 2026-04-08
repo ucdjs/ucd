@@ -20,7 +20,7 @@ export function PipelineFileRow({ file, sourceId, defaultExpanded = false }: Pip
         onClick={() => setExpanded(!expanded)}
         className="flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/30"
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/40">
+        <div className="flex size-10 shrink-0 items-center justify-center bg-muted/40">
           <FileCode2 className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">

@@ -239,7 +239,7 @@ export function SpanWaterfall({
       {isZoomed && (
         <button
           type="button"
-          className="absolute right-2 top-1/2 z-30 -translate-y-1/2 rounded bg-background/80 px-2 py-0.5 text-xs text-foreground hover:bg-background"
+          className="absolute right-2 top-1/2 z-30 -translate-y-1/2 bg-background/80 px-2 py-0.5 text-xs text-foreground hover:bg-background"
           onClick={() => {
             const full: ViewRange = { start: 0, end: 1 };
             setLiveRange(full);

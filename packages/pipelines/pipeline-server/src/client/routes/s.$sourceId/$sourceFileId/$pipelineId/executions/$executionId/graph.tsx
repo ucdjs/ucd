@@ -111,7 +111,7 @@ function ExecutionGraphPage() {
       {!graph || graph.nodes.length === 0
         ? (
             <section
-              className="m-4 flex flex-1 items-center justify-center rounded-2xl border border-dashed border-border/70 bg-muted/10 p-6 text-sm text-muted-foreground sm:m-6"
+              className="m-4 flex flex-1 items-center justify-center border border-dashed border-border/70 bg-muted/10 p-6 text-sm text-muted-foreground sm:m-6"
               role="status"
               aria-live="polite"
             >
@@ -121,7 +121,7 @@ function ExecutionGraphPage() {
         : (
             <div className="min-h-0 flex-1 p-4 sm:p-6">
               <section
-                className="h-full min-h-[24rem] overflow-hidden rounded-2xl border border-border/70 bg-background"
+                className="h-full min-h-[24rem] overflow-hidden border border-border/70 bg-background"
                 role="region"
                 aria-label="Graph"
               >

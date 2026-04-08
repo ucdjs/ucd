@@ -40,7 +40,7 @@ export function LogDetails({ log, onClose }: LogDetailsProps) {
               <div className="space-y-4 px-4 py-4">
 
                 {/* Log Information card */}
-                <div className="rounded-md border">
+                <div className="border">
                   <div className="flex items-center justify-between border-b px-3 py-2">
                     <span className="text-sm font-medium">Log Information</span>
                     <LogLevelBadge level={log.level} />
@@ -100,7 +100,7 @@ export function LogDetails({ log, onClose }: LogDetailsProps) {
                 </div>
 
                 {/* Log Message card */}
-                <div className="rounded-md border">
+                <div className="border">
                   <div className="border-b px-3 py-2">
                     <span className="text-sm font-medium">Log Message</span>
                   </div>
@@ -117,7 +117,7 @@ export function LogDetails({ log, onClose }: LogDetailsProps) {
                       Raw JSON
                     </CollapsibleTrigger>
                     <CollapsibleContent>
-                      <pre className="mt-2 overflow-auto rounded-md bg-muted px-3 py-2 text-xs">
+                      <pre className="mt-2 overflow-auto bg-muted px-3 py-2 text-xs">
                         {JSON.stringify(payload, null, 2)}
                       </pre>
                     </CollapsibleContent>

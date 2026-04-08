@@ -78,7 +78,7 @@ export function SourceSwitcher() {
             data-state={open ? "open" : "closed"}
             onClick={() => setOpen((prev) => !prev)}
           >
-            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+            <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center">
               <GitBranch className="size-4" />
             </div>
             <div className="flex flex-col gap-0.5 leading-none min-w-0">
@@ -99,7 +99,7 @@ export function SourceSwitcher() {
           {open && (
             <div
               data-testid="source-switcher-popup"
-              className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden rounded-lg border border-border/60 bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-100"
+              className="absolute left-0 right-0 top-full z-50 mt-1 overflow-hidden border border-border/60 bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-100"
             >
               {sources.length > 1 && (
                 <div className="flex items-center gap-2 border-b border-border/60 px-3 py-2">
@@ -124,14 +124,14 @@ export function SourceSwitcher() {
                       type="button"
                       key={source.id}
                       data-testid={`source-switcher-option:${source.id}`}
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+                      className="flex w-full items-center gap-2 px-2 py-1.5 text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
                       onClick={() => handleSelect(source.id)}
                     >
                       <span className="size-4 shrink-0 flex items-center justify-center">
                         {isActive && <Check className="size-3.5" />}
                       </span>
                       <span className="flex-1 truncate text-left">{source.label}</span>
-                      <span className={`text-[11px] px-2 py-0.5 rounded-full shrink-0 ${badge.cls}`}>
+                      <span className={`text-[11px] px-2 py-0.5 shrink-0 ${badge.cls}`}>
                         {badge.label}
                       </span>
                     </button>
@@ -157,8 +157,8 @@ export function SourceSwitcherSkeleton() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <div className="flex items-center gap-2 rounded-lg border border-border bg-sidebar/60 px-3 py-2">
-          <Skeleton className="h-8 w-8 rounded-lg" />
+        <div className="flex items-center gap-2 border border-border bg-sidebar/60 px-3 py-2">
+          <Skeleton className="h-8 w-8" />
           <div className="flex flex-col gap-1 flex-1">
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-3 w-16" />

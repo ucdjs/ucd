@@ -1,6 +1,6 @@
 import type { PipelineDetails } from "#shared/schemas/pipeline";
 
-export const SIDEBAR_ACTIVE_LINK_CLASS = "relative transition-colors hover:bg-muted/10 [&.active]:bg-muted/10 [&.active]:before:absolute [&.active]:before:inset-y-2 [&.active]:before:left-0 [&.active]:before:w-0.5 [&.active]:before:rounded-full [&.active]:before:bg-foreground/80";
+export const SIDEBAR_ACTIVE_LINK_CLASS = "relative transition-colors hover:bg-muted/10 [&.active]:bg-muted/10 [&.active]:before:absolute [&.active]:before:inset-y-2 [&.active]:before:left-0 [&.active]:before:w-0.5 [&.active]:before:bg-foreground/80";
 
 export function deriveTransforms(routes: PipelineDetails["routes"]) {
   const map = new Map<string, string[]>();

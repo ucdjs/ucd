@@ -20,7 +20,7 @@ export function MinimalOutputCard({ title, output, action }: MinimalOutputCardPr
   const [pathExpanded, setPathExpanded] = useState(false);
 
   return (
-    <div className="rounded-lg border border-border/60 bg-muted/10 p-4" data-testid="minimal-output-card">
+    <div className="border border-border/60 bg-muted/10 p-4" data-testid="minimal-output-card">
       <div className="flex items-center justify-between gap-3">
         <div className="text-sm font-medium">{title}</div>
         {action}
@@ -29,7 +29,7 @@ export function MinimalOutputCard({ title, output, action }: MinimalOutputCardPr
         <Field label="Sink">{output.sink}</Field>
         <div className="space-y-1">
           <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Path</div>
-          <div className="rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground">
+          <div className="border border-border/60 bg-background px-3 py-2 text-sm text-foreground">
             <div className="flex items-start gap-3">
               {output.dynamicPath && output.pathSource
                 ? (
@@ -71,7 +71,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-1">
       <div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
-      <div className="rounded-md border border-border/60 bg-background px-3 py-2 text-sm text-foreground">
+      <div className="border border-border/60 bg-background px-3 py-2 text-sm text-foreground">
         {children}
       </div>
     </div>

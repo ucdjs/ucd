@@ -29,7 +29,7 @@ export function PipelineSummary({
       <CardContent className="space-y-5 pt-5">
         <div className="grid gap-2 sm:grid-cols-2">
           <div
-            className="rounded-lg border border-border/60 px-3 py-3"
+            className="border border-border/60 px-3 py-3"
           >
             <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
               <FileCode2 className="h-3.5 w-3.5" />
@@ -42,7 +42,7 @@ export function PipelineSummary({
           <Link
             to="/s/$sourceId"
             params={{ sourceId }}
-            className="rounded-lg border border-border/60 px-3 py-3 transition-colors hover:bg-muted/10"
+            className="border border-border/60 px-3 py-3 transition-colors hover:bg-muted/10"
           >
             <div className="mb-1 inline-flex items-center gap-2 text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
               <FolderInput className="h-3.5 w-3.5" />
@@ -65,7 +65,7 @@ export function PipelineSummary({
               <div className="text-xs font-medium uppercase tracking-[0.08em] text-muted-foreground">
                 Scope
               </div>
-              <code className="block break-all rounded-lg border border-border/60 px-3 py-2.5 text-xs text-foreground">
+              <code className="block break-all border border-border/60 px-3 py-2.5 text-xs text-foreground">
                 {include}
               </code>
             </>

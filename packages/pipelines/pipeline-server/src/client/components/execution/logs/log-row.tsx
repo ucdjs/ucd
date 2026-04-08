@@ -32,7 +32,7 @@ export function LogRow({ log, onSelect }: LogRowProps) {
       {/* Source */}
       <div className="w-20 shrink-0 py-1.5">
         {(log.source === "console" || log.source === "stdio") && (
-          <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+          <span className="bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
             {log.source}
           </span>
         )}

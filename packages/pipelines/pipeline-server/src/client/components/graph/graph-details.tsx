@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-1 rounded-lg border border-border/60 bg-background/70 p-3">
+    <div className="flex flex-col gap-1 border border-border/60 bg-background/70 p-3">
       <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
         {label}
       </span>
@@ -19,7 +19,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 function FieldValue({ field }: { field: ExecutionGraphDetailField }) {
   if (field.type === "json") {
     return (
-      <pre className="overflow-x-auto rounded-md border border-border/70 bg-background p-3 text-xs text-foreground">
+      <pre className="overflow-x-auto border border-border/70 bg-background p-3 text-xs text-foreground">
         <code>{JSON.stringify(field.value, null, 2)}</code>
       </pre>
     );
@@ -73,13 +73,13 @@ export function PipelineGraphDetails({
       className="flex h-full w-80 shrink-0 flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-sm"
     >
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <span className={cn("rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.05em]", getNodeBadgeClassName(node.nodeType))}>
+        <span className={cn("px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.05em]", getNodeBadgeClassName(node.nodeType))}>
           {nodeConfig.label}
         </span>
         <button
           type="button"
           onClick={onClose}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="inline-flex h-8 w-8 items-center justify-center text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label="Close details"
         >
           <X className="h-4 w-4" />

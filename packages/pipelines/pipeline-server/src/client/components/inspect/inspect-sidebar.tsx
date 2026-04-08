@@ -58,7 +58,7 @@ export function InspectSidebar() {
     <Card>
       <CardHeader className="border-b border-border/60 pb-4">
         <div className="flex items-start gap-3">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-muted/10">
+          <div className="flex size-8 shrink-0 items-center justify-center bg-muted/10">
             <PipelineIcon className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="space-y-1">
@@ -98,7 +98,7 @@ export function InspectSidebar() {
           aria-label="Search inspect items"
         />
 
-        <div className="rounded-xl border border-border/60">
+        <div className="border border-border/60">
           {activeTab === "routes" && (
             <SidebarRoutesList
               routes={pipeline!.routes}

@@ -24,7 +24,7 @@ export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
               <div className="grid gap-3">
                 {route.outputs.map((output, index) => (
                   // eslint-disable-next-line react/no-array-index-key
-                  <div key={index} className="rounded-lg border border-border/60 p-4">
+                  <div key={index} className="border border-border/60 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div className="text-sm font-medium">
                         Output
@@ -33,7 +33,7 @@ export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
                       <Link
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
                         params={{ sourceId, sourceFileId, pipelineId, outputKey: `${route.id}:${index}` }}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
+                        className="inline-flex h-8 items-center gap-1.5 border border-input bg-background px-3 text-sm font-medium shadow-xs hover:bg-accent hover:text-accent-foreground"
                       >
                         Open output
                         <ArrowRight className="h-3 w-3" />
@@ -54,7 +54,7 @@ export function RouteOutputsSection({ route }: RouteOutputsSectionProps) {
               </div>
             )
           : (
-              <div className="rounded-md border border-dashed border-border/70 px-4 py-8 text-sm text-muted-foreground">
+              <div className="border border-dashed border-border/70 px-4 py-8 text-sm text-muted-foreground">
                 No output definitions for this route.
               </div>
             )}

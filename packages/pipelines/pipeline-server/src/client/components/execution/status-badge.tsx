@@ -19,7 +19,7 @@ export function StatusBadge({ status }: { status: ExecutionStatus }) {
   return (
     <Badge
       variant="outline"
-      className={`h-6 rounded-full border px-2.5 text-xs font-medium ${className}`}
+      className={`h-6 border px-2.5 text-xs font-medium ${className}`}
     >
       {STATUS_LABELS[status] ?? status}
     </Badge>

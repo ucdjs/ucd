@@ -72,8 +72,8 @@ export function ExecutionActivityChart({
                   aria-pressed={isActive}
                   aria-label={`${isActive ? "Hide" : "Show"} ${state.label} executions`}
                   className={isActive
-                    ? "inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors"
-                    : "inline-flex items-center gap-2 rounded-full border border-border/70 bg-muted/55 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:bg-muted/75 hover:text-foreground"}
+                    ? "inline-flex items-center gap-2 border border-border bg-muted px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors"
+                    : "inline-flex items-center gap-2 border border-border/70 bg-muted/55 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:bg-muted/75 hover:text-foreground"}
                 >
                   <span className={`h-2 w-2 rounded-full ${state.markerClassName}`} />
                   <span>{state.label}</span>
@@ -87,7 +87,7 @@ export function ExecutionActivityChart({
       <CardContent className={compact ? "pt-3 px-4 pb-3" : "pt-4"}>
         {!hasActivity
           ? (
-              <div className="rounded-md border border-dashed border-border/70 bg-muted/30 px-4 py-10 text-center">
+              <div className="border border-dashed border-border/70 bg-muted/30 px-4 py-10 text-center">
                 <PlayCircle className="mx-auto mb-3 h-8 w-8 text-muted-foreground/60" />
                 <p className="text-sm font-medium">No execution activity yet</p>
               </div>
@@ -103,7 +103,7 @@ export function ExecutionActivityChart({
                       <div
                         role="img"
                         aria-label={`${formatDayLabel(day.date)}: ${day.total} visible executions`}
-                        className="flex h-full w-full max-w-14 flex-col justify-end overflow-hidden rounded-t-md border border-border/60 bg-muted/45"
+                        className="flex h-full w-full max-w-14 flex-col justify-end overflow-hidden border border-border/60 bg-muted/45"
                         title={`${day.total} visible executions`}
                       >
                         {visibleStates.map((state) => {
