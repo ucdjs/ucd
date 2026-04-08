@@ -71,7 +71,7 @@ export function ExplorerToolbar() {
               {filterType !== "all" && (
                 <span
                   role="button"
-                  className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                  className="ml-0.5 rounded-sm hover:bg-destructive/20 p-0.5"
                   onClick={(event) => {
                     event.stopPropagation();
                     setSearch({ type: undefined });
@@ -112,7 +112,7 @@ export function ExplorerToolbar() {
               {pattern && (
                 <span
                   role="button"
-                  className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                  className="ml-0.5 rounded-sm hover:bg-destructive/20 p-0.5"
                   onClick={(event) => {
                     event.stopPropagation();
                     setSearch({ pattern: undefined });

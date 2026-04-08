@@ -25,7 +25,7 @@ export function EntryList({ currentPath }: EntryListProps) {
   if ((data.files || []).length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
-        <div className="rounded-full bg-muted p-3">
+        <div className="rounded-md bg-muted p-3">
           <FolderOpen className="size-5 text-muted-foreground" />
         </div>
         <div className="space-y-1">

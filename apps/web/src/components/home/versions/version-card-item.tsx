@@ -37,7 +37,7 @@ export function VersionCardItem({ version, isLatest }: VersionCardItemProps) {
     <Link
       to="/v/$version"
       params={{ version: version.version }}
-      className="group relative flex flex-col gap-2 rounded-lg border border-border/60 bg-card/60 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40"
+      className="group relative flex flex-col gap-2 rounded-sm border border-border/60 bg-card/60 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40"
     >
       <div className="flex items-center gap-2">
         {isLatest ? <Sparkles className="size-4 text-primary shrink-0" /> : <Code className="size-4 text-muted-foreground shrink-0" />}
@@ -77,11 +77,11 @@ export function VersionCardItem({ version, isLatest }: VersionCardItemProps) {
 
 export function VersionCardItemSkeleton() {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-card p-3 animate-pulse">
+    <div className="flex flex-col gap-2 rounded-sm border bg-card p-3 animate-pulse">
       <div className="flex items-center gap-2">
         <div className="h-4 w-4 bg-muted rounded shrink-0" />
         <div className="h-5 bg-muted rounded w-16" />
-        <div className="h-5 bg-muted rounded-full w-14 shrink-0" />
+        <div className="h-5 w-14 shrink-0 rounded-sm bg-muted" />
         <div className="h-4 w-4 bg-muted rounded ml-auto" />
       </div>
       <div className="h-4 bg-muted rounded w-full" />
