@@ -2,6 +2,7 @@
   "title": "Development",
   "description": "Development guides for UCD.js",
   "pages": [
+    "index",
     "workflow",
     "project"
   ]
