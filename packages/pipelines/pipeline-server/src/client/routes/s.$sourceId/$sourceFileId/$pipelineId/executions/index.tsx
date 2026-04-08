@@ -38,7 +38,7 @@ function ExecutionsListPage() {
         </div>
       </header>
 
-      <section className="rounded-2xl border border-border/60 bg-background p-4">
+      <section className="border border-border/60 bg-background p-4">
         <ExecutionTable
           executions={data.executions.map((execution) => ({
             ...execution,

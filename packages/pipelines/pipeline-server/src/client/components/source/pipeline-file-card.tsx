@@ -16,9 +16,9 @@ interface PipelineFileCardProps {
 
 export function PipelineFileCard({ file, sourceId }: PipelineFileCardProps) {
   return (
-    <div className="rounded-lg border border-border/60 bg-background">
+    <div className="border border-border/60 bg-background">
       <div className="flex items-start gap-3 px-5 py-4">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted/40">
+        <div className="flex size-10 shrink-0 items-center justify-center bg-muted/40">
           <FileCode2 className="h-5 w-5 text-muted-foreground" />
         </div>
         <div className="min-w-0 flex-1">

@@ -41,12 +41,12 @@ export function ExecutionTable({
           const canView = execution.sourceId != null && execution.fileId != null && execution.pipelineId != null;
 
           return (
-            <div key={execution.id} className="rounded-lg border border-border/70 bg-background p-3">
+            <div key={execution.id} className="border border-border/70 bg-background p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <StatusIcon status={execution.status} />
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">{execution.id}</code>
+                    <code className="bg-muted px-1.5 py-0.5 text-xs font-mono">{execution.id}</code>
                   </div>
                   {showPipelineColumn && (
                     <div className="text-xs text-muted-foreground">{execution.pipelineId}</div>
@@ -116,7 +116,7 @@ export function ExecutionTable({
                   </TableCell>
                   <TableCell>
                     <div className="space-y-2">
-                      <code className="inline-flex rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                      <code className="inline-flex bg-muted px-1.5 py-0.5 text-xs font-mono">
                         {execution.id}
                       </code>
                       <div className="flex flex-wrap gap-1.5">
@@ -132,7 +132,7 @@ export function ExecutionTable({
                   </TableCell>
                   {showPipelineColumn && (
                     <TableCell>
-                      <code className="rounded bg-muted px-1.5 py-0.5 text-xs font-mono">
+                      <code className="bg-muted px-1.5 py-0.5 text-xs font-mono">
                         {execution.pipelineId}
                       </code>
                     </TableCell>

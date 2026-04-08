@@ -13,7 +13,7 @@ function DefinitionRouteNode({
   return (
     <div
       style={{ width: DEFINITION_NODE_WIDTH, minHeight: DEFINITION_NODE_HEIGHT }}
-      className={`rounded-xl border-2 px-3 py-2 transition-shadow ${
+      className={`border-2 px-3 py-2 transition-shadow ${
         selected
           ? "border-foreground/60 bg-muted/30 shadow-md ring-2 ring-primary/40"
           : "border-border bg-card shadow-sm hover:shadow-md"
@@ -51,7 +51,7 @@ function DefinitionOutputNode({
   return (
     <div
       style={{ width: OUTPUT_NODE_WIDTH, minHeight: OUTPUT_NODE_HEIGHT }}
-      className="cursor-pointer rounded-lg border border-dashed border-border bg-card px-3 py-1.5 shadow-sm transition-shadow hover:shadow-md"
+      className="cursor-pointer border border-dashed border-border bg-card px-3 py-1.5 shadow-sm transition-shadow hover:shadow-md"
     >
       <Handle type="target" position={Position.Left} className="h-2! w-2! border-none! bg-muted-foreground!" />
 

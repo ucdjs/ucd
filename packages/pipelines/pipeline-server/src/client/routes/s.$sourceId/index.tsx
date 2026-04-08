@@ -74,7 +74,7 @@ function RouteComponent() {
       </div>
 
       {source.errors.length > 0 && (
-        <div className="mx-6 mt-4 rounded-lg border border-destructive/20 bg-destructive/5 px-5 py-3">
+        <div className="mx-6 mt-4 border border-destructive/20 bg-destructive/5 px-5 py-3">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 text-sm">
               <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
@@ -176,16 +176,16 @@ function RouteComponent() {
                 placeholder="Search files and pipelines..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-lg border border-border/60 bg-card py-2 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border"
+                className="w-full border border-border/60 bg-card py-2 pl-10 pr-4 text-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-border"
               />
             </div>
-            <div className="flex shrink-0 rounded-lg border border-border/60">
+            <div className="flex shrink-0 border border-border/60">
               <button
                 type="button"
                 onClick={() => setViewMode("list")}
                 aria-pressed={viewMode === "list"}
                 aria-label="List view"
-                className={`inline-flex items-center justify-center rounded-l-lg px-2.5 py-2 transition-colors${viewMode === "list" ? " bg-muted text-foreground" : " text-muted-foreground hover:text-foreground"}`}
+                className={`inline-flex items-center justify-center px-2.5 py-2 transition-colors${viewMode === "list" ? " bg-muted text-foreground" : " text-muted-foreground hover:text-foreground"}`}
               >
                 <LayoutList className="h-4 w-4" />
               </button>
@@ -194,7 +194,7 @@ function RouteComponent() {
                 onClick={() => setViewMode("grid")}
                 aria-pressed={viewMode === "grid"}
                 aria-label="Grid view"
-                className={`inline-flex items-center justify-center rounded-r-lg border-l border-border/60 px-2.5 py-2 transition-colors${viewMode === "grid" ? " bg-muted text-foreground" : " text-muted-foreground hover:text-foreground"}`}
+                className={`inline-flex items-center justify-center border-l border-border/60 px-2.5 py-2 transition-colors${viewMode === "grid" ? " bg-muted text-foreground" : " text-muted-foreground hover:text-foreground"}`}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
@@ -204,13 +204,13 @@ function RouteComponent() {
           <div className="mt-4">
             {filtered.length === 0
               ? (
-                  <div className="rounded-lg border border-dashed border-border/60 px-6 py-16 text-center text-sm text-muted-foreground">
+                  <div className="border border-dashed border-border/60 px-6 py-16 text-center text-sm text-muted-foreground">
                     {search ? `No results for "${search}"` : "No files found in this source."}
                   </div>
                 )
               : viewMode === "list"
                 ? (
-                    <div className="rounded-xl border border-border/60 overflow-hidden bg-card">
+                    <div className="border border-border/60 overflow-hidden bg-card">
                       {filtered.map((file, idx) => (
                         <div key={file.id} className={idx > 0 ? "border-t border-border/60" : ""}>
                           <PipelineFileRow file={file} sourceId={sourceId} />

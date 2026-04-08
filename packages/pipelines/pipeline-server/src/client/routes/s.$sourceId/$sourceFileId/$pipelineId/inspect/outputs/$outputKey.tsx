@@ -41,7 +41,7 @@ function OutputDetailPage() {
           <ArrowLeft className="h-3 w-3" />
           Outputs
         </Link>
-        <div className="rounded-lg border border-border/60 px-4 py-10 text-sm text-muted-foreground">
+        <div className="border border-border/60 px-4 py-10 text-sm text-muted-foreground">
           Output &ldquo;
           {outputKey}
           &rdquo; not found in this pipeline.
@@ -58,7 +58,7 @@ function OutputDetailPage() {
         <div className="space-y-4 bg-muted/5 px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
+              <div className="flex size-10 items-center justify-center bg-muted/10">
                 <FolderOutput className="h-4 w-4 text-muted-foreground" />
               </div>
               <div>
@@ -90,13 +90,13 @@ function OutputDetailPage() {
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
               <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">Directory</div>
-              <code className="block rounded-lg border border-border/60 bg-muted/10 px-3 py-3 text-xs">
+              <code className="block border border-border/60 bg-muted/10 px-3 py-3 text-xs">
                 {selectedOutput.dir}
               </code>
             </div>
             <div className="space-y-2">
               <div className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">File name</div>
-              <code className="block rounded-lg border border-border/60 bg-muted/10 px-3 py-3 text-xs">
+              <code className="block border border-border/60 bg-muted/10 px-3 py-3 text-xs">
                 {selectedOutput.fileName}
               </code>
             </div>

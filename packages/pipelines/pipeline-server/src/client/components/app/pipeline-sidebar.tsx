@@ -83,7 +83,7 @@ export function PipelineSidebar({
               className="flex items-center gap-2.5 hover:opacity-80 transition-opacity"
               data-testid="pipeline-sidebar-home-link"
             >
-              <div className="rounded-lg transition-colors">
+              <div className="transition-colors">
                 <UcdLogo className="size-9 shrink-0" />
               </div>
               <div className="grid text-left leading-tight">

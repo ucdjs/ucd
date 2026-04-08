@@ -77,7 +77,7 @@ export function SpanRow({
         {!node.isInstant && (
           <>
             <div
-              className="absolute bottom-1 top-1 rounded-sm"
+              className="absolute bottom-1 top-1"
               style={{
                 left: toPercent(leftPct),
                 width: `max(2px, ${toPercent(widthPct)})`,

@@ -12,7 +12,7 @@ export function PipelineGraphFilters({
   onToggleType,
 }: PipelineGraphFiltersProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-card/95 p-3 shadow-lg backdrop-blur-sm">
+    <div className="flex flex-wrap items-center gap-2 border border-border/70 bg-card/95 p-3 shadow-lg backdrop-blur-sm">
       <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
         Show
       </span>
@@ -26,7 +26,7 @@ export function PipelineGraphFilters({
             type="button"
             onClick={() => onToggleType(type)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+              "inline-flex items-center gap-2 border px-2.5 py-1.5 text-xs font-medium transition-colors",
               isVisible
                 ? "border-border bg-card text-foreground shadow-sm"
                 : "border-border/50 bg-muted/40 text-muted-foreground",

@@ -93,14 +93,14 @@ export function WaterfallView({ traceId, spans, onSpanSelect }: WaterfallViewPro
           <button
             type="button"
             onClick={expandAll}
-            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             Expand all
           </button>
           <button
             type="button"
             onClick={collapseAll}
-            className="rounded px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="px-2 py-0.5 text-xs text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             Collapse all
           </button>

@@ -38,7 +38,7 @@ export function PipelineStructure({
         <CardTitle>Pipeline structure</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5 pt-5">
-        <section className="rounded-lg border border-border/60 p-4">
+        <section className="border border-border/60 p-4">
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_10rem_10rem] md:items-center">
             <RouteStructureMetrics
               routes={routes}
@@ -71,7 +71,7 @@ export function PipelineStructure({
                         key={route.id}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
                         params={{ sourceId, sourceFileId, pipelineId, routeId: route.id }}
-                        className="grid gap-3 rounded-lg border border-border/60 px-4 py-4 transition-colors hover:bg-muted/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                        className="grid gap-3 border border-border/60 px-4 py-4 transition-colors hover:bg-muted/10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                       >
                         <div className="min-w-0 space-y-2">
                           <div className="flex min-w-0 flex-wrap items-center gap-2">
@@ -90,12 +90,12 @@ export function PipelineStructure({
                                 <span className="font-medium tabular-nums text-foreground">{route.transforms.length}</span>
                               </div>
                               {visibleTransforms.map((transform) => (
-                                <span key={transform} className="rounded-full bg-muted/20 px-2.5 py-1 text-foreground">
+                                <span key={transform} className="bg-muted/20 px-2.5 py-1 text-foreground">
                                   {transform}
                                 </span>
                               ))}
                               {hiddenTransforms > 0 && (
-                                <span className="rounded-full bg-muted/20 px-2.5 py-1 text-foreground">
+                                <span className="bg-muted/20 px-2.5 py-1 text-foreground">
                                   +
                                   {hiddenTransforms}
                                 </span>
@@ -125,7 +125,7 @@ export function PipelineStructure({
                 </div>
               )
             : (
-                <div className="rounded-lg border border-border/60 px-4 py-6 text-sm text-muted-foreground">
+                <div className="border border-border/60 px-4 py-6 text-sm text-muted-foreground">
                   No routes
                 </div>
               )}

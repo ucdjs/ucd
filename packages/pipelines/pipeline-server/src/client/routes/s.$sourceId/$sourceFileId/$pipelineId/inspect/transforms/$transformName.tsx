@@ -30,7 +30,7 @@ function TransformDetailPage() {
         <div className="space-y-5 bg-muted/5 px-6 py-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="flex size-10 items-center justify-center rounded-2xl bg-muted/10">
+              <div className="flex size-10 items-center justify-center bg-muted/10">
                 <Shuffle className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="flex items-center gap-2">
@@ -44,19 +44,19 @@ function TransformDetailPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/10 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 bg-muted/10 px-2.5 py-1">
                 <Spline className="h-3 w-3" />
                 <span className="font-semibold tabular-nums text-foreground">{transformRoutes.length}</span>
                 {transformRoutes.length === 1 ? "route" : "routes"}
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/10 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 bg-muted/10 px-2.5 py-1">
                 <Link2 className="h-3 w-3" />
                 <span className="font-semibold tabular-nums text-foreground">
                   {transformRoutes.reduce((sum, r) => sum + r.depends.length, 0)}
                 </span>
                 total depends
               </span>
-              <span className="inline-flex items-center gap-1.5 rounded-md bg-muted/10 px-2.5 py-1">
+              <span className="inline-flex items-center gap-1.5 bg-muted/10 px-2.5 py-1">
                 <FolderOutput className="h-3 w-3" />
                 <span className="font-semibold tabular-nums text-foreground">
                   {transformRoutes.reduce((sum, r) => sum + r.outputs.length, 0)}
@@ -127,7 +127,7 @@ function TransformDetailPage() {
               {route.filter && (
                 <div className="space-y-1">
                   <div className="text-[11px] uppercase tracking-wide text-muted-foreground">Filter</div>
-                  <code className="block rounded-lg border border-border/60 bg-muted/10 px-3 py-2 text-xs">{route.filter}</code>
+                  <code className="block border border-border/60 bg-muted/10 px-3 py-2 text-xs">{route.filter}</code>
                 </div>
               )}
 
@@ -140,7 +140,7 @@ function TransformDetailPage() {
                         {i > 0 && <span className="text-[10px] text-muted-foreground/50">&rarr;</span>}
                         {t === transformName
                           ? (
-                              <span className="rounded-md bg-foreground/10 px-2 py-0.5 text-xs font-semibold text-foreground">
+                              <span className="bg-foreground/10 px-2 py-0.5 text-xs font-semibold text-foreground">
                                 {stepIndex + 1}
                                 .
                                 {" "}
@@ -151,7 +151,7 @@ function TransformDetailPage() {
                               <Link
                                 to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/transforms/$transformName"
                                 params={{ sourceId, sourceFileId, pipelineId, transformName: t }}
-                                className="rounded-md px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                                className="px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                               >
                                 {i + 1}
                                 .
@@ -174,7 +174,7 @@ function TransformDetailPage() {
                         key={`route-${dep.routeId}`}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/routes/$routeId"
                         params={{ sourceId, sourceFileId, pipelineId, routeId: dep.routeId }}
-                        className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        className="inline-flex items-center gap-1 border border-border/60 px-2 py-1 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                       >
                         <Spline className="h-3 w-3" />
                         {dep.routeId}
@@ -193,7 +193,7 @@ function TransformDetailPage() {
                         key={`${output.dir ?? "none"}-${output.fileName ?? "none"}`}
                         to="/s/$sourceId/$sourceFileId/$pipelineId/inspect/outputs/$outputKey"
                         params={{ sourceId, sourceFileId, pipelineId, outputKey: `${route.id}:${idx}` }}
-                        className="rounded-lg border border-border/60 px-3 py-2 hover:bg-accent/50"
+                        className="border border-border/60 px-3 py-2 hover:bg-accent/50"
                       >
                         <div className="truncate text-xs font-medium text-foreground">{output.fileName ?? "Generated"}</div>
                         <div className="truncate text-[11px] text-muted-foreground">{output.dir ?? "Default directory"}</div>
