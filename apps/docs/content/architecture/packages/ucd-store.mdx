@@ -17,6 +17,13 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 
 Use this page for mode boundaries, metadata authority, and store-lifecycle notes.
 
+## Modes
+
+- `mirrored`: writable store lifecycle with `.ucd-store.lock` plus per-version snapshots
+- `remote`: read-only store-compatible view backed by the store HTTP surface and API metadata
+
+Store instances expose this distinction as `store.mode`.
+
 ## Related Docs
 
 <Cards>

@@ -5,6 +5,7 @@ import type { ExpectedFile } from "@ucdjs/schemas";
 import type {
   InternalUCDStoreContext,
   UCDStoreContext,
+  UCDStoreMode,
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { UCDStoreGenericError } from "./errors";
@@ -159,7 +160,10 @@ export function extractFilterPatterns(filter: PathFilter): PathFilterOptions | u
 export function createPublicContext(
   context: InternalUCDStoreContext,
 ): UCDStoreContext {
+  const mode: UCDStoreMode = context.lockfile.supports ? "mirrored" : "remote";
+
   return {
+    mode,
     get versions() {
       return Object.freeze([...context.versions.resolved]);
     },

@@ -51,6 +51,7 @@ export type {
   SharedOperationOptions,
   UCDStore,
   UCDStoreContext,
+  UCDStoreMode,
   UCDStoreOperations,
   UCDStoreOptions,
   VersionConflictStrategy,

@@ -18,6 +18,14 @@ import type { SyncOptions, SyncResult } from "./tasks/sync";
 export type VersionConflictStrategy = "strict" | "merge" | "overwrite";
 
 /**
+ * The operational mode of a UCD store instance.
+ *
+ * - "mirrored": writable local store lifecycle with lockfile/snapshot state
+ * - "remote": read-only store-compatible view backed by remote metadata/files
+ */
+export type UCDStoreMode = "mirrored" | "remote";
+
+/**
  * Context available during backend construction after endpoint discovery.
  */
 export interface DiscoveryContext {
@@ -217,6 +225,11 @@ export interface InternalUCDStoreContext {
 
 export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "fs">> & {
   /**
+   * The resolved store mode.
+   */
+  mode: UCDStoreMode;
+
+  /**
    * List of Unicode versions available in the store.
    */
   versions: readonly string[];
@@ -248,7 +261,7 @@ export interface UCDStoreFileOperations {
 
   /**
    * List all file paths for a Unicode version.
-   * Returns a flat array of file paths.
+   * Returns a flat array of canonical store-style file paths.
    */
   list: (version: string, options?: ListFilesOptions) => Promise<OperationResult<string[], StoreError>>;
 

@@ -1,7 +1,6 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import { trimLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,
   createDebugger,
@@ -12,12 +11,9 @@ import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { getFile } from "../files/get";
 import { listFiles } from "../files/list";
+import { normalizeStoreRelativePath } from "../utils/paths";
 
 const debug = createDebugger("ucdjs:ucd-store:compare");
-
-function trimLeadingSlashToEmpty(value: string): string {
-  return value === "/" ? "" : trimLeadingSlash(value);
-}
 
 /**
  * Single mode types for comparison.
@@ -151,19 +147,7 @@ function modeToAllowApi(mode: SingleModeType): boolean {
  * Handles paths like "/16.0.0/UnicodeData.txt" or "16.0.0/UnicodeData.txt"
  */
 function normalizeFilePath(filePath: string, version: string): string {
-  const versionPrefix = `/${version}/`;
-  const versionPrefixNoSlash = `${version}/`;
-
-  if (filePath.startsWith(versionPrefix)) {
-    return filePath.slice(versionPrefix.length);
-  }
-
-  if (filePath.startsWith(versionPrefixNoSlash)) {
-    return filePath.slice(versionPrefixNoSlash.length);
-  }
-
-  // Already normalized or doesn't have version prefix
-  return trimLeadingSlashToEmpty(filePath);
+  return normalizeStoreRelativePath(filePath, version);
 }
 
 /**
