@@ -1,0 +1,119 @@
+---
+title: Codegen
+description: Architecture notes for @ucdjs/codegen
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/codegen` turns raw Unicode data files into generated TypeScript artifacts.
+
+## Role
+
+- Loads raw UCD text files into `RawDataFile` structures.
+- Uses model-driven field generation to infer property typings.
+- Produces generated interfaces and field-name constants for downstream packages.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/codegen" description="User-facing overview of field generation and file processing." />
+  <Card title="CLI" href="/architecture/packages/cli" description="The CLI delegates `codegen` commands into this package." />
+  <Card title="Pipeline Presets" href="/architecture/packages/pipelines/presets" description="Pipelines transform raw UCD text, while codegen produces TypeScript artifacts from files." />
+  <Card title="Schemas" href="/architecture/packages/schemas" description="Generated code often feeds or complements typed data contracts." />
+</Cards>
+
+## Mental Model
+
+There are two layers:
+
+- `processFile()` is the shared file-loading primitive
+- `runFieldsCodegen()` is the higher-level orchestration for field inference and code emission
+
+The package is intentionally narrow. It does not own store discovery or output persistence.
+It accepts files, processes them, and returns generated content.
+
+## Method Flows
+
+### `processFile(filePath, version, processor)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Proc as processFile()
+  participant FS as readFile()
+  participant Raw as RawDataFile
+  participant Fn as processor callback
+
+  Caller->>Proc: processFile(filePath, version, processor)
+  Proc->>FS: read file from disk
+
+  alt read fails
+    FS-->>Proc: error
+    Proc-->>Caller: null
+  else file content
+    FS-->>Proc: UTF-8 content
+    Proc->>Raw: new RawDataFile(content)
+    Proc->>Fn: processor(datafile, fileName, version)
+    Fn-->>Proc: result or null
+    Proc-->>Caller: result or null
+  end
+```
+
+### `runFieldsCodegen()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Run as runFieldsCodegen()
+  participant Model as LanguageModel
+  participant Limit as concurrency limiter
+  participant Fields as generateFields()
+  participant Build as interface + const builders
+
+  Caller->>Run: runFieldsCodegen({ files, model/openaiKey })
+  Run->>Run: create model and concurrency limiter
+
+  loop each input file
+    Run->>Limit: schedule processing
+    alt inline content
+      Limit->>Fields: generate fields from RawDataFile(content)
+    else file path
+      Limit->>Run: processFile(filePath, version, callback)
+      Run->>Fields: generate fields from RawDataFile
+    end
+    Fields-->>Build: inferred fields
+    Build-->>Run: generated TypeScript source
+  end
+
+  Run-->>Caller: non-null generated files
+```
+
+### Generated artifact assembly
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Gen as generateFieldsCode()
+  participant Knit as knitwork builders
+
+  Caller->>Gen: fields + file metadata
+  Gen->>Gen: dedupe field names
+  Gen->>Knit: buildInterface(PascalCase file name)
+  Gen->>Knit: buildStringArray(field names)
+  Gen-->>Caller: { fields, code, fileName, version }
+```
+
+## Design Notes
+
+- `processFile()` deliberately returns `null` on failure so batch codegen can continue.
+- Field inference is model-based, but code emission is deterministic once fields are known.
+- Concurrency limiting happens at the orchestration layer rather than inside the processor callback.
+- Generated identifiers are sanitized before code emission.
+
+## Testing Use
+
+- disk-backed vs inline-content processing
+- processor failure and null filtering
+- duplicate field-name handling
+- deterministic code emission from inferred fields
+- model wiring and concurrency behavior in `runFieldsCodegen()`

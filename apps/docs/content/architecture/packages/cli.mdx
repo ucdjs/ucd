@@ -1,0 +1,106 @@
+---
+title: CLI
+description: Architecture notes for @ucdjs/cli
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/cli` is the human-facing command layer for store, files, lockfile, codegen, and pipeline workflows.
+
+## Role
+
+- Parses raw terminal arguments into command groups and subcommands.
+- Delegates real work to package-level APIs instead of re-implementing storage or pipeline logic.
+- Owns terminal output formatting, JSON mode, and command help text.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/cli" description="User-facing overview of commands and usage." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="Store commands wrap store initialization, mirror, sync, and verify flows." />
+  <Card title="Lockfile" href="/architecture/packages/lockfile" description="Lockfile commands validate and inspect store metadata." />
+  <Card title="Pipelines" href="/architecture/packages/pipelines" description="Pipeline commands load, list, and execute pipeline definitions." />
+</Cards>
+
+## Mental Model
+
+The CLI is a thin dispatcher:
+
+- `bin/ucd.js` passes `process.argv` into `runCLI()`
+- `parseFlags()` and `resolveCommand()` identify the top-level command
+- `runCommand()` lazy-loads the relevant command root
+- subcommand modules call the real package APIs and render terminal output
+
+## Method Flows
+
+### CLI startup
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant Bin as bin/ucd.js
+  participant CLI as runCLI()
+  participant Parse as parseFlags()
+  participant Resolve as resolveCommand()
+  participant Run as runCommand()
+
+  User->>Bin: ucd store sync --json
+  Bin->>CLI: runCLI(process.argv.slice(2))
+  CLI->>Parse: parse raw args
+  Parse-->>CLI: flags
+  CLI->>Resolve: resolve top-level command
+  Resolve-->>CLI: "store"
+  CLI->>Run: runCommand("store", flags)
+  Run-->>CLI: dynamic import of store root
+  CLI-->>User: formatted result or CLIError
+```
+
+### Command dispatch
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Run as runCommand()
+  participant Root as command root module
+  participant Sub as subcommand module
+  participant Pkg as target package API
+
+  Caller->>Run: runCommand(cmd, flags)
+  Run->>Root: import ./cmd/<group>/root
+  Root->>Root: resolve subcommand from flags._[1]
+  Root->>Sub: invoke subcommand runner
+  Sub->>Pkg: call package API
+  Pkg-->>Sub: result or error
+  Sub-->>Caller: formatted terminal output
+```
+
+### Help and version fast path
+
+```mermaid
+sequenceDiagram
+  actor User
+  participant CLI as runCommand()
+
+  alt --version
+    User->>CLI: ucd --version
+    CLI-->>User: print package version
+  else no valid command or --help
+    User->>CLI: ucd help
+    CLI-->>User: render help tables and usage text
+  end
+```
+
+## Design Notes
+
+- Top-level command modules are lazy-loaded so the startup path stays small.
+- The CLI is intentionally a composition layer; storage, pipeline, and lockfile behavior should live in their own packages.
+- JSON mode is handled in output helpers so commands can share the same rendering rules.
+- Errors should be normalized into user-readable CLI output instead of leaking package stack traces by default.
+
+## Testing Use
+
+- top-level command resolution
+- help and version output
+- delegation to command roots and subcommands
+- JSON output mode
+- package-error normalization for store, lockfile, and pipeline commands

@@ -1,0 +1,136 @@
+---
+title: Store
+description: Architecture notes for apps/store
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`apps/store` is the hosted filesystem-style HTTP surface for mirrored Unicode store content.
+
+## Role
+
+- Exposes a store-shaped read API for lockfiles, snapshots, and versioned files.
+- Provides the HTTP contract consumed by the read-only `fs-backend` HTTP backend.
+- Bridges Cloudflare storage/bindings and the higher-level `ucd-store` conventions.
+
+## Related Docs
+
+<Cards>
+  <Card title="FS Backend" href="/architecture/packages/fs-backend" description="The HTTP backend reads from the route contract exposed by this app." />
+  <Card title="Lockfile" href="/architecture/packages/lockfile" description="This app serves lockfile and snapshot-compatible JSON payloads." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="The store package can target this app through `createHTTPUCDStore()`." />
+  <Card title="API App" href="/architecture/apps/api" description="The store worker proxies file data from the API while serving store-oriented metadata." />
+</Cards>
+
+## Mental Model
+
+This app is not the main public API.
+It is a filesystem facade with three route families:
+
+- `/.ucd-store.lock`
+- `/:version/snapshot.json`
+- `/:version/:path*`
+
+The app mainly exists so remote consumers can treat hosted store data like a read-only filesystem.
+
+## Request Flows
+
+### Worker startup
+
+```mermaid
+sequenceDiagram
+  actor Runtime
+  participant Worker as worker.ts
+  participant App as H3
+  participant Utils as worker-utils/h3
+  participant Routes as route registrars
+
+  Runtime->>Worker: initialize module
+  Worker->>App: create H3 app
+  Worker->>Utils: setupH3Cors(app)
+  Worker->>Utils: setupH3Ratelimit(app)
+  Worker->>Routes: register lockfile, snapshot, files routes
+  Worker-->>Runtime: serve(app)
+```
+
+### Lockfile request
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Route as /.ucd-store.lock
+  participant Bucket as R2 bucket
+  participant Schema as SnapshotSchema
+
+  Client->>Route: GET /.ucd-store.lock
+  Route->>Bucket: list objects under manifest/
+  loop each manifest snapshot object
+    Route->>Bucket: get snapshot.json
+    Bucket-->>Route: snapshot JSON
+    Route->>Schema: validate snapshot
+    Schema-->>Route: file stats for version
+  end
+  Route-->>Client: derived Lockfile JSON
+```
+
+### Snapshot request
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Route as /:version/snapshot.json
+  participant Bucket as R2 bucket
+  participant Schema as SnapshotSchema
+
+  Client->>Route: GET /16.0.0/snapshot.json
+  Route->>Bucket: get manifest/{version}/snapshot.json
+  alt object missing
+    Bucket-->>Route: null
+    Route-->>Client: 404 not found
+  else object found
+    Bucket-->>Route: JSON body
+    Route->>Schema: validate snapshot
+    alt invalid snapshot
+      Route-->>Client: 502 bad gateway
+    else valid
+      Route-->>Client: snapshot JSON + cache headers
+    end
+  end
+```
+
+### File request
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Route as /:version/:path*
+  participant Cache as Cloudflare cache
+  participant API as env.UCDJS_API.files()
+
+  Client->>Route: GET /16.0.0/ArabicShaping.txt
+  Route->>Cache: match(cacheKey)
+  alt cached response
+    Cache-->>Route: response
+    Route-->>Client: cached response
+  else cache miss
+    Route->>API: request transformed Unicode path
+    API-->>Route: body + status + headers
+    Route->>Cache: store successful GET response
+    Route-->>Client: proxied response
+  end
+```
+
+## Design Notes
+
+- The lockfile is derived dynamically from stored snapshots, so the app can serve a store view even when only manifest artifacts are persisted.
+- File requests proxy through the API binding rather than re-implementing Unicode file serving logic.
+- The route shape intentionally matches the expectations of the HTTP filesystem backend.
+- Cache headers matter because this app is read-heavy and mostly immutable by version.
+
+## Testing Use
+
+- route registration and fallback 404 behavior
+- lockfile derivation from snapshot objects
+- snapshot validation failures
+- cache hit/miss behavior for file routes
+- compatibility with the HTTP backend contract

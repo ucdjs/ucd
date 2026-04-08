@@ -1,0 +1,112 @@
+---
+title: Worker Utils
+description: Architecture notes for @ucdjs-internal/worker-utils
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs-internal/worker-utils` centralizes shared request-handling behavior for Hono and H3 workers.
+
+## Role
+
+- Provides common error responses, handler glue, CORS, and rate-limiting setup.
+- Normalizes Cloudflare/H3 environment access and request handling across worker apps.
+- Keeps API-like apps consistent instead of re-implementing platform plumbing.
+
+## Related Docs
+
+<Cards>
+  <Card title="API App" href="/architecture/apps/api" description="The public API worker composes these helpers during startup." />
+  <Card title="Store App" href="/architecture/apps/store" description="The store worker uses the H3-specific helpers and error handling." />
+  <Card title="Shared" href="/architecture/packages/shared" description="Compare request/runtime helpers here with the general internal utility package." />
+  <Card title="Apps Overview" href="/architecture/apps" description="Return to the app architecture index." />
+</Cards>
+
+## Mental Model
+
+There are two main surfaces:
+
+- framework-agnostic response helpers and task helpers
+- framework-specific setup helpers for Hono and H3
+
+The point is policy reuse:
+
+- same CORS rules
+- same rate-limit strategy
+- same normalized error payload shape
+
+## Method Flows
+
+### H3 request setup
+
+```mermaid
+sequenceDiagram
+  actor Request
+  participant App as H3 app
+  participant Cors as setupH3Cors()
+  participant Rate as setupH3Ratelimit()
+  participant Route as app route
+
+  Request->>App: incoming request
+  App->>Cors: apply allowed-origin policy
+  alt disallowed origin / preflight handling
+    Cors-->>Request: CORS response
+  else allowed
+    App->>Rate: limit by client IP
+    alt rate limit exceeded
+      Rate-->>Request: 429 custom error
+    else allowed
+      App->>Route: continue to route handler
+      Route-->>Request: route response
+    end
+  end
+```
+
+### Error normalization
+
+```mermaid
+sequenceDiagram
+  actor Framework
+  participant Handler as errorHandler()/h3ErrorHandler()
+  participant Errors as customError()/internalServerError()
+
+  Framework->>Handler: uncaught error + request context
+  alt known HTTP exception
+    Handler->>Errors: build custom error response
+    Errors-->>Framework: normalized response
+  else unknown error
+    Handler->>Errors: internalServerError()
+    Errors-->>Framework: 500 response
+  end
+```
+
+### Cloudflare env access
+
+```mermaid
+sequenceDiagram
+  actor Route
+  participant Env as getCloudflareEnv()
+  participant Runtime as event.runtime.cloudflare.env
+
+  Route->>Env: getCloudflareEnv(event)
+  Env->>Runtime: read worker bindings
+  alt env missing
+    Env-->>Route: throw missing env error
+  else env present
+    Env-->>Route: typed bindings
+  end
+```
+
+## Design Notes
+
+- Worker apps should compose these helpers early in startup so every route shares the same policy.
+- H3 and Hono have separate adapters because the request lifecycle is different even when the policy is the same.
+- Normalized errors are more important than perfect framework parity.
+- Environment access is strict so misconfigured workers fail clearly.
+
+## Testing Use
+
+- CORS origin allow/deny cases
+- rate-limiter success vs rejection
+- typed environment access for worker bindings
+- error normalization for expected and unexpected failures

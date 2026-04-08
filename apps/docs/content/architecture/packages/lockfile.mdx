@@ -1,0 +1,138 @@
+---
+title: Lockfile
+description: Architecture notes for @ucdjs/lockfile
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/lockfile` owns the persistent metadata format for mirrored UCD stores.
+
+## Role
+
+- Validates `.ucd-store.lock` and per-version `snapshot.json` files.
+- Encodes the contract between `ucd-store`, writable backends, and store-serving apps.
+- Separates metadata integrity checks from the higher-level store lifecycle.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/lockfile" description="User-facing overview of lockfile helpers and snapshot parsing." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="See where lockfile reads, writes, and conflict resolution happen." />
+  <Card title="FS Backend" href="/architecture/packages/fs-backend" description="Lockfile persistence depends on backend `write` and `mkdir` support." />
+  <Card title="Store App" href="/architecture/apps/store" description="The hosted store app serves lockfile and snapshot data over HTTP." />
+</Cards>
+
+## Mental Model
+
+The package has two data shapes:
+
+- lockfile: store-level metadata for resolved versions and filters
+- snapshot: version-level file manifest with hashes and sizes
+
+And two usage modes:
+
+- strict parsing APIs that throw typed errors
+- permissive `OrUndefined` APIs for best-effort reads
+
+## Method Flows
+
+### `readLockfile()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Read as readLockfile()
+  participant FS as FileSystemBackend
+  participant Parse as parseLockfileFromContent()
+  participant Schema as LockfileSchema
+
+  Caller->>Read: readLockfile(fs, ".ucd-store.lock")
+  Read->>FS: read(lockfilePath)
+
+  alt fs read fails
+    FS-->>Read: error
+    Read-->>Caller: LockfileInvalidError(lockfile could not be read)
+  else empty file
+    FS-->>Read: ""
+    Read-->>Caller: LockfileInvalidError(lockfile is empty)
+  else content present
+    FS-->>Read: raw JSON string
+    Read->>Parse: parse raw content
+    Parse->>Schema: safeParse(json)
+    alt invalid JSON or schema
+      Schema-->>Parse: validation error
+      Parse-->>Read: LockfileInvalidError
+      Read-->>Caller: throw
+    else valid
+      Schema-->>Parse: lockfile data
+      Read-->>Caller: Lockfile
+    end
+  end
+```
+
+### `writeLockfile()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Write as writeLockfile()
+  participant Cap as canUseLockfile()
+  participant FS as FileSystemBackend
+
+  Caller->>Write: writeLockfile(fs, path, data)
+  Write->>Cap: fs.features has write + mkdir?
+
+  alt backend is read-only
+    Cap-->>Write: false
+    Write-->>Caller: no-op
+  else writable backend
+    Cap-->>Write: true
+    Write->>FS: exists(dirname(path))
+    alt directory missing
+      Write->>FS: mkdir(dirname(path))
+    end
+    Write->>FS: write(path, JSON.stringify(data, null, 2))
+    Write-->>Caller: success
+  end
+```
+
+### Snapshot lifecycle
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Snap as readSnapshot()/writeSnapshot()
+  participant Paths as getSnapshotPath()
+  participant FS as FileSystemBackend
+  participant Schema as SnapshotSchema
+
+  alt read
+    Caller->>Snap: readSnapshot(fs, version)
+    Snap->>Paths: getSnapshotPath(version)
+    Snap->>FS: read(version/snapshot.json)
+    FS-->>Snap: raw content
+    Snap->>Schema: parse + validate
+    Snap-->>Caller: Snapshot or LockfileInvalidError
+  else write
+    Caller->>Snap: writeSnapshot(fs, version, snapshot)
+    Snap->>Paths: getSnapshotPath(version)
+    Snap->>FS: ensure directory exists
+    Snap->>FS: write(snapshot.json)
+    Snap-->>Caller: success or no-op on read-only backend
+  end
+```
+
+## Design Notes
+
+- `canUseLockfile()` is a capability check, not a backend-type check.
+- Invalid content is normalized into `LockfileInvalidError` so higher-level code can present consistent errors.
+- Parsing helpers exist both for filesystem-backed reads and raw string content from HTTP or memory.
+- Snapshot paths are version-derived, which keeps store metadata deterministic.
+
+## Testing Use
+
+- strict vs permissive parse helpers
+- invalid JSON and invalid schema branches
+- write skipping on read-only backends
+- directory creation on first write
+- parity between raw-content parse helpers and filesystem-backed reads

@@ -1,0 +1,185 @@
+---
+title: Client
+description: Architecture notes for @ucdjs/client
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/client` is the typed HTTP client for UCD.js services.
+
+## Role
+
+- Discovers endpoints from the `.well-known` config.
+- Exposes typed resource wrappers for files, versions, and config.
+- Defines the consumer-facing request and error contract used by higher-level packages.
+
+## Related Docs
+
+<Cards>
+  <Card title="Public Package Docs" href="/packages/client" description="User-facing client overview and examples." />
+  <Card title="Data Flow" href="/architecture/data-flow" description="See where client discovery and API consumption fit in the system." />
+  <Card title="Package Layers" href="/architecture/package-layers" description="Understand how the client relates to schemas, env, and consumers." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="See how ucd-store uses the client for discovery, manifests, trees, and file fetches." />
+</Cards>
+
+## Mental Model
+
+The client has two construction modes:
+
+- `createUCDClient(baseUrl)` performs `.well-known` discovery first
+- `createUCDClientWithConfig(baseUrl, config)` skips discovery and builds resources directly
+
+Once constructed, the client exposes three resource namespaces:
+
+- `config`
+- `files`
+- `versions`
+
+Each resource returns `{ data, error }` style results instead of throwing for normal request failures.
+The main exception is endpoint discovery, where `createUCDClient()` throws if the `.well-known`
+document cannot be fetched or validated.
+
+## Method Flows
+
+### `createUCDClient(baseUrl)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Client as createUCDClient()
+  participant Disc as discoverEndpointsFromConfig()
+  participant API as /.well-known/ucd-config.json
+  participant Res as Resource factory
+
+  Caller->>Client: createUCDClient(baseUrl)
+  Client->>Disc: discoverEndpointsFromConfig(baseUrl)
+  Disc->>API: GET /.well-known/ucd-config.json
+  API-->>Disc: config payload or fetch error
+
+  alt fetch error
+    Disc-->>Client: throw fetch error
+    Client-->>Caller: throw
+  else config invalid
+    Disc-->>Client: throw invalid config error
+    Client-->>Caller: throw
+  else config valid
+    Disc-->>Client: validated endpoint config
+    Client->>Res: create files/config/versions resources
+    Res-->>Client: UCDClient
+    Client-->>Caller: client instance
+  end
+```
+
+### `createUCDClientWithConfig(baseUrl, config)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Client as createUCDClientWithConfig()
+  participant Res as Resource factory
+
+  Caller->>Client: createUCDClientWithConfig(baseUrl, config)
+  Client->>Res: create files/config/versions resources
+  Res-->>Client: UCDClient
+  Client-->>Caller: client instance
+```
+
+### `client.files.get(path)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Files as files.get()
+  participant Path as resolveSafePath()
+  participant API as files endpoint
+  participant Fetch as customFetch.safe()
+
+  Caller->>Files: files.get(path)
+  Files->>Path: resolveSafePath(endpoints.files, path)
+
+  alt path traversal or invalid path
+    Path-->>Files: PathTraversalError
+    Files-->>Caller: { data: null, error }
+  else path accepted
+    Path-->>Files: resolved endpoint path
+    Files->>Fetch: request(resolved URL)
+    Fetch->>API: GET /api/v1/files/{wildcard}
+    API-->>Fetch: response
+    Fetch-->>Files: { data, error, response }
+    Files-->>Caller: { data, error, response }
+  end
+```
+
+### `client.versions.list()` and `client.versions.getFileTree(version)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Versions as versions resource
+  participant Fetch as customFetch.safe()
+  participant API as versions endpoints
+
+  Caller->>Versions: list() or getFileTree(version)
+  Versions->>Fetch: request JSON + apply schema
+  Fetch->>API: GET /api/v1/versions or /api/v1/versions/{version}/file-tree
+  API-->>Fetch: JSON response
+
+  alt response validates
+    Fetch-->>Versions: { data, error: null, response }
+    Versions-->>Caller: { data, error: null, response }
+  else request or schema fails
+    Fetch-->>Versions: { data: null, error }
+    Versions-->>Caller: { data: null, error }
+  end
+```
+
+### `client.versions.getManifest(version)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Versions as versions.getManifest()
+  participant Fetch as customFetch.safe()
+  participant API as manifest endpoint
+
+  Caller->>Versions: getManifest(version)
+  Versions->>Versions: validate X.Y.Z format
+
+  alt invalid version format
+    Versions-->>Caller: { data: null, error }
+  else valid version format
+    Versions->>Versions: replace {version} in manifest path
+    Versions->>Fetch: request JSON + manifest schema
+    Fetch->>API: GET manifest endpoint
+    API-->>Fetch: JSON response
+    Fetch-->>Versions: { data, error, response }
+    Versions-->>Caller: { data, error, response }
+  end
+```
+
+### `client.config.get()`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Config as config.get()
+  participant Fetch as customFetch.safe()
+  participant API as /.well-known/ucd-config.json
+
+  Caller->>Config: config.get()
+  Config->>Fetch: request JSON + UCDWellKnownConfigSchema
+  Fetch->>API: GET /.well-known/ucd-config.json
+  API-->>Fetch: JSON response
+  Fetch-->>Config: { data, error, response }
+  Config-->>Caller: { data, error, response }
+```
+
+## Testing Use
+
+These diagrams also define the most useful client test buckets:
+
+- discovery success, fetch failure, and invalid `.well-known` config
+- safe-path validation for `files.get()`
+- successful resource fetches with schema validation
+- invalid version format for `getManifest()`
+- normalization of request failures into `{ data, error }`
