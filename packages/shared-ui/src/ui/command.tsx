@@ -50,6 +50,7 @@ const commandActionsClassName = [
 ].join(" ");
 
 function usePaletteId(palette?: string) {
+  // eslint-disable-next-line react-naming-convention/id-name
   const fallbackPalette = React.useId().replaceAll(":", "");
   return palette ?? `command-${fallbackPalette}`;
 }
