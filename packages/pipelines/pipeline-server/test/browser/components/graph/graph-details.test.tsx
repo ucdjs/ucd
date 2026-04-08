@@ -1,8 +1,8 @@
 import type { ExecutionGraphNodeView } from "#shared/schemas/graph";
 import { PipelineGraphDetails } from "#components/graph/graph-details";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderComponent } from "../../route-test-utils";
 

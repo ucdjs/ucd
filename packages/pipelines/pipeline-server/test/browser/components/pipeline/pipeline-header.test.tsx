@@ -1,7 +1,7 @@
 import type { PipelineHeaderProps } from "#components/pipeline/pipeline-header";
 import { PipelineHeader } from "#components/pipeline/pipeline-header";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderComponent } from "../../route-test-utils";
 

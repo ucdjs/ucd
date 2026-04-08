@@ -1,6 +1,6 @@
 import type { UnicodeVersionList } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { createVersionsResource } from "../../src/resources/versions";
 

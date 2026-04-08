@@ -1,5 +1,5 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";

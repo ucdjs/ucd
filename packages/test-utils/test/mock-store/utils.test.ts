@@ -1,5 +1,5 @@
 import type { WrapMockFetchCallbackPayload, WrapMockFetchCallbackPayloadWithResponse } from "packages/test-utils/src/mock-store/types";
-import { mockFetch } from "#test-utils/msw";
+import { mockFetch } from "@ucdjs/test-utils/msw";
 import { HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 import {

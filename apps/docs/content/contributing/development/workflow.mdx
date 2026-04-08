@@ -98,10 +98,10 @@ UCD.js uses [Vitest](https://vitest.dev/) for testing.
 
 When writing tests, follow these common patterns:
 
-- **HTTP Mocking**: Use `mockFetch` from `#test-utils/msw` for HTTP/MSW-driven tests.
-- **API Mocking**: Prefer `mockStoreApi` from `#test-utils/mock-store` so tests stay consistent with the API surface.
+- **HTTP Mocking**: Use `mockFetch` from `@ucdjs/test-utils/msw` for HTTP/MSW-driven tests.
+- **API Mocking**: Prefer `mockStoreApi` from `@ucdjs/test-utils/mock-store` so tests stay consistent with the API surface.
 - **Filesystem Tests**: Use `testdir()` from `vitest-testdirs` to get a temporary directory that is cleaned up automatically.
-- **Shared Helpers**: Rely on `@ucdjs/test-utils` (via `#test-utils/*`) for helpers that need to be shared across packages.
+- **Shared Helpers**: Rely on `@ucdjs/test-utils/*` for helpers that need to be shared across packages.
 
 ## Code Quality
 

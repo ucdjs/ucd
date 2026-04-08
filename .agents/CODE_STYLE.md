@@ -27,7 +27,7 @@ Coding standards and conventions for the UCD.js project.
 
 ### Imports and Boundaries
 
-- Prefer path aliases where established (e.g. #test-utils/* in tests).
+- Prefer path aliases where established (e.g. `@ucdjs/test-utils/*` in tests).
 - Avoid reaching into dist/ or generated output.
 - Keep internal-only packages scoped to internal consumers.
 - Prefer workspace imports over built outputs during development.
@@ -50,8 +50,8 @@ Coding standards and conventions for the UCD.js project.
 ## Testing
 
 - Use Vitest for tests.
-- Use #test-utils/* for shared helpers.
-- Prefer mockFetch from #test-utils/msw for HTTP/MSW-driven tests.
+- Use `@ucdjs/test-utils/*` for shared helpers.
+- Prefer `mockFetch` from `@ucdjs/test-utils/msw` for HTTP/MSW-driven tests.
 
 ## Generated Output
 

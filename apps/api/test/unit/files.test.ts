@@ -1,5 +1,5 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { describe, expect, it } from "vitest";
 import { getRawUnicodeAsset, getUnicodeAsset, parseUnicodeDirectory } from "../../src/lib/files";

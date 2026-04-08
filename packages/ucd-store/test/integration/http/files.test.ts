@@ -1,6 +1,6 @@
-import { mockStoreApi, mockStoreSubdomain } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
 import { findFileByPath } from "@ucdjs-internal/shared";
+import { mockStoreApi, mockStoreSubdomain } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { createHTTPUCDStore } from "../../../src/factory";
 
@@ -429,7 +429,7 @@ describe("http integration: file operations", () => {
       });
 
       // Override with custom handler that returns 500
-      const { mockFetch } = await import("#test-utils/msw");
+      const { mockFetch } = await import("@ucdjs/test-utils/msw");
       mockFetch([
         [["GET", "HEAD"], "https://ucd-store.ucdjs.dev/:wildcard*", () => {
           return new HttpResponse(null, { status: 500, statusText: "Internal Server Error" });

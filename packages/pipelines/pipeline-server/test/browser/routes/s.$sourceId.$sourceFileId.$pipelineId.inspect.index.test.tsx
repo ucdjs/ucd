@@ -1,6 +1,6 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 

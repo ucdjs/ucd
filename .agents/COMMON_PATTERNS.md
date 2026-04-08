@@ -4,10 +4,10 @@ Common patterns and templates used across UCD.js.
 
 ## Testing
 
-Use `mockFetch` from `#test-utils/msw` for HTTP/MSW-driven tests and rely on @ucdjs/test-utils (via `#test-utils/*`) for helpers that need to be shared across packages. Local helpers are fine for single-use cases, but should not be duplicated across packages.
+Use `mockFetch` from `@ucdjs/test-utils/msw` for HTTP/MSW-driven tests and rely on `@ucdjs/test-utils/*` for helpers that need to be shared across packages. Local helpers are fine for single-use cases, but should not be duplicated across packages.
 
 ```ts
-import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 
 mockFetch([
   ["GET", "https://api.ucdjs.dev/api/v1/versions", () => {
@@ -19,8 +19,8 @@ mockFetch([
 For API mocking, prefer the mock store helpers so tests stay consistent with the API surface.
 
 ```ts
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 
 mockStoreApi({
   baseUrl: "https://api.ucdjs.dev",

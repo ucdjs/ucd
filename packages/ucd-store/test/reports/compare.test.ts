@@ -2,7 +2,7 @@
 
 import type { FileChangeInfo } from "../../src/reports/compare";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
+import { createFileTree, mockStoreApi } from "@ucdjs/test-utils/mock-store";
 import { describe, expect, it } from "vitest";
 import { compare } from "../../src/reports/compare";
 

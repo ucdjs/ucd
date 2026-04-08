@@ -90,7 +90,7 @@ Primary language for packages, apps, and tooling.
 **Skills:**
 
 - Vitest patterns and project scoping
-- MSW request mocking via #test-utils/msw
+- MSW request mocking via `@ucdjs/test-utils/msw`
 - Reusable helpers via @ucdjs/test-utils
 
 ### Code Quality (Essential)

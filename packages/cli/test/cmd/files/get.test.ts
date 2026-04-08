@@ -1,8 +1,8 @@
 import type { ConsoleOutputCapture } from "../../__test-utils";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";

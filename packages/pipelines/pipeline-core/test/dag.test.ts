@@ -1,5 +1,5 @@
 import type { PipelineRouteDefinition } from "../src";
-import { asyncFromArray } from "#test-utils";
+import { asyncFromArray } from "@ucdjs/test-utils";
 import { assert, describe, expect, it } from "vitest";
 import {
   always,

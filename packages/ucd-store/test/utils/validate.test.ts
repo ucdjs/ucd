@@ -1,7 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { UCDStoreGenericError, validateVersions } from "@ucdjs/ucd-store";
 import { describe, expect, it } from "vitest";
 

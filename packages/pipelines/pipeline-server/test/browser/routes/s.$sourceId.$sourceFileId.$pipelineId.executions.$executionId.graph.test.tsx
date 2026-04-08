@@ -1,8 +1,8 @@
 /* eslint-disable react/component-hook-factories */
 import type { ReactNode } from "react";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it, vi } from "vitest";
 import { renderFileRoute } from "../route-test-utils";
 

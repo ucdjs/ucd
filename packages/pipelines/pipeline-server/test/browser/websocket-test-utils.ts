@@ -1,5 +1,5 @@
 import type { LiveEvent } from "#shared/schemas/live";
-import { mswServer, ws } from "#test-utils/msw";
+import { mswServer, ws } from "@ucdjs/test-utils/msw";
 
 const LIVE_UPDATES_URL = "ws://localhost/api/live";
 

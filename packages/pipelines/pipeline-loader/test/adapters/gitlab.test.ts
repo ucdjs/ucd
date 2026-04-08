@@ -1,4 +1,4 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { resolveGitLabRef } from "../../src/adapters/gitlab";
