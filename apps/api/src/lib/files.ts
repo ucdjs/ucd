@@ -10,6 +10,7 @@ import {
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
+import { resolveUCDVersion } from "@unicode-utils/core";
 import { parse } from "apache-autoindex-parse";
 import { HTML_EXTENSIONS } from "../constants";
 import { determineContentTypeFromExtension, isInvalidPath } from "../routes/v1_files/utils";
@@ -78,13 +79,69 @@ export interface RawUnicodeAssetResult {
   extension: string;
 }
 
-export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
+function normalizeUnicodeAssetPath(path: string): string {
   let normalizedPath = path.trim();
   if (!normalizedPath || normalizedPath === "/") {
-    normalizedPath = "";
-  } else {
-    normalizedPath = trimLeadingSlash(trimTrailingSlash(normalizedPath));
+    return "";
   }
+
+  return trimLeadingSlash(trimTrailingSlash(normalizedPath));
+}
+
+interface ResolvedUnicodeAssetPath {
+  requestedPath: string;
+  upstreamPath: string;
+  requestedVersion: string | null;
+  upstreamVersion: string | null;
+}
+
+function resolveUnicodeAssetPath(path: string): ResolvedUnicodeAssetPath {
+  const requestedPath = normalizeUnicodeAssetPath(path);
+  if (!requestedPath) {
+    return {
+      requestedPath,
+      upstreamPath: requestedPath,
+      requestedVersion: null,
+      upstreamVersion: null,
+    };
+  }
+
+  const [requestedVersion, ...rest] = requestedPath.split("/");
+  if (!requestedVersion) {
+    return {
+      requestedPath,
+      upstreamPath: requestedPath,
+      requestedVersion: null,
+      upstreamVersion: null,
+    };
+  }
+
+  const upstreamVersion = resolveUCDVersion(requestedVersion);
+  const upstreamPath = [upstreamVersion, ...rest].filter(Boolean).join("/");
+
+  return {
+    requestedPath,
+    upstreamPath,
+    requestedVersion,
+    upstreamVersion,
+  };
+}
+
+function rewriteDirectoryEntryVersionPrefix(
+  path: string,
+  requestedVersion: string,
+  upstreamVersion: string,
+): string {
+  const upstreamPrefix = `/${upstreamVersion}`;
+  if (path === upstreamPrefix || path.startsWith(`${upstreamPrefix}/`)) {
+    return `/${requestedVersion}${path.slice(upstreamPrefix.length)}`;
+  }
+
+  return path;
+}
+
+export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
+  const normalizedPath = normalizeUnicodeAssetPath(path);
   const url = normalizedPath ? `https://unicode.org/Public/${normalizedPath}?F=2` : "https://unicode.org/Public?F=2";
 
   const response = await fetch(url, {
@@ -225,7 +282,8 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
   }
 
   try {
-    const asset = await getRawUnicodeAsset(path);
+    const resolvedPath = resolveUnicodeAssetPath(path);
+    const asset = await getRawUnicodeAsset(resolvedPath.upstreamPath);
     if (!asset.ok) {
       if (asset.status === 404) {
         return {
@@ -251,6 +309,21 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
 
     if (contentType.includes("text/html") && !HTML_EXTENSIONS.includes(`.${extension}`)) {
       let entries = await parseUnicodeDirectory(await response.text(), normalizedPath || "/");
+
+      if (
+        resolvedPath.requestedVersion
+        && resolvedPath.upstreamVersion
+        && resolvedPath.requestedVersion !== resolvedPath.upstreamVersion
+      ) {
+        entries = entries.map((entry) => ({
+          ...entry,
+          path: rewriteDirectoryEntryVersionPrefix(
+            entry.path,
+            resolvedPath.requestedVersion,
+            resolvedPath.upstreamVersion,
+          ),
+        }));
+      }
 
       if (options.stripUCDPrefix) {
         entries = entries.map((e) => ({ ...e, path: e.path.replace(UCD_SEGMENT_RE, "/") }));

@@ -80,6 +80,41 @@ describe("store files route", () => {
     });
   });
 
+  it("keeps the public Unicode version in requests for legacy mapped versions", async () => {
+    const filesMock = vi.fn(async () => {
+      return {
+        status: 200,
+        headers: {
+          "Content-Type": "text/plain",
+        },
+        kind: "file",
+        body: "legacy",
+      };
+    });
+
+    const { response, text } = await executeRequest(
+      new Request("https://ucd-store.ucdjs.dev/4.0.1/UnicodeData.txt"),
+      {
+        ...env,
+        UCDJS_API: {
+          files: filesMock,
+        },
+      } as unknown as Cloudflare.Env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(await text()).toBe("legacy");
+    expect(filesMock).toHaveBeenCalledWith("4.0.1/UnicodeData.txt", {
+      query: undefined,
+      pattern: undefined,
+      type: undefined,
+      sort: undefined,
+      order: undefined,
+      isHeadRequest: false,
+      stripUCDPrefix: true,
+    });
+  });
+
   it("handles HEAD requests through the H3 route", async () => {
     const filesMock = vi.fn(async () => {
       return {
