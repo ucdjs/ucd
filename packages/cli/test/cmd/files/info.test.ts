@@ -1,7 +1,7 @@
 import type { ConsoleOutputCapture } from "../../__test-utils";
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
 import { UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCLI } from "../../../src/cli-utils";
 import { captureConsoleOutput } from "../../__test-utils";

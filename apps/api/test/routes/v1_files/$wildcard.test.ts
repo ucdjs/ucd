@@ -1,8 +1,8 @@
 /// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
 
 import type { FileEntryList } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch, RawResponse } from "#test-utils/msw";
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { HttpResponse, mockFetch, RawResponse } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";

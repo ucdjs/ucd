@@ -4,11 +4,11 @@ import type { BackendFactory, FileSystemBackend } from "@ucdjs/fs-backend";
 import type { LockfileInput } from "@ucdjs/schemas";
 import type z from "zod";
 import type { InternalUCDStoreContext } from "../../src/types";
-import { createMemoryMockFS } from "#test-utils/fs-backends";
 import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig, getDefaultUCDEndpointConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, writeLockfile } from "@ucdjs/lockfile";
+import { createMemoryMockFS } from "@ucdjs/test-utils/fs-backends";
 import { createInternalContext } from "../../src/context";
 
 export interface CreateTestContextOptions {

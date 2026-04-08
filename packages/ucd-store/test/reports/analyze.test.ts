@@ -2,8 +2,8 @@
 
 import type { ReportFile } from "../../src/types";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
+import { createFileTree, mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { analyze } from "../../src/reports/analyze";
 

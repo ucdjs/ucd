@@ -1,6 +1,6 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { createFilesResource } from "../../src/resources/files";
 

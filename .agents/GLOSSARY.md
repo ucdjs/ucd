@@ -46,7 +46,7 @@ Type-safe API client generated from the OpenAPI spec (@ucdjs/client).
 
 ### mockFetch
 
-MSW-based helper for mocking HTTP fetch calls in tests (#test-utils/msw).
+MSW-based helper for mocking HTTP fetch calls in tests (`@ucdjs/test-utils/msw`).
 
 ### MSW
 

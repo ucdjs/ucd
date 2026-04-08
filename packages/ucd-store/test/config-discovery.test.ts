@@ -1,7 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse } from "#test-utils/msw";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { createUCDStore } from "../src/store";
 

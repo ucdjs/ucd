@@ -1,6 +1,6 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import {
   buildConfigResponse,

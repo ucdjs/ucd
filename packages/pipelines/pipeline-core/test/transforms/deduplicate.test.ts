@@ -1,6 +1,6 @@
 import type { ParsedRow } from "../../src/types";
 import { createDeduplicateTransform, deduplicateRows } from "#builtin-transforms/deduplicate";
-import { asyncFromArray, collect } from "#test-utils";
+import { asyncFromArray, collect } from "@ucdjs/test-utils";
 import { describe, expect, it } from "vitest";
 
 describe("deduplicateRows", () => {

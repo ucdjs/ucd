@@ -1,6 +1,6 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { getRawUnicodeAsset } from "#lib/files";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { getCurrentDraftVersion, resolveUCDVersion } from "@unicode-utils/core";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";

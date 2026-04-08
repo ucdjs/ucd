@@ -1,9 +1,9 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createMemoryMockFS } from "#test-utils/fs-backends";
-import { mockStoreApi } from "#test-utils/mock-store";
 import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig, getDefaultUCDEndpointConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { createMemoryMockFS } from "@ucdjs/test-utils/fs-backends";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { describe, expect, it } from "vitest";
 import { createInternalContext, createPublicContext } from "../src/context";

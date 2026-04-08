@@ -1,5 +1,5 @@
 import type { ChainTransforms, PipelineTransformDefinition } from "../src/transform";
-import { asyncFromArray, collect } from "#test-utils";
+import { asyncFromArray, collect } from "@ucdjs/test-utils";
 import { describe, expect, expectTypeOf, it } from "vitest";
 import { applyTransforms, definePipelineTransform } from "../src/transform";
 

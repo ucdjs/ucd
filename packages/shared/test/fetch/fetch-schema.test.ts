@@ -1,5 +1,5 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
 import { FetchError, FetchSchemaValidationError } from "../../src/fetch/error";

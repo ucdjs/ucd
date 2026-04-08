@@ -64,7 +64,7 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
 
 ### Adding tests
 
-- Use `#test-utils/*` and `mockFetch` for reusable test helpers and HTTP mocking.
+- Use `@ucdjs/test-utils/*` and `mockFetch` for reusable test helpers and HTTP mocking.
 - Prefer shared helpers when tests are reused across packages.
 - See .agents/COMMON_PATTERNS.md for test placement guidance.
 

@@ -2,8 +2,8 @@
 
 import type { UnicodeFileTree, UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { Entry } from "apache-autoindex-parse";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";

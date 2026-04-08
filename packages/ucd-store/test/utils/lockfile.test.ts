@@ -1,9 +1,9 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineBackend } from "@ucdjs/fs-backend";
 import { readLockfile } from "@ucdjs/lockfile";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { initLockfile } from "../../src/utils/lockfile";

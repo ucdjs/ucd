@@ -1,4 +1,4 @@
-import { mockStoreApi } from "#test-utils/mock-store";
+import { mockStoreApi } from "@ucdjs/test-utils/mock-store";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../../src/factory";

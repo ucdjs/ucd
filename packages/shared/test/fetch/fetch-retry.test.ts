@@ -1,5 +1,5 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { customFetch } from "../../src/fetch/fetch";
 

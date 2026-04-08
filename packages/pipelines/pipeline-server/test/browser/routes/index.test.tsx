@@ -1,5 +1,5 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { screen } from "@testing-library/react";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
 import {
   buildConfigResponse,
