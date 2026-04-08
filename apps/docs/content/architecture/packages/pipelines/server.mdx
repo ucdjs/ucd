@@ -3,14 +3,104 @@ title: Pipeline Server
 description: Architecture notes for @ucdjs/pipeline-server
 ---
 
-`@ucdjs/pipeline-server` is the full-stack server and UI for pipeline monitoring.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-server` is the local pipeline UI and API server for discovering, visualizing, and running pipelines.
 
 ## Role
 
-- Hosts pipeline execution views, server APIs, and persistence for execution state.
-- Connects the execution layer to a browser-based monitoring interface.
-- Defines the operational boundary for interactive pipeline tooling.
+- Hosts the interactive pipeline UI and the server API behind it.
+- Resolves pipeline sources, manages workspace state, and persists execution history.
+- Connects loader, executor, graph, tracing, and UI concerns in one package.
 
-## Notes
+## Related Docs
 
-Use this page for server/UI ownership, runtime topology, and operational notes.
+<Cards>
+  <Card title="Pipeline Loader" href="/architecture/packages/pipelines/loader" description="The server discovers and loads pipeline definitions through the loader package." />
+  <Card title="Pipeline Executor" href="/architecture/packages/pipelines/executor" description="Executions triggered from the UI run through the executor package." />
+  <Card title="Pipeline Graph" href="/architecture/packages/pipelines/graph" description="Graph APIs and UI views depend on pipeline graph data." />
+  <Card title="Pipeline Playground" href="/architecture/packages/pipelines/playground" description="Development mode defaults to the example pipelines in pipeline-playground." />
+</Cards>
+
+## Mental Model
+
+This package has two halves:
+
+- server-side H3 app, database, workspace, and live updates
+- client-side UI bundled into the same package
+
+It is effectively the control plane for the pipeline toolchain.
+
+## Method Flows
+
+### `startServer()`
+
+```mermaid
+sequenceDiagram
+  actor Operator
+  participant Start as startServer()
+  participant DB as createDatabase()/runMigrations()
+  participant WS as resolveWorkspace()
+  participant App as createApp()
+  participant Live as setupLiveUpdates()
+
+  Operator->>Start: startServer({ sources, workspaceId, workspaceRoot })
+  Start->>DB: ensure config dir, create DB, run migrations
+  Start->>WS: resolve workspace ID and root path
+  Start->>WS: ensure workspace row + recover stale executions
+  Start->>App: create H3 app with sources/db/workspace
+  Start->>Live: setup live update channels
+  Start-->>Operator: serve API + SPA client
+```
+
+### Server API request
+
+```mermaid
+sequenceDiagram
+  actor Browser
+  participant App as createApp()
+  participant Ctx as request context injector
+  participant Router as /api/sources/* routers
+  participant DB as database / pipeline services
+
+  Browser->>App: GET /api/sources/...
+  App->>Ctx: attach sources, db, workspaceId to event context
+  App->>Router: dispatch to overview/pipeline/executions/logs/graph/traces router
+  Router->>DB: resolve requested data or run operation
+  DB-->>Router: result
+  Router-->>Browser: JSON response
+```
+
+### SPA fallback and static asset serving
+
+```mermaid
+sequenceDiagram
+  actor Browser
+  participant App as H3 app
+  participant Static as serveStatic()
+  participant HTML as index.html fallback
+
+  Browser->>App: GET non-/api route
+  App->>Static: try serve built client asset
+  alt asset exists
+    Static-->>Browser: JS/CSS/image asset
+  else SPA route
+    App->>HTML: read client/index.html
+    HTML-->>Browser: HTML shell for frontend router
+  end
+```
+
+## Design Notes
+
+- Workspace identity is stable and can come from either config or hashed root path.
+- The package treats failed migrations as fatal, which is correct for a control-plane app.
+- Server and client live together because the UI is tightly coupled to the API shape.
+- Development defaults to the pipeline playground so the app is useful immediately.
+
+## Testing Use
+
+- workspace resolution and stale-execution recovery
+- route behavior for sources, graph, executions, logs, and traces
+- migration/bootstrap failures
+- live update lifecycle
+- SPA fallback and static serving

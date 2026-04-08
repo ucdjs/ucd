@@ -3,14 +3,93 @@ title: Pipeline Playground
 description: Architecture notes for @ucdjs/pipeline-playground
 ---
 
-`@ucdjs/pipeline-playground` holds reference and demo pipeline definitions.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`@ucdjs/pipeline-playground` is the sample corpus of pipeline definitions used for experimentation, demos, and UI development.
 
 ## Role
 
-- Provides a concrete place to experiment with pipeline definitions.
-- Supports development and demo flows for the pipeline stack.
-- Acts as a reference package rather than a core runtime dependency.
+- Provides concrete `.ucd-pipeline.ts` files for the loader and server to discover.
+- Demonstrates simple, intermediate, advanced, and failure-oriented pipeline scenarios.
+- Gives tests and the pipeline UI realistic inputs without depending on a separate external repo.
 
-## Notes
+## Related Docs
 
-Use this page for reference/example ownership and playground-boundary notes.
+<Cards>
+  <Card title="Pipeline Loader" href="/architecture/packages/pipelines/loader" description="The loader discovers and imports the example pipeline files from this package." />
+  <Card title="Pipeline Server" href="/architecture/packages/pipelines/server" description="In development, the server defaults to using this package as its local source." />
+  <Card title="Pipeline Core" href="/architecture/packages/pipelines/core" description="These example files are authored with the pipeline-core DSL." />
+  <Card title="Pipeline Presets" href="/architecture/packages/pipelines/presets" description="Many example pipelines compose preset parsers and resolvers." />
+</Cards>
+
+## Mental Model
+
+This package is data and examples, not runtime infrastructure.
+
+Its folders intentionally cover different documentation and testing scenarios:
+
+- `simple/` for minimal examples
+- `intermediate/` for transforms and custom resolvers
+- `advanced/` for richer graphs
+- `error-handling/` for broken or failure-producing cases
+
+## Example Flows
+
+### Loader discovering playground pipelines
+
+```mermaid
+sequenceDiagram
+  actor Tool
+  participant Loader as pipeline-loader
+  participant Repo as pipeline-playground
+  participant Files as *.ucd-pipeline.ts
+
+  Tool->>Loader: discover pipeline files in package
+  Loader->>Repo: glob for .ucd-pipeline.ts
+  Repo-->>Loader: matching playground files
+  Loader->>Files: bundle + import each file
+  Files-->>Loader: PipelineDefinition exports
+```
+
+### Simple example: `source-and-route`
+
+```mermaid
+sequenceDiagram
+  actor Author
+  participant Source as colorsSource
+  participant Route as colorsRoute
+  participant Pipe as sourceAndRoutePipeline
+
+  Author->>Route: definePipelineRoute(filter byName("colors.txt"))
+  Route-->>Author: parser + propertyJsonResolver route
+  Author->>Pipe: definePipeline({ inputs: [colorsSource], routes: [colorsRoute] })
+  Pipe-->>Author: minimal PipelineDefinition
+```
+
+### Development default source
+
+```mermaid
+sequenceDiagram
+  actor Server as pipeline-server
+  participant Workspace as resolvePipelineSources()
+  participant Playground as pipeline-playground path
+
+  Server->>Workspace: no explicit sources in development
+  Workspace->>Playground: use bundled local path
+  Playground-->>Workspace: local source locator
+  Workspace-->>Server: default pipeline source
+```
+
+## Design Notes
+
+- Keeping examples in-repo makes UI and loader development reproducible.
+- Failure examples are intentional and valuable because the loader and server need to surface issues cleanly.
+- The playground is private because it is reference material, not a polished product surface.
+- File names with `.ucd-pipeline.ts` are part of the contract so discovery works automatically.
+
+## Testing Use
+
+- loader discovery and import behavior
+- UI states for successful, complex, and broken pipeline definitions
+- documentation examples for the DSL
+- development-mode default source selection in pipeline-server

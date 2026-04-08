@@ -3,14 +3,114 @@ title: API
 description: Architecture notes for apps/api
 ---
 
-`apps/api` is the public API worker for UCD.js.
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
+`apps/api` is the public HTTP worker for UCD.js.
 
 ## Role
 
-- Serves versioned HTTP routes for files, versions, and schemas.
-- Publishes the `.well-known` configuration used by client discovery.
-- Owns API-facing behavior and direct upstream access.
+- Serves the version, file, schema, well-known, and task endpoints.
+- Publishes the `.well-known` discovery document used by `@ucdjs/client`.
+- Owns the API-facing boundary between external consumers and upstream Unicode data services.
 
-## Notes
+## Related Docs
 
-Use this page for API-specific route ownership, runtime behavior, and integration decisions.
+<Cards>
+  <Card title="Client" href="/architecture/packages/client" description="The client discovers and consumes the endpoints exposed by this app." />
+  <Card title="Store App" href="/architecture/apps/store" description="The hosted store app is a separate filesystem-style surface built on related data." />
+  <Card title="Worker Utils" href="/architecture/packages/worker-utils" description="Startup, CORS, rate limiting, and error handling are shared from worker-utils." />
+  <Card title="Data Flow" href="/architecture/data-flow" description="See how upstream Unicode data becomes API responses and downstream store inputs." />
+</Cards>
+
+## Mental Model
+
+The app has one Hono/OpenAPI process with three concerns:
+
+- register the HTTP surface
+- apply shared worker policy
+- expose both machine-readable OpenAPI and human-readable API docs
+
+It is the canonical network entrypoint for most public consumers.
+
+## Request Flows
+
+### Worker startup
+
+```mermaid
+sequenceDiagram
+  actor Runtime
+  participant Worker as worker.ts
+  participant App as OpenAPIHono
+  participant Utils as worker-utils
+  participant Routes as route modules
+
+  Runtime->>Worker: initialize module
+  Worker->>App: create OpenAPIHono()
+  Worker->>Utils: setupCors(app)
+  Worker->>Utils: setupRatelimit(app)
+  Worker->>Routes: mount versions/files/schemas/well-known/tasks routers
+  Worker->>App: register Scalar UI and /openapi.json
+  Worker-->>Runtime: fetch-capable worker app
+```
+
+### Normal API request
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Worker as apps/api
+  participant Utils as shared middleware
+  participant Router as route handler
+  participant Upstream as bound service or upstream fetch
+
+  Client->>Worker: GET /api/v1/...
+  Worker->>Utils: apply CORS + rate limit + error boundary
+  Worker->>Router: dispatch to matching router
+  Router->>Upstream: resolve requested data
+  Upstream-->>Router: response data or failure
+  Router-->>Client: JSON/text response
+```
+
+### Discovery request
+
+```mermaid
+sequenceDiagram
+  actor Client
+  participant Config as /.well-known router
+  participant Build as route config builder
+
+  Client->>Config: GET /.well-known/ucd-config.json
+  Config->>Build: construct endpoint config
+  Build-->>Config: validated discovery payload
+  Config-->>Client: endpoint URLs for files, versions, schemas, config
+```
+
+### OpenAPI document request
+
+```mermaid
+sequenceDiagram
+  actor Consumer
+  participant Doc as /openapi.json
+  participant Env as worker env
+  participant OpenAPI as buildOpenApiConfig()
+
+  Consumer->>Doc: GET /openapi.json
+  Doc->>Env: read ENVIRONMENT and API_VERSION
+  Doc->>OpenAPI: build server list and metadata
+  OpenAPI-->>Doc: OpenAPI 3.1 document
+  Doc-->>Consumer: JSON spec
+```
+
+## Design Notes
+
+- Route modules own endpoint behavior, while `worker.ts` owns composition.
+- OpenAPI and Scalar are first-class parts of the app, not afterthoughts.
+- Discovery lives beside the main API because the client depends on one canonical source of endpoint truth.
+- Shared middleware keeps this worker aligned with the store worker where possible.
+
+## Testing Use
+
+- route registration and request dispatch
+- `.well-known` discovery payload correctness
+- OpenAPI server selection by environment
+- error and rate-limit behavior via shared worker-utils integration
