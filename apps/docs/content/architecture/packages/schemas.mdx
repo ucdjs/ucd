@@ -3,14 +3,106 @@ title: Schemas
 description: Architecture notes for @ucdjs/schemas
 ---
 
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
 `@ucdjs/schemas` is the shared contract layer for structured data in UCD.js.
 
 ## Role
 
-- Defines Zod schemas for API responses, manifests, lockfiles, and Unicode metadata.
-- Provides the shared data shapes used across apps and packages.
-- Keeps contract definitions centralized instead of duplicating types.
+- Defines Zod schemas for API responses, manifests, lockfiles, filesystem entries, and Unicode metadata.
+- Provides a single contract source for both producers and consumers.
+- Keeps runtime validation and type inference aligned.
 
-## Notes
+## Related Docs
 
-Use this page for schema-family boundaries and contract ownership notes.
+<Cards>
+  <Card title="Package Layers" href="/architecture/package-layers" description="See where schemas sits in the contract layer of the workspace." />
+  <Card title="Client" href="/architecture/packages/client" description="Client resources validate API responses against schemas at runtime." />
+  <Card title="UCD Store" href="/architecture/packages/ucd-store" description="Store uses manifest, lockfile, snapshot, and file-tree schemas." />
+  <Card title="FS Backend" href="/architecture/packages/fs-backend" description="Filesystem backends and store-facing file shapes depend on schema definitions." />
+</Cards>
+
+## Mental Model
+
+This package is not just “types in one place.” It is the runtime validation layer
+that lets API producers, HTTP clients, and storage code agree on the same shapes.
+
+Schema families in this package:
+
+- `api`: well-known config and error response contracts
+- `fs`: directory/file entry shapes for store and backend surfaces
+- `lockfile`: `.ucd-store.lock` and `{version}/snapshot.json`
+- `manifest`: expected-file and per-version manifest contracts
+- `unicode`: versions, file trees, and version-detail payloads
+
+## Contract Ownership
+
+```mermaid
+flowchart TD
+  Schemas["@ucdjs/schemas"]
+
+  Schemas --> API["API routes / responses"]
+  Schemas --> Client["client response validation"]
+  Schemas --> Store["store manifests, snapshots, trees"]
+  Schemas --> FS["filesystem backend entry shapes"]
+  Schemas --> Tooling["tests / docs / contract reuse"]
+```
+
+## Validation Flow
+
+```mermaid
+sequenceDiagram
+  actor Producer as API / package producer
+  participant Schema as Zod schema
+  actor Consumer as client / store / app
+
+  Producer->>Schema: emit payload intended to match schema
+  Consumer->>Schema: parse() / safeParse() / safeParseAsync()
+
+  alt payload valid
+    Schema-->>Consumer: typed validated data
+  else payload invalid
+    Schema-->>Consumer: validation issues / failure result
+  end
+```
+
+## Schema Families
+
+### API Contracts
+
+```mermaid
+flowchart LR
+  WellKnown["UCDWellKnownConfigSchema"] --> Client["client discovery"]
+  WellKnown --> Store["store discovery / endpoint config"]
+  ApiError["ApiErrorSchema"] --> Consumers["error guards / HTTP consumers"]
+```
+
+### Filesystem & Tree Contracts
+
+```mermaid
+flowchart LR
+  FS["FileEntrySchema / BackendEntrySchema"] --> Store["store file/list/tree flows"]
+  FS --> Backends["fs-backend implementations"]
+  UnicodeTree["UnicodeFileTreeSchema"] --> Client["client.versions.getFileTree()"]
+  UnicodeTree --> Store["mirror / file filtering"]
+```
+
+### Lockfile & Manifest Contracts
+
+```mermaid
+flowchart LR
+  Lock["LockfileSchema"] --> Store["store initialization / sync / mirror"]
+  Snap["SnapshotSchema"] --> Store
+  Manifest["UCDStoreVersionManifestSchema"] --> Client["client.versions.getManifest()"]
+  Manifest --> Store["expected file planning / orphan cleanup"]
+```
+
+## Testing Use
+
+The high-value test categories here are:
+
+- example payloads that should parse successfully
+- malformed payloads that should fail with precise issues
+- recursive tree/entry validation
+- lockfile and snapshot date coercion
+- manifest and well-known contract compatibility across producer/consumer code
