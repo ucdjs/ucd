@@ -260,9 +260,9 @@ describe("listFiles", () => {
       expect(error).toBeNull();
       expect(apiCalled).toBe(true);
       expect(data).toEqual(expect.arrayContaining([
-        "/17.0.0/ucd/ArabicShaping.txt",
-        "/17.0.0/ucd/BidiBrackets.txt",
-        "/17.0.0/ucd/extracted/DerivedBidiClass.txt",
+        "/17.0.0/ArabicShaping.txt",
+        "/17.0.0/BidiBrackets.txt",
+        "/17.0.0/extracted/DerivedBidiClass.txt",
       ]));
     });
 
@@ -439,9 +439,9 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(data).toEqual(expect.arrayContaining([
-        "/16.0.0/ucd/level1/level2/deep.txt",
-        "/16.0.0/ucd/level1/mid.txt",
-        "/16.0.0/ucd/root.txt",
+        "/16.0.0/level1/level2/deep.txt",
+        "/16.0.0/level1/mid.txt",
+        "/16.0.0/root.txt",
       ]));
     });
   });

@@ -608,6 +608,43 @@ describe("compare", () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
     });
+
+    it("should compare local and api modes using the same canonical store paths", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+        files: {
+          "16.0.0": createFileTree({
+            "UnicodeData.txt": "v16 content from api",
+          }),
+          "15.1.0": createFileTree({
+            "UnicodeData.txt": "v15 content",
+          }),
+        },
+        responses: {
+          "/api/v1/versions/{version}/manifest": true,
+          "/api/v1/versions/{version}/file-tree": true,
+          "/api/v1/files/{wildcard}": true,
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        initialFiles: {
+          "15.1.0/UnicodeData.txt": "v15 content",
+        },
+      });
+
+      const [data, error] = await compare(context, {
+        from: "15.1.0",
+        to: "16.0.0",
+        mode: ["local", "api"],
+      });
+
+      expect(error).toBeNull();
+      expect(data?.added).toEqual([]);
+      expect(data?.removed).toEqual([]);
+      expect(data?.modified).toEqual(["UnicodeData.txt"]);
+    });
   });
 
   describe("snapshot.json exclusion", () => {

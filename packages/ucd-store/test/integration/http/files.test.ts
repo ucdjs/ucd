@@ -36,6 +36,8 @@ describe("http integration: file operations", () => {
         verify: false,
       });
 
+      expect(store.mode).toBe("remote");
+
       const [data, error] = await store.files.get("16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
@@ -200,11 +202,10 @@ describe("http integration: file operations", () => {
       });
 
       expect(error).toBeNull();
-      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/ucd/UnicodeData.txt",
-        "/16.0.0/ucd/Blocks.txt",
-        "/16.0.0/ucd/Scripts.txt",
+        "/16.0.0/UnicodeData.txt",
+        "/16.0.0/Blocks.txt",
+        "/16.0.0/Scripts.txt",
       ]);
     });
 
@@ -255,10 +256,9 @@ describe("http integration: file operations", () => {
 
       expect(error).toBeNull();
       expect(data).toHaveLength(2);
-      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/ucd/UnicodeData.txt",
-        "/16.0.0/ucd/extracted/DerivedBidiClass.txt",
+        "/16.0.0/UnicodeData.txt",
+        "/16.0.0/extracted/DerivedBidiClass.txt",
       ]);
     });
 
@@ -298,12 +298,11 @@ describe("http integration: file operations", () => {
 
       expect(error).toBeNull();
       expect(data).toHaveLength(2);
-      // API fallback returns API paths, which include the /ucd/ segment for modern versions.
       expect(data).toEqual([
-        "/16.0.0/ucd/UnicodeData.txt",
-        "/16.0.0/ucd/Blocks.txt",
+        "/16.0.0/UnicodeData.txt",
+        "/16.0.0/Blocks.txt",
       ]);
-      expect(data).not.toContain("/16.0.0/ucd/data.json");
+      expect(data).not.toContain("/16.0.0/data.json");
     });
   });
 

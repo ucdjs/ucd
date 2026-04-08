@@ -27,6 +27,7 @@ describe("node integration: store creation", () => {
       });
 
       expect(store).toBeDefined();
+      expect(store.mode).toBe("mirrored");
       expect(store.versions).toEqual(["16.0.0"]);
     });
 
@@ -48,6 +49,7 @@ describe("node integration: store creation", () => {
         verify: false,
       });
 
+      expect(store.mode).toBe("mirrored");
       expect(store.versions).toEqual(["16.0.0", "15.1.0"]);
 
       // Verify lockfile was created on disk
@@ -127,6 +129,7 @@ describe("node integration: store creation", () => {
         verify: false,
       });
 
+      expect(store.mode).toBe("mirrored");
       expect(store.versions.toSorted()).toEqual(["15.1.0", "16.0.0"]);
     });
   });

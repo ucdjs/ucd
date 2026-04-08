@@ -25,10 +25,10 @@ import {
   writeLockfile,
   writeSnapshot,
 } from "@ucdjs/lockfile";
-import { patheDirname, patheJoin } from "@ucdjs/path-utils";
-import { hasUCDFolderPath } from "@unicode-utils/core";
+import { patheDirname } from "@ucdjs/path-utils";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";
+import { toApiFilePath, toLocalStorePath } from "../utils/paths";
 import {
   computeMetrics,
   computeStorageMetrics,
@@ -239,9 +239,8 @@ async function _mirror(
         // Store subdomain returns clean paths - no transformation needed
         // filePath is already normalized by normalizeTreeForFiltering (e.g., "Blocks.txt" or "auxiliary/file.txt")
         const normalized = trimLeadingSlashToEmpty(filePath);
-        const localPath = patheJoin(version, normalized);
-        // For remote path, we need to add /ucd/ prefix for versions that have it
-        const remotePath = patheJoin(version, hasUCDFolderPath(version) ? "ucd" : "", normalized);
+        const localPath = toLocalStorePath(version, normalized);
+        const remotePath = toApiFilePath(version, normalized);
 
         directoriesToCreate.add(patheDirname(localPath));
 

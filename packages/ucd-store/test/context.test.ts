@@ -182,6 +182,7 @@ describe("createPublicContext", async () => {
 
     // Should have public properties
     expect(publicContext.fs).toBe(fs);
+    expect(publicContext.mode).toBe("mirrored");
     expect(publicContext.versions).toEqual(["16.0.0", "15.1.0"]);
 
     // Should not expose internal properties
@@ -348,6 +349,32 @@ describe("createPublicContext", async () => {
       // @ts-expect-error - testing runtime behavior
       publicContext.fs = createMemoryMockFS();
     }).toThrow();
+  });
+
+  it("should expose remote mode when lockfiles are not supported", async () => {
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+
+    const internalContext = createInternalContext({
+      client,
+      filter,
+      fs,
+      lockfile: {
+        supports: false,
+        exists: false,
+        path: "",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
+    });
+
+    internalContext.versions.resolved = ["16.0.0"];
+
+    const publicContext = createPublicContext(internalContext);
+
+    expect(publicContext.mode).toBe("remote");
   });
 });
 

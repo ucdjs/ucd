@@ -1,8 +1,6 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { BackendEntry } from "@ucdjs/fs-backend";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import { trimLeadingSlash } from "@luxass/utils";
 import {
   createDebugger,
   filterTreeStructure,
@@ -12,12 +10,9 @@ import {
 } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
+import { toStorePath } from "../utils/paths";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
-
-function trimLeadingSlashToEmpty(value: string): string {
-  return value === "/" ? "" : trimLeadingSlash(value);
-}
 
 export interface ListFilesOptions extends SharedOperationOptions {
   /**
@@ -28,39 +23,12 @@ export interface ListFilesOptions extends SharedOperationOptions {
 }
 
 /**
- * Build a lookup of normalized paths to original paths.
- * This allows us to filter using normalized paths but return original paths.
- */
-function buildPathMapping(
-  version: string,
-  originalEntries: BackendEntry[],
-  normalizedEntries: BackendEntry[],
-): Map<string, string> {
-  const originalPaths = flattenFilePaths(originalEntries);
-  const normalizedPaths = flattenFilePaths(normalizedEntries);
-
-  const mapping = new Map<string, string>();
-
-  // Both arrays should be in the same order since normalizeTreeForFiltering
-
-  // preserves structure
-  for (let i = 0; i < normalizedPaths.length; i++) {
-    const normalizedPath = normalizedPaths[i];
-    const originalPath = originalPaths[i];
-    if (normalizedPath && originalPath) {
-      mapping.set(normalizedPath, originalPath);
-    }
-  }
-
-  return mapping;
-}
-
-/**
  * Lists all file paths for a Unicode version. The operation prefers the
  * configured filesystem backend and can optionally fall back to the API when
  * the backend path is missing or cannot be read.
  *
- * Returns full paths (e.g., "/16.0.0/UnicodeData.txt"), not just filenames.
+ * Returns canonical store-style full paths (e.g., "/16.0.0/UnicodeData.txt"),
+ * not raw API paths and not just filenames.
  *
  * @this {InternalUCDStoreContext} - Internal store context
  * @param version Unicode version to list files for
@@ -96,9 +64,6 @@ async function _listFiles(
         // Normalize for filtering (strips version/ucd prefix)
         const normalizedEntries = normalizeTreeForFiltering(version, entries);
 
-        // Build mapping from normalized -> original paths
-        const pathMapping = buildPathMapping(version, entries, normalizedEntries);
-
         // Filter using normalized paths
         const filteredEntries = filterTreeStructure(
           this.filter,
@@ -109,19 +74,11 @@ async function _listFiles(
         // Get normalized paths that passed filtering
         const filteredNormalizedPaths = flattenFilePaths(filteredEntries);
 
-        // Map back to original paths
-        const originalPaths = filteredNormalizedPaths.map((normalizedPath) => {
-          const original = pathMapping.get(normalizedPath);
-          if (!original) {
-            // Fallback: construct the path if mapping fails
-            return `/${version}/${trimLeadingSlashToEmpty(normalizedPath)}`;
-          }
-          return original;
-        });
+        const storePaths = filteredNormalizedPaths.map((normalizedPath) => toStorePath(version, normalizedPath));
 
-        debug?.("Listed %d files from store for version: %s", originalPaths.length, version);
+        debug?.("Listed %d files from store for version: %s", storePaths.length, version);
 
-        return originalPaths;
+        return storePaths;
       } catch (err) {
         debug?.("Failed to list directory:", filesPath, err);
 
@@ -157,9 +114,7 @@ async function _listFiles(
       });
     }
 
-    // Build mapping from normalized -> original paths
     const normalizedTree = normalizeTreeForFiltering(version, result.data);
-    const pathMapping = buildPathMapping(version, result.data, normalizedTree);
 
     // Filter using normalized paths
     const filteredEntries = filterTreeStructure(
@@ -171,14 +126,7 @@ async function _listFiles(
     // Get normalized paths that passed filtering
     const filteredNormalizedPaths = flattenFilePaths(filteredEntries);
 
-    // Map back to original paths
-    return filteredNormalizedPaths.map((normalizedPath) => {
-      const original = pathMapping.get(normalizedPath);
-      if (!original) {
-        return `/${version}/${trimLeadingSlashToEmpty(normalizedPath)}`;
-      }
-      return original;
-    });
+    return filteredNormalizedPaths.map((normalizedPath) => toStorePath(version, normalizedPath));
   });
 }
 
