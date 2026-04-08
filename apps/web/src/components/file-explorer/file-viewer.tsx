@@ -1,5 +1,5 @@
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@ucdjs-internal/shared-ui/components";
+import { Button, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -55,7 +55,7 @@ function countLinesFromHtml(html: string) {
   return matches ? matches.length : 0;
 }
 
-export function FileViewer({ html, fileUrl }: FileViewerProps) {
+export function FileViewer({ html, fileUrl, fileName }: FileViewerProps) {
   const lineCount = useMemo(() => countLinesFromHtml(html), [html]);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const lineElementsRef = useRef<HTMLElement[]>([]);
@@ -150,14 +150,29 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
   }, [selection]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex items-center gap-2">
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/20 px-3 py-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <FileText className="size-4 shrink-0 text-muted-foreground" />
+            <span className="truncate text-sm font-medium" title={fileName}>
+              {fileName}
+            </span>
+          </div>
           <span className="text-xs text-muted-foreground">
             {lineCount}
             {" "}
             {lineCount === 1 ? "line" : "lines"}
           </span>
+          {selection && (
+            <span className="text-xs text-muted-foreground">
+              {selection.start === selection.end
+                ? `Line ${selection.start} selected`
+                : `Lines ${selection.start}-${selection.end} selected`}
+            </span>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
           {selection && (
             <Button
               variant="outline"
@@ -196,8 +211,8 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
             )}
           />
         </div>
-      </CardHeader>
-      <CardContent className="px-0">
+      </div>
+      <div className="px-0">
         <div className="relative bg-muted/30 overflow-hidden">
           <div className="flex">
             {/* Line numbers */}
@@ -233,17 +248,8 @@ export function FileViewer({ html, fileUrl }: FileViewerProps) {
             </div>
           </div>
         </div>
-        {selection && (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {selection.start === selection.end
-              ? `Line ${selection.start} selected`
-              : `Lines ${selection.start}-${selection.end} selected (${selection.end - selection.start + 1} lines)`}
-            {" "}
-            • Click to select, Shift+click for range
-          </p>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -257,12 +263,12 @@ export interface FileViewerSkeletonProps {
  */
 export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
+    <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/20 px-3 py-2">
+        <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
           <FileText className="size-4" />
           {fileName}
-        </CardTitle>
+        </div>
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
           <Button variant="outline" size="sm" disabled>
@@ -274,8 +280,8 @@ export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
             Download
           </Button>
         </div>
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div>
         <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
           <div className="flex">
             {/* Line numbers skeleton */}
@@ -296,7 +302,7 @@ export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,5 +1,6 @@
+import type { FileEntry, UnicodeFileTreeNode } from "@ucdjs/schemas";
 import { filesQueryOptions } from "#functions/files";
-import { versionsQueryOptions } from "#functions/versions";
+import { versionFileTreeQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { Badge, Input, Skeleton } from "@ucdjs-internal/shared-ui/components";
@@ -9,6 +10,20 @@ import { ExplorerTreeEntry } from "./explorer-entry";
 
 const LEADING_SLASHES_RE = /^\/+/;
 const TRAILING_SLASH_RE = /\/$/;
+const TREE_INDENT = 14;
+const TREE_PADDING = 8;
+
+type LoadChildrenMode = "directory" | "version-root" | "version-file-tree";
+
+interface SidebarNode {
+  name: string;
+  path: string;
+  type: "directory" | "file";
+  version?: string;
+  badge?: string;
+  children?: SidebarNode[];
+  loadChildren?: LoadChildrenMode;
+}
 
 interface ExplorerSidebarContextValue {
   currentPath: string;
@@ -23,8 +38,60 @@ function useExplorerSidebar() {
   return ctx;
 }
 
-const normalize = (p: string) => p.replace(LEADING_SLASHES_RE, "").replace(TRAILING_SLASH_RE, "");
-const buildPath = (parent: string, name: string) => (normalize(parent) ? `${normalize(parent)}/${name}` : name);
+const normalize = (path: string) => path.replace(LEADING_SLASHES_RE, "").replace(TRAILING_SLASH_RE, "");
+const getIndentStyle = (depth: number) => ({ marginLeft: depth * TREE_INDENT + TREE_PADDING });
+const getRowIndentStyle = (depth: number) => ({ paddingLeft: depth * TREE_INDENT + TREE_PADDING });
+
+function sortNodes(entries: SidebarNode[]) {
+  return entries.toSorted((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === "directory" ? -1 : 1;
+    }
+
+    return a.name.localeCompare(b.name, undefined, {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
+
+function normalizeDirectoryEntries(entries: FileEntry[], version?: string): SidebarNode[] {
+  return sortNodes(entries.map((entry) => {
+    const path = normalize(entry.path);
+    const isVersionUcdDirectory = version != null && entry.type === "directory" && path === `${version}/ucd`;
+
+    return {
+      type: entry.type,
+      name: entry.name,
+      path,
+      version,
+      loadChildren: entry.type === "directory"
+        ? (isVersionUcdDirectory ? "version-file-tree" : "directory")
+        : undefined,
+    } satisfies SidebarNode;
+  }));
+}
+
+function normalizeVersionTreeEntries(entries: UnicodeFileTreeNode[], version: string): SidebarNode[] {
+  return sortNodes(entries.map((entry) => {
+    if (entry.type === "directory") {
+      return {
+        type: "directory",
+        name: entry.name,
+        path: normalize(entry.path),
+        version,
+        children: normalizeVersionTreeEntries(entry.children, version),
+      } satisfies SidebarNode;
+    }
+
+    return {
+      type: "file",
+      name: entry.name,
+      path: normalize(entry.path),
+      version,
+    } satisfies SidebarNode;
+  }));
+}
 
 export function ExplorerSidebar() {
   const params = useParams({ strict: false });
@@ -36,21 +103,40 @@ export function ExplorerSidebar() {
     currentPath,
     query,
   };
-  const filtered = query ? versions.filter((v) => v.version.toLowerCase().includes(query.toLowerCase())) : versions;
+
+  const filteredVersions = query
+    ? versions.filter((version) => version.version.toLowerCase().includes(query.toLowerCase()))
+    : versions;
 
   return (
     <ExplorerSidebarContext value={ctx}>
       <div className="flex h-full flex-col">
-        <div className="px-4 py-2 sticky top-0 bg-background z-10">
+        <div className="sticky top-0 z-10 bg-background px-4 py-2">
           <div className="relative">
             <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter tree..." className="h-8 pl-8" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Filter tree..."
+              className="h-8 pl-8"
+            />
           </div>
         </div>
         <div className="flex-1 overflow-auto px-2 pb-4">
           <div className="space-y-1">
-            {filtered.map((v) => (
-              <Node key={v.version} name={`v${v.version}`} path={v.version} isDirectory versionType={v.type} depth={0} />
+            {filteredVersions.map((version) => (
+              <Node
+                key={version.version}
+                node={{
+                  type: "directory",
+                  name: `v${version.version}`,
+                  path: version.version,
+                  version: version.version,
+                  badge: version.type,
+                  loadChildren: "version-root",
+                }}
+                depth={0}
+              />
             ))}
           </div>
         </div>
@@ -59,88 +145,146 @@ export function ExplorerSidebar() {
   );
 }
 
-interface NodeProps {
-  name: string;
-  path: string;
-  isDirectory: boolean;
-  versionType?: string;
-  depth: number;
-}
-
-function Node({ name, path, isDirectory, versionType, depth }: NodeProps) {
+function Node({ node, depth }: { node: SidebarNode; depth: number }) {
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const { currentPath, query } = useExplorerSidebar();
 
-  // Each node manages its own expansion - only re-renders this node when toggled
-  const shouldAutoExpand = currentPath.startsWith(`${path}/`) || currentPath === path;
+  const isDirectory = node.type === "directory";
+  const isActive = currentPath === node.path || currentPath.startsWith(`${node.path}/`);
+  const shouldAutoExpand = isDirectory && isActive;
   const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
   const showChildren = isDirectory && isExpanded && !query;
 
   return (
     <div>
       <ExplorerTreeEntry
-        name={name}
+        name={node.name}
         isDirectory={isDirectory}
         isExpanded={isExpanded}
-        active={currentPath === path || currentPath.startsWith(`${path}/`)}
-        indent={depth * 14 + 8}
-        onSelect={() => navigate({ to: isDirectory ? "/file-explorer/$" : "/file-explorer/v/$", params: { _splat: path } })}
-        leading={
-          isDirectory
-            ? (
-                <button
-                  type="button"
-                  className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsExpanded(!isExpanded);
-                  }}
-                >
-                  {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
-                </button>
-              )
-            : (
-                <span className="inline-flex size-4 items-center justify-center">
-                  <ChevronRight className="size-3 opacity-0" />
-                </span>
-              )
-        }
-        trailing={versionType ? <Badge variant="secondary" className="text-[10px]">{versionType}</Badge> : undefined}
+        active={isActive}
+        indent={depth * TREE_INDENT + TREE_PADDING}
+        onSelect={() => navigate({
+          to: isDirectory ? "/file-explorer/$" : "/file-explorer/v/$",
+          params: { _splat: node.path },
+        })}
+        leading={isDirectory
+          ? (
+              <button
+                type="button"
+                className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setIsExpanded(!isExpanded);
+                }}
+              >
+                {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+              </button>
+            )
+          : (
+              <span className="inline-flex size-4 items-center justify-center">
+                <ChevronRight className="size-3 opacity-0" />
+              </span>
+            )}
+        trailing={node.badge ? <Badge variant="secondary" className="text-[10px]">{node.badge}</Badge> : undefined}
       />
-      {showChildren && <ChildList path={path} depth={depth + 1} />}
+      {showChildren && <NodeChildren node={node} depth={depth + 1} />}
     </div>
   );
 }
 
-function ChildList({ path, depth }: { path: string; depth: number }) {
-  const { data, isLoading } = useQuery(filesQueryOptions({ path, statType: "directory" }));
-  const { query } = useExplorerSidebar();
+function NodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
+  if (node.children) {
+    if (node.children.length === 0) {
+      return (
+        <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+          No matches
+        </div>
+      );
+    }
 
-  if (isLoading) {
     return (
-      <div className="space-y-2" style={{ marginLeft: depth * 14 + 8 }}>
+      <div className="space-y-1">
+        {node.children.map((child) => (
+          <Node key={child.path} node={child} depth={depth} />
+        ))}
+      </div>
+    );
+  }
+
+  const directoryPath = node.loadChildren === "version-root" ? node.version : node.path;
+  const directoryQuery = useQuery({
+    ...filesQueryOptions({
+      path: directoryPath,
+      statType: "directory",
+    }),
+    enabled: node.loadChildren === "directory" || node.loadChildren === "version-root",
+  });
+  const versionTreeQuery = useQuery({
+    ...versionFileTreeQueryOptions(node.version || ""),
+    enabled: node.loadChildren === "version-file-tree" && !!node.version,
+  });
+
+  if (!node.loadChildren) {
+    return (
+      <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+        No matches
+      </div>
+    );
+  }
+
+  if (directoryQuery.isLoading || versionTreeQuery.isLoading) {
+    return (
+      <div className="space-y-1">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-2">
-            <Skeleton className="h-3 w-3 rounded" />
-            <Skeleton className="h-3 w-40 rounded" />
+          <div
+            key={i}
+            className="flex items-center gap-2 rounded-md py-1 pr-2 text-sm"
+            style={getRowIndentStyle(depth)}
+          >
+            <Skeleton className="h-4 w-4 rounded shrink-0" />
+            <Skeleton className="h-4 w-40 rounded" />
           </div>
         ))}
       </div>
     );
   }
 
-  if (!data || data.type !== "directory") return <div className="text-xs text-muted-foreground px-2 py-1" style={{ marginLeft: depth * 14 + 8 }}>Failed</div>;
+  let entries: SidebarNode[] = [];
 
-  const entries = query
-    ? data.files.filter((e) => e.name.toLowerCase().includes(query.toLowerCase()))
-    : [...data.files.filter((e) => e.type === "directory"), ...data.files.filter((e) => e.type === "file")];
+  if (node.loadChildren === "version-file-tree") {
+    if (!versionTreeQuery.data || !node.version) {
+      return (
+        <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+          Failed
+        </div>
+      );
+    }
 
-  if (!entries.length) return <div className="text-xs text-muted-foreground px-2 py-1" style={{ marginLeft: depth * 14 + 8 }}>No matches</div>;
+    entries = normalizeVersionTreeEntries(versionTreeQuery.data, node.version);
+  } else {
+    if (!directoryQuery.data || directoryQuery.data.type !== "directory") {
+      return (
+        <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+          Failed
+        </div>
+      );
+    }
+
+    entries = normalizeDirectoryEntries(directoryQuery.data.files, node.version);
+  }
+
+  if (entries.length === 0) {
+    return (
+      <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+        No matches
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1">
-      {entries.map((e) => (
-        <Node key={e.name} name={e.name} path={buildPath(path, e.name)} isDirectory={e.type === "directory"} depth={depth} />
+      {entries.map((child) => (
+        <Node key={child.path} node={child} depth={depth} />
       ))}
     </div>
   );
@@ -151,11 +295,15 @@ ExplorerSidebar.Skeleton = () => (
     <div className="px-3 py-3">
       <Skeleton className="h-8 w-full rounded-md" />
     </div>
-    <div className="flex-1 space-y-2 px-3 pb-4">
+    <div className="flex-1 space-y-1 px-2 pb-4">
       {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="flex items-center gap-2">
-          <Skeleton className="h-3 w-3 rounded" />
-          <Skeleton className="h-3 w-40 rounded" />
+        <div
+          key={i}
+          className="flex items-center gap-2 rounded-md py-1 pr-2 text-sm"
+          style={getRowIndentStyle(0)}
+        >
+          <Skeleton className="h-4 w-4 rounded shrink-0" />
+          <Skeleton className="h-4 w-40 rounded" />
         </div>
       ))}
     </div>

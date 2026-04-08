@@ -40,6 +40,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
       }
       path = hasTrailingSlash ? `${[resolvedVersion, ...rest].join("/")}/` : [resolvedVersion, ...rest].join("/");
     }
+
     const { statType, amount } = await getFileHeadInfo({ data: {
       path,
       order: search.order,
@@ -74,6 +75,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
   loader: async ({ context, deps }) => {
     context.queryClient.prefetchQuery(filesQueryOptions({
       path: context.path,
+      statType: context.statType,
       pattern: deps.pattern,
       sort: deps.sort,
       order: deps.order,

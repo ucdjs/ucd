@@ -36,6 +36,30 @@ type FileQueryParams = {
   size?: number | null;
 } & SearchQueryParams;
 
+interface NormalizedFilesQueryOptions {
+  path: string;
+  pattern: string;
+  sort: "name" | "lastModified";
+  order: "asc" | "desc";
+  query: string;
+  type: "all" | "files" | "directories";
+  statType?: string | null;
+  size?: number | null;
+}
+
+function normalizeFilesQueryOptions(options: FilesQueryOptions = {}): NormalizedFilesQueryOptions {
+  return {
+    path: options.path || "",
+    pattern: options.pattern || "",
+    sort: options.sort || "name",
+    order: options.order || "asc",
+    query: options.query || "",
+    type: options.type || "all",
+    statType: options.statType,
+    size: typeof options.size === "number" ? options.size : null,
+  };
+}
+
 /**
  * Server function to fetch files from the UCD API
  *
@@ -52,25 +76,28 @@ export const fetchFiles = createServerFn({ method: "GET" })
     const request = getRequest();
     const signal = request.signal;
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
-    const url = new URL(data.path, `${baseFilesUrl}/`);
+    const normalized = normalizeFilesQueryOptions(data);
+    const url = new URL(normalized.path, `${baseFilesUrl}/`);
 
-    if (data.query) {
-      url.searchParams.set("query", data.query);
+    if (normalized.query) {
+      url.searchParams.set("query", normalized.query);
     }
 
-    url.searchParams.set("pattern", data.pattern || "");
-    url.searchParams.set("sort", data.sort || "name");
-    url.searchParams.set("order", data.order || "asc");
+    url.searchParams.set("pattern", normalized.pattern);
+    url.searchParams.set("sort", normalized.sort);
+    url.searchParams.set("order", normalized.order);
 
-    if (data.type && data.type !== "all") {
-      url.searchParams.set("type", data.type);
+    if (normalized.type !== "all") {
+      url.searchParams.set("type", normalized.type);
     }
 
-    let statType = data.statType ?? null;
+    let statType = normalized.statType ?? null;
     let contentType = "text/plain";
-    let size = typeof data.size === "number" ? data.size : null;
+    let size = normalized.size;
 
-    if (!statType || size === null) {
+    const shouldFetchHead = !statType || (statType === "file" && size === null);
+
+    if (shouldFetchHead) {
       const headRes = await fetch(url, { method: "HEAD", signal });
 
       if (!headRes.ok) {
@@ -84,10 +111,12 @@ export const fetchFiles = createServerFn({ method: "GET" })
     }
 
     // Step 2: For large files, return metadata only (no GET request needed)
-    if (statType === "file" && size !== null && size > MAX_INLINE_FILE_SIZE) {
+    const knownSize = typeof size === "number" ? size : null;
+
+    if (statType === "file" && knownSize !== null && knownSize > MAX_INLINE_FILE_SIZE) {
       return {
         type: "file-too-large",
-        size,
+        size: knownSize,
         contentType,
         downloadUrl: url.toString(),
       };
@@ -113,7 +142,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
 
     if (resolvedStatType === "file") {
       const content = await res.text();
-      const fileName = data.path.split("/").filter(Boolean).pop() || "file";
+      const fileName = normalized.path.split("/").filter(Boolean).pop() || "file";
       const html = await highlight(content, getShikiLanguage(fileName));
       return {
         type: "file",
@@ -130,7 +159,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
     }
 
     const content = await res.text();
-    const fileName = data.path.split("/").filter(Boolean).pop() || "file";
+    const fileName = normalized.path.split("/").filter(Boolean).pop() || "file";
     const html = await highlight(content, getShikiLanguage(fileName));
     return {
       type: "file",
@@ -147,26 +176,28 @@ interface FilesQueryOptions extends Omit<SearchQueryParams, "viewMode"> {
 }
 
 export function filesQueryOptions(options: FilesQueryOptions = {}) {
+  const normalized = normalizeFilesQueryOptions(options);
+
   return queryOptions({
     queryKey: [
       "files",
-      options.path,
-      options.pattern,
-      options.sort,
-      options.order,
-      options.query,
-      options.type,
+      normalized.path,
+      normalized.pattern,
+      normalized.sort,
+      normalized.order,
+      normalized.query,
+      normalized.type,
     ],
     queryFn: ({ signal }) => fetchFiles({
       data: {
-        path: options.path || "",
-        pattern: options.pattern,
-        sort: options.sort,
-        order: options.order,
-        query: options.query,
-        type: options.type,
-        statType: options.statType,
-        size: options.size,
+        path: normalized.path,
+        pattern: normalized.pattern,
+        sort: normalized.sort,
+        order: normalized.order,
+        query: normalized.query,
+        type: normalized.type,
+        statType: normalized.statType,
+        size: normalized.size,
       },
       signal,
     }),

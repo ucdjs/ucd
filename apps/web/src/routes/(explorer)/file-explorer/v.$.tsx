@@ -13,7 +13,7 @@ const MAX_INLINE_FILE_SIZE = 512 * 1024;
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
   async beforeLoad({ params }) {
-    const path = params._splat || "";
+    let path = params._splat || "";
 
     if (path.includes("..") || path.includes("//") || path.includes("%2e") || path.includes("%2f")) {
       throw new Error("Invalid file path");
@@ -108,6 +108,7 @@ function FileViewerPage() {
       <FileViewerContent
         path={path}
         fileName={fileName}
+        fileUrl={fileUrl}
         statType={loaderData.statType}
         size={loaderData.size}
       />
@@ -115,7 +116,7 @@ function FileViewerPage() {
   );
 }
 
-function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
+function FileViewerContent({ path, fileName, fileUrl, statType, size }: { path: string; fileName: string; fileUrl: string; statType: string | null; size: number }) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
   // This route only handles files
@@ -125,7 +126,7 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
 
   return (
     <FileViewer
-      fileUrl=""
+      fileUrl={fileUrl}
       html={data.html}
       fileName={fileName}
     />
