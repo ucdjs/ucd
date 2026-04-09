@@ -233,9 +233,11 @@ export async function generateManifests(
         );
 
         const manifest = { expectedFiles };
+        const versionMetadata = versionsByVersion.get(version);
         return {
           version,
-          date: versionsByVersion.get(version)?.date ?? null,
+          date: versionMetadata?.date ?? null,
+          status: versionMetadata?.status ?? versionMetadata?.type ?? "stable",
           manifest,
           snapshot,
           fileCount: expectedFiles.length,

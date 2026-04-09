@@ -71,7 +71,7 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
 
       try {
         logger.info(`Uploading ${manifest.version} to local tasks endpoint...`);
-        const queued = await uploadManifest(tar, manifest.version, manifest.date, {
+        const queued = await uploadManifest(tar, manifest.version, manifest.date, manifest.status, {
           baseUrl: "http://127.0.0.1:8787",
         });
         logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
@@ -85,6 +85,7 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
         result.versions.push({
           version: manifest.version,
           date: manifest.date,
+          status: manifest.status,
           fileCount: manifest.fileCount,
         });
       } catch (err) {
@@ -99,7 +100,7 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
     logger.info("Upload complete!");
     logger.info(`Uploaded ${result.uploaded} manifests:`);
     for (const v of result.versions) {
-      logger.info(`  - ${v.version} (${v.date ?? "unknown"}): ${v.fileCount} expected files`);
+      logger.info(`  - ${v.version} [${v.status}] (${v.date ?? "unknown"}): ${v.fileCount} expected files`);
     }
   } finally {
     await worker.dispose();

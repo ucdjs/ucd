@@ -12,6 +12,7 @@ const SURROUNDING_QUOTES_RE = /^"|"$/g;
 interface QueuedUpload {
   version: string;
   date: string | null;
+  status: "stable" | "draft" | "unsupported";
   fileCount: number;
   workflowId: string;
 }
@@ -71,6 +72,7 @@ function applyDryRunResult(result: UploadResult, manifests: Awaited<ReturnType<t
   result.versions = manifests.map((m) => ({
     version: m.version,
     date: m.date,
+    status: m.status,
     fileCount: m.fileCount,
   }));
 }
@@ -102,7 +104,7 @@ async function queueUploads(
     logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
 
     try {
-      const queued = await uploadManifest(tar, manifest.version, manifest.date, {
+      const queued = await uploadManifest(tar, manifest.version, manifest.date, manifest.status, {
         baseUrl,
         taskKey,
       });
@@ -112,6 +114,7 @@ async function queueUploads(
       queuedUploads.push({
         version: manifest.version,
         date: manifest.date,
+        status: manifest.status,
         fileCount: manifest.fileCount,
         workflowId: queued.workflowId,
       });
@@ -144,6 +147,7 @@ async function waitForQueuedUploads(
       result.versions.push({
         version: queued.version,
         date: queued.date,
+        status: queued.status,
         fileCount: queued.fileCount,
       });
     } catch (err) {
@@ -175,7 +179,7 @@ function printResult(result: UploadResult, dryRun: boolean): void {
   if (result.versions.length > 0) {
     lines.push("", "Versions:");
     for (const v of result.versions) {
-      lines.push(`  - ${v.version} (${v.date ?? "unknown"}): ${v.fileCount} expected files`);
+      lines.push(`  - ${v.version} [${v.status}] (${v.date ?? "unknown"}): ${v.fileCount} expected files`);
     }
   }
 
