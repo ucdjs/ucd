@@ -129,3 +129,5 @@ export type {
   ResolvedEntry,
   RowContext,
 } from "./types";
+
+export { ALL_STABLE_VERSIONS, ALL_VERSIONS } from "@ucdjs-internal/shared";
