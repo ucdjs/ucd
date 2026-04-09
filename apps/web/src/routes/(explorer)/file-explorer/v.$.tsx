@@ -13,7 +13,7 @@ const MAX_INLINE_FILE_SIZE = 512 * 1024;
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
   async beforeLoad({ params }) {
-    let path = params._splat || "";
+    const path = params._splat || "";
 
     if (path.includes("..") || path.includes("//") || path.includes("%2e") || path.includes("%2f")) {
       throw new Error("Invalid file path");
