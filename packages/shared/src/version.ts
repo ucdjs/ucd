@@ -19,3 +19,11 @@ export function isDraftUnicodeVersion(version: string): boolean {
 export function isStableUnicodeVersion(version: string): boolean {
   return UNICODE_VERSION_METADATA.some((v) => v.version === version && v.type === "stable");
 }
+
+export function ALL_VERSIONS(): string[] {
+  return UNICODE_VERSION_METADATA.map((v) => v.version);
+}
+
+export function ALL_STABLE_VERSIONS(): string[] {
+  return UNICODE_VERSION_METADATA.filter((v) => v.type === "stable").map((v) => v.version);
+}
