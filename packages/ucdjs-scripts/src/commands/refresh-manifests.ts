@@ -106,7 +106,7 @@ async function queueUploads(
         baseUrl,
         taskKey,
       });
-      
+
       logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
 
       queuedUploads.push({
