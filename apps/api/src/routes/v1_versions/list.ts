@@ -1,13 +1,15 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { createDb } from "#db/index";
+import { versions } from "#db/schema";
 import { createLogger } from "#lib/logger";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { badGateway, MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
+import { MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UnicodeVersionListSchema } from "@ucdjs/schemas";
+import { desc } from "drizzle-orm";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { getAllVersionsFromList } from "./utils";
 
 const log = createLogger("ucd:api:v1_versions");
 
@@ -22,12 +24,12 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
     }),
   ],
   description: dedent`
-    ## List All Unicode Versions
+    ## List Supported Unicode Versions
 
-    This endpoint retrieves a comprehensive list of all Unicode versions, including metadata and support status.
+    This endpoint retrieves the Unicode versions currently supported by UCD.js.
 
     - Provides **version metadata** such as documentation URLs and public URLs
-    - Includes **draft versions** if available
+    - Includes **draft versions** when they are published and supported
     - Supports **caching** for performance optimization
   `,
   responses: {
@@ -73,7 +75,6 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
     ...(generateReferences([
       404,
       429,
-      502,
       500,
     ])),
   },
@@ -81,46 +82,20 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 
 export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
-    log.info("Fetching unicode html versions page");
+    const db = createDb(c.env.UCD_DATA);
+    const supportedVersions = await db
+      .select({
+        version: versions.version,
+        documentationUrl: versions.documentationUrl,
+        date: versions.date,
+        url: versions.url,
+        mappedUcdVersion: versions.mappedUcdVersion,
+        type: versions.status,
+      })
+      .from(versions)
+      .orderBy(desc(versions.major), desc(versions.minor), desc(versions.patch));
 
-    const [versions, error] = await getAllVersionsFromList();
-
-    if (error) {
-      log.error("Error fetching Unicode versions", {
-        error,
-        component: "v1_versions",
-        operation: "getAllVersionsFromList",
-        upstreamService: "unicode.org",
-        request: {
-          method: c.req.method,
-          path: c.req.path,
-        },
-      });
-
-      return badGateway(c, {
-        message: "Failed to fetch Unicode versions from upstream service",
-      });
-    }
-
-    if (!versions || versions.length === 0) {
-      log.error("No versions found after successful fetch", {
-        error: new Error("No Unicode versions found after successful fetch from enumerated page"),
-        component: "v1_versions",
-        operation: "getAllVersionsFromList",
-        issueType: "empty_result",
-        versionsCount: versions?.length ?? 0,
-        request: {
-          method: c.req.method,
-          path: c.req.path,
-        },
-      });
-
-      return badGateway(c, {
-        message: "No Unicode versions found",
-      });
-    }
-
-    log.info("Successfully fetched Unicode versions", { count: versions.length });
-    return c.json(versions, 200);
+    log.info("Serving supported Unicode versions from D1", { count: supportedVersions.length });
+    return c.json(supportedVersions, 200);
   });
 }

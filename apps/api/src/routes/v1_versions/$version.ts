@@ -1,7 +1,8 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
-import { createLogger } from "#lib/logger";
+import { createDb } from "#db/index";
+import { versions } from "#db/schema";
 import { VERSION_ROUTE_PARAM } from "#lib/shared-parameters";
 import {
   createVersionManifestHeaders,
@@ -19,11 +20,10 @@ import {
   UNICODE_STABLE_VERSION,
 } from "@unicode-utils/core";
 import { traverse } from "apache-autoindex-parse/traverse";
+import { eq } from "drizzle-orm";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { calculateStatistics, getVersionFromList } from "./utils";
-
-const log = createLogger("ucd:api:v1_versions");
+import { calculateStatistics } from "./utils";
 
 const GET_VERSION_FILE_TREE_ROUTE_DOCS = dedent`
     This endpoint provides a **structured list of all files** inside the [\`ucd folder\`](https://unicode.org/Public/UCD/latest/ucd) associated with a specific Unicode version.
@@ -247,28 +247,21 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
       });
     }
 
-    const [versionInfo, error] = await getVersionFromList(version);
+    const db = createDb(c.env.UCD_DATA);
+    const [row] = await db
+      .select({
+        version: versions.version,
+        documentationUrl: versions.documentationUrl,
+        date: versions.date,
+        url: versions.url,
+        mappedUcdVersion: versions.mappedUcdVersion,
+        type: versions.status,
+      })
+      .from(versions)
+      .where(eq(versions.version, version))
+      .limit(1);
 
-    // If there's an error (upstream service failure), return 502
-    if (error) {
-      log.error("Error fetching version from upstream service", {
-        error,
-        component: "v1_versions",
-        operation: "getVersionFromList",
-        upstreamService: "unicode.org",
-        requestedVersion: version,
-        request: {
-          method: c.req.method,
-          path: c.req.path,
-        },
-      });
-      return badGateway(c, {
-        message: "Failed to fetch Unicode version from upstream service",
-      });
-    }
-
-    // If versionInfo is null but no error, it means version not found
-    if (!versionInfo) {
+    if (!row) {
       return notFound(c, {
         message: "Unicode version not found",
       });
@@ -294,7 +287,7 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
     }
 
     return c.json({
-      ...versionInfo,
+      ...row,
       statistics,
     }, 200);
   });

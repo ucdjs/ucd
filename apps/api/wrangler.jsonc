@@ -35,6 +35,14 @@
       "bucket_name": "ucdjs-data-local"
     }
   ],
+  "d1_databases": [
+    {
+      "binding": "UCD_DATA",
+      "database_name": "ucdjs-data-local",
+      "migrations_dir": "./src/db/migrations",
+      "migrations_table": "__drizzle_migrations"
+    }
+  ],
   "secrets_store_secrets": [
     {
       "binding": "UCDJS_TASK_API_KEY",
@@ -74,6 +82,15 @@
         {
           "binding": "UCD_BUCKET",
           "bucket_name": "ucdjs-data"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "UCD_DATA",
+          "database_name": "ucdjs-data",
+          "database_id": "74187b13-5468-41cb-a971-14ea314c0ce3",
+          "migrations_dir": "src/db/migrations",
+          "migrations_table": "__drizzle_migrations"
         }
       ],
       "secrets_store_secrets": [
@@ -124,6 +141,15 @@
         {
           "binding": "UCD_BUCKET",
           "bucket_name": "ucdjs-data-preview"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "UCD_DATA",
+          "database_name": "ucdjs-data-preview",
+          "database_id": "47737dec-4941-45b1-ae8e-0c8ce9daf5af",
+          "migrations_dir": "src/db/migrations",
+          "migrations_table": "__drizzle_migrations"
         }
       ],
       "secrets_store_secrets": [
@@ -178,6 +204,15 @@
         {
           "binding": "UCD_BUCKET",
           "bucket_name": "ucdjs-data-preview"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "UCD_DATA",
+          "database_name": "ucdjs-data-preview",
+          "database_id": "47737dec-4941-45b1-ae8e-0c8ce9daf5af",
+          "migrations_dir": "src/db/migrations",
+          "migrations_table": "__drizzle_migrations"
         }
       ],
       "ratelimits": [

@@ -4,6 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "imports": {
+    "#db/*": "./src/db/*.ts",
     "#lib/*": "./src/lib/*.ts",
     "#types": "./src/types.ts"
   },
@@ -20,7 +21,11 @@
     "lint:openapi": "spectral lint ../../ucd-generated/api/openapi.json",
     "generate:types": "wrangler types ./wrangler-types.d.ts",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
-    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
+    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:backend",
@@ -33,6 +38,8 @@
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "apache-autoindex-parse": "catalog:runtime",
+    "drizzle-kit": "catalog:build",
+    "drizzle-orm": "catalog:backend",
     "hono": "catalog:backend",
     "nanotar": "catalog:build",
     "zod": "catalog:runtime"
