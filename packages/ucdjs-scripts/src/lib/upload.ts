@@ -6,11 +6,15 @@ const MANIFEST_BUNDLE_ETAG_HEADER = "X-UCD-Manifest-Bundle-Etag";
 export async function uploadManifest(
   tar: Uint8Array,
   version: string,
+  date: string | null,
   options: UploadOptions,
 ): Promise<TaskUploadQueuedResult> {
   const { baseUrl, taskKey } = options;
   const url = new URL("/_tasks/upload-manifest", baseUrl);
   url.searchParams.set("version", version);
+  if (date != null) {
+    url.searchParams.set("date", date);
+  }
 
   const headers: Record<string, string> = {
     "Content-Type": "application/x-tar",

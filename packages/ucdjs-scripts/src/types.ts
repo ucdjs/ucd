@@ -20,11 +20,13 @@ export interface SetupDevOptions extends GlobalOptions {
 
 export interface UnicodeVersion {
   version: string;
+  date?: string | null;
   mappedUcdVersion?: string;
 }
 
 export interface GeneratedManifest {
   version: string;
+  date: string | null;
   manifest: { expectedFiles: ExpectedFile[] };
   snapshot: Snapshot;
   fileCount: number;
@@ -41,7 +43,7 @@ export interface UploadResult {
   uploaded: number;
   skipped: number;
   errors: Array<{ version: string; reason: string }>;
-  versions: Array<{ version: string; fileCount: number }>;
+  versions: Array<{ version: string; date: string | null; fileCount: number }>;
 }
 
 export interface TaskUploadQueuedResult {

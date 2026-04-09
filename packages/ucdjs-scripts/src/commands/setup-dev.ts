@@ -53,15 +53,20 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
 
       try {
         logger.info(`Uploading ${manifest.version} to local tasks endpoint...`);
-        const queued = await uploadToWorker(tar, manifest.version);
+        const queued = await uploadManifest(tar, manifest.version, manifest.date, {
+          baseUrl: "http://127.0.0.1:8787",
+        });
         logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
 
-        const completed = await waitForUploadOnWorker(queued.workflowId);
+        const completed = await waitForUploadCompletion(queued.workflowId, {
+          baseUrl: "http://127.0.0.1:8787",
+        });
         logger.info(`Completed workflow ${queued.workflowId} for ${manifest.version} (${completed.status})`);
 
         result.uploaded += 1;
         result.versions.push({
           version: manifest.version,
+          date: manifest.date,
           fileCount: manifest.fileCount,
         });
       } catch (err) {
@@ -76,27 +81,10 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
     logger.info("Upload complete!");
     logger.info(`Uploaded ${result.uploaded} manifests:`);
     for (const v of result.versions) {
-      logger.info(`  - ${v.version}: ${v.fileCount} expected files`);
+      logger.info(`  - ${v.version} (${v.date ?? "unknown"}): ${v.fileCount} expected files`);
     }
   } finally {
     await worker.dispose();
     logger.info("API worker disposed");
   }
-}
-
-async function uploadToWorker(
-  tar: Uint8Array,
-  version: string,
-) {
-  return uploadManifest(tar, version, {
-    baseUrl: "http://127.0.0.1:8787",
-  });
-}
-
-async function waitForUploadOnWorker(
-  workflowId: string,
-) {
-  return waitForUploadCompletion(workflowId, {
-    baseUrl: "http://127.0.0.1:8787",
-  });
 }

@@ -1,21 +1,22 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
-import { createDatabase } from "#db";
-import { versions } from "#db/schema";
 import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
 import { resolveUCDVersion } from "@unicode-utils/core";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { parseTar } from "nanotar";
+import { createDatabase } from "../db/index";
+import { versions } from "../db/schema";
 
 const LEADING_DOT_SLASH_RE = /^\.\//;
 
 interface ManifestUploadParams {
   version: string;
+  date: string | null;
   r2Key: string;
 }
 
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
   async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep) {
-    const { version, r2Key } = event.payload;
+    const { version, date, r2Key } = event.payload;
     const startTime = Date.now();
 
     const files = await step.do("extract-tar", async () => {
@@ -130,7 +131,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
           minor,
           patch,
           documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-          date: null,
+          date,
           url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
           mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
           status: "stable",
@@ -150,7 +151,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
             minor,
             patch,
             documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-            date: null,
+            date,
             url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
             mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
             status: "stable",
