@@ -1,5 +1,5 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
-import type { ExpectedFile, Snapshot, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
+import type { ExpectedFile, Snapshot, UnicodeFileTree } from "@ucdjs/schemas";
 import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
 import { createHash } from "node:crypto";
 import {
