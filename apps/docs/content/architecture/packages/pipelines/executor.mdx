@@ -27,7 +27,7 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 The executor has two layers:
 
 - `createPipelineExecutor()` orders multiple pipelines and wraps execution in runtime logging
-- `run()` executes one pipeline version-by-version and route-by-route
+- `run()` executes one pipeline with version-isolated work, route DAG ordering, and deterministic output merging
 
 The critical runtime responsibilities are:
 
@@ -72,7 +72,7 @@ sequenceDiagram
 
   Executor->>Run: run({ pipeline, runOptions, cacheStore, runtime })
   Run->>Ctx: resolve versions, routesByLayer, outputs, source adapter
-  loop each version
+  par each version
     Run->>Source: listFiles(version)
     Source-->>Run: FileContext[]
     Run->>Run: apply global include filter
@@ -82,6 +82,7 @@ sequenceDiagram
     end
     Run->>Run: execute unmatched-file fallback or strict failure
   end
+  Run->>Run: merge version outputs in declared version order
   Run-->>Executor: outputs, errors, summary, status
 ```
 
@@ -105,18 +106,19 @@ sequenceDiagram
   else cache miss
     Match->>Route: parse -> transforms -> resolver
     Route-->>Match: route outputs
-    Match->>Outputs: materialize output definitions
     opt cache enabled
       Match->>Cache: storeCacheEntry()
     end
-    Match-->>Runtime: new outputs + manifest entries
+    Match-->>Runtime: buffered route outputs
   end
+  Runtime->>Outputs: materialize merged output definitions
 ```
 
 ## Design Notes
 
 - Pipeline ordering happens before execution so pipeline-output dependencies can cross pipeline boundaries.
 - Route ordering happens inside a pipeline through the DAG layers from pipeline-core.
+- Versions execute in isolated contexts and their outputs are merged in declared version order.
 - The runtime abstraction owns spans, logging, and output capture so execution remains portable.
 - Errors are accumulated into execution results instead of crashing the whole batch whenever possible.
 

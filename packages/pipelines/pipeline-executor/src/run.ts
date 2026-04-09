@@ -1,4 +1,4 @@
-import type { Span } from "@opentelemetry/api";
+import type { Span, SpanContext } from "@opentelemetry/api";
 import type {
   AnyPipelineDefinition,
   AnyPipelineRouteDefinition,
@@ -44,10 +44,6 @@ interface RunCtx {
   routeOutputs: Map<string, readonly NormalizedRouteOutputDefinition[]>;
   cacheStore?: CacheStore;
   useCache: boolean;
-  outputs: unknown[];
-  outputManifest: PipelineOutputManifestEntry[];
-  errors: PipelineError[];
-  summary: PipelineSummary;
 }
 
 interface VersionContext {
@@ -56,39 +52,110 @@ interface VersionContext {
   listFiles: () => Promise<FileContext[]>;
 }
 
+interface VersionExecutionSummary {
+  totalRoutes: number;
+  cached: number;
+  totalFiles: number;
+  matchedFiles: number;
+  skippedFiles: number;
+  fallbackFiles: number;
+}
+
+interface BufferedOutputBatch {
+  scope: "route" | "file";
+  version: string;
+  routeId: string;
+  file: FileContext;
+  values: readonly unknown[];
+  definitions: readonly NormalizedRouteOutputDefinition[];
+  parentSpanContext: SpanContext;
+}
+
+interface VersionExecutionResult {
+  summary: VersionExecutionSummary;
+  errors: PipelineError[];
+  bufferedOutputs: BufferedOutputBatch[];
+}
+
+interface RouteExecutionResult {
+  success: boolean;
+  routeId: string;
+  file: FileContext;
+  outputs: unknown[];
+  cached: number;
+  errors: PipelineError[];
+  parentSpanContext: SpanContext;
+}
+
 export async function run(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
   const ctx = createRunCtx(options);
 
   return ctx.runtime.startSpan("pipeline", async (pipelineSpan) => {
     const startPerf = performance.now();
+    const outputs: unknown[] = [];
+    const outputManifest: PipelineOutputManifestEntry[] = [];
+    const errors: PipelineError[] = [];
+    const summary = createSummary(ctx.versions);
     pipelineSpan.setAttributes({
       "pipeline.id": ctx.pipeline.id,
       "pipeline.versions": ctx.versions,
     });
 
-    for (const version of ctx.versions) {
-      await runVersion(ctx, version);
+    const versionResults = await Promise.all(
+      ctx.versions.map((version) => runVersion(ctx, version)),
+    );
+
+    for (const versionResult of versionResults) {
+      mergeSummary(summary, versionResult.summary);
+      errors.push(...versionResult.errors);
+    }
+
+    const locatorRegistry = new Map<string, { version: string; routeId: string; outputId: string }>();
+    for (const versionResult of versionResults) {
+      for (const batch of versionResult.bufferedOutputs) {
+        const { entries, writeErrors } = await materializeOutputs({
+          outputs,
+          version: batch.version,
+          routeId: batch.routeId,
+          file: batch.file,
+          values: batch.values,
+          definitions: batch.definitions,
+          runtime: ctx.runtime,
+          pipelineId: ctx.pipeline.id,
+          locatorRegistry,
+          parentSpanContext: batch.parentSpanContext,
+        });
+        outputManifest.push(...entries);
+        pushWriteErrors(
+          errors,
+          writeErrors,
+          batch.scope,
+          batch.file,
+          batch.version,
+          batch.scope === "route" ? batch.routeId : undefined,
+        );
+      }
     }
 
     const durationMs = performance.now() - startPerf;
-    ctx.summary.totalOutputs = ctx.outputs.length;
-    ctx.summary.durationMs = durationMs;
+    summary.totalOutputs = outputs.length;
+    summary.durationMs = durationMs;
 
-    const status: ExecutionStatus = ctx.errors.length === 0 ? "completed" : "failed";
+    const status: ExecutionStatus = errors.length === 0 ? "completed" : "failed";
     pipelineSpan.setAttributes({
-      "summary.total.files": ctx.summary.totalFiles,
-      "summary.matched.files": ctx.summary.matchedFiles,
-      "summary.total.outputs": ctx.summary.totalOutputs,
+      "summary.total.files": summary.totalFiles,
+      "summary.matched.files": summary.matchedFiles,
+      "summary.total.outputs": summary.totalOutputs,
       "summary.duration.ms": durationMs,
       "execution.status": status,
     });
 
     return {
       id: ctx.pipeline.id,
-      data: ctx.outputs,
-      outputManifest: ctx.outputManifest,
-      errors: ctx.errors,
-      summary: ctx.summary,
+      data: outputs,
+      outputManifest,
+      errors,
+      summary,
       status,
     };
   }) as Promise<PipelineExecutionResult>;
@@ -109,10 +176,6 @@ function createRunCtx(options: RunPipelineOptions): RunCtx {
     routeOutputs: buildRouteOutputs(pipeline),
     cacheStore,
     useCache: (runOptions.cache ?? true) && cacheStore != null,
-    outputs: [],
-    outputManifest: [],
-    errors: [],
-    summary: createSummary(versions),
   };
 }
 
@@ -142,7 +205,9 @@ function createVersionContext(ctx: RunCtx, version: string): VersionContext {
   };
 }
 
-async function runVersion(ctx: RunCtx, version: string): Promise<void> {
+async function runVersion(ctx: RunCtx, version: string): Promise<VersionExecutionResult> {
+  const result = createVersionExecutionResult();
+
   await ctx.runtime.startSpan("version", async (versionSpan) => {
     const startPerf = performance.now();
     versionSpan.setAttributes({
@@ -161,15 +226,17 @@ async function runVersion(ctx: RunCtx, version: string): Promise<void> {
       : files;
 
     const processedFiles = new Set<string>();
-    ctx.summary.totalFiles += files.length;
+    result.summary.totalFiles += files.length;
 
     for (const routes of ctx.routesByLayer) {
       const queue = createProcessingQueue(ctx.pipeline.concurrency);
+      const layerRuns: Promise<RouteExecutionResult>[] = [];
 
       for (const route of routes) {
         for (const file of selectMatchingFiles(ctx, route, includedFiles)) {
           processedFiles.add(file.path);
-          ctx.summary.totalRoutes++;
+          result.summary.totalRoutes++;
+          result.summary.matchedFiles++;
           const queuedAt = performance.now();
           versionSpan.addEvent("file.queued", {
             "pipeline.id": ctx.pipeline.id,
@@ -178,7 +245,7 @@ async function runVersion(ctx: RunCtx, version: string): Promise<void> {
             ...fileAttrs(file),
           });
 
-          await queue.add(async () => {
+          layerRuns.push(queue.add(async () => {
             versionSpan.addEvent("file.dequeued", {
               "pipeline.id": ctx.pipeline.id,
               "pipeline.version": version,
@@ -186,22 +253,46 @@ async function runVersion(ctx: RunCtx, version: string): Promise<void> {
               ...fileAttrs(file),
               "wait.ms": performance.now() - queuedAt,
             });
-            await executeMatchedFile(ctx, versionContext, version, route, file);
-          });
+            return executeMatchedFile(ctx, versionContext, version, route, file);
+          }));
         }
       }
 
+      const layerResults = await Promise.all(layerRuns);
       await queue.drain();
+
+      for (const layerResult of layerResults) {
+        result.summary.cached += layerResult.cached;
+        result.errors.push(...layerResult.errors);
+
+        if (!layerResult.success) {
+          continue;
+        }
+
+        versionContext.routeDataMap[layerResult.routeId] ??= [];
+        versionContext.routeDataMap[layerResult.routeId]!.push(...layerResult.outputs);
+        result.bufferedOutputs.push({
+          scope: "route",
+          version,
+          routeId: layerResult.routeId,
+          file: layerResult.file,
+          values: layerResult.outputs,
+          definitions: ctx.routeOutputs.get(layerResult.routeId) ?? DEFAULT_FALLBACK_OUTPUTS,
+          parentSpanContext: layerResult.parentSpanContext,
+        });
+      }
     }
 
     for (const file of includedFiles) {
       if (!processedFiles.has(file.path)) {
-        await executeUnmatchedFile(ctx, versionContext, version, file, versionSpan);
+        await executeUnmatchedFile(ctx, versionContext, version, file, versionSpan, result);
       }
     }
 
     versionSpan.setAttribute("duration.ms", performance.now() - startPerf);
   });
+
+  return result;
 }
 
 function selectMatchingFiles(
@@ -222,8 +313,8 @@ async function executeMatchedFile(
   version: string,
   route: AnyPipelineRouteDefinition,
   file: FileContext,
-): Promise<void> {
-  await ctx.runtime.startSpan("file.route", async (routeSpan) => {
+): Promise<RouteExecutionResult> {
+  return ctx.runtime.startSpan("file.route", async (routeSpan) => {
     const startPerf = performance.now();
     routeSpan.setAttributes({
       "pipeline.id": ctx.pipeline.id,
@@ -244,8 +335,6 @@ async function executeMatchedFile(
       ...fileAttrs(file),
     });
 
-    ctx.summary.matchedFiles++;
-
     try {
       const routeCtx: ExecutionContext = {
         pipelineId: ctx.pipeline.id,
@@ -256,29 +345,32 @@ async function executeMatchedFile(
         runtime: ctx.runtime,
         routeDataMap: versionContext.routeDataMap,
       };
-      const outputs = await loadRouteResult(ctx, route, routeSpan, routeCtx);
+      const result = await loadRouteResult(ctx, route, routeSpan, routeCtx);
 
-      versionContext.routeDataMap[route.id] ??= [];
-      versionContext.routeDataMap[route.id]!.push(...outputs);
-
-      const { entries, writeErrors } = await materializeOutputs({
-        outputs: ctx.outputs,
-        version,
+      routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
+      return {
+        success: true,
         routeId: route.id,
         file,
-        values: outputs,
-        definitions: ctx.routeOutputs.get(route.id) ?? DEFAULT_FALLBACK_OUTPUTS,
-        runtime: ctx.runtime,
-        pipelineId: ctx.pipeline.id,
-      });
-      ctx.outputManifest.push(...entries);
-      pushWriteErrors(ctx, writeErrors, "route", file, version, route.id);
+        outputs: result.outputs,
+        cached: result.cached ? 1 : 0,
+        errors: [],
+        parentSpanContext: routeSpan.spanContext(),
+      };
     } catch (error) {
-      recordSpanError(ctx, routeSpan, error, "route", file, version, route.id);
+      const routeError = recordSpanError(routeSpan, error, "route", file, version, route.id);
+      routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
+      return {
+        success: false,
+        routeId: route.id,
+        file,
+        outputs: [],
+        cached: 0,
+        errors: [routeError],
+        parentSpanContext: routeSpan.spanContext(),
+      };
     }
-
-    routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
-  });
+  }) as Promise<RouteExecutionResult>;
 }
 
 async function executeUnmatchedFile(
@@ -287,13 +379,14 @@ async function executeUnmatchedFile(
   version: string,
   file: FileContext,
   versionSpan: Span,
+  result: VersionExecutionResult,
 ): Promise<void> {
   const { pipeline, logger } = ctx;
 
   if (!pipeline.fallback) {
-    ctx.summary.skippedFiles++;
+    result.summary.skippedFiles++;
     if (pipeline.strict) {
-      ctx.errors.push({
+      result.errors.push({
         scope: "file",
         message: `No matching route for file: ${file.path}`,
         file,
@@ -316,7 +409,7 @@ async function executeUnmatchedFile(
     logger,
     source: isSourceFileContext(file) ? file.source : undefined,
   })) {
-    ctx.summary.skippedFiles++;
+    result.summary.skippedFiles++;
     versionSpan.addEvent("file.skipped", {
       "pipeline.id": ctx.pipeline.id,
       "pipeline.version": version,
@@ -326,8 +419,22 @@ async function executeUnmatchedFile(
     return;
   }
 
-  ctx.summary.fallbackFiles++;
-  await executeFallbackFile(ctx, versionContext, version, file);
+  result.summary.fallbackFiles++;
+  const fallbackResult = await executeFallbackFile(ctx, versionContext, version, file);
+  result.errors.push(...fallbackResult.errors);
+  if (!fallbackResult.success) {
+    return;
+  }
+
+  result.bufferedOutputs.push({
+    scope: "file",
+    version,
+    routeId: "__fallback__",
+    file,
+    values: fallbackResult.outputs,
+    definitions: DEFAULT_FALLBACK_OUTPUTS,
+    parentSpanContext: fallbackResult.parentSpanContext,
+  });
 }
 
 async function executeFallbackFile(
@@ -335,8 +442,8 @@ async function executeFallbackFile(
   versionContext: VersionContext,
   version: string,
   file: FileContext,
-): Promise<void> {
-  await ctx.runtime.startSpan("file.route", async (routeSpan) => {
+): Promise<RouteExecutionResult> {
+  return ctx.runtime.startSpan("file.route", async (routeSpan) => {
     const startPerf = performance.now();
     routeSpan.setAttributes({
       "pipeline.id": ctx.pipeline.id,
@@ -374,25 +481,30 @@ async function executeFallbackFile(
         filter: fallback.filter,
         resolver: fallback.resolver,
       });
-
-      const { entries, writeErrors } = await materializeOutputs({
-        outputs: ctx.outputs,
-        version,
+      routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
+      return {
+        success: true,
         routeId: "__fallback__",
         file,
-        values: outputs,
-        definitions: DEFAULT_FALLBACK_OUTPUTS,
-        runtime: ctx.runtime,
-        pipelineId: ctx.pipeline.id,
-      });
-      ctx.outputManifest.push(...entries);
-      pushWriteErrors(ctx, writeErrors, "file", file, version);
+        outputs,
+        cached: 0,
+        errors: [],
+        parentSpanContext: routeSpan.spanContext(),
+      };
     } catch (error) {
-      recordSpanError(ctx, routeSpan, error, "file", file, version);
+      const routeError = recordSpanError(routeSpan, error, "file", file, version);
+      routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
+      return {
+        success: false,
+        routeId: "__fallback__",
+        file,
+        outputs: [],
+        cached: 0,
+        errors: [routeError],
+        parentSpanContext: routeSpan.spanContext(),
+      };
     }
-
-    routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
-  });
+  }) as Promise<RouteExecutionResult>;
 }
 
 async function loadRouteResult(
@@ -400,7 +512,7 @@ async function loadRouteResult(
   route: AnyPipelineRouteDefinition,
   routeSpan: Span,
   routeCtx: ExecutionContext,
-): Promise<unknown[]> {
+): Promise<{ outputs: unknown[]; cached: boolean }> {
   const { cacheStore, source, useCache } = ctx;
   const { version, file, routeDataMap } = routeCtx;
   const routeCacheEnabled = useCache && route.cache !== false;
@@ -418,7 +530,6 @@ async function loadRouteResult(
     });
 
     if (cached.hit) {
-      ctx.summary.cached++;
       routeSpan.addEvent("cache.hit", {
         "pipeline.id": ctx.pipeline.id,
         "pipeline.version": version,
@@ -435,7 +546,10 @@ async function loadRouteResult(
     }
 
     if (cached.hit && cached.result) {
-      return cached.result.outputs;
+      return {
+        outputs: cached.result.outputs,
+        cached: true,
+      };
     }
   }
 
@@ -467,11 +581,11 @@ async function loadRouteResult(
     });
   }
 
-  return outputs;
+  return { outputs, cached: false };
 }
 
 function pushWriteErrors(
-  ctx: RunCtx,
+  errors: PipelineError[],
   writeErrors: { error: unknown }[],
   scope: "route" | "file",
   file: FileContext,
@@ -480,7 +594,7 @@ function pushWriteErrors(
 ): void {
   for (const { error } of writeErrors) {
     const message = error instanceof Error ? error.message : String(error);
-    ctx.errors.push({
+    errors.push({
       scope,
       message,
       error,
@@ -492,25 +606,49 @@ function pushWriteErrors(
 }
 
 function recordSpanError(
-  ctx: RunCtx,
   span: Span,
   error: unknown,
   scope: "route" | "file",
   file: FileContext,
   version: string,
   routeId?: string,
-): void {
+): PipelineError {
   const message = error instanceof Error ? error.message : String(error);
-  ctx.errors.push({
+  const pipelineError: PipelineError = {
     scope,
     message,
     error,
     file,
     ...(routeId != null && { routeId }),
     version,
-  });
+  };
   span.setStatus({ code: SpanStatusCode.ERROR, message });
   span.recordException(error instanceof Error ? error : new Error(message));
+  return pipelineError;
+}
+
+function createVersionExecutionResult(): VersionExecutionResult {
+  return {
+    summary: {
+      totalRoutes: 0,
+      cached: 0,
+      totalFiles: 0,
+      matchedFiles: 0,
+      skippedFiles: 0,
+      fallbackFiles: 0,
+    },
+    errors: [],
+    bufferedOutputs: [],
+  };
+}
+
+function mergeSummary(summary: PipelineSummary, versionSummary: VersionExecutionSummary): void {
+  summary.totalRoutes += versionSummary.totalRoutes;
+  summary.cached += versionSummary.cached;
+  summary.totalFiles += versionSummary.totalFiles;
+  summary.matchedFiles += versionSummary.matchedFiles;
+  summary.skippedFiles += versionSummary.skippedFiles;
+  summary.fallbackFiles += versionSummary.fallbackFiles;
 }
 
 function fileAttrs(file: FileContext): Record<string, string> {

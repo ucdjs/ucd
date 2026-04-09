@@ -1,5 +1,5 @@
 export interface ProcessingQueue {
-  add: (task: () => Promise<void>) => Promise<void>;
+  add: <T>(task: () => Promise<T>) => Promise<T>;
   drain: () => Promise<void>;
 }
 
@@ -34,9 +34,17 @@ export function createProcessingQueue(concurrency: number): ProcessingQueue {
   };
 
   return {
-    add: async (task) => {
-      queue.push(task);
-      void runNext();
+    add: (task) => {
+      return new Promise((resolve, reject) => {
+        queue.push(async () => {
+          try {
+            resolve(await task());
+          } catch (error) {
+            reject(error);
+          }
+        });
+        void runNext();
+      });
     },
     drain: () => {
       if (running === 0 && queue.length === 0) {

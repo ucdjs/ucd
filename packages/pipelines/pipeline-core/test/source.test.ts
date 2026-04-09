@@ -369,6 +369,35 @@ describe("resolveMultipleSourceFiles", () => {
     expect(result).toHaveLength(1);
     expect(result[0]?.source.id).toBe("third"); // Last one wins
   });
+
+  it("should resolve multiple sources in parallel while preserving source order", async () => {
+    const sharedPath = "shared/file.txt";
+    const slowBackend = createMockBackend([createFile({ path: sharedPath, dir: "shared", name: "file.txt" })]);
+    const fastBackend = createMockBackend([createFile({ path: sharedPath, dir: "shared", name: "file.txt" })]);
+    const slowEntries = [{ type: "file" as const, name: "file.txt", path: sharedPath }];
+    const fastEntries = [{ type: "file" as const, name: "file.txt", path: sharedPath }];
+    let slowResolved = false;
+
+    slowBackend.list = vi.fn().mockImplementation(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      slowResolved = true;
+      return slowEntries;
+    });
+    fastBackend.list = vi.fn().mockImplementation(async () => {
+      expect(slowResolved).toBe(false);
+      return fastEntries;
+    });
+
+    const slowSource = definePipelineSource({ id: "slow", backend: slowBackend });
+    const fastSource = definePipelineSource({ id: "fast", backend: fastBackend });
+
+    const result = await resolveMultipleSourceFiles([slowSource, fastSource], "16.0.0", sourceContext);
+
+    expect(slowBackend.list).toHaveBeenCalledTimes(1);
+    expect(fastBackend.list).toHaveBeenCalledTimes(1);
+    expect(result).toHaveLength(1);
+    expect(result[0]?.source.id).toBe("fast");
+  });
 });
 
 describe("type inference", () => {

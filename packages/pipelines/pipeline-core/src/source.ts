@@ -137,9 +137,11 @@ export async function resolveMultipleSourceFiles(
   context: ResolveSourceContext,
 ): Promise<SourceFileContext[]> {
   const filesByPath = new Map<string, SourceFileContext>();
+  const resolvedFiles = await Promise.all(
+    sources.map((source) => resolveSourceFiles(source, version, context)),
+  );
 
-  for (const source of sources) {
-    const files = await resolveSourceFiles(source, version, context);
+  for (const files of resolvedFiles) {
     for (const file of files) {
       filesByPath.set(file.path, file);
     }
