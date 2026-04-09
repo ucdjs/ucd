@@ -4,6 +4,7 @@
     "incremental": false,
     "tsBuildInfoFile": "./.cache/tsbuildinfo.dts.json",
     "rootDir": "./src",
+    "types": ["node", "vite/client"],
     "declaration": true,
     "emitDeclarationOnly": true,
     "noEmit": false,
