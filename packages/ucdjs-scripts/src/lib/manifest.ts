@@ -193,6 +193,8 @@ export async function generateManifests(
   } = options;
 
   const { client, endpoints } = await getClientContext(apiBaseUrl);
+  const allVersions = unwrap<UnicodeVersionList>(await client.versions.list());
+  const versionsByVersion = new Map(allVersions.map((version) => [version.version, version]));
 
   let versionsToProcess: Array<{ version: string }>;
 
@@ -200,7 +202,6 @@ export async function generateManifests(
     versionsToProcess = inputVersions.map((v) => ({ version: v }));
   } else {
     logger.info(`Fetching versions from ${apiBaseUrl}...`);
-    const allVersions = unwrap<UnicodeVersionList>(await client.versions.list());
     versionsToProcess = allVersions.map((v) => ({ version: v.version }));
     logger.info(`Found ${versionsToProcess.length} versions to process`);
   }
@@ -234,6 +235,7 @@ export async function generateManifests(
         const manifest = { expectedFiles };
         return {
           version,
+          date: versionsByVersion.get(version)?.date ?? null,
           manifest,
           snapshot,
           fileCount: expectedFiles.length,

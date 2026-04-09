@@ -60,6 +60,7 @@ TASKS_ROUTER.post("/upload-manifest", bodyLimit({
 
   // Get version from query parameter
   const version = c.req.query("version");
+  const date = c.req.query("date");
   if (!version) {
     return badRequest(c, { message: "Missing 'version' query parameter" });
   }
@@ -95,6 +96,7 @@ TASKS_ROUTER.post("/upload-manifest", bodyLimit({
       id: workflowId,
       params: {
         version,
+        date: date ?? null,
         r2Key,
       },
     });
