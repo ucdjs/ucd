@@ -7,6 +7,7 @@ export async function uploadManifest(
   tar: Uint8Array,
   version: string,
   date: string | null,
+  status: string,
   options: UploadOptions,
 ): Promise<TaskUploadQueuedResult> {
   const { baseUrl, taskKey } = options;
@@ -15,6 +16,7 @@ export async function uploadManifest(
   if (date != null) {
     url.searchParams.set("date", date);
   }
+  url.searchParams.set("status", status);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/x-tar",

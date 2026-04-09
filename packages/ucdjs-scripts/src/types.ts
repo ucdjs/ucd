@@ -1,5 +1,7 @@
 import type { ExpectedFile, Snapshot } from "@ucdjs/schemas";
 
+export type UnicodeVersionStatus = "stable" | "draft" | "unsupported";
+
 export interface GlobalOptions {
   logLevel?: string;
 }
@@ -22,11 +24,14 @@ export interface UnicodeVersion {
   version: string;
   date?: string | null;
   mappedUcdVersion?: string;
+  status?: UnicodeVersionStatus;
+  type?: UnicodeVersionStatus;
 }
 
 export interface GeneratedManifest {
   version: string;
   date: string | null;
+  status: UnicodeVersionStatus;
   manifest: { expectedFiles: ExpectedFile[] };
   snapshot: Snapshot;
   fileCount: number;
@@ -44,7 +49,7 @@ export interface UploadResult {
   uploaded: number;
   skipped: number;
   errors: Array<{ version: string; reason: string }>;
-  versions: Array<{ version: string; date: string | null; fileCount: number }>;
+  versions: Array<{ version: string; date: string | null; status: UnicodeVersionStatus; fileCount: number }>;
 }
 
 export interface TaskUploadQueuedResult {

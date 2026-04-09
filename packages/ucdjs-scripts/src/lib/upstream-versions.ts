@@ -70,6 +70,7 @@ export async function getUpstreamVersions(): Promise<UnicodeVersion[]> {
         version,
         date: dateMatch[1]!,
         mappedUcdVersion: mappedUcdVersion === version ? undefined : mappedUcdVersion,
+        status: draft === version ? "draft" : "stable",
       });
     }
 
@@ -79,6 +80,7 @@ export async function getUpstreamVersions(): Promise<UnicodeVersion[]> {
         version: draft,
         date: null,
         mappedUcdVersion: mappedUcdVersion === draft ? undefined : mappedUcdVersion,
+        status: "draft",
       });
     }
 

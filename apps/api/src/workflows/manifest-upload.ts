@@ -11,12 +11,13 @@ const LEADING_DOT_SLASH_RE = /^\.\//;
 interface ManifestUploadParams {
   version: string;
   date: string | null;
+  status: "stable" | "draft" | "unsupported";
   r2Key: string;
 }
 
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
   async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep) {
-    const { version, date, r2Key } = event.payload;
+    const { version, date, status, r2Key } = event.payload;
     const startTime = Date.now();
 
     const files = await step.do("extract-tar", async () => {
@@ -134,7 +135,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
           date,
           url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
           mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
-          status: "stable",
+          status,
           manifestPath: `${version}/manifest.json`,
           snapshotPath: snapshot ? `${version}/snapshot.json` : null,
           fileCount: files.length,
@@ -154,7 +155,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
             date,
             url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
             mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
-            status: "stable",
+            status,
             manifestPath: `${version}/manifest.json`,
             snapshotPath: snapshot ? `${version}/snapshot.json` : null,
             fileCount: files.length,
