@@ -1,4 +1,4 @@
-import { createDb } from "#db/index";
+import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -18,7 +18,7 @@ describe("v1_versions", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions", () => {
     it("returns supported versions from D1", async () => {
-      const db = createDb(env.UCD_DATA);
+      const db = createDatabase(env.UCD_DATA);
       const now = new Date();
 
       await db.insert(versions).values([

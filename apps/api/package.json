@@ -4,7 +4,8 @@
   "private": true,
   "packageManager": "pnpm@10.33.0",
   "imports": {
-    "#db/*": "./src/db/*.ts",
+    "#db": "./src/db/index.ts",
+    "#db/schema": "./src/db/schema.ts",
     "#lib/*": "./src/lib/*.ts",
     "#types": "./src/types.ts"
   },

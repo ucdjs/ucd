@@ -1,5 +1,5 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
-import { createDb } from "#db/index";
+import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
 import { resolveUCDVersion } from "@unicode-utils/core";
@@ -116,7 +116,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       // eslint-disable-next-line no-console
       console.log(`[manifest-upload]: Validated ${files.length} files in R2 for version ${version}`);
 
-      const db = createDb(this.env.UCD_DATA);
+      const db = createDatabase(this.env.UCD_DATA);
       const now = new Date();
       const [major = 0, minor = 0, patch = 0] = version.split(".").map((part) => Number.parseInt(part, 10) || 0);
       const mappedUcdVersion = resolveUCDVersion(version);

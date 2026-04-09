@@ -2,7 +2,7 @@
 
 import type { UnicodeFileTree, UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { Entry } from "apache-autoindex-parse";
-import { createDb } from "#db/index";
+import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
@@ -31,7 +31,7 @@ describe("v1_versions", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions/{version}", () => {
     it("returns a supported version from D1", async () => {
-      const db = createDb(env.UCD_DATA);
+      const db = createDatabase(env.UCD_DATA);
       const now = new Date();
 
       await db.insert(versions).values({
