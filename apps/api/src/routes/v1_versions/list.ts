@@ -1,6 +1,6 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import { createDb } from "#db/index";
+import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { createLogger } from "#lib/logger";
 import { createRoute } from "@hono/zod-openapi";
@@ -82,7 +82,7 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 
 export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
-    const db = createDb(c.env.UCD_DATA);
+    const db = createDatabase(c.env.UCD_DATA);
     const supportedVersions = await db
       .select({
         version: versions.version,

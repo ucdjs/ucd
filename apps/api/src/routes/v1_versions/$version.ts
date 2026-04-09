@@ -1,7 +1,7 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
-import { createDb } from "#db/index";
+import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { VERSION_ROUTE_PARAM } from "#lib/shared-parameters";
 import {
@@ -247,7 +247,7 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
       });
     }
 
-    const db = createDb(c.env.UCD_DATA);
+    const db = createDatabase(c.env.UCD_DATA);
     const [row] = await db
       .select({
         version: versions.version,
