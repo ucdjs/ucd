@@ -1,3 +1,4 @@
+import type { SpanContext } from "@opentelemetry/api";
 import type {
   FileContext,
   NormalizedRouteOutputDefinition,
@@ -6,7 +7,6 @@ import type {
 import type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
 import type { PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
 import type { PipelineExecutionRuntime } from "../runtime";
-import { trace } from "@opentelemetry/api";
 import {
   getOutputProperty,
   resolveOutputDestination,
@@ -46,6 +46,12 @@ export interface MaterializeOutputsResult {
   writeErrors: Array<{ error: unknown; outputId: string; routeId: string }>;
 }
 
+interface OutputLocatorReservation {
+  version: string;
+  routeId: string;
+  outputId: string;
+}
+
 export async function materializeOutputs(options: {
   outputs: unknown[];
   version: string;
@@ -55,28 +61,28 @@ export async function materializeOutputs(options: {
   definitions: readonly NormalizedRouteOutputDefinition[];
   runtime: PipelineExecutionRuntime;
   pipelineId: string;
+  locatorRegistry?: Map<string, OutputLocatorReservation>;
+  parentSpanContext: SpanContext;
 }): Promise<MaterializeOutputsResult> {
-  const { outputs, version, routeId, file, values, definitions, runtime, pipelineId } = options;
+  const {
+    outputs,
+    version,
+    routeId,
+    file,
+    values,
+    definitions,
+    runtime,
+    pipelineId,
+    locatorRegistry,
+    parentSpanContext,
+  } = options;
   const manifestEntries: PipelineOutputManifestEntry[] = [];
   const writeErrors: MaterializeOutputsResult["writeErrors"] = [];
-
-  // Capture the active file.route span to add output.produced events
-  const fileRouteSpan = trace.getActiveSpan();
 
   for (const output of values) {
     const outputIndex = outputs.length;
     const property = getOutputProperty(output);
     outputs.push(output);
-
-    fileRouteSpan?.addEvent("output.produced", {
-      "pipeline.id": pipelineId,
-      "pipeline.version": version,
-      "route.id": routeId,
-      "file.path": file.path,
-      "file.name": file.name,
-      "output.index": outputIndex,
-      "output.property": property ?? "",
-    });
 
     for (const definition of definitions) {
       const destination: ResolvedOutputDestination = resolveOutputDestination(
@@ -108,6 +114,30 @@ export async function materializeOutputs(options: {
         });
 
         try {
+          outputSpan.addEvent("output.produced", {
+            "pipeline.id": pipelineId,
+            "pipeline.version": version,
+            "route.id": routeId,
+            "file.path": file.path,
+            "file.name": file.name,
+            "file.dir": file.dir,
+            "file.ext": file.ext,
+            "file.version": file.version,
+            "output.index": outputIndex,
+            "output.property": property ?? "",
+          });
+
+          if (sink !== "memory" && locatorRegistry) {
+            const collision = locatorRegistry.get(locator);
+            if (collision) {
+              throw new Error(
+                `Output locator collision for "${locator}" between ${collision.version}/${collision.routeId}/${collision.outputId} and ${version}/${routeId}/${outputId}.`,
+              );
+            }
+
+            locatorRegistry.set(locator, { version, routeId, outputId });
+          }
+
           await writeOutputToSink(definition.sink, destination.locator, output, definition.format, runtime);
           outputSpan.setAttribute("output.status", "written");
           outputSpan.addEvent("output.written", {
@@ -139,6 +169,10 @@ export async function materializeOutputs(options: {
             status: "written",
           });
         } catch (error) {
+          if (sink !== "memory" && locatorRegistry.get(locator)?.version === version && locatorRegistry.get(locator)?.routeId === routeId && locatorRegistry.get(locator)?.outputId === outputId) {
+            locatorRegistry.delete(locator);
+          }
+
           const errorMessage = error instanceof Error ? error.message : String(error);
           outputSpan.setAttribute("output.status", "failed");
           outputSpan.addEvent("output.written", {
@@ -173,7 +207,7 @@ export async function materializeOutputs(options: {
           });
           writeErrors.push({ error, outputId, routeId });
         }
-      });
+      }, { parentSpanContext });
     }
   }
 

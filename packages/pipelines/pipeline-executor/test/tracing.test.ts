@@ -364,6 +364,34 @@ describe("tracing", () => {
     expect(versions).toContain("16.0.0");
   });
 
+  it("parents output spans under the route span", async () => {
+    const pipeline = definePipeline({
+      id: "output-parent",
+      name: "Output Parent",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("Scripts.txt")], {
+        "ucd/Scripts.txt": "0041;Latin",
+      })],
+      routes: [
+        definePipelineRoute({
+          id: "scripts",
+          filter: byName("Scripts.txt"),
+          parser: mockParser,
+          resolver: async () => [{ version: "16.0.0", property: "Script", entries: [] }],
+          outputs: [{ id: "json", path: "script.json" }],
+        }),
+      ],
+    });
+
+    await createPipelineExecutor({ runtime: createNodeExecutionRuntime() }).run([pipeline]);
+
+    const routeSpan = otel.exporter.getFinishedSpans().find((s) => s.name === "file.route");
+    const outputSpan = otel.exporter.getFinishedSpans().find((s) => s.name === "output");
+    expect(routeSpan).toBeDefined();
+    expect(outputSpan).toBeDefined();
+    expect(outputSpan?.parentSpanContext?.spanId).toBe(routeSpan?.spanContext().spanId);
+  });
+
   it("sets ERROR status and records exception event when route throws", async () => {
     const pipeline = definePipeline({
       id: "error-span",

@@ -5,13 +5,14 @@ import type {
   PipelineExecutionLogInput,
   PipelineExecutionRuntime,
   RuntimeExecutionContext,
+  StartSpanOptions,
 } from "./index";
 import { AsyncLocalStorage } from "node:async_hooks";
 import { Buffer } from "node:buffer";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { trace } from "@opentelemetry/api";
-import { runSpan } from "./index";
+import { createParentContext, runSpan } from "./index";
 
 interface LoggerRuntimeContext {
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
@@ -72,14 +73,15 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     this.#tracer = options.tracer ?? trace.getTracer("pipeline-executor");
   }
 
-  startSpan<T>(name: string, fn: (span: Span) => T | Promise<T>): T | Promise<T> {
+  startSpan<T>(name: string, fn: (span: Span) => T | Promise<T>, options?: StartSpanOptions): T | Promise<T> {
+    const parentContext = createParentContext(options?.parentSpanContext);
     const app = this.#appStorage.getStore();
     if (!app) {
       // No execution context - use noop tracer so the callback still fires
-      return trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => runSpan(span, fn));
+      return trace.getTracer("pipeline-noop").startActiveSpan(name, undefined, parentContext, (span) => runSpan(span, fn));
     }
 
-    return this.#tracer.startActiveSpan(name, (span) => runSpan(span, fn, { recordErrors: true }));
+    return this.#tracer.startActiveSpan(name, undefined, parentContext, (span) => runSpan(span, fn, { recordErrors: true }));
   }
 
   getExecutionContext(): RuntimeExecutionContext | undefined {

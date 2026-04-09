@@ -1,6 +1,9 @@
 import type { FileContext } from "@ucdjs/pipeline-core";
 import type { PipelineExecutionResult, PipelineExecutor } from "../src";
 import type { PipelineSummary } from "../src/types";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { EXECUTION_STATUSES } from "../src";
@@ -121,6 +124,99 @@ describe("executor.run", () => {
     const pipelineResult = result.find((item) => item.id === "test-pipeline")!;
 
     expect(pipelineResult.summary.versions).toEqual(["16.0.0"]);
+  });
+
+  it("should execute versions concurrently and merge outputs in declared version order", async () => {
+    let releaseFirstVersion: (() => void) | undefined;
+    const startedVersions = new Set<string>();
+
+    const multiVersionPipeline = definePipeline({
+      id: "parallel-versions",
+      name: "Parallel Versions",
+      versions: ["15.0.0", "16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], contents)],
+      routes: [
+        definePipelineRoute({
+          id: "line-break",
+          filter: (ctx) => ctx.file.name === "LineBreak.txt",
+          parser: mockParser,
+          resolver: async (ctx, rows) => {
+            startedVersions.add(ctx.version);
+            if (ctx.version === "15.0.0") {
+              await new Promise<void>((resolve) => {
+                releaseFirstVersion = resolve;
+              });
+            }
+
+            for await (const _row of rows) {
+              // consume
+            }
+
+            return [{ version: ctx.version }];
+          },
+        }),
+      ],
+    });
+
+    const pending = executor.run([multiVersionPipeline]);
+    for (let i = 0; i < 20 && startedVersions.size < 2; i++) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    expect(startedVersions).toEqual(new Set(["15.0.0", "16.0.0"]));
+
+    releaseFirstVersion!();
+    const [result] = await pending;
+
+    expect(result?.data).toEqual([
+      { version: "15.0.0" },
+      { version: "16.0.0" },
+    ]);
+  });
+
+  it("should fail deterministic output collisions across versions", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "ucd-executor-collision-"));
+
+    try {
+      const collisionPipeline = definePipeline({
+        id: "collision",
+        name: "Collision",
+        versions: ["15.0.0", "16.0.0"],
+        inputs: [createTestSource([createMockFile("LineBreak.txt")], contents)],
+        routes: [
+          definePipelineRoute({
+            id: "line-break",
+            filter: (ctx) => ctx.file.name === "LineBreak.txt",
+            parser: mockParser,
+            resolver: async (ctx, rows) => {
+              for await (const _row of rows) {
+                // consume
+              }
+
+              return [{ version: ctx.version, property: "Line_Break", entries: [] }];
+            },
+            outputs: [{
+              id: "json",
+              sink: { type: "filesystem", baseDir: dir },
+              path: "shared.json",
+            }],
+          }),
+        ],
+      });
+
+      const [result] = await createPipelineExecutor({
+        runtime: createNodeExecutionRuntime(),
+      }).run([collisionPipeline]);
+
+      expect(result?.status).toBe("failed");
+      expect(result?.outputManifest).toEqual([
+        expect.objectContaining({ version: "15.0.0", status: "written" }),
+        expect.objectContaining({ version: "16.0.0", status: "failed" }),
+      ]);
+      expect(result?.errors.some((error) => error.message.includes("Output locator collision"))).toBe(true);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });
 

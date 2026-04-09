@@ -1,11 +1,11 @@
-import type { Span } from "@opentelemetry/api";
+import type { Span, SpanContext } from "@opentelemetry/api";
 import type { PipelineLogger } from "@ucdjs/pipeline-core";
 import type {
   PipelineLogEntry,
   PipelineLogLevel,
   PipelineLogSource,
 } from "../types";
-import { SpanStatusCode, trace } from "@opentelemetry/api";
+import { context, SpanStatusCode, trace } from "@opentelemetry/api";
 
 export interface RuntimeExecutionContext {
   executionId: string;
@@ -21,8 +21,12 @@ export interface PipelineExecutionLogInput {
   meta?: Record<string, unknown>;
 }
 
+export interface StartSpanOptions {
+  parentSpanContext?: SpanContext;
+}
+
 export interface PipelineExecutionRuntime {
-  startSpan: <T>(name: string, fn: (span: Span) => T | Promise<T>) => T | Promise<T>;
+  startSpan: <T>(name: string, fn: (span: Span) => T | Promise<T>, options?: StartSpanOptions) => T | Promise<T>;
   getExecutionContext: () => RuntimeExecutionContext | undefined;
   runWithExecutionContext: <T>(
     context: RuntimeExecutionContext,
@@ -100,9 +104,22 @@ export function createPipelineLogger(runtime: PipelineExecutionRuntime): Pipelin
 // eslint-disable-next-line ts/explicit-function-return-type
 function noopStop() {}
 
+export function createParentContext(parentSpanContext?: SpanContext): ReturnType<typeof context.active> {
+  if (!parentSpanContext) {
+    return context.active();
+  }
+
+  return trace.setSpan(context.active(), trace.wrapSpanContext(parentSpanContext));
+}
+
 export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
   return {
-    startSpan: (name, fn) => trace.getTracer("pipeline-noop").startActiveSpan(name, (span) => runSpan(span, fn)),
+    startSpan: (name, fn, options) => trace.getTracer("pipeline-noop").startActiveSpan(
+      name,
+      undefined,
+      createParentContext(options?.parentSpanContext),
+      (span) => runSpan(span, fn),
+    ),
     getExecutionContext: () => undefined,
     runWithExecutionContext: (_context, fn) => fn(),
     runWithLogHandler: (_onLog, fn) => fn(),
