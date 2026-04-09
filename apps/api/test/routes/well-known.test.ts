@@ -1,7 +1,8 @@
+import { createDatabase } from "#db";
+import { versions } from "#db/schema";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { env } from "cloudflare:workers";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";
 import {
   expectApiError,
@@ -10,48 +11,47 @@ import {
   expectSuccess,
 } from "../helpers/response";
 
-vi.mock("@unicode-utils/core", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@unicode-utils/core")>();
-
-  return {
-    ...original,
-    getCurrentDraftVersion: vi.fn((...args) => original.getCurrentDraftVersion(...args)),
-    resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
-  };
-});
-
-afterEach(() => {
-  vi.resetAllMocks();
+beforeEach(async () => {
+  await env.UCD_DATA.exec("DROP TABLE IF EXISTS versions");
+  await env.UCD_DATA.exec("CREATE TABLE versions (version TEXT PRIMARY KEY NOT NULL, major INTEGER NOT NULL, minor INTEGER NOT NULL, patch INTEGER NOT NULL, documentation_url TEXT NOT NULL, date TEXT, url TEXT NOT NULL, mapped_ucd_version TEXT, status TEXT NOT NULL, manifest_path TEXT, snapshot_path TEXT, file_count INTEGER, total_size INTEGER, published_at INTEGER, indexed_at INTEGER NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);");
 });
 
 describe("well-known", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /ucd-config.json", () => {
-    const mockHtmlResponse = `
-      <html>
-        <body>
-          <table>
-            <tr>
-              <td><a href="https://www.unicode.org/versions/Unicode16.0.0/">Unicode 16.0.0</a></td>
-              <td>2024</td>
-            </tr>
-            <tr>
-              <td><a href="https://www.unicode.org/versions/Unicode15.1.0/">Unicode 15.1.0</a></td>
-              <td>2023</td>
-            </tr>
-          </table>
-        </body>
-      </html>
-    `;
-
     it("should return UCD config successfully with versions array", async () => {
-      mockFetch([
-        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
-          return HttpResponse.text(mockHtmlResponse);
-        }],
-        ["GET", "https://unicode.org/Public/draft/ReadMe.txt", () => {
-          return HttpResponse.text("");
-        }],
+      const db = createDatabase(env.UCD_DATA);
+      const now = new Date();
+
+      await db.insert(versions).values([
+        {
+          version: "16.0.0",
+          major: 16,
+          minor: 0,
+          patch: 0,
+          documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+          date: "2024",
+          url: "https://www.unicode.org/Public/16.0.0",
+          mappedUcdVersion: null,
+          status: "stable",
+          indexedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
+        {
+          version: "15.1.0",
+          major: 15,
+          minor: 1,
+          patch: 0,
+          documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+          date: "2023",
+          url: "https://www.unicode.org/Public/15.1.0",
+          mappedUcdVersion: null,
+          status: "stable",
+          indexedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        },
       ]);
 
       const { response, json } = await executeRequest(

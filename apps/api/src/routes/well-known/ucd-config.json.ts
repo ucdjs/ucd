@@ -1,16 +1,18 @@
 import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { createDatabase } from "#db";
+import { versions } from "#db/schema";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { badGateway, MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
+import { MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
+import { desc } from "drizzle-orm";
 import { cache } from "hono/cache";
 import {
   V1_FILES_ROUTER_BASE_PATH,
   V1_VERSIONS_ROUTER_BASE_PATH,
 } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { getAllVersionsFromList } from "../v1_versions/utils";
 
 const UCD_CONFIG_ROUTE = createRoute({
   method: "get",
@@ -55,23 +57,20 @@ const UCD_CONFIG_ROUTE = createRoute({
       description: "Retrieves the UCD configuration",
     },
     ...(generateReferences([
-      502,
+      500,
     ])),
   },
 });
 
 export function registerUcdConfigRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(UCD_CONFIG_ROUTE, async (c) => {
-    // Fetch versions list to include in config
-    const [versions, err] = await getAllVersionsFromList();
-    if (err) {
-      return badGateway(c, {
-        message: "Failed to fetch Unicode versions from upstream service",
-      });
-    }
-
-    // Extract just the version strings
-    const versionStrings = versions?.map((v) => v.version) ?? [];
+    const db = createDatabase(c.env.UCD_DATA);
+    const supportedVersions = await db
+      .select({
+        version: versions.version,
+      })
+      .from(versions)
+      .orderBy(desc(versions.major), desc(versions.minor), desc(versions.patch));
 
     return c.json({
       version: "0.1",
@@ -80,7 +79,7 @@ export function registerUcdConfigRoute(router: OpenAPIHono<HonoEnv>) {
         manifest: `${V1_VERSIONS_ROUTER_BASE_PATH}/{version}/manifest`,
         versions: V1_VERSIONS_ROUTER_BASE_PATH,
       },
-      versions: versionStrings,
+      versions: supportedVersions.map((version) => version.version),
     }, 200);
   });
 }

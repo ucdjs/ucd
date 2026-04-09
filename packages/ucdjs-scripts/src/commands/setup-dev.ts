@@ -3,6 +3,7 @@ import path from "node:path";
 import { createLogger } from "#lib/logger";
 import { createManifestTar, generateManifests } from "#lib/manifest";
 import { uploadManifest, waitForUploadCompletion } from "#lib/upload";
+import { getUpstreamVersions } from "#lib/upstream-versions";
 import { getMonorepoRoot, parseVersions } from "#lib/utils";
 import { unstable_startWorker } from "wrangler";
 
@@ -40,9 +41,16 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
   });
 
   try {
+    const upstreamVersions = await getUpstreamVersions();
+
+    if (upstreamVersions.length === 0) {
+      throw new Error("No upstream versions found - cannot proceed with setup");
+    }
+
     // Generate manifests
     const manifests = await generateManifests({
       versions,
+      upstreamVersions,
       batchSize,
     });
 
