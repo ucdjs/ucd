@@ -10,7 +10,7 @@
     "#types": "./src/types.ts"
   },
   "scripts": {
-    "dev:setup": "pnpm ucdjs-scripts setup-dev",
+    "dev:setup": "pnpm db:apply:local && pnpm ucdjs-scripts setup-dev",
     "dev": "wrangler dev --port 8787 --inspector-port 9229",
     "build": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json --env=production",
     "build:preview": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json --env=preview",
@@ -23,10 +23,14 @@
     "generate:types": "wrangler types ./wrangler-types.d.ts",
     "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "drizzle-kit generate && node ./scripts/prepare-d1-migrations.ts",
     "db:push": "drizzle-kit push",
     "db:migrate": "drizzle-kit migrate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:prepare": "node ./scripts/prepare-d1-migrations.ts",
+    "db:apply:local": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --local",
+    "db:apply:preview": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env preview",
+    "db:apply:production": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env production"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:backend",
