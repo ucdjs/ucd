@@ -211,6 +211,18 @@ function NodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
     );
   }
 
+  if (!node.loadChildren) {
+    return (
+      <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+        No matches
+      </div>
+    );
+  }
+
+  return <QueriedNodeChildren node={node} depth={depth} />;
+}
+
+function QueriedNodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
   const directoryPath = node.loadChildren === "version-root" ? node.version : node.path;
   const directoryQuery = useQuery({
     ...filesQueryOptions({
@@ -223,14 +235,6 @@ function NodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
     ...versionFileTreeQueryOptions(node.version || ""),
     enabled: node.loadChildren === "version-file-tree" && !!node.version,
   });
-
-  if (!node.loadChildren) {
-    return (
-      <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
-        No matches
-      </div>
-    );
-  }
 
   if (directoryQuery.isLoading || versionTreeQuery.isLoading) {
     return (
