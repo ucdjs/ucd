@@ -188,13 +188,13 @@ export async function generateManifests(
 ): Promise<GeneratedManifest[]> {
   const {
     versions: inputVersions,
+    upstreamVersions,
     apiBaseUrl = "https://api.ucdjs.dev",
     batchSize = 5,
   } = options;
 
   const { client, endpoints } = await getClientContext(apiBaseUrl);
-  const allVersions = unwrap<UnicodeVersionList>(await client.versions.list());
-  const versionsByVersion = new Map(allVersions.map((version) => [version.version, version]));
+  const versionsByVersion = new Map((upstreamVersions ?? []).map((version) => [version.version, version]));
 
   let versionsToProcess: Array<{ version: string }>;
 
@@ -202,7 +202,7 @@ export async function generateManifests(
     versionsToProcess = inputVersions.map((v) => ({ version: v }));
   } else {
     logger.info(`Fetching versions from ${apiBaseUrl}...`);
-    versionsToProcess = allVersions.map((v) => ({ version: v.version }));
+    versionsToProcess = (upstreamVersions ?? []).map((v) => ({ version: v.version }));
     logger.info(`Found ${versionsToProcess.length} versions to process`);
   }
 

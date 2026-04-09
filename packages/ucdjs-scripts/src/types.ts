@@ -34,6 +34,7 @@ export interface GeneratedManifest {
 
 export interface GenerateManifestsOptions {
   versions?: string[];
+  upstreamVersions?: UnicodeVersion[];
   apiBaseUrl?: string;
   batchSize?: number;
 }
