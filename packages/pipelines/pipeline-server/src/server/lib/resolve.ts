@@ -7,6 +7,8 @@ import {
 import { discoverPipelineFiles } from "@ucdjs/pipeline-loader/discover";
 import { fileIdFromPath, fileLabelFromPath } from "./ids";
 
+const sourceIssueLogState = new Map<string, string>();
+
 function resolveDiscoveredFile(filePath: string, relativePath: string) {
   return {
     id: fileIdFromPath(relativePath),
@@ -14,6 +16,39 @@ function resolveDiscoveredFile(filePath: string, relativePath: string) {
     relativePath,
     filePath,
   };
+}
+
+function reportSourceIssues(source: PipelineSource, issues: PipelineLoaderIssue[]) {
+  const fingerprint = issues
+    .map((issue) => JSON.stringify({
+      code: issue.code,
+      filePath: issue.filePath ?? null,
+      message: issue.message,
+      relativePath: issue.relativePath ?? null,
+      scope: issue.scope,
+    }))
+    .sort()
+    .join("\n");
+
+  if (issues.length === 0) {
+    sourceIssueLogState.delete(source.id);
+    return;
+  }
+
+  if (sourceIssueLogState.get(source.id) === fingerprint) {
+    return;
+  }
+
+  sourceIssueLogState.set(source.id, fingerprint);
+  console.warn(`[source] "${source.id}" resolved with ${issues.length} issue${issues.length === 1 ? "" : "s"}`);
+  for (const issue of issues) {
+    const target = issue.relativePath ?? issue.filePath ?? issue.repositoryPath ?? source.id;
+    console.warn(`[source] [${issue.code}] (${issue.scope}) ${target}: ${issue.message}`);
+  }
+}
+
+export function resetSourceIssueLogStateForTest() {
+  sourceIssueLogState.clear();
 }
 
 export async function discoverSourceFiles(source: PipelineSource) {
@@ -67,6 +102,7 @@ export async function resolveSourceFiles(source: PipelineSource) {
   const filePaths = discovery.files.map((file) => file.filePath);
 
   if (filePaths.length === 0) {
+    reportSourceIssues(source, discovery.issues);
     return { files: [], issues: discovery.issues };
   }
 
@@ -82,8 +118,11 @@ export async function resolveSourceFiles(source: PipelineSource) {
     };
   });
 
-  return {
+  const resolved = {
     files,
     issues: [...discovery.issues, ...result.issues],
   };
+  reportSourceIssues(source, resolved.issues);
+
+  return resolved;
 }

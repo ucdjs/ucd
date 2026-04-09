@@ -1,6 +1,6 @@
 import type { PipelineSource } from "#server/app";
-import { discoverSourceFiles, resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
-import { describe, expect, it } from "vitest";
+import { discoverSourceFiles, resetSourceIssueLogStateForTest, resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
 const tsconfigTestdirFile = {
@@ -187,6 +187,15 @@ describe("discoverSourceFiles", () => {
 });
 
 describe("resolveSourceFiles", () => {
+  beforeEach(() => {
+    resetSourceIssueLogStateForTest();
+  });
+
+  afterEach(() => {
+    resetSourceIssueLogStateForTest();
+    vi.restoreAllMocks();
+  });
+
   it("discovers pipeline files in a local directory", async () => {
     const dir = await testdir({
       ...tsconfigTestdirFile,
@@ -317,5 +326,30 @@ describe("resolveSourceFiles", () => {
     expect(result.files.find((file) => file.id === "good")!.pipelines).toHaveLength(1);
     expect(result.files.find((file) => file.id === "bad")!.pipelines).toEqual([]);
     expect(result.issues.length).toBeGreaterThan(0);
+  });
+
+  it("logs source issues to the pipeline-server logs and dedupes repeated output", async () => {
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const dir = await testdir({
+      ...tsconfigTestdirFile,
+      "bad.ucd-pipeline.ts": "export const broken = {",
+    });
+    const source = {
+      kind: "local",
+      id: "broken-source",
+      path: dir,
+    } satisfies PipelineSource;
+
+    const first = await resolveSourceFiles(source);
+    expect(first.issues.length).toBeGreaterThan(0);
+    expect(warnSpy).toHaveBeenCalled();
+    expect(warnSpy.mock.calls[0]?.[0]).toContain("resolved with 1 issue");
+    expect(warnSpy.mock.calls[1]?.[0]).toContain("[BUNDLE_TRANSFORM_FAILED]");
+
+    warnSpy.mockClear();
+
+    const second = await resolveSourceFiles(source);
+    expect(second.issues.length).toBeGreaterThan(0);
+    expect(warnSpy).not.toHaveBeenCalled();
   });
 });
