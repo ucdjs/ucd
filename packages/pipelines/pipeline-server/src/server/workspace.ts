@@ -116,12 +116,22 @@ export function resolvePipelineSources(sources: PipelineSource[] = []): Pipeline
   }
 
   const cwd = process.cwd();
-  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-    return [{
+  if (process.env.NODE_ENV === "development" || import.meta.env.DEV) {
+    const sources: PipelineSource[] = [{
       kind: "local",
       id: "local",
       path: path.join(import.meta.dirname, "../../../pipeline-playground"),
     }];
+
+    if (import.meta.env.UCD_PIPELINES_DEV) {
+      sources.push({
+        kind: "local",
+        id: "ucd-pipelines",
+        path: path.join(import.meta.dirname, "../../../pipeline-playground"),
+      });
+    }
+
+    return sources;
   }
 
   return [{
