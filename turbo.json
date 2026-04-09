@@ -10,7 +10,7 @@
     "NODE_ENV",
     "CI",
     "CLOUDFLARE_ENV",
-    "UCD_PIPELINES_DEV",
+    "VITE_UCD_PIPELINES_DEV",
   ],
   "tasks": {
     "topo": {
