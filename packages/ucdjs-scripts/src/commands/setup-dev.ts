@@ -9,7 +9,17 @@ import { unstable_startWorker } from "wrangler";
 const logger = createLogger("setup-dev");
 
 // Default versions to seed in local development
-const DEV_VERSIONS = ["17.0.0", "16.0.0", "15.1.0", "15.0.0", "4.1.0", "4.0.0"];
+const DEV_VERSIONS = [
+  "18.0.0",
+  "17.0.0",
+  "16.0.0",
+  "15.1.0",
+  "15.0.0",
+  "4.1.0",
+  "4.0.0",
+  "3.0.0",
+  "1.0.1",
+];
 
 export async function setupDev(options: SetupDevOptions): Promise<void> {
   const versions = parseVersions(options.versions) ?? DEV_VERSIONS;

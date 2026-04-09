@@ -42,6 +42,7 @@ ucd-generated
 .vite-node
 **/.generated
 **/.source/*
+.d1-migrations
 .output
 .tanstack
 .vite-inspect
