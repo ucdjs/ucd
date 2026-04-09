@@ -123,11 +123,11 @@ export function resolvePipelineSources(sources: PipelineSource[] = []): Pipeline
       path: path.join(import.meta.dirname, "../../../pipeline-playground"),
     }];
 
-    if (import.meta.env.UCD_PIPELINES_DEV) {
+    if (import.meta.env.VITE_UCD_PIPELINES_DEV) {
       sources.push({
         kind: "local",
         id: "ucd-pipelines",
-        path: path.join(import.meta.dirname, "../../../pipeline-playground"),
+        path: path.join(import.meta.dirname, "../../../../../../ucd-pipelines"),
       });
     }
 
