@@ -1,5 +1,8 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { createDb } from "#db/index";
+import { versions } from "#db/schema";
 import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
+import { resolveUCDVersion } from "@unicode-utils/core";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { parseTar } from "nanotar";
 
@@ -112,6 +115,55 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
 
       // eslint-disable-next-line no-console
       console.log(`[manifest-upload]: Validated ${files.length} files in R2 for version ${version}`);
+
+      const db = createDb(this.env.UCD_DATA);
+      const now = new Date();
+      const [major = 0, minor = 0, patch = 0] = version.split(".").map((part) => Number.parseInt(part, 10) || 0);
+      const mappedUcdVersion = resolveUCDVersion(version);
+      const snapshot = files.find((file) => file.name === `${version}/snapshot.json` || file.name === "snapshot.json");
+
+      await db
+        .insert(versions)
+        .values({
+          version,
+          major,
+          minor,
+          patch,
+          documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
+          date: null,
+          url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
+          mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
+          status: "stable",
+          manifestPath: `${version}/manifest.json`,
+          snapshotPath: snapshot ? `${version}/snapshot.json` : null,
+          fileCount: files.length,
+          totalSize: files.reduce((sum, file) => sum + file.data.byteLength, 0),
+          publishedAt: now,
+          indexedAt: now,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: versions.version,
+          set: {
+            major,
+            minor,
+            patch,
+            documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
+            date: null,
+            url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
+            mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
+            status: "stable",
+            manifestPath: `${version}/manifest.json`,
+            snapshotPath: snapshot ? `${version}/snapshot.json` : null,
+            fileCount: files.length,
+            totalSize: files.reduce((sum, file) => sum + file.data.byteLength, 0),
+            publishedAt: now,
+            indexedAt: now,
+            updatedAt: now,
+          },
+        });
+
       return { validated: true, fileCount: files.length };
     });
 

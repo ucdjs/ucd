@@ -80,7 +80,7 @@ export interface RawUnicodeAssetResult {
 }
 
 function normalizeUnicodeAssetPath(path: string): string {
-  let normalizedPath = path.trim();
+  const normalizedPath = path.trim();
   if (!normalizedPath || normalizedPath === "/") {
     return "";
   }
