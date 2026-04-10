@@ -1,21 +1,13 @@
 import type { RefreshManifestsOptions, UploadResult } from "../types";
 import { resolveConfig } from "#lib/config";
 import { createLogger } from "#lib/logger";
-import { createManifestEtag, createManifestTar, generateManifests } from "#lib/manifest";
-import { getRemoteManifestEtag, uploadManifest, waitForUploadCompletion } from "#lib/upload";
+import { createManifestEtag, generateManifests } from "#lib/manifest";
+import { getRemoteManifestEtag, uploadManifest } from "#lib/upload";
 import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
 const WEAK_ETAG_PREFIX_RE = /^W\//i;
 const SURROUNDING_QUOTES_RE = /^"|"$/g;
-
-interface QueuedUpload {
-  version: string;
-  date: string | null;
-  status: "stable" | "draft" | "unsupported";
-  fileCount: number;
-  workflowId: string;
-}
 
 function normalizeEtag(etag: string): string {
   return etag.trim().replace(WEAK_ETAG_PREFIX_RE, "").replace(SURROUNDING_QUOTES_RE, "");
@@ -59,8 +51,30 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
   if (dryRun) {
     applyDryRunResult(result, manifests);
   } else {
-    const queuedUploads = await queueUploads(manifests, config.baseUrl, config.taskKey, result);
-    await waitForQueuedUploads(queuedUploads, config.baseUrl, config.taskKey, result);
+    const uploadResult = await uploadManifest(manifests, {
+      baseUrl: config.baseUrl,
+      taskKey: config.taskKey,
+      async shouldSkip(manifest) {
+        const localEtag = createManifestEtag(manifest);
+        const remoteEtag = await getRemoteManifestEtag(manifest.version, {
+          baseUrl: config.baseUrl,
+          taskKey: config.taskKey,
+        });
+
+        if (remoteEtag && normalizeEtag(remoteEtag) === normalizeEtag(localEtag)) {
+          logger.info(`Skipping ${manifest.version}: no manifest changes detected (${localEtag})`);
+          return true;
+        }
+
+        return false;
+      },
+    });
+
+    result.success = uploadResult.success;
+    result.uploaded = uploadResult.uploaded;
+    result.skipped += uploadResult.skipped;
+    result.errors = uploadResult.errors;
+    result.versions = uploadResult.versions;
   }
 
   printResult(result, dryRun);
@@ -75,93 +89,6 @@ function applyDryRunResult(result: UploadResult, manifests: Awaited<ReturnType<t
     status: m.status,
     fileCount: m.fileCount,
   }));
-}
-
-async function queueUploads(
-  manifests: Awaited<ReturnType<typeof generateManifests>>,
-  baseUrl: string,
-  taskKey: string | undefined,
-  result: UploadResult,
-): Promise<QueuedUpload[]> {
-  const queuedUploads: QueuedUpload[] = [];
-
-  logger.info("Queueing manifest upload workflows...");
-  for (const manifest of manifests) {
-    const localEtag = createManifestEtag(manifest);
-    const remoteEtag = await getRemoteManifestEtag(manifest.version, {
-      baseUrl,
-      taskKey,
-    });
-
-    if (remoteEtag && normalizeEtag(remoteEtag) === normalizeEtag(localEtag)) {
-      logger.info(`Skipping ${manifest.version}: no manifest changes detected (${localEtag})`);
-      result.skipped += 1;
-      continue;
-    }
-
-    logger.info(`Preparing manifest tar for ${manifest.version}...`);
-    const tar = createManifestTar(manifest);
-    logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
-
-    try {
-      const queued = await uploadManifest(tar, manifest.version, manifest.date, manifest.status, {
-        baseUrl,
-        taskKey,
-      });
-
-      logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
-
-      queuedUploads.push({
-        version: manifest.version,
-        date: manifest.date,
-        status: manifest.status,
-        fileCount: manifest.fileCount,
-        workflowId: queued.workflowId,
-      });
-    } catch (err) {
-      pushUploadError(result, manifest.version, err);
-    }
-  }
-
-  return queuedUploads;
-}
-
-async function waitForQueuedUploads(
-  queuedUploads: QueuedUpload[],
-  baseUrl: string,
-  taskKey: string | undefined,
-  result: UploadResult,
-): Promise<void> {
-  logger.info(`Queued ${queuedUploads.length} workflows. Waiting for completion...`);
-
-  for (const queued of queuedUploads) {
-    try {
-      const completed = await waitForUploadCompletion(queued.workflowId, {
-        baseUrl,
-        taskKey,
-      });
-
-      logger.info(`Completed workflow ${queued.workflowId} for ${queued.version} (${completed.status})`);
-
-      result.uploaded += 1;
-      result.versions.push({
-        version: queued.version,
-        date: queued.date,
-        status: queued.status,
-        fileCount: queued.fileCount,
-      });
-    } catch (err) {
-      pushUploadError(result, queued.version, err);
-    }
-  }
-}
-
-function pushUploadError(result: UploadResult, version: string, error: unknown): void {
-  result.success = false;
-  result.errors.push({
-    version,
-    reason: error instanceof Error ? error.message : String(error),
-  });
 }
 
 function printResult(result: UploadResult, dryRun: boolean): void {

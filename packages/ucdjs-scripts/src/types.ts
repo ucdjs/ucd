@@ -1,6 +1,4 @@
-import type { ExpectedFile, Snapshot } from "@ucdjs/schemas";
-
-export type UnicodeVersionStatus = "stable" | "draft" | "unsupported";
+import type { ExpectedFile, Snapshot, UnicodeVersionType } from "@ucdjs/schemas";
 
 export interface GlobalOptions {
   logLevel?: string;
@@ -24,14 +22,14 @@ export interface UnicodeVersion {
   version: string;
   date?: string | null;
   mappedUcdVersion?: string;
-  status?: UnicodeVersionStatus;
-  type?: UnicodeVersionStatus;
+  status?: UnicodeVersionType;
+  type?: UnicodeVersionType;
 }
 
 export interface GeneratedManifest {
   version: string;
   date: string | null;
-  status: UnicodeVersionStatus;
+  status: UnicodeVersionType;
   manifest: { expectedFiles: ExpectedFile[] };
   snapshot: Snapshot;
   fileCount: number;
@@ -49,30 +47,5 @@ export interface UploadResult {
   uploaded: number;
   skipped: number;
   errors: Array<{ version: string; reason: string }>;
-  versions: Array<{ version: string; date: string | null; status: UnicodeVersionStatus; fileCount: number }>;
-}
-
-export interface TaskUploadQueuedResult {
-  success: boolean;
-  workflowId: string;
-  status: string;
-  statusUrl: string;
-}
-
-export interface TaskUploadStatusResult {
-  workflowId: string;
-  status: string;
-  output?: {
-    success?: boolean;
-    version?: string;
-    filesUploaded?: number;
-    duration?: number;
-    workflowId?: string;
-  };
-  error?: string;
-}
-
-export interface UploadOptions {
-  baseUrl: string;
-  taskKey?: string;
+  versions: Array<{ version: string; date: string | null; status: UnicodeVersionType; fileCount: number }>;
 }
