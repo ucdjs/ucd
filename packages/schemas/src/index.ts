@@ -24,6 +24,7 @@ export {
   UnicodeVersionDetailsSchema,
   UnicodeVersionListSchema,
   UnicodeVersionSchema,
+  UnicodeVersionTypeSchema,
 } from "./unicode";
 export type {
   UnicodeFileTree,
@@ -32,4 +33,5 @@ export type {
   UnicodeVersion,
   UnicodeVersionDetails,
   UnicodeVersionList,
+  UnicodeVersionType,
 } from "./unicode";
