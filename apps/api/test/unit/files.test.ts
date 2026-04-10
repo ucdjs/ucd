@@ -1,5 +1,5 @@
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
-import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
+import { HttpResponse, mockFetch, RawResponse } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { describe, expect, it } from "vitest";
 import { getRawUnicodeAsset, getUnicodeAsset, parseUnicodeDirectory } from "../../src/lib/files";
@@ -155,6 +155,30 @@ describe("getUnicodeAsset", () => {
     expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("file");
     expect(result.headers[UCD_STAT_SIZE_HEADER]).toBe(content.length.toString());
     expect(result.headers["Content-Length"]).toBe(content.length.toString());
+  });
+
+  it("derives HEAD file size from Apache ETag when content-length is missing", async () => {
+    const content = "Large file content";
+
+    mockFetch([
+      ["GET", "https://unicode.org/Public/sample/large.txt", () => {
+        return new RawResponse(content, {
+          headers: {
+            "content-type": "text/plain; charset=utf-8",
+            "etag": "W/\"7975b4-63c70d19d13c0-gzip\"",
+          },
+        });
+      }],
+    ]);
+
+    const result = await getUnicodeAsset("sample/large.txt", { isHeadRequest: true });
+
+    expect(result.status).toBe(200);
+    expect(result.kind).toBe("file");
+    expect(result.body).toBeNull();
+    expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("file");
+    expect(result.headers[UCD_STAT_SIZE_HEADER]).toBe("7959988");
+    expect(result.headers["Content-Length"]).toBe("7959988");
   });
 });
 
