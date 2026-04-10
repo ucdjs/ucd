@@ -17,6 +17,8 @@ minimumReleaseAgeExclude:
   # Unicode Related Packages
   - "@unicode-utils/*"
   - "@ucdjs/*"
+  # Renovate security update: hono@4.12.12
+  - hono@4.12.12
 
 packages:
   - "packages/**"
@@ -105,7 +107,7 @@ catalogs:
     wrangler: 4.78.0
     "@hono/zod-openapi": 1.2.4
     "@scalar/hono-api-reference": 0.10.5
-    hono: 4.12.9
+    hono: 4.12.12
     "@cloudflare/workers-types": 4.20260329.1
     h3: 2.0.1-rc.20
     crossws: 0.4.4
