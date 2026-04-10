@@ -68,6 +68,6 @@
     "access": "public"
   },
   "inlinedDependencies": {
-    "@luxass/msw-utils": "0.6.1"
+    "@luxass/msw-utils": "0.6.2"
   }
 }
