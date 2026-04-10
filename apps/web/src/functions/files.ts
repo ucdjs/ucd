@@ -11,13 +11,8 @@ import {
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
+import { MAX_INLINE_FILE_SIZE } from "../lib/file-explorer";
 import { getShikiLanguage, highlight } from "../lib/highlight";
-
-/**
- * Maximum file size to load completely (1MB)
- * Files larger than this will return metadata only
- */
-const MAX_INLINE_FILE_SIZE = 1024 * 1024;
 
 /**
  * Response type for file operations
@@ -45,6 +40,14 @@ interface NormalizedFilesQueryOptions {
   type: "all" | "files" | "directories";
   statType?: string | null;
   size?: number | null;
+}
+
+function parseSizeHeader(sizeHeader: string | null) {
+  if (!sizeHeader) return null;
+
+  const size = Number.parseInt(sizeHeader, 10);
+
+  return Number.isFinite(size) ? size : null;
 }
 
 function normalizeFilesQueryOptions(options: FilesQueryOptions = {}): NormalizedFilesQueryOptions {
@@ -107,7 +110,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
       statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
       contentType = headRes.headers.get("Content-Type") || "text/plain";
       const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
-      size = sizeHeader ? Number.parseInt(sizeHeader, 10) : 0;
+      size = parseSizeHeader(sizeHeader);
     }
 
     // Step 2: For large files, return metadata only (no GET request needed)
@@ -130,6 +133,8 @@ export const fetchFiles = createServerFn({ method: "GET" })
 
     const responseStatType = res.headers.get(UCD_STAT_TYPE_HEADER) ?? statType;
     const responseContentType = res.headers.get("Content-Type") || contentType;
+    const responseSizeHeader = res.headers.get(UCD_STAT_SIZE_HEADER) || res.headers.get("Content-Length");
+    const responseSize = parseSizeHeader(responseSizeHeader);
     const isJson = responseContentType.includes("application/json");
     const isText = responseContentType.startsWith("text/") || isJson;
 
@@ -140,15 +145,35 @@ export const fetchFiles = createServerFn({ method: "GET" })
     const resolvedStatType = responseStatType
       ?? (isJson ? "directory" : "file");
 
+    if (resolvedStatType === "file" && responseSize !== null && responseSize > MAX_INLINE_FILE_SIZE) {
+      return {
+        type: "file-too-large",
+        size: responseSize,
+        contentType: responseContentType,
+        downloadUrl: url.toString(),
+      };
+    }
+
     if (resolvedStatType === "file") {
       const content = await res.text();
+      const contentSize = new TextEncoder().encode(content).byteLength;
+
+      if (contentSize > MAX_INLINE_FILE_SIZE) {
+        return {
+          type: "file-too-large",
+          size: contentSize,
+          contentType: responseContentType,
+          downloadUrl: url.toString(),
+        };
+      }
+
       const fileName = normalized.path.split("/").filter(Boolean).pop() || "file";
       const html = await highlight(content, getShikiLanguage(fileName));
       return {
         type: "file",
         html,
         contentType: responseContentType,
-        size: size ?? content.length,
+        size: size ?? responseSize ?? contentSize,
       };
     }
 
@@ -159,13 +184,14 @@ export const fetchFiles = createServerFn({ method: "GET" })
     }
 
     const content = await res.text();
+    const contentSize = new TextEncoder().encode(content).byteLength;
     const fileName = normalized.path.split("/").filter(Boolean).pop() || "file";
     const html = await highlight(content, getShikiLanguage(fileName));
     return {
       type: "file",
       html,
       contentType: responseContentType,
-      size: size || content.length,
+      size: size ?? responseSize ?? contentSize,
     };
   });
 
@@ -187,6 +213,9 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
       normalized.order,
       normalized.query,
       normalized.type,
+      normalized.statType,
+      normalized.size,
+      MAX_INLINE_FILE_SIZE,
     ],
     queryFn: ({ signal }) => fetchFiles({
       data: {
@@ -240,14 +269,16 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
     }
 
     const statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
+    const contentType = headRes.headers.get("Content-Type") || "text/plain";
     const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
-    const size = sizeHeader ? Number.parseInt(sizeHeader, 10) : 0;
+    const size = parseSizeHeader(sizeHeader);
     const amountChildrenHeader = headRes.headers.get(UCD_STAT_CHILDREN_HEADER);
     const amountChildrenFilesHeader = headRes.headers.get(UCD_STAT_CHILDREN_FILES_HEADER);
     const amountChildrenDirsHeader = headRes.headers.get(UCD_STAT_CHILDREN_DIRS_HEADER);
 
     return {
       statType,
+      contentType,
       size,
       amount: {
         total: amountChildrenHeader ? Number.parseInt(amountChildrenHeader, 10) : 0,
