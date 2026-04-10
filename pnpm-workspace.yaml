@@ -17,6 +17,8 @@ minimumReleaseAgeExclude:
   # Unicode Related Packages
   - "@unicode-utils/*"
   - "@ucdjs/*"
+  # Renovate security update: vite@8.0.5
+  - vite@8.0.5
 
 packages:
   - "packages/**"
@@ -41,7 +43,7 @@ catalogs:
     tailwindcss: 4.2.2
     "@tailwindcss/vite": 4.2.2
     "@vitejs/plugin-react": 6.0.1
-    vite: 8.0.3
+    vite: 8.0.5
     "@tanstack/router-plugin": 1.167.12
     "@tanstack/devtools-vite": 0.6.0
     vite-tsconfig-paths: 6.1.1
@@ -174,7 +176,7 @@ overrides:
   semver: 7.7.4
   solid-js: 1.9.12
   undici-types: 7.24.6
-  vite: 8.0.3
+  vite: 8.0.5
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.5.0": patches/@asteasolutions__zod-to-openapi@8.5.0.patch
