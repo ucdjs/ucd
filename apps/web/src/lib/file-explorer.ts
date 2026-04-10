@@ -119,3 +119,23 @@ export const searchSchema = z.object({
 });
 
 export type SearchQueryParams = z.output<typeof searchSchema>;
+
+export const MAX_INLINE_FILE_SIZE = 512 * 1024; // 512 KB
+export const PREVIEW_LIMIT_LABEL = formatFileSize(MAX_INLINE_FILE_SIZE);
+
+export function formatFileSize(bytes: number) {
+  const units = ["B", "KB", "MB", "GB"];
+  let size = bytes;
+  let unitIndex = 0;
+
+  while (size >= 1024 && unitIndex < units.length - 1) {
+    size /= 1024;
+    unitIndex += 1;
+  }
+
+  const fractionDigits = unitIndex === 0 ? 0 : 2;
+
+  // DO NOT EXTRACT THIS INTO A REGEX CONSTANT - IT BREAKS THE ENTIRE SITE.
+  // eslint-disable-next-line e18e/prefer-static-regex
+  return `${size.toFixed(fractionDigits).replace(/\.?0+$/, "")} ${units[unitIndex]}`;
+}
