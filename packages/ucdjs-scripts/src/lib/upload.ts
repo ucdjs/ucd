@@ -1,51 +1,38 @@
-import type { TaskUploadQueuedResult, TaskUploadStatusResult, UploadOptions } from "../types";
+import type { UnicodeVersion as SchemaUnicodeVersion } from "@ucdjs/schemas";
+import type {
+  GeneratedManifest,
+  UploadResult,
+} from "../types";
 import { logger } from "./logger";
+import { createManifestTar } from "./manifest";
+
+type UnicodeVersionType = SchemaUnicodeVersion["type"];
 
 const MANIFEST_BUNDLE_ETAG_HEADER = "X-UCD-Manifest-Bundle-Etag";
 
-export async function uploadManifest(
-  tar: Uint8Array,
-  version: string,
-  date: string | null,
-  status: string,
-  options: UploadOptions,
-): Promise<TaskUploadQueuedResult> {
-  const { baseUrl, taskKey } = options;
-  const url = new URL("/_tasks/upload-manifest", baseUrl);
-  url.searchParams.set("version", version);
-  if (date != null) {
-    url.searchParams.set("date", date);
-  }
-  url.searchParams.set("status", status);
+interface TaskUploadQueuedResult {
+  success: boolean;
+  workflowId: string;
+  status: string;
+  statusUrl: string;
+}
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/x-tar",
+interface TaskUploadStatusResult {
+  workflowId: string;
+  status: string;
+  output?: {
+    success?: boolean;
+    version?: string;
+    filesUploaded?: number;
+    duration?: number;
+    workflowId?: string;
   };
-
-  if (taskKey) {
-    headers["X-UCDJS-Task-Key"] = taskKey;
-  }
-
-  logger.info(`Uploading manifest for ${version} to ${url.toString()}...`);
-
-  const response = await fetch(url.toString(), {
-    method: "POST",
-    headers,
-    body: tar as unknown as BodyInit,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
-  }
-
-  const result = (await response.json()) as TaskUploadQueuedResult;
-  return result;
+  error?: string;
 }
 
 export async function getUploadStatus(
   workflowId: string,
-  options: UploadOptions,
+  options: RawUploadOptions,
 ): Promise<TaskUploadStatusResult> {
   const { baseUrl, taskKey } = options;
   const url = new URL(`/_tasks/upload-status/${workflowId}`, baseUrl);
@@ -73,7 +60,7 @@ const TERMINAL_FAILURE = new Set(["failed", "error", "errored", "terminated", "c
 
 export async function waitForUploadCompletion(
   workflowId: string,
-  options: UploadOptions,
+  options: RawUploadOptions,
   pollIntervalMs = 1000,
   timeoutMs = 120_000,
 ): Promise<TaskUploadStatusResult> {
@@ -97,7 +84,7 @@ export async function waitForUploadCompletion(
   throw new Error(`Timed out waiting for workflow ${workflowId} after ${timeoutMs}ms`);
 }
 
-export async function getRemoteManifestEtag(version: string, options: UploadOptions): Promise<string | null> {
+export async function getRemoteManifestEtag(version: string, options: RawUploadOptions): Promise<string | null> {
   const manifestUrls = [
     new URL(`/api/v1/versions/${version}/manifest`, options.baseUrl),
     new URL(`/.well-known/ucd-store/${version}.json`, options.baseUrl),
@@ -137,4 +124,101 @@ export async function getRemoteManifestEtag(version: string, options: UploadOpti
   }
 
   return null;
+}
+
+export interface UploadManifestsOptions extends RawUploadOptions {
+  shouldSkip?: (manifest: GeneratedManifest) => Promise<boolean> | boolean;
+}
+
+export async function uploadManifest(
+  manifests: GeneratedManifest[],
+  options: UploadManifestsOptions,
+): Promise<UploadResult> {
+  const result: UploadResult = {
+    success: true,
+    uploaded: 0,
+    skipped: 0,
+    errors: [],
+    versions: [],
+  };
+
+  for (const manifest of manifests) {
+    if (await options.shouldSkip?.(manifest)) {
+      result.skipped += 1;
+      continue;
+    }
+
+    logger.info(`Preparing manifest tar for ${manifest.version}...`);
+    const tar = createManifestTar(manifest);
+    logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
+
+    try {
+      const queued = await uploadRawManifest(tar, manifest.version, manifest.date, manifest.status, options);
+      logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
+
+      const completed = await waitForUploadCompletion(queued.workflowId, options);
+      logger.info(`Completed workflow ${queued.workflowId} for ${manifest.version} (${completed.status})`);
+
+      result.uploaded += 1;
+      result.versions.push({
+        version: manifest.version,
+        date: manifest.date,
+        status: manifest.status,
+        fileCount: manifest.fileCount,
+      });
+    } catch (error) {
+      result.success = false;
+      result.errors.push({
+        version: manifest.version,
+        reason: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  return result;
+}
+
+export interface RawUploadOptions {
+  baseUrl: string;
+  taskKey?: string;
+}
+
+export async function uploadRawManifest(
+  tar: Uint8Array,
+  version: string,
+  date: string | null,
+  status: UnicodeVersionType,
+  options: RawUploadOptions,
+): Promise<TaskUploadQueuedResult> {
+  const { baseUrl, taskKey } = options;
+  const url = new URL("/_tasks/upload-manifest", baseUrl);
+  url.searchParams.set("version", version);
+  if (date != null) {
+    url.searchParams.set("date", date);
+  }
+  url.searchParams.set("status", status);
+
+  const headers: Record<string, string> = {
+    "Content-Type": "application/x-tar",
+  };
+
+  if (taskKey) {
+    headers["X-UCDJS-Task-Key"] = taskKey;
+  }
+
+  logger.info(`Uploading manifest for ${version} to ${url.toString()}...`);
+
+  const response = await fetch(url.toString(), {
+    method: "POST",
+    headers,
+    body: tar as unknown as BodyInit,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
+  }
+
+  const result = (await response.json()) as TaskUploadQueuedResult;
+  return result;
 }
