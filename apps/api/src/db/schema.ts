@@ -1,4 +1,4 @@
-import type { UnicodeVersion as SchemaUnicodeVersion, UnicodeVersionType } from "@ucdjs/schemas";
+import type { UnicodeVersionType } from "@ucdjs/schemas";
 import {
   index,
   integer,
