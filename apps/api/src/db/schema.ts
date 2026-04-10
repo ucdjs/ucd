@@ -1,11 +1,10 @@
+import type { UnicodeVersion as SchemaUnicodeVersion, UnicodeVersionType } from "@ucdjs/schemas";
 import {
   index,
   integer,
   sqliteTable,
   text,
 } from "drizzle-orm/sqlite-core";
-
-export type UnicodeVersionStatus = "stable" | "draft" | "unsupported";
 
 export const versions = sqliteTable("versions", {
   version: text("version").primaryKey(),
@@ -16,7 +15,7 @@ export const versions = sqliteTable("versions", {
   date: text("date"),
   url: text("url").notNull(),
   mappedUcdVersion: text("mapped_ucd_version"),
-  status: text("status").$type<UnicodeVersionStatus>().notNull(),
+  status: text("status").$type<UnicodeVersionType>().notNull(),
   manifestPath: text("manifest_path"),
   snapshotPath: text("snapshot_path"),
   fileCount: integer("file_count"),
