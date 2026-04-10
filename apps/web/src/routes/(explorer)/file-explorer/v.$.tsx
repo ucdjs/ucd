@@ -6,9 +6,7 @@ import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
-import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
-
-const MAX_INLINE_FILE_SIZE = 512 * 1024;
+import { MAX_INLINE_FILE_SIZE, NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
 
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
@@ -19,7 +17,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
       throw new Error("Invalid file path");
     }
 
-    const { statType, size } = await getFileHeadInfo({ data: { path } });
+    const { statType, size, contentType } = await getFileHeadInfo({ data: { path } });
 
     if (statType !== "file") {
       throw redirect({
@@ -37,12 +35,13 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
       path,
       statType,
       size,
+      contentType,
       fileName,
       fileExt,
     };
   },
   loader: async ({ context }) => {
-    const isTooLarge = context.size > MAX_INLINE_FILE_SIZE;
+    const isTooLarge = context.size !== null && context.size > MAX_INLINE_FILE_SIZE;
     const canRender = !NON_RENDERABLE_EXTENSIONS.has(context.fileExt);
 
     // Only prefetch if we'll actually render the file content
@@ -60,6 +59,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
       fileName: context.fileName,
       fileExt: context.fileExt,
       path: context.path,
+      contentType: context.contentType,
       isTooLarge,
       canRender,
       fileUrl: new URL(context.path, `${context.apiBaseUrl}/api/v1/files/`).toString(),
@@ -69,7 +69,6 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
 });
 
 function FileViewerPage() {
-  const loaderData = Route.useLoaderData();
   const {
     size,
     fileName,
@@ -77,51 +76,78 @@ function FileViewerPage() {
     isTooLarge,
     canRender,
     fileUrl,
-  } = loaderData;
-
-  // Check for large files first - no data fetching needed
-  if (isTooLarge) {
-    return (
-      <LargeFileWarning
-        fileName={fileName}
-        size={size}
-        downloadUrl={fileUrl}
-        contentType="application/octet-stream"
-      />
-    );
-  }
+    statType,
+    contentType,
+  } = Route.useLoaderData();
 
   // Check for non-renderable files - no data fetching needed
   if (!canRender) {
     return (
       <NonRenderableFile
         fileName={fileName}
-        contentType="application/octet-stream"
+        contentType={contentType}
         fileUrl={fileUrl}
       />
     );
   }
 
-  // Wrap the actual file content fetching in Suspense
+  // Check for large files first - no data fetching needed
+  if (size !== null && isTooLarge) {
+    return (
+      <LargeFileWarning
+        fileName={fileName}
+        size={size}
+        downloadUrl={fileUrl}
+        contentType={contentType}
+      />
+    );
+  }
+
   return (
     <Suspense fallback={<FileViewerSkeleton fileName={fileName} />}>
       <FileViewerContent
         path={path}
         fileName={fileName}
         fileUrl={fileUrl}
-        statType={loaderData.statType}
-        size={loaderData.size}
+        statType={statType}
+        size={size}
+        contentType={contentType}
       />
     </Suspense>
   );
 }
 
-function FileViewerContent({ path, fileName, fileUrl, statType, size }: { path: string; fileName: string; fileUrl: string; statType: string | null; size: number }) {
+function FileViewerContent({
+  path,
+  fileName,
+  fileUrl,
+  statType,
+  size,
+  contentType,
+}: {
+  path: string;
+  fileName: string;
+  fileUrl: string;
+  statType: string | null;
+  size: number | null;
+  contentType: string;
+}) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
   // This route only handles files
-  if (data.type === "directory" || data.type === "file-too-large") {
+  if (data.type === "directory") {
     return null;
+  }
+
+  if (data.type === "file-too-large") {
+    return (
+      <LargeFileWarning
+        fileName={fileName}
+        size={data.size}
+        downloadUrl={data.downloadUrl}
+        contentType={data.contentType || contentType}
+      />
+    );
   }
 
   return (
