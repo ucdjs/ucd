@@ -16,6 +16,7 @@ import { HTML_EXTENSIONS } from "../constants";
 import { determineContentTypeFromExtension, isInvalidPath } from "../routes/v1_files/utils";
 
 const UCD_SEGMENT_RE = /\/ucd\//g;
+const APACHE_ETAG_SIZE_RE = /^(?:W\/)?"([0-9a-fA-F]+)-/;
 
 /**
  * Parses an HTML directory listing from Unicode.org and extracts file/directory entries.
@@ -171,6 +172,19 @@ function buildStatsHeaders(files: Entry[], base: Record<string, string>): Record
     [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
     [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
   };
+}
+
+function getFileSizeFromHeaders(headers: Headers): string | null {
+  const contentLength = headers.get("content-length");
+  if (contentLength) return contentLength;
+
+  const etag = headers.get("etag");
+  const sizeMatch = etag?.match(APACHE_ETAG_SIZE_RE);
+  if (!sizeMatch) return null;
+
+  const size = Number.parseInt(sizeMatch[1]!, 16);
+
+  return Number.isFinite(size) ? size.toString() : null;
 }
 
 export interface DirectoryFilterOptions {
@@ -342,7 +356,7 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
       };
     }
 
-    const size = response.headers.get("content-length");
+    const size = getFileSizeFromHeaders(response.headers);
     const cd = response.headers.get("Content-Disposition");
     const headers: Record<string, string> = {
       ...baseHeaders,
