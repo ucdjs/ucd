@@ -2,6 +2,12 @@ import type { DeepOmit } from "./types";
 import { z } from "zod";
 import { FileEntryDirectorySchema, FileEntryFileSchema } from "./fs";
 
+export const UnicodeVersionTypeSchema = z.enum(["draft", "stable", "unsupported"]).meta({
+  description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
+});
+
+export type UnicodeVersionType = z.output<typeof UnicodeVersionTypeSchema>;
+
 export const UnicodeVersionSchema = z.object({
   version: z.string().meta({
     description: "The version of the Unicode standard.",
@@ -18,9 +24,7 @@ export const UnicodeVersionSchema = z.object({
   mappedUcdVersion: z.string().nullable().meta({
     description: "The corresponding UCD version mapping for this Unicode version. Null if same as version.",
   }),
-  type: z.enum(["draft", "stable", "unsupported"]).meta({
-    description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
-  }),
+  type: UnicodeVersionTypeSchema,
 }).meta({
   id: "UnicodeVersion",
   description: "Represents a Unicode version with its metadata and support status.",
