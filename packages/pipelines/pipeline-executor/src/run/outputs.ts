@@ -169,7 +169,14 @@ export async function materializeOutputs(options: {
             status: "written",
           });
         } catch (error) {
-          if (sink !== "memory" && locatorRegistry.get(locator)?.version === version && locatorRegistry.get(locator)?.routeId === routeId && locatorRegistry.get(locator)?.outputId === outputId) {
+          const reservation = locatorRegistry?.get(locator);
+          if (
+            sink !== "memory"
+            && locatorRegistry
+            && reservation?.version === version
+            && reservation.routeId === routeId
+            && reservation.outputId === outputId
+          ) {
             locatorRegistry.delete(locator);
           }
 
