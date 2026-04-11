@@ -1,18 +1,22 @@
 import { create } from "zustand";
 
 interface FileExplorerSidebarState {
-  expandedPaths: Record<string, true>;
+  expandedPaths: Record<string, boolean>;
   filterText: string;
   setFilterText: (value: string) => void;
-  toggleExpandedPath: (path: string) => void;
+  toggleExpandedPath: (path: string, defaultExpanded: boolean) => void;
 }
 
 export const useFileExplorerSidebarStore = create<FileExplorerSidebarState>()((set) => ({
   expandedPaths: {},
   filterText: "",
   setFilterText: (value) => set({ filterText: value }),
-  toggleExpandedPath: (path) => set((state) => {
-    if (state.expandedPaths[path]) {
+  toggleExpandedPath: (path, defaultExpanded) => set((state) => {
+    const currentOverride = state.expandedPaths[path];
+    const isExpanded = currentOverride ?? defaultExpanded;
+    const nextExpanded = !isExpanded;
+
+    if (nextExpanded === defaultExpanded) {
       const expandedPaths = { ...state.expandedPaths };
       delete expandedPaths[path];
       return { expandedPaths };
@@ -21,7 +25,7 @@ export const useFileExplorerSidebarStore = create<FileExplorerSidebarState>()((s
     return {
       expandedPaths: {
         ...state.expandedPaths,
-        [path]: true,
+        [path]: nextExpanded,
       },
     };
   }),

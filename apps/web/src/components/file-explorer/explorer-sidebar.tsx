@@ -74,14 +74,14 @@ function ExplorerSidebarNode({ node, depth }: ExplorerSidebarNodeProps) {
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const params = useParams({ strict: false });
   const currentPath = normalizeExplorerPath(typeof params._splat === "string" ? params._splat : "");
-  const { isManuallyExpanded, toggleExpandedPath } = useFileExplorerSidebarStore(useShallow((state) => ({
-    isManuallyExpanded: !!state.expandedPaths[node.path],
+  const { expandedOverride, toggleExpandedPath } = useFileExplorerSidebarStore(useShallow((state) => ({
+    expandedOverride: state.expandedPaths[node.path],
     toggleExpandedPath: state.toggleExpandedPath,
   })));
 
   const isDirectory = node.type === "directory";
   const isActive = currentPath === node.path || currentPath.startsWith(`${node.path}/`);
-  const isExpanded = isDirectory && (isActive || isManuallyExpanded);
+  const isExpanded = isDirectory && (expandedOverride ?? isActive);
 
   return (
     <div>
@@ -102,7 +102,7 @@ function ExplorerSidebarNode({ node, depth }: ExplorerSidebarNodeProps) {
                 className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted"
                 onClick={(event) => {
                   event.stopPropagation();
-                  toggleExpandedPath(node.path);
+                  toggleExpandedPath(node.path, isActive);
                 }}
               >
                 {isExpanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
