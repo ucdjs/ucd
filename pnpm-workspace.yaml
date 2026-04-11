@@ -46,6 +46,7 @@ catalogs:
     "@tanstack/devtools-vite": 0.6.0
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
+    rolldown-plugin-dts: 0.23.2
     drizzle-kit: 1.0.0-beta.20
     tinyglobby: 0.2.15
     "@ucdjs/textmate-grammars": 0.0.0
