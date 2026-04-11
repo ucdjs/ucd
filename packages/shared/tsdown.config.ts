@@ -25,7 +25,11 @@ export default createTsdownConfig({
     }),
   ],
   deps: {
+    alwaysBundle: [
+      "@luxass/msw-utils",
+    ],
     onlyBundle: [
+      "@luxass/msw-utils",
       "pathe",
     ],
   },
