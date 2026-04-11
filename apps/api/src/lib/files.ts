@@ -320,21 +320,23 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
     const contentType = response.headers.get("content-type") || "";
     const lastMod = response.headers.get("Last-Modified");
     const baseHeaders: Record<string, string> = lastMod ? { "Last-Modified": lastMod } : {};
+    const requestedVersion = resolvedPath.requestedVersion;
+    const upstreamVersion = resolvedPath.upstreamVersion;
 
     if (contentType.includes("text/html") && !HTML_EXTENSIONS.includes(`.${extension}`)) {
       let entries = await parseUnicodeDirectory(await response.text(), normalizedPath || "/");
 
       if (
-        resolvedPath.requestedVersion
-        && resolvedPath.upstreamVersion
-        && resolvedPath.requestedVersion !== resolvedPath.upstreamVersion
+        requestedVersion != null
+        && upstreamVersion != null
+        && requestedVersion !== upstreamVersion
       ) {
         entries = entries.map((entry) => ({
           ...entry,
           path: rewriteDirectoryEntryVersionPrefix(
             entry.path,
-            resolvedPath.requestedVersion,
-            resolvedPath.upstreamVersion,
+            requestedVersion,
+            upstreamVersion,
           ),
         }));
       }
