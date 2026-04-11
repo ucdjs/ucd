@@ -116,7 +116,7 @@ export function createNoopExecutionRuntime(): PipelineExecutionRuntime {
   return {
     startSpan: (name, fn, options) => trace.getTracer("pipeline-noop").startActiveSpan(
       name,
-      undefined,
+      {},
       createParentContext(options?.parentSpanContext),
       (span) => runSpan(span, fn),
     ),

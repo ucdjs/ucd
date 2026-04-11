@@ -78,10 +78,10 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     const app = this.#appStorage.getStore();
     if (!app) {
       // No execution context - use noop tracer so the callback still fires
-      return trace.getTracer("pipeline-noop").startActiveSpan(name, undefined, parentContext, (span) => runSpan(span, fn));
+      return trace.getTracer("pipeline-noop").startActiveSpan(name, {}, parentContext, (span) => runSpan(span, fn));
     }
 
-    return this.#tracer.startActiveSpan(name, undefined, parentContext, (span) => runSpan(span, fn, { recordErrors: true }));
+    return this.#tracer.startActiveSpan(name, {}, parentContext, (span) => runSpan(span, fn, { recordErrors: true }));
   }
 
   getExecutionContext(): RuntimeExecutionContext | undefined {
