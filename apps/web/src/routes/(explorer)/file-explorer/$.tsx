@@ -1,6 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
+
 import { EntryList } from "#components/file-explorer/entry-list";
 import { ExplorerNotFound } from "#components/not-found";
-import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
+import { directoryListingQueryOptions, getFileHeadInfo } from "#functions/files";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, redirect, retainSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { cn } from "@ucdjs-internal/shared-ui";
@@ -41,14 +44,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
       path = hasTrailingSlash ? `${[resolvedVersion, ...rest].join("/")}/` : [resolvedVersion, ...rest].join("/");
     }
 
-    const { statType, amount } = await getFileHeadInfo({ data: {
-      path,
-      order: search.order,
-      pattern: search.pattern,
-      sort: search.sort,
-      query: search.query,
-      type: search.type,
-    } });
+    const { statType } = await getFileHeadInfo({ data: { path } });
 
     if (statType !== "directory") {
       throw redirect({
@@ -60,7 +56,6 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
     return {
       path,
       statType,
-      amount,
     };
   },
   loaderDeps({ search }) {
@@ -73,26 +68,16 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
     };
   },
   loader: async ({ context, deps }) => {
-    context.queryClient.prefetchQuery(filesQueryOptions({
+    context.queryClient.prefetchQuery(directoryListingQueryOptions({
       path: context.path,
-      statType: context.statType,
-      pattern: deps.pattern,
-      sort: deps.sort,
-      order: deps.order,
-      query: deps.query,
-      type: deps.type,
+      ...deps,
     }));
-
-    return {
-      amount: context.amount,
-    };
   },
   notFoundComponent: DirectoryNotFoundBoundary,
 });
 
 function DirectoryExplorerPage() {
   const { _splat: path = "" } = Route.useParams();
-  const { amount } = Route.useLoaderData();
   const parentRoutePath = Route.parentRoute.path;
 
   return (
@@ -118,11 +103,7 @@ function DirectoryExplorerPage() {
           </Link>
         )}
         <Suspense
-          fallback={(
-            <EntryList.Skeleton
-              amount={amount}
-            />
-          )}
+          fallback={<EntryList.Skeleton />}
         >
           <EntryList
             currentPath={path}
@@ -130,19 +111,40 @@ function DirectoryExplorerPage() {
         </Suspense>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span>
-          {amount.directories}
-          {" "}
-          {amount.directories === 1 ? "directory" : "directories"}
-        </span>
-        <span>•</span>
-        <span>
-          {amount.files}
-          {" "}
-          {amount.files === 1 ? "file" : "files"}
-        </span>
-      </div>
+      <Suspense fallback={null}>
+        <DirectorySummary currentPath={path} />
+      </Suspense>
+    </div>
+  );
+}
+
+function DirectorySummary({ currentPath }: { currentPath: string }) {
+  const search = Route.useSearch();
+  const { data } = useSuspenseQuery(directoryListingQueryOptions({
+    path: currentPath,
+    ...search,
+  }));
+
+  if (data.type !== "directory") {
+    return null;
+  }
+
+  const directories = data.files.filter((entry) => entry.type === "directory").length;
+  const files = data.files.length - directories;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span>
+        {directories}
+        {" "}
+        {directories === 1 ? "directory" : "directories"}
+      </span>
+      <span>•</span>
+      <span>
+        {files}
+        {" "}
+        {files === 1 ? "file" : "files"}
+      </span>
     </div>
   );
 }

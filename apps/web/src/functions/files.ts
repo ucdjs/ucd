@@ -5,9 +5,6 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequest } from "@tanstack/react-start/server";
 import {
-  UCD_STAT_CHILDREN_DIRS_HEADER,
-  UCD_STAT_CHILDREN_FILES_HEADER,
-  UCD_STAT_CHILDREN_HEADER,
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
@@ -235,28 +232,23 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
   });
 }
 
+type DirectoryListingQueryOptions = Omit<FilesQueryOptions, "size" | "statType">;
+
+export function directoryListingQueryOptions(options: DirectoryListingQueryOptions = {}) {
+  return filesQueryOptions({
+    ...options,
+    statType: "directory",
+  });
+}
+
 export const getFileHeadInfo = createServerFn({ method: "GET" })
-  .inputValidator((data: {
-    path: string;
-  } & Omit<SearchQueryParams, "viewMode">) => data)
+  .inputValidator((data: { path: string }) => data)
   .handler(async ({ data, context }) => {
     const request = getRequest();
     const signal = request.signal;
 
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
-
-    if (data.query) {
-      url.searchParams.set("query", data.query);
-    }
-
-    url.searchParams.set("pattern", data.pattern || "");
-    url.searchParams.set("sort", data.sort || "name");
-    url.searchParams.set("order", data.order || "asc");
-
-    if (data.type && data.type !== "all") {
-      url.searchParams.set("type", data.type);
-    }
 
     const headRes = await fetch(url, { method: "HEAD", signal });
 
@@ -272,18 +264,9 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
     const contentType = headRes.headers.get("Content-Type") || "text/plain";
     const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
     const size = parseSizeHeader(sizeHeader);
-    const amountChildrenHeader = headRes.headers.get(UCD_STAT_CHILDREN_HEADER);
-    const amountChildrenFilesHeader = headRes.headers.get(UCD_STAT_CHILDREN_FILES_HEADER);
-    const amountChildrenDirsHeader = headRes.headers.get(UCD_STAT_CHILDREN_DIRS_HEADER);
-
     return {
       statType,
       contentType,
       size,
-      amount: {
-        total: amountChildrenHeader ? Number.parseInt(amountChildrenHeader, 10) : 0,
-        files: amountChildrenFilesHeader ? Number.parseInt(amountChildrenFilesHeader, 10) : 0,
-        directories: amountChildrenDirsHeader ? Number.parseInt(amountChildrenDirsHeader, 10) : 0,
-      },
     };
   });

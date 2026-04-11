@@ -1,5 +1,6 @@
 import type { SearchQueryParams } from "../../lib/file-explorer";
 import type { SidebarNode } from "../../lib/file-explorer-tree";
+import { directoryListingQueryOptions } from "#functions/files";
 import { versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
@@ -9,7 +10,6 @@ import { useShallow } from "zustand/react/shallow";
 import {
   buildRootSidebarNodes,
   filterSidebarNodes,
-  getDirectoryListingQueryOptions,
   getIndentStyle,
   getRowIndentStyle,
   normalizeDirectoryEntries,
@@ -23,7 +23,10 @@ import { ExplorerTreeEntry } from "./explorer-entry";
 export function ExplorerSidebar() {
   const filters = useSearch({ strict: false }) as Partial<SearchQueryParams>;
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-  const { data: rootDirectory } = useSuspenseQuery(getDirectoryListingQueryOptions("", filters));
+  const { data: rootDirectory } = useSuspenseQuery(directoryListingQueryOptions({
+    path: "",
+    ...filters,
+  }));
   const { filterText, setFilterText } = useFileExplorerSidebarStore(useShallow((state) => ({
     filterText: state.filterText,
     setFilterText: state.setFilterText,
@@ -119,7 +122,10 @@ function ExplorerSidebarNode({ node, depth }: ExplorerSidebarNodeProps) {
 
 function ExplorerSidebarNodeChildren({ directoryPath, depth }: { directoryPath: string; depth: number }) {
   const filters = useSearch({ strict: false }) as Partial<SearchQueryParams>;
-  const childrenQuery = useQuery(getDirectoryListingQueryOptions(directoryPath, filters));
+  const childrenQuery = useQuery(directoryListingQueryOptions({
+    path: directoryPath,
+    ...filters,
+  }));
 
   if (childrenQuery.isLoading) {
     return <ExplorerSidebarNodeChildren.Skeleton depth={depth} />;
