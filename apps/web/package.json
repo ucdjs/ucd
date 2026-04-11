@@ -37,7 +37,8 @@
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
     "shiki": "catalog:runtime",
-    "zod": "catalog:runtime"
+    "zod": "catalog:runtime",
+    "zustand": "catalog:frontend"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
