@@ -1,8 +1,9 @@
-import type { FileEntry, UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { FileEntry } from "@ucdjs/schemas";
+import type { SearchQueryParams } from "../../lib/file-explorer";
 import { filesQueryOptions } from "#functions/files";
-import { versionFileTreeQueryOptions, versionsQueryOptions } from "#functions/versions";
+import { versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
 import { Badge, Input, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
 import { createContext, use, useState } from "react";
@@ -13,13 +14,12 @@ const TRAILING_SLASH_RE = /\/$/;
 const TREE_INDENT = 14;
 const TREE_PADDING = 8;
 
-type LoadChildrenMode = "directory" | "version-root" | "version-file-tree";
+type LoadChildrenMode = "directory";
 
 interface SidebarNode {
   name: string;
   path: string;
   type: "directory" | "file";
-  version?: string;
   badge?: string;
   children?: SidebarNode[];
   loadChildren?: LoadChildrenMode;
@@ -27,7 +27,7 @@ interface SidebarNode {
 
 interface ExplorerSidebarContextValue {
   currentPath: string;
-  query: string;
+  filters: Partial<SearchQueryParams>;
 }
 
 const ExplorerSidebarContext = createContext<ExplorerSidebarContextValue | null>(null);
@@ -42,71 +42,57 @@ const normalize = (path: string) => path.replace(LEADING_SLASHES_RE, "").replace
 const getIndentStyle = (depth: number) => ({ marginLeft: depth * TREE_INDENT + TREE_PADDING });
 const getRowIndentStyle = (depth: number) => ({ paddingLeft: depth * TREE_INDENT + TREE_PADDING });
 
-function sortNodes(entries: SidebarNode[]) {
-  return entries.toSorted((a, b) => {
-    if (a.type !== b.type) {
-      return a.type === "directory" ? -1 : 1;
-    }
-
-    return a.name.localeCompare(b.name, undefined, {
-      numeric: true,
-      sensitivity: "base",
-    });
-  });
+function groupDirectoryEntries(entries: FileEntry[]) {
+  return [
+    ...entries.filter((entry) => entry.type === "directory"),
+    ...entries.filter((entry) => entry.type !== "directory"),
+  ];
 }
 
-function normalizeDirectoryEntries(entries: FileEntry[], version?: string): SidebarNode[] {
-  return sortNodes(entries.map((entry) => {
+function normalizeDirectoryEntries(entries: FileEntry[]): SidebarNode[] {
+  return groupDirectoryEntries(entries).map((entry) => {
     const path = normalize(entry.path);
-    const isVersionUcdDirectory = version != null && entry.type === "directory" && path === `${version}/ucd`;
 
     return {
       type: entry.type,
       name: entry.name,
       path,
-      version,
-      loadChildren: entry.type === "directory"
-        ? (isVersionUcdDirectory ? "version-file-tree" : "directory")
-        : undefined,
+      loadChildren: entry.type === "directory" ? "directory" : undefined,
     } satisfies SidebarNode;
-  }));
-}
-
-function normalizeVersionTreeEntries(entries: UnicodeFileTreeNode[], version: string): SidebarNode[] {
-  return sortNodes(entries.map((entry) => {
-    if (entry.type === "directory") {
-      return {
-        type: "directory",
-        name: entry.name,
-        path: normalize(entry.path),
-        version,
-        children: normalizeVersionTreeEntries(entry.children, version),
-      } satisfies SidebarNode;
-    }
-
-    return {
-      type: "file",
-      name: entry.name,
-      path: normalize(entry.path),
-      version,
-    } satisfies SidebarNode;
-  }));
+  });
 }
 
 export function ExplorerSidebar() {
   const params = useParams({ strict: false });
+  const search = useSearch({ strict: false }) as Partial<SearchQueryParams>;
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
+  const { data: rootDirectory } = useSuspenseQuery(filesQueryOptions({
+    path: "",
+    statType: "directory",
+    pattern: search.pattern,
+    sort: search.sort,
+    order: search.order,
+    query: search.query,
+    type: search.type,
+  }));
   const currentPath = normalize(typeof params._splat === "string" ? params._splat : "");
   const [query, setQuery] = useState("");
+  const versionTypes = new Map(versions.map((version) => [version.version, version.type] as const));
 
   const ctx: ExplorerSidebarContextValue = {
     currentPath,
-    query,
+    filters: search,
   };
 
-  const filteredVersions = query
-    ? versions.filter((version) => version.version.toLowerCase().includes(query.toLowerCase()))
-    : versions;
+  const rootNodes = rootDirectory.type === "directory"
+    ? normalizeDirectoryEntries(rootDirectory.files).map((node) => ({
+        ...node,
+        badge: versionTypes.get(node.name),
+      }))
+    : [];
+  const filteredRootNodes = query
+    ? rootNodes.filter((node) => node.name.toLowerCase().includes(query.toLowerCase()))
+    : rootNodes;
 
   return (
     <ExplorerSidebarContext value={ctx}>
@@ -124,17 +110,10 @@ export function ExplorerSidebar() {
         </div>
         <div className="flex-1 overflow-auto px-2 pb-4">
           <div className="space-y-1">
-            {filteredVersions.map((version) => (
+            {filteredRootNodes.map((node) => (
               <Node
-                key={version.version}
-                node={{
-                  type: "directory",
-                  name: `v${version.version}`,
-                  path: version.version,
-                  version: version.version,
-                  badge: version.type,
-                  loadChildren: "version-root",
-                }}
+                key={node.path}
+                node={node}
                 depth={0}
               />
             ))}
@@ -147,13 +126,13 @@ export function ExplorerSidebar() {
 
 function Node({ node, depth }: { node: SidebarNode; depth: number }) {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const { currentPath, query } = useExplorerSidebar();
+  const { currentPath } = useExplorerSidebar();
 
   const isDirectory = node.type === "directory";
   const isActive = currentPath === node.path || currentPath.startsWith(`${node.path}/`);
   const shouldAutoExpand = isDirectory && isActive;
   const [isExpanded, setIsExpanded] = useState(shouldAutoExpand);
-  const showChildren = isDirectory && isExpanded && !query;
+  const showChildren = isDirectory && isExpanded;
 
   return (
     <div>
@@ -223,20 +202,21 @@ function NodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
 }
 
 function QueriedNodeChildren({ node, depth }: { node: SidebarNode; depth: number }) {
-  const directoryPath = node.loadChildren === "version-root" ? node.version : node.path;
+  const { filters } = useExplorerSidebar();
   const directoryQuery = useQuery({
     ...filesQueryOptions({
-      path: directoryPath,
+      path: node.path,
       statType: "directory",
+      pattern: filters.pattern,
+      sort: filters.sort,
+      order: filters.order,
+      query: filters.query,
+      type: filters.type,
     }),
-    enabled: node.loadChildren === "directory" || node.loadChildren === "version-root",
-  });
-  const versionTreeQuery = useQuery({
-    ...versionFileTreeQueryOptions(node.version || ""),
-    enabled: node.loadChildren === "version-file-tree" && !!node.version,
+    enabled: true,
   });
 
-  if (directoryQuery.isLoading || versionTreeQuery.isLoading) {
+  if (directoryQuery.isLoading) {
     return (
       <div className="space-y-1">
         {[1, 2, 3].map((i) => (
@@ -255,27 +235,15 @@ function QueriedNodeChildren({ node, depth }: { node: SidebarNode; depth: number
 
   let entries: SidebarNode[] = [];
 
-  if (node.loadChildren === "version-file-tree") {
-    if (!versionTreeQuery.data || !node.version) {
-      return (
-        <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
-          Failed
-        </div>
-      );
-    }
-
-    entries = normalizeVersionTreeEntries(versionTreeQuery.data, node.version);
-  } else {
-    if (!directoryQuery.data || directoryQuery.data.type !== "directory") {
-      return (
-        <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
-          Failed
-        </div>
-      );
-    }
-
-    entries = normalizeDirectoryEntries(directoryQuery.data.files, node.version);
+  if (!directoryQuery.data || directoryQuery.data.type !== "directory") {
+    return (
+      <div className="px-2 py-1 text-xs text-muted-foreground" style={getIndentStyle(depth)}>
+        Failed
+      </div>
+    );
   }
+
+  entries = normalizeDirectoryEntries(directoryQuery.data.files);
 
   if (entries.length === 0) {
     return (
