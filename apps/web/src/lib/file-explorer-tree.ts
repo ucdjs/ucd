@@ -1,6 +1,4 @@
 import type { FileEntry, UnicodeVersionList } from "@ucdjs/schemas";
-import type { SearchQueryParams } from "./file-explorer";
-import { filesQueryOptions } from "#functions/files";
 
 const LEADING_SLASHES_RE = /^\/+/;
 const TRAILING_SLASH_RE = /\/$/;
@@ -40,18 +38,6 @@ export function normalizeDirectoryEntries(entries: FileEntry[]): SidebarNode[] {
     name: entry.name,
     path: normalizeExplorerPath(entry.path),
   }));
-}
-
-export function getDirectoryListingQueryOptions(path: string, filters: Partial<SearchQueryParams>) {
-  return filesQueryOptions({
-    path,
-    statType: "directory",
-    pattern: filters.pattern,
-    sort: filters.sort,
-    order: filters.order,
-    query: filters.query,
-    type: filters.type,
-  });
 }
 
 export function getVersionBadge(versionType?: string) {

@@ -1,4 +1,4 @@
-import { filesQueryOptions } from "#functions/files";
+import { directoryListingQueryOptions } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
@@ -13,13 +13,9 @@ export interface EntryListProps {
 export function EntryList({ currentPath }: EntryListProps) {
   const search = useSearch({ from: "/(explorer)/file-explorer/$" });
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const { data } = useSuspenseQuery(filesQueryOptions({
+  const { data } = useSuspenseQuery(directoryListingQueryOptions({
     path: currentPath,
-    order: search.order,
-    pattern: search.pattern,
-    sort: search.sort,
-    query: search.query,
-    type: search.type,
+    ...search,
   }));
 
   if ((data.files || []).length === 0) {
@@ -78,9 +74,9 @@ export function EntryList({ currentPath }: EntryListProps) {
 EntryList.Skeleton = function EntryListSkeleton({
   amount,
 }: {
-  amount: { total: number; files: number; directories: number };
+  amount?: { total: number; files: number; directories: number };
 }) {
-  const skeletons = Array.from({ length: amount.total || 5 });
+  const skeletons = Array.from({ length: amount?.total || 5 });
 
   return (
     <>
