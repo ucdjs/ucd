@@ -87,7 +87,7 @@ export function ExplorerSidebar() {
   const rootNodes = rootDirectory.type === "directory"
     ? normalizeDirectoryEntries(rootDirectory.files).map((node) => ({
         ...node,
-        badge: versionTypes.get(node.name),
+        badge: versionTypes.get(node.name) === "draft" ? "draft" : undefined,
       }))
     : [];
   const filteredRootNodes = query
