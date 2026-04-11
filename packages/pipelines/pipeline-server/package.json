@@ -44,8 +44,7 @@
     "node": ">=24.13"
   },
   "scripts": {
-    "build": "vite build && pnpm build:dts",
-    "build:dts": "tsc --project tsconfig.dts.json",
+    "build": "vite build",
     "dev": "NODE_OPTIONS='--import @ucdjs/moonbeam/register' vite dev --port 3031 --configLoader native",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
@@ -107,6 +106,8 @@
     "publint": "catalog:build",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
+    "rolldown": "catalog:build",
+    "rolldown-plugin-dts": "catalog:build",
     "tailwind-merge": "catalog:frontend",
     "tailwindcss": "catalog:build",
     "tsdown": "catalog:build",

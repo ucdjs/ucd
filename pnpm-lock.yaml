@@ -67,6 +67,9 @@ catalogs:
     publint:
       specifier: 0.3.18
       version: 0.3.18
+    rolldown-plugin-dts:
+      specifier: 0.23.2
+      version: 0.23.2
     tailwindcss:
       specifier: 4.2.2
       version: 4.2.2
@@ -1491,6 +1494,12 @@ importers:
       react-dom:
         specifier: catalog:frontend
         version: 19.2.4(react@19.2.4)
+      rolldown:
+        specifier: 1.0.0-rc.13
+        version: 1.0.0-rc.13
+      rolldown-plugin-dts:
+        specifier: catalog:build
+        version: 0.23.2(rolldown@1.0.0-rc.13)(typescript@6.0.2)
       tailwind-merge:
         specifier: catalog:frontend
         version: 3.5.0

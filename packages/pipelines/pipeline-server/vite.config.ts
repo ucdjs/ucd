@@ -3,6 +3,8 @@ import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import { build as rolldownBuild } from "rolldown";
+import { dts } from "rolldown-plugin-dts";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
@@ -76,6 +78,24 @@ export default defineConfig((config) => {
 
         await builder.build(builder.environments.client);
         await builder.build(builder.environments.server);
+        await rolldownBuild({
+          input: "src/server/app.ts",
+          external: (id) => {
+            return !id.startsWith(".")
+              && !id.startsWith("/")
+              && !id.startsWith("#server/");
+          },
+          output: {
+            dir: "dist/server",
+            format: "esm",
+          },
+          plugins: [
+            dts({
+              emitDtsOnly: true,
+              tsconfig: "./tsconfig.dts.json",
+            }),
+          ],
+        });
       },
     },
   };
