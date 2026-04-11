@@ -80,6 +80,8 @@ export interface RawUnicodeAssetResult {
   extension: string;
 }
 
+type UnicodeAssetMethod = "GET" | "HEAD";
+
 function normalizeUnicodeAssetPath(path: string): string {
   const normalizedPath = path.trim();
   if (!normalizedPath || normalizedPath === "/") {
@@ -141,12 +143,12 @@ function rewriteDirectoryEntryVersionPrefix(
   return path;
 }
 
-export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
+export async function getRawUnicodeAsset(path: string, method: UnicodeAssetMethod = "GET"): Promise<RawUnicodeAssetResult> {
   const normalizedPath = normalizeUnicodeAssetPath(path);
   const url = normalizedPath ? `https://unicode.org/Public/${normalizedPath}?F=2` : "https://unicode.org/Public?F=2";
 
   const response = await fetch(url, {
-    method: "GET",
+    method,
     headers: { "User-Agent": DEFAULT_USER_AGENT },
   });
 
@@ -281,7 +283,7 @@ export type UnicodeAssetResult
   | {
     kind: "directory";
     status: number;
-    body: string;
+    body: string | null;
     headers: Record<string, string>;
   };
 
@@ -297,7 +299,11 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
 
   try {
     const resolvedPath = resolveUnicodeAssetPath(path);
-    const asset = await getRawUnicodeAsset(resolvedPath.upstreamPath);
+    const asset = await getRawUnicodeAsset(
+      resolvedPath.upstreamPath,
+      options.isHeadRequest ? "HEAD" : "GET",
+    );
+
     if (!asset.ok) {
       if (asset.status === 404) {
         return {
@@ -322,8 +328,48 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
     const baseHeaders: Record<string, string> = lastMod ? { "Last-Modified": lastMod } : {};
     const requestedVersion = resolvedPath.requestedVersion;
     const upstreamVersion = resolvedPath.upstreamVersion;
+    const isDirectory = contentType.includes("text/html") && !HTML_EXTENSIONS.includes(`.${extension}`);
 
-    if (contentType.includes("text/html") && !HTML_EXTENSIONS.includes(`.${extension}`)) {
+    if (options.isHeadRequest) {
+      if (isDirectory) {
+        return {
+          status: 200,
+          kind: "directory",
+          headers: {
+            ...baseHeaders,
+            "Content-Type": "application/json",
+            [UCD_STAT_TYPE_HEADER]: "directory",
+          },
+          body: null,
+        };
+      }
+
+      const size = getFileSizeFromHeaders(response.headers);
+      const cd = response.headers.get("Content-Disposition");
+      const headers: Record<string, string> = {
+        ...baseHeaders,
+        "Content-Type": contentType || determineContentTypeFromExtension(extension),
+        [UCD_STAT_TYPE_HEADER]: "file",
+      };
+
+      if (size) {
+        headers[UCD_STAT_SIZE_HEADER] = size;
+        headers["Content-Length"] = size;
+      }
+
+      if (cd) {
+        headers["Content-Disposition"] = cd;
+      }
+
+      return {
+        status: 200,
+        headers,
+        kind: "file",
+        body: null,
+      };
+    }
+
+    if (isDirectory) {
       let entries = await parseUnicodeDirectory(await response.text(), normalizedPath || "/");
 
       if (
@@ -358,7 +404,6 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
       };
     }
 
-    const size = getFileSizeFromHeaders(response.headers);
     const cd = response.headers.get("Content-Disposition");
     const headers: Record<string, string> = {
       ...baseHeaders,
@@ -366,18 +411,13 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
       [UCD_STAT_TYPE_HEADER]: "file",
     };
 
-    if (size && options.isHeadRequest) {
-      // Only include size headers for HEAD requests, not for streamed GET responses
-      headers[UCD_STAT_SIZE_HEADER] = size;
-      headers["Content-Length"] = size;
-    }
     if (cd) headers["Content-Disposition"] = cd;
 
     return {
       status: 200,
       headers,
       kind: "file",
-      body: options.isHeadRequest ? null : response.body,
+      body: response.body,
     };
   } catch (err) {
     return {

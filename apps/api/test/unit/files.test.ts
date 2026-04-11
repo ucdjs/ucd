@@ -1,5 +1,5 @@
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
-import { HttpResponse, mockFetch, RawResponse } from "@ucdjs/test-utils/msw";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { describe, expect, it } from "vitest";
 import { getRawUnicodeAsset, getUnicodeAsset, parseUnicodeDirectory } from "../../src/lib/files";
@@ -137,8 +137,8 @@ describe("getUnicodeAsset", () => {
     const content = "Head response content";
 
     mockFetch([
-      ["GET", "https://unicode.org/Public/sample/file.txt", () => {
-        return HttpResponse.text(content, {
+      ["HEAD", "https://unicode.org/Public/sample/file.txt", () => {
+        return new HttpResponse(null, {
           headers: {
             "content-type": "text/plain; charset=utf-8",
             "content-length": content.length.toString(),
@@ -158,11 +158,9 @@ describe("getUnicodeAsset", () => {
   });
 
   it("derives HEAD file size from Apache ETag when content-length is missing", async () => {
-    const content = "Large file content";
-
     mockFetch([
-      ["GET", "https://unicode.org/Public/sample/large.txt", () => {
-        return new RawResponse(content, {
+      ["HEAD", "https://unicode.org/Public/sample/large.txt", () => {
+        return new HttpResponse(null, {
           headers: {
             "content-type": "text/plain; charset=utf-8",
             "etag": "W/\"7975b4-63c70d19d13c0-gzip\"",
@@ -179,6 +177,26 @@ describe("getUnicodeAsset", () => {
     expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("file");
     expect(result.headers[UCD_STAT_SIZE_HEADER]).toBe("7959988");
     expect(result.headers["Content-Length"]).toBe("7959988");
+  });
+
+  it("returns HEAD directory metadata without fetching the listing body", async () => {
+    mockFetch([
+      ["HEAD", "https://unicode.org/Public/17.0.0/ucd", () => {
+        return new HttpResponse(null, {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+          },
+        });
+      }],
+    ]);
+
+    const result = await getUnicodeAsset("17.0.0/ucd", { isHeadRequest: true });
+
+    expect(result.status).toBe(200);
+    expect(result.kind).toBe("directory");
+    expect(result.body).toBeNull();
+    expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("directory");
+    expect(result.headers["Content-Type"]).toBe("application/json");
   });
 });
 
