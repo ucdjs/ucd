@@ -224,6 +224,8 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
+          date: null,
+          status: "stable",
           r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
@@ -266,8 +268,13 @@ describe("tasks", () => {
     });
 
     it("should return 400 when workflow is not found", async () => {
+      const workflowId = taskLib.makeManifestUploadId(manifestVersion);
+      env.MANIFEST_UPLOAD_WORKFLOW = {
+        get: vi.fn().mockRejectedValue(new Error("instance.not_found")),
+      } as any as typeof env.MANIFEST_UPLOAD_WORKFLOW;
+
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/non-existent-id", {
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
           headers: {
             "X-UCDJS-Task-Key": TASK_API_KEY,
           },
@@ -314,6 +321,8 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
+          date: null,
+          status: "stable",
           r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
@@ -358,6 +367,8 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
+          date: null,
+          status: "stable",
           r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
