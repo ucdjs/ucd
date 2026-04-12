@@ -1,5 +1,3 @@
-/* eslint-disable react-refresh/only-export-components */
-
 import { EntryList } from "#components/file-explorer/entry-list";
 import { ExplorerNotFound } from "#components/not-found";
 import { directoryListingQueryOptions, getFileHeadInfo } from "#functions/files";
