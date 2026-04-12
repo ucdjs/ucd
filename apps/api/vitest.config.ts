@@ -16,6 +16,8 @@ export default defineProject({
           "enable_nodejs_fs_module",
           "enable_nodejs_http_modules",
           "enable_nodejs_perf_hooks_module",
+          "enable_nodejs_process_v2",
+          "enable_nodejs_v8_module",
         ],
       },
       wrangler: {
