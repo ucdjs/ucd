@@ -1,9 +1,10 @@
+/// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
+
 import * as taskLib from "@ucdjs-internal/worker-utils";
 import { introspectWorkflowInstance } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import { expectApiError, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
 const TASK_API_KEY = "b8539abb-f2e9-4f6f-86b3-36df26d752b4";
 const manifestVersion = "16.0.0";
@@ -64,8 +65,11 @@ describe("tasks", () => {
         env,
       );
 
-      expectSuccess(response, { status: 202 });
-      expectJsonResponse(response);
+      expect(response).toMatchResponse({
+        status: 202,
+        json: true,
+        cache: false,
+      });
 
       const data = await json();
       expect(data).toMatchObject({
@@ -98,9 +102,11 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 400,
-        message: "Missing 'version' query parameter",
+        error: {
+          message: "Missing 'version' query parameter",
+        },
       });
     });
 
@@ -117,9 +123,11 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 400,
-        message: /Invalid version format/,
+        error: {
+          message: /Invalid version format/,
+        },
       });
     });
 
@@ -136,9 +144,11 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 400,
-        message: "Content-Type must be application/x-tar or application/gzip",
+        error: {
+          message: "Content-Type must be application/x-tar or application/gzip",
+        },
       });
     });
 
@@ -159,13 +169,15 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 400,
-        message: /exceeds maximum size of 10MB/,
+        error: {
+          message: /exceeds maximum size of 10MB/,
+        },
       });
     });
 
-    it("should return 502 when workflow binding is not configured", async () => {
+    it("should return 502 when the upload workflow binding is not configured", async () => {
       // Remove workflow binding
       delete (env as any).MANIFEST_UPLOAD_WORKFLOW;
 
@@ -181,12 +193,12 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
       });
     });
 
-    it("should return 502 when workflow creation fails", async () => {
+    it("should return 502 when upload workflow creation fails", async () => {
       vi.spyOn(env.MANIFEST_UPLOAD_WORKFLOW, "create").mockRejectedValue(new Error("Workflow creation failed"));
 
       const { response } = await executeRequest(
@@ -201,7 +213,7 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
       });
     });
@@ -209,47 +221,6 @@ describe("tasks", () => {
 
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /_tasks/upload-status/:workflowId", () => {
-    it("should return workflow status when successful", async () => {
-      const workflowId = taskLib.makeManifestUploadId(manifestVersion);
-      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, workflowId);
-      await instance.modify(async (m) => {
-        await m.disableSleeps();
-        await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
-        await m.mockStepResult({ name: "upload-files" }, [{ name: "manifest.json", success: true }]);
-        await m.mockStepResult({ name: "validate-upload" }, { validated: true, fileCount: 1 });
-        await m.mockStepResult({ name: "purge-caches" }, { ok: true });
-        await m.mockStepResult({ name: "cleanup-tar" }, { ok: true });
-      });
-      await env.MANIFEST_UPLOAD_WORKFLOW.create({
-        id: workflowId,
-        params: {
-          version: manifestVersion,
-          date: null,
-          status: "stable",
-          r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
-        },
-      });
-      await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
-
-      const { response, json } = await executeRequest(
-        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
-          headers: {
-            "X-UCDJS-Task-Key": TASK_API_KEY,
-          },
-        }),
-        env,
-      );
-
-      expectSuccess(response);
-      expectJsonResponse(response);
-
-      const data = await json();
-      expect(data).toMatchObject({
-        workflowId,
-        status: "complete",
-      });
-    });
-
     it("should return 400 when workflow ID is missing", async () => {
       // This test actually can't happen with the current route definition
       // since :workflowId is a required parameter
@@ -282,13 +253,15 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 400,
-        message: "Invalid workflow ID or workflow not found",
+        error: {
+          message: "Invalid workflow ID or workflow not found",
+        },
       });
     });
 
-    it("should return 502 when workflow binding is not configured", async () => {
+    it("should return 502 when the status workflow binding is not configured", async () => {
       const workflowId = taskLib.makeManifestUploadId(manifestVersion);
       delete (env as any).MANIFEST_UPLOAD_WORKFLOW;
 
@@ -301,7 +274,7 @@ describe("tasks", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
       });
     });
@@ -337,7 +310,11 @@ describe("tasks", () => {
         env,
       );
 
-      expectSuccess(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: false,
+      });
       const data = await json();
       expect(data).toMatchObject({
         workflowId,
@@ -385,7 +362,13 @@ describe("tasks", () => {
         }),
         env,
       );
-      expectSuccess(statusResponse);
+
+      expect(statusResponse).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: false,
+      });
+
       const data = await json();
       expect(data).toMatchObject({
         workflowId,

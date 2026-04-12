@@ -1,15 +1,11 @@
+/// <reference types="../../../../packages/test-utils/src/matchers/types.d.ts" />
+
 import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";
-import {
-  expectApiError,
-  expectCacheHeaders,
-  expectJsonResponse,
-  expectSuccess,
-} from "../helpers/response";
 
 beforeEach(async () => {
   await env.UCD_DATA.exec("DROP TABLE IF EXISTS versions");
@@ -59,9 +55,11 @@ describe("well-known", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+      });
 
       const data = await json();
 
@@ -103,11 +101,15 @@ describe("well-known", () => {
         mockEnv,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      expectCacheHeaders(response);
-      expect(response.headers.get("Last-Modified")).toBeTruthy();
-      expect(response.headers.get("ETag")).toBe("\"abc123etag\"");
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+        headers: {
+          "ETag": "\"abc123etag\"",
+          "Last-Modified": expect.any(String),
+        },
+      });
 
       const data = await json();
       expect(data).toEqual(mockManifest);
@@ -147,8 +149,22 @@ describe("well-known", () => {
         mockEnv,
       );
 
-      expectSuccess(getResponse);
-      expectSuccess(headResponse);
+      expect(getResponse).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: false,
+        headers: {
+          ETag: expect.any(String),
+        },
+      });
+
+      expect(headResponse).toMatchResponse({
+        status: 200,
+        cache: false,
+        headers: {
+          ETag: expect.any(String),
+        },
+      });
 
       const getEtag = getResponse.headers.get("ETag");
       const headEtag = headResponse.headers.get("ETag");
@@ -173,7 +189,9 @@ describe("well-known", () => {
         mockEnv,
       );
 
-      await expectApiError(response, { status: 404 });
+      expect(response).toMatchResponse({
+        status: 404,
+      });
     });
 
     it("should return 404 for invalid version format", async () => {
@@ -189,9 +207,12 @@ describe("well-known", () => {
         mockEnv,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 404,
-        message: /Invalid version format: invalid\. Expected format: X\.Y\.Z \(e\.g\., 16\.0\.0\)/,
+        json: true,
+        error: {
+          message: /Invalid version format: invalid\. Expected format: X\.Y\.Z \(e\.g\., 16\.0\.0\)/,
+        },
       });
     });
   });
