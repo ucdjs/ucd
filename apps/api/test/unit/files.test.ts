@@ -1,4 +1,4 @@
-import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { UCD_STAT_CHILDREN_HEADER, UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { describe, expect, it } from "vitest";
@@ -197,6 +197,8 @@ describe("getUnicodeAsset", () => {
     expect(result.body).toBeNull();
     expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("directory");
     expect(result.headers["Content-Type"]).toBe("application/json");
+    expect(result.headers[UCD_STAT_CHILDREN_HEADER]).toBeUndefined();
+    expect(result.headers[UCD_STAT_SIZE_HEADER]).toBeUndefined();
   });
 });
 
