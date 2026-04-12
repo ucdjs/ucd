@@ -136,7 +136,6 @@ describe("v1_files", () => {
 
         expect(response).toBeApiError({ status: 404, message: "Resource not found" });
       });
-
     });
 
     describe("content-type inference", () => {
