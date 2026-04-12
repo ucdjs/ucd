@@ -10,6 +10,7 @@ export interface ExecuteRequestResult {
   ctx: ReturnType<typeof createExecutionContext>;
   json: <T = unknown>() => Promise<T>;
   text: () => Promise<string>;
+  arrayBuffer: () => Promise<ArrayBuffer>;
 }
 
 export async function executeRequest(
@@ -27,6 +28,7 @@ export async function executeRequest(
 
   let _json: any;
   let _text: string;
+  let _arrayBuffer: ArrayBuffer;
 
   return {
     response,
@@ -36,6 +38,9 @@ export async function executeRequest(
     },
     async text() {
       return _text ?? (_text = await response.text());
+    },
+    async arrayBuffer() {
+      return _arrayBuffer ?? (_arrayBuffer = await response.arrayBuffer());
     },
   };
 }

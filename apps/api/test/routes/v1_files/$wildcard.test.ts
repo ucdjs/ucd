@@ -275,7 +275,7 @@ describe("v1_files", () => {
           }],
         ]);
 
-        const { response, text } = await executeRequest(
+        const { response, arrayBuffer } = await executeRequest(
           new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData"),
           env,
         );
@@ -288,7 +288,7 @@ describe("v1_files", () => {
           cache: true,
         });
 
-        const content = await text();
+        const content = new TextDecoder().decode(await arrayBuffer());
         expect(content).toBe(mockContent);
       });
     });

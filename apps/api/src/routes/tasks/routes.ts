@@ -5,6 +5,7 @@ import {
   badRequest,
   buildR2Key,
   clearCacheEntry,
+  isValidWorkflowInstanceId,
   makeManifestUploadId,
   MAX_TAR_SIZE_BYTES,
   unauthorized,
@@ -129,6 +130,10 @@ TASKS_ROUTER.get("/upload-status/:workflowId", async (c) => {
     return badRequest(c, { message: "Missing workflow ID" });
   }
 
+  if (!isValidWorkflowInstanceId(workflowId)) {
+    return badRequest(c, { message: "Invalid workflow ID or workflow not found" });
+  }
+
   const workflow = c.env.MANIFEST_UPLOAD_WORKFLOW;
 
   if (!workflow) {
@@ -147,6 +152,10 @@ TASKS_ROUTER.get("/upload-status/:workflowId", async (c) => {
       error: status.error?.message,
     });
   } catch (err) {
+    if (err instanceof Error && err.message === "instance.not_found") {
+      return badRequest(c, { message: "Invalid workflow ID or workflow not found" });
+    }
+
     console.error("[tasks]: Failed to get workflow status:", err);
     return badRequest(c, { message: "Invalid workflow ID or workflow not found" });
   }
