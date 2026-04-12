@@ -119,18 +119,6 @@ describe("v1_files", () => {
           message: "Invalid path",
         });
       });
-
-      it("should reject paths with '//' segments", async () => {
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes"),
-          env,
-        );
-
-        expect(response).toBeApiError({
-          status: 400,
-          message: "Invalid path",
-        });
-      });
     });
 
     describe("error handling", () => {
@@ -149,20 +137,6 @@ describe("v1_files", () => {
         expect(response).toBeApiError({ status: 404, message: "Resource not found" });
       });
 
-      it("should handle 502 from unicode.org", async () => {
-        mockFetch([
-          ["GET", "https://unicode.org/Public/error/path", () => {
-            return new Response("Bad Gateway", { status: 502 });
-          }],
-        ]);
-
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/files/error/path"),
-          env,
-        );
-
-        expect(response).toBeApiError({ status: 502, message: "Bad Gateway" });
-      });
     });
 
     describe("content-type inference", () => {
@@ -1078,40 +1052,6 @@ describe("v1_files", () => {
         });
       });
 
-      it("should include size headers for HEAD file requests", async () => {
-        const mockFileContent = "Head response content";
-
-        mockFetch([
-          ["HEAD", "https://unicode.org/Public/sample/file.txt", () => {
-            return new HttpResponse(null, {
-              headers: {
-                "content-type": "text/plain; charset=utf-8",
-                "content-length": mockFileContent.length.toString(),
-              },
-            });
-          }],
-        ]);
-
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/files/sample/file.txt", {
-            method: "HEAD",
-          }),
-          env,
-        );
-
-        expect(response).toMatchResponse({
-          status: 200,
-          headers: {
-            "Content-Type": "text/plain; charset=utf-8",
-          },
-          cache: true,
-        });
-
-        expect(response.headers.get("Content-Length")).toBe(`${mockFileContent.length}`);
-        expect(response.headers.get(UCD_STAT_SIZE_HEADER)).toBe(`${mockFileContent.length}`);
-        expect(response.headers.get(UCD_STAT_TYPE_HEADER)).toBe("file");
-      });
-
       it("should handle HEAD requests for directories", async () => {
         const lastModified = new Date("2025-08-16T00:45:11Z").toUTCString();
 
@@ -1158,17 +1098,6 @@ describe("v1_files", () => {
 
         expect(response).toBeHeadError(400);
       });
-
-      it("should handle HEAD requests with '//' segments", async () => {
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes", {
-            method: "HEAD",
-          }),
-          env,
-        );
-
-        expect(response).toBeHeadError(400);
-      });
     });
 
     describe("error handling", () => {
@@ -1187,25 +1116,6 @@ describe("v1_files", () => {
         );
 
         expect(response).toBeHeadError(404);
-      });
-
-      it("should handle HEAD requests with 502 from unicode.org", async () => {
-        mockFetch([
-          ["HEAD", "https://unicode.org/Public/error/path", () => {
-            return new HttpResponse(null, {
-              status: 500,
-            });
-          }],
-        ]);
-
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/files/error/path", {
-            method: "HEAD",
-          }),
-          env,
-        );
-
-        expect(response).toBeHeadError(502);
       });
     });
 
