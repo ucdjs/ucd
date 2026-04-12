@@ -1,13 +1,10 @@
+/// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
+
 import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import {
-  expectCacheHeaders,
-  expectJsonResponse,
-  expectSuccess,
-} from "../../helpers/response";
 
 beforeEach(async () => {
   await env.UCD_DATA.exec("DROP TABLE IF EXISTS versions");
@@ -57,9 +54,13 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      expectCacheHeaders(response, /max-age=/);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+        cacheMaxAgePattern: /max-age=/,
+      });
+
       await expect(json()).resolves.toEqual([
         {
           version: "17.0.0",
@@ -86,8 +87,12 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: false,
+      });
+
       await expect(json()).resolves.toEqual([]);
     });
   });

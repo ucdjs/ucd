@@ -145,6 +145,7 @@ describe("v1_versions", () => {
 
       const data = await json<UnicodeFileTree>();
       expect(Array.isArray(data)).toBe(true);
+      expect(data.length).toBeGreaterThan(0);
 
       const flattenedFilePaths = flattenFilePaths(data);
 
@@ -154,6 +155,41 @@ describe("v1_versions", () => {
         "/15.1.0/ucd/subdir/file3.txt",
         "/15.1.0/ucd/emoji/emoji-data.txt",
       ]);
+
+      const [filesEntries, directoryEntries] = data.reduce(
+        ([files, directories], item) => {
+          if (item.type === "file") {
+            files.push(item);
+          } else if (item.type === "directory") {
+            directories.push(item);
+          }
+
+          return [files, directories];
+        },
+        [[], []] as [Exclude<UnicodeFileTreeNode, { type: "directory" }>[], Exclude<UnicodeFileTreeNode, { type: "file" }>[]],
+      );
+
+      expect(filesEntries.length).toBeGreaterThan(0);
+      expect(directoryEntries.length).toBeGreaterThan(0);
+
+      // check that each file object has the required properties
+      expect(filesEntries).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String),
+          path: expect.any(String),
+          type: expect.any(String),
+        }),
+      ]));
+
+      // check that each directory object has the required properties
+      expect(directoryEntries).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String),
+          path: expect.any(String),
+          type: expect.any(String),
+          children: expect.any(Array),
+        }),
+      ]));
     });
 
     it("should return files for latest version", async () => {
@@ -199,80 +235,6 @@ describe("v1_versions", () => {
         "/17.0.0/ucd/subdir/file3.txt",
         "/17.0.0/ucd/emoji/emoji-data.txt",
       ]);
-    });
-
-    it("should return structured file data with proper schema", async () => {
-      mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
-          return HttpResponse.text(generateAutoIndexHtml([
-            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
-            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
-            { type: "directory", name: "subdir", path: "subdir/", lastModified: 1755287100000 },
-            { type: "directory", name: "emoji", path: "emoji/", lastModified: 1755287100000 },
-          ], "F2"));
-        }],
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
-          return HttpResponse.text(generateAutoIndexHtml([
-            { type: "file", name: "emoji-data.txt", path: "emoji-data.txt", lastModified: 1755287100000 },
-          ], "F2"));
-        }],
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/subdir", () => {
-          return HttpResponse.text(generateAutoIndexHtml([
-            { type: "file", name: "file3.txt", path: "file3.txt", lastModified: 1755287100000 },
-          ], "F2"));
-        }],
-      ]);
-
-      const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
-        env,
-      );
-
-      expect(response).toMatchResponse({
-        json: true,
-        status: 200,
-      });
-
-      const data = await json<UnicodeFileTree>();
-
-      // validate the response structure
-      expect(Array.isArray(data)).toBe(true);
-      expect(data.length).toBeGreaterThan(0);
-
-      const [filesEntries, directoryEntries] = data.reduce(
-        ([files, directories], item) => {
-          if (item.type === "file") {
-            files.push(item);
-          } else if (item.type === "directory") {
-            directories.push(item);
-          }
-
-          return [files, directories];
-        },
-        [[], []] as [Exclude<UnicodeFileTreeNode, { type: "directory" }>[], Exclude<UnicodeFileTreeNode, { type: "file" }>[]],
-      );
-
-      expect(filesEntries.length).toBeGreaterThan(0);
-      expect(directoryEntries.length).toBeGreaterThan(0);
-
-      // check that each file object has the required properties
-      expect(filesEntries).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          name: expect.any(String),
-          path: expect.any(String),
-          type: expect.any(String),
-        }),
-      ]));
-
-      // check that each directory object has the required properties
-      expect(directoryEntries).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          name: expect.any(String),
-          path: expect.any(String),
-          type: expect.any(String),
-          children: expect.any(Array),
-        }),
-      ]));
     });
 
     it("should handle older Unicode versions", async () => {
