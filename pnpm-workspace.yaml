@@ -47,7 +47,7 @@ catalogs:
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     rolldown-plugin-dts: 0.23.2
-    drizzle-kit: 1.0.0-beta.20
+    drizzle-kit: 1.0.0-beta.9-e89174b
     tinyglobby: 0.2.15
     "@ucdjs/textmate-grammars": 0.0.0
     "@rolldown/plugin-babel": 0.2.2
@@ -110,11 +110,11 @@ catalogs:
     "@cloudflare/workers-types": 4.20260405.1
     h3: 2.0.1-rc.20
     crossws: 0.4.4
-    drizzle-orm: 1.0.0-beta.20
+    drizzle-orm: 1.0.0-beta.9-e89174b
 
   types:
     "@types/picomatch": 4.0.3
-    "@types/node": 22.19.15
+    "@types/node": 22.19.17
     "@types/yargs-parser": 21.0.3
     "@types/react": 19.2.14
     "@types/react-dom": 19.2.3
@@ -175,7 +175,7 @@ overrides:
   esbuild: 0.28.0
   semver: 7.7.4
   solid-js: 1.9.12
-  undici-types: 7.24.6
+  undici-types: 7.24.7
   vite: 8.0.3
 
 patchedDependencies:
