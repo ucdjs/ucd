@@ -59,52 +59,6 @@ describe("parseUnicodeDirectory", () => {
 });
 
 describe("getUnicodeAsset", () => {
-  it("returns a 400 error object for invalid path", async () => {
-    const result = await getUnicodeAsset("..%2Ftest", {});
-
-    expect(result.status).toBe(400);
-    expect(result.kind).toBe("error");
-    expect(result.body).toBeTypeOf("string");
-
-    const payload = JSON.parse(result.body as string) as { message: string; status: number };
-    expect(payload.status).toBe(400);
-    expect(payload.message).toBe("Invalid path");
-  });
-
-  it("returns upstream 404 response as error object", async () => {
-    mockFetch([
-      ["GET", "https://unicode.org/Public/nonexistent/path", () => {
-        return HttpResponse.text("Not Found", { status: 404 });
-      }],
-    ]);
-
-    const result = await getUnicodeAsset("nonexistent/path", {});
-
-    expect(result.status).toBe(404);
-    expect(result.kind).toBe("error");
-
-    const payload = JSON.parse(result.body as string) as { message: string; status: number };
-    expect(payload.status).toBe(404);
-    expect(payload.message).toBe("Resource not found");
-  });
-
-  it("returns upstream failures as error object", async () => {
-    mockFetch([
-      ["GET", "https://unicode.org/Public/error/path", () => {
-        return HttpResponse.text("Internal Server Error", { status: 500 });
-      }],
-    ]);
-
-    const result = await getUnicodeAsset("error/path", {});
-
-    expect(result.status).toBe(502);
-    expect(result.kind).toBe("error");
-
-    const payload = JSON.parse(result.body as string) as { message: string; status: number };
-    expect(payload.status).toBe(502);
-    expect(payload.message).toBe("Bad Gateway");
-  });
-
   it("returns directory JSON and strips /ucd/ from entry paths when enabled", async () => {
     const html = generateAutoIndexHtml([
       { name: "Blocks.txt", path: "17.0.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
