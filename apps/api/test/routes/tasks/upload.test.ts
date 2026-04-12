@@ -221,24 +221,7 @@ describe("tasks", () => {
 
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /_tasks/upload-status/:workflowId", () => {
-    it("should return 400 when workflow ID is missing", async () => {
-      // This test actually can't happen with the current route definition
-      // since :workflowId is a required parameter
-      // But we test the empty string case
-      const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/", {
-          headers: {
-            "X-UCDJS-Task-Key": TASK_API_KEY,
-          },
-        }),
-        env,
-      );
-
-      // This will be a 404 from the router, not our handler
-      expect(response.status).toBe(404);
-    });
-
-    it("should return 400 when workflow is not found", async () => {
+    it("should return 400 when workflow status is not found", async () => {
       const workflowId = taskLib.makeManifestUploadId(manifestVersion);
       env.MANIFEST_UPLOAD_WORKFLOW = {
         get: vi.fn().mockRejectedValue(new Error("instance.not_found")),

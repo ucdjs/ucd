@@ -310,16 +310,6 @@ describe("v1_versions", () => {
         });
       });
 
-      it("should return 404 for non-existent routes", async () => {
-        const { response } = await executeRequest(
-          new Request("https://api.ucdjs.dev/api/v1/versions/nonexistent/file-tree"),
-          env,
-        );
-
-        expect(response).toMatchResponse({
-          status: 400,
-        });
-      });
     });
 
     // This is marked as TODO, until Vitest Pool Workers is

@@ -19,7 +19,6 @@ export async function executeRequest(
   options?: ExecuteRequestOptions,
 ): Promise<ExecuteRequestResult> {
   const ctx = createExecutionContext();
-  // @ts-expect-error I don't know how to fix this.
   const response = await worker.fetch(request, env, ctx);
 
   if (options?.waitForExecutionContext !== false) {
