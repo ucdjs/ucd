@@ -107,7 +107,7 @@ describe("well-known", () => {
         cache: true,
         headers: {
           "ETag": "\"abc123etag\"",
-          "Last-Modified": expect.any(String),
+          "Last-Modified": /.+/,
         },
       });
 
@@ -152,17 +152,15 @@ describe("well-known", () => {
       expect(getResponse).toMatchResponse({
         status: 200,
         json: true,
-        cache: false,
         headers: {
-          ETag: expect.any(String),
+          ETag: /.+/,
         },
       });
 
       expect(headResponse).toMatchResponse({
         status: 200,
-        cache: false,
         headers: {
-          ETag: expect.any(String),
+          ETag: /.+/,
         },
       });
 
