@@ -1,7 +1,7 @@
 /// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
 
 import type { FileEntryList } from "@ucdjs/schemas";
-import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { UCD_STAT_CHILDREN_HEADER, UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { HttpResponse, mockFetch, RawResponse } from "@ucdjs/test-utils/msw";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
@@ -1052,8 +1052,8 @@ describe("v1_files", () => {
         const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
         mockFetch([
-          ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
-            return HttpResponse.text(mockFileContent, {
+          ["HEAD", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
+            return new HttpResponse(null, {
               headers: {
                 "content-type": "text/plain; charset=utf-8",
                 "content-length": mockFileContent.length.toString(),
@@ -1082,8 +1082,8 @@ describe("v1_files", () => {
         const mockFileContent = "Head response content";
 
         mockFetch([
-          ["GET", "https://unicode.org/Public/sample/file.txt", () => {
-            return HttpResponse.text(mockFileContent, {
+          ["HEAD", "https://unicode.org/Public/sample/file.txt", () => {
+            return new HttpResponse(null, {
               headers: {
                 "content-type": "text/plain; charset=utf-8",
                 "content-length": mockFileContent.length.toString(),
@@ -1113,17 +1113,14 @@ describe("v1_files", () => {
       });
 
       it("should handle HEAD requests for directories", async () => {
-        const html = generateAutoIndexHtml([
-          { name: "UnicodeData.txt", path: "15.1.0/ucd/UnicodeData.txt", type: "file", lastModified: Date.now() },
-          { name: "Blocks.txt", path: "15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
-        ], "F2");
+        const lastModified = new Date("2025-08-16T00:45:11Z").toUTCString();
 
         mockFetch([
-          ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
-            return HttpResponse.text(html, {
+          ["HEAD", "https://unicode.org/Public/15.1.0/ucd", () => {
+            return new HttpResponse(null, {
               headers: {
                 "content-type": "text/html; charset=utf-8",
-                "content-length": html.length.toString(),
+                "last-modified": lastModified,
               },
             });
           }],
@@ -1138,12 +1135,15 @@ describe("v1_files", () => {
 
         expect(response).toMatchResponse({
           status: 200,
-          json: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
           cache: true,
         });
         expect(response.headers.get(UCD_STAT_TYPE_HEADER)).toBe("directory");
-        expect(response.headers.get("content-length")).toBeDefined();
-        expect(response.headers.get("last-modified")).toBeDefined();
+        expect(response.headers.get("Last-Modified")).toBe(lastModified);
+        expect(response.headers.get(UCD_STAT_CHILDREN_HEADER)).toBeNull();
+        expect(response.headers.get(UCD_STAT_SIZE_HEADER)).toBeNull();
       });
     });
 
@@ -1174,8 +1174,8 @@ describe("v1_files", () => {
     describe("error handling", () => {
       it("should handle HEAD requests for non-existent files", async () => {
         mockFetch([
-          ["GET", "https://unicode.org/Public/nonexistent/path", () => {
-            return HttpResponse.text("Not Found", { status: 404 });
+          ["HEAD", "https://unicode.org/Public/nonexistent/path", () => {
+            return new HttpResponse(null, { status: 404 });
           }],
         ]);
 
@@ -1191,8 +1191,8 @@ describe("v1_files", () => {
 
       it("should handle HEAD requests with 502 from unicode.org", async () => {
         mockFetch([
-          ["GET", "https://unicode.org/Public/error/path", () => {
-            return HttpResponse.text("Internal Server Error", {
+          ["HEAD", "https://unicode.org/Public/error/path", () => {
+            return new HttpResponse(null, {
               status: 500,
             });
           }],
@@ -1221,8 +1221,8 @@ describe("v1_files", () => {
         ]);
 
         mockFetch([
-          ["GET", "https://unicode.org/Public/binary/file", () => {
-            return new Response(mockContent, {
+          ["HEAD", "https://unicode.org/Public/binary/file", () => {
+            return new Response(null, {
               headers: {
                 "content-length": mockContent.length.toString(),
               },
