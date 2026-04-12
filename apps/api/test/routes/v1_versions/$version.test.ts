@@ -309,7 +309,6 @@ describe("v1_versions", () => {
           },
         });
       });
-
     });
 
     // This is marked as TODO, until Vitest Pool Workers is
