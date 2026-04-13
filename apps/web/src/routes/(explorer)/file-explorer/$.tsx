@@ -8,7 +8,7 @@ import { cn } from "@ucdjs-internal/shared-ui";
 import { resolveUCDVersion } from "@unicode-utils/core";
 import { ArrowUp, FolderUp } from "lucide-react";
 import { Suspense } from "react";
-import { searchSchema } from "../../../lib/file-explorer";
+import { parseExplorerRoutePath, searchSchema } from "../../../lib/file-explorer";
 
 export const Route = createFileRoute("/(explorer)/file-explorer/$")({
   component: DirectoryExplorerPage,
@@ -23,23 +23,18 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
     ])],
   },
   async beforeLoad({ params, search }) {
-    let path = params._splat || "";
-    const hasTrailingSlash = path.endsWith("/");
-    const pathSegments = path.split("/").filter(Boolean);
+    const rawPath = params._splat || "";
+    const { pathSegments, path: normalizedPath } = parseExplorerRoutePath(rawPath);
+    const version = pathSegments[0] ?? "";
+    const rest = pathSegments.slice(1);
+    const path = version ? [resolveUCDVersion(version), ...rest].join("/") : normalizedPath;
 
-    if (pathSegments.length > 0) {
-      const version = pathSegments[0] ?? "";
-      const rest = pathSegments.slice(1);
-      const resolvedVersion = resolveUCDVersion(version);
-      if (resolvedVersion !== version) {
-        const nextPath = [resolvedVersion, ...rest].join("/");
-        throw redirect({
-          to: "/file-explorer/$",
-          params: { _splat: hasTrailingSlash ? `${nextPath}/` : nextPath },
-          search,
-        });
-      }
-      path = hasTrailingSlash ? `${[resolvedVersion, ...rest].join("/")}/` : [resolvedVersion, ...rest].join("/");
+    if (path !== rawPath) {
+      throw redirect({
+        to: "/file-explorer/$",
+        params: { _splat: path },
+        search,
+      });
     }
 
     const { statType } = await getFileHeadInfo({ data: { path } });

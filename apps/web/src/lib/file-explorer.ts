@@ -1,5 +1,9 @@
 import z from "zod";
 
+const ENCODED_DOT_RE = /%2e/i;
+const ENCODED_SLASH_RE = /%2f/i;
+const ENCODED_BACKSLASH_RE = /%5c/i;
+
 export const NON_RENDERABLE_EXTENSIONS = new Set([
   // Archives
   "zip",
@@ -119,6 +123,28 @@ export const searchSchema = z.object({
 });
 
 export type SearchQueryParams = z.output<typeof searchSchema>;
+
+export function parseExplorerRoutePath(rawPath: string) {
+  if (
+    ENCODED_DOT_RE.test(rawPath)
+    || ENCODED_SLASH_RE.test(rawPath)
+    || ENCODED_BACKSLASH_RE.test(rawPath)
+    || rawPath.includes("\\")
+  ) {
+    throw new Error("Invalid file path");
+  }
+
+  const pathSegments = rawPath.split("/").filter(Boolean);
+
+  if (pathSegments.some((segment) => segment === "." || segment === "..")) {
+    throw new Error("Invalid file path");
+  }
+
+  return {
+    pathSegments,
+    path: pathSegments.join("/"),
+  };
+}
 
 export const MAX_INLINE_FILE_SIZE = 512 * 1024; // 512 KB
 export const PREVIEW_LIMIT_LABEL = formatFileSize(MAX_INLINE_FILE_SIZE);

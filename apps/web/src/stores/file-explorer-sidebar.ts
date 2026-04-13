@@ -1,31 +1,40 @@
 import { create } from "zustand";
 
+type DirectoryDisclosure = "open" | "closed";
+
 interface FileExplorerSidebarState {
-  expandedPaths: Record<string, boolean>;
-  filterText: string;
-  setFilterText: (value: string) => void;
-  toggleExpandedPath: (path: string, defaultExpanded: boolean) => void;
+  sidebarQuery: string;
+  disclosureByPath: Record<string, DirectoryDisclosure>;
+  setSidebarQuery: (value: string) => void;
+  toggleDirectoryOpen: (path: string, routeOpen: boolean) => void;
 }
 
 export const useFileExplorerSidebarStore = create<FileExplorerSidebarState>()((set) => ({
-  expandedPaths: {},
-  filterText: "",
-  setFilterText: (value) => set({ filterText: value }),
-  toggleExpandedPath: (path, defaultExpanded) => set((state) => {
-    const currentOverride = state.expandedPaths[path];
-    const isExpanded = currentOverride ?? defaultExpanded;
-    const nextExpanded = !isExpanded;
+  sidebarQuery: "",
+  disclosureByPath: {},
+  setSidebarQuery: (value) => set({ sidebarQuery: value }),
+  toggleDirectoryOpen: (path, routeOpen) => set((state) => {
+    const currentOpen = state.disclosureByPath[path] === "open"
+      ? true
+      : state.disclosureByPath[path] === "closed"
+        ? false
+        : routeOpen;
+    const nextOpen = !currentOpen;
 
-    if (nextExpanded === defaultExpanded) {
-      const expandedPaths = { ...state.expandedPaths };
-      delete expandedPaths[path];
-      return { expandedPaths };
+    if (nextOpen === routeOpen) {
+      if (!(path in state.disclosureByPath)) {
+        return state;
+      }
+
+      const disclosureByPath = { ...state.disclosureByPath };
+      delete disclosureByPath[path];
+      return { disclosureByPath };
     }
 
     return {
-      expandedPaths: {
-        ...state.expandedPaths,
-        [path]: nextExpanded,
+      disclosureByPath: {
+        ...state.disclosureByPath,
+        [path]: nextOpen ? "open" : "closed",
       },
     };
   }),

@@ -5,16 +5,25 @@ import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { resolveUCDVersion } from "@unicode-utils/core";
 import { Suspense } from "react";
-import { MAX_INLINE_FILE_SIZE, NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
+import { MAX_INLINE_FILE_SIZE, NON_RENDERABLE_EXTENSIONS, parseExplorerRoutePath } from "../../../lib/file-explorer";
 
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
-  async beforeLoad({ params }) {
-    const path = params._splat || "";
+  async beforeLoad({ params, search }) {
+    const rawPath = params._splat || "";
+    const { pathSegments, path: normalizedPath } = parseExplorerRoutePath(rawPath);
+    const version = pathSegments[0] ?? "";
+    const rest = pathSegments.slice(1);
+    const path = version ? [resolveUCDVersion(version), ...rest].join("/") : normalizedPath;
 
-    if (path.includes("..") || path.includes("//") || path.includes("%2e") || path.includes("%2f")) {
-      throw new Error("Invalid file path");
+    if (path !== rawPath) {
+      throw redirect({
+        to: "/file-explorer/v/$",
+        params: { _splat: path },
+        search,
+      });
     }
 
     const { statType, size, contentType } = await getFileHeadInfo({ data: { path } });
@@ -27,8 +36,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
     }
 
     // Extract file info for early checks
-    const pathSegments = path.split("/").filter(Boolean);
-    const fileName = pathSegments.at(-1) || "file";
+    const fileName = (version ? rest : pathSegments).at(-1) || "file";
     const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
 
     return {
