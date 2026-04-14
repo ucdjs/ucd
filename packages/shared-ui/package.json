@@ -62,6 +62,7 @@
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
     "shiki": "catalog:runtime",
+    "sonner": "catalog:frontend",
     "tailwind-merge": "catalog:frontend",
     "tailwindcss": "catalog:build",
     "tw-animate-css": "catalog:frontend",
