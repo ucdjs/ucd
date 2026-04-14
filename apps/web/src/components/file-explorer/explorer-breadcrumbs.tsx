@@ -86,7 +86,7 @@ export function ExplorerBreadcrumbs() {
         })}
 
         {!isRoot && (
-          <Button variant="ghost" onClick={copyToClipboard}>
+          <Button variant="ghost" type="button" onClick={copyToClipboard} title="Copy path (Mod+Shift+C)">
             {error
               ? <CopyX className="size-3 text-red-500" />
               : copied
