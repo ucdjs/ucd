@@ -11,6 +11,7 @@ export interface FileViewerProps {
   fileName: string;
   /** Absolute URL to the raw file */
   fileUrl: string;
+  onDownload: () => void;
 }
 
 export interface LineSelection {
@@ -55,7 +56,12 @@ function countLinesFromHtml(html: string) {
   return matches ? matches.length : 0;
 }
 
-export function FileViewer({ html, fileUrl, fileName }: FileViewerProps) {
+export function FileViewer({
+  html,
+  fileUrl,
+  fileName,
+  onDownload,
+}: FileViewerProps) {
   const lineCount = useMemo(() => countLinesFromHtml(html), [html]);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const lineElementsRef = useRef<HTMLElement[]>([]);
@@ -141,7 +147,7 @@ export function FileViewer({ html, fileUrl, fileName }: FileViewerProps) {
   const selectionEnd = selection?.end ?? -1;
 
   const handleCopyLink = useCallback(async () => {
-    if (!selection) return;
+    if (!selection || typeof navigator === "undefined" || !navigator.clipboard) return;
 
     const url = `${window.location.origin}${window.location.pathname}${generateLineHash(selection)}`;
     await navigator.clipboard.writeText(url);
@@ -188,6 +194,7 @@ export function FileViewer({ html, fileUrl, fileName }: FileViewerProps) {
             variant="outline"
             size="sm"
             nativeButton={false}
+            title="Open raw file (Mod+Shift+O)"
             render={(
               <a
                 href={fileUrl}
@@ -196,20 +203,20 @@ export function FileViewer({ html, fileUrl, fileName }: FileViewerProps) {
               >
                 <ExternalLink className="size-4" />
                 Open Raw
+                <span className="hidden rounded border border-border/60 px-1 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">Mod+Shift+O</span>
               </a>
             )}
           />
           <Button
             variant="outline"
             size="sm"
-            nativeButton={false}
-            render={(
-              <a href={fileUrl} download>
-                <Download className="size-4" />
-                Download
-              </a>
-            )}
-          />
+            onClick={onDownload}
+            title="Download file (Mod+Shift+B)"
+          >
+            <Download className="size-4" />
+            Download
+            <span className="hidden rounded border border-border/60 px-1 py-0.5 font-mono text-[10px] text-muted-foreground md:inline">Mod+Shift+B</span>
+          </Button>
         </div>
       </div>
       <div className="px-0">

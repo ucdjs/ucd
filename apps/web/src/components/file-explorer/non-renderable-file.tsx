@@ -5,13 +5,13 @@ import { getFileTypeDescription } from "../../lib/file-explorer";
 export interface NonRenderableFileProps {
   fileName: string;
   contentType: string;
-  fileUrl: string;
+  onDownload: () => void;
 }
 
 export function NonRenderableFile({
   fileName,
   contentType,
-  fileUrl,
+  onDownload,
 }: NonRenderableFileProps) {
   const fileType = getFileTypeDescription(fileName);
   const ext = fileName.split(".").pop()?.toLowerCase() || "";
@@ -52,17 +52,13 @@ export function NonRenderableFile({
             )}
           </div>
           <Button
-            nativeButton={false}
-            render={(
-              <a
-                href={fileUrl}
-                download={fileName}
-              >
-                <Download className="size-4" />
-                Download File
-              </a>
-            )}
-          />
+            title="Download file (Mod+Shift+B)"
+            onClick={onDownload}
+            type="button"
+          >
+            <Download className="size-4" />
+            Download File
+          </Button>
         </div>
       </CardContent>
     </Card>

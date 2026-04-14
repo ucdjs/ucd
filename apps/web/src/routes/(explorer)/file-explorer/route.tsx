@@ -2,18 +2,32 @@ import { ExplorerBreadcrumbs } from "#components/file-explorer/explorer-breadcru
 import { ExplorerHeader } from "#components/file-explorer/explorer-header";
 import { ExplorerSidebar } from "#components/file-explorer/explorer-sidebar";
 import { ExplorerToolbar } from "#components/file-explorer/explorer-toolbar";
-import { createFileRoute, Outlet, useMatch } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { createFileRoute, Outlet, useChildMatches } from "@tanstack/react-router";
+import { toast } from "@ucdjs-internal/shared-ui/components";
+import { Suspense, useCallback } from "react";
 
 export const Route = createFileRoute("/(explorer)/file-explorer")({
   component: FileExplorerLayout,
 });
 
 function FileExplorerLayout() {
-  const fileMatch = useMatch({
-    from: "/(explorer)/file-explorer/v/$",
-    shouldThrow: false,
-  });
+  const [currentMatch] = useChildMatches();
+  const currentPath = (currentMatch?.params as { _splat?: string } | undefined)?._splat ?? "";
+  const isFileRoute = currentMatch?.routeId === "/(explorer)/file-explorer/v/$";
+  const copyPath = useCallback(async () => {
+    if (typeof navigator === "undefined" || !navigator.clipboard) {
+      toast.error("Clipboard is not available in this browser.");
+      return;
+    }
+
+    await navigator.clipboard.writeText(`/${currentPath}`);
+    toast.success(currentPath ? "Copied path to clipboard." : "Copied explorer root path.");
+  }, [currentPath]);
+
+  useHotkey("Mod+Shift+C", () => {
+    void copyPath();
+  }, { preventDefault: true });
 
   return (
     <div className="flex h-svh flex-col bg-background overflow-hidden">
@@ -28,7 +42,7 @@ function FileExplorerLayout() {
           <div className="border-b bg-background px-4">
             <div className="flex h-12 items-center justify-between gap-4">
               <ExplorerBreadcrumbs />
-              {!fileMatch && <ExplorerToolbar />}
+              {!isFileRoute && <ExplorerToolbar />}
             </div>
           </div>
           <div className="flex-1 overflow-auto p-4 pt-2">

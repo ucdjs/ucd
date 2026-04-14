@@ -5,11 +5,11 @@ import { formatFileSize, PREVIEW_LIMIT_LABEL } from "../../lib/file-explorer";
 export interface LargeFileWarningProps {
   fileName: string;
   size: number;
-  downloadUrl: string;
   contentType: string;
+  onDownload: () => void;
 }
 
-export function LargeFileWarning({ fileName, size, downloadUrl, contentType }: LargeFileWarningProps) {
+export function LargeFileWarning({ fileName, size, contentType, onDownload }: LargeFileWarningProps) {
   const fileSize = formatFileSize(size);
 
   return (
@@ -55,14 +55,13 @@ export function LargeFileWarning({ fileName, size, downloadUrl, contentType }: L
 
         <div className="flex justify-center sm:justify-start">
           <Button
-            nativeButton={false}
-            render={(
-              <a href={downloadUrl} download={fileName}>
-                <Download className="size-4" />
-                Download File
-              </a>
-            )}
-          />
+            title="Download file (Mod+Shift+B)"
+            onClick={onDownload}
+            type="button"
+          >
+            <Download className="size-4" />
+            Download File
+          </Button>
         </div>
       </div>
     </div>
