@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { createThemeScript } from "@ucdjs-internal/shared-ui";
+import { Toaster } from "@ucdjs-internal/shared-ui/components";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
 export interface AppRouterContext {
@@ -84,6 +85,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body>
         {children}
+        <Toaster />
         <TanStackDevtools
           config={{
             position: "bottom-right",
