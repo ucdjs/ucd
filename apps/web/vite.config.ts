@@ -9,101 +9,113 @@ import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
-export default defineConfig((env) => ({
-  plugins: [
-    devtools(),
-    nitro({
-      preset: "cloudflare_module",
-      cloudflare: {
-        // This is false because we can't use CF environments
-        // in redirected configs which is what this will use.
-        deployConfig: false,
-        nodeCompat: true,
-      },
-      minify: env.mode === "build",
-      wasm: false,
-      routeRules: {
-        "/**": {
-          headers: {
-            "Content-Security-Policy": [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
-              "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data:",
-              "connect-src 'self' https://api.ucdjs.dev https://preview.api.ucdjs.dev",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-            ].join("; "),
-            "X-Content-Type-Options": "nosniff",
-            "X-Frame-Options": "DENY",
-            "Referrer-Policy": "strict-origin-when-cross-origin",
+export default defineConfig((env) => {
+  const connectSrc = [
+    "'self'",
+    "https://api.ucdjs.dev",
+    "https://preview.api.ucdjs.dev",
+  ];
+
+  if (env.command === "serve") {
+    connectSrc.push("http://localhost:8787");
+  }
+
+  return {
+    plugins: [
+      devtools(),
+      nitro({
+        preset: "cloudflare_module",
+        cloudflare: {
+          // This is false because we can't use CF environments
+          // in redirected configs which is what this will use.
+          deployConfig: false,
+          nodeCompat: true,
+        },
+        minify: env.mode === "build",
+        wasm: false,
+        routeRules: {
+          "/**": {
+            headers: {
+              "Content-Security-Policy": [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline'",
+                "style-src 'self' 'unsafe-inline'",
+                "img-src 'self' data:",
+                `connect-src ${connectSrc.join(" ")}`,
+                "frame-ancestors 'none'",
+                "base-uri 'self'",
+                "form-action 'self'",
+              ].join("; "),
+              "X-Content-Type-Options": "nosniff",
+              "X-Frame-Options": "DENY",
+              "Referrer-Policy": "strict-origin-when-cross-origin",
+            },
           },
         },
-      },
-    }),
-    // this is the plugin that enables path aliases
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-    }),
-    tailwindcss(),
-    tanstackStart({
-      srcDirectory: "src",
-      prerender: {
-        enabled: false, // We can't enable prerendering until Nitro fixes their preview server soonTM.
-        filter({ path }) {
-          return !path.startsWith("/file-explorer");
+      }),
+      // this is the plugin that enables path aliases
+      viteTsConfigPaths({
+        projects: ["./tsconfig.json"],
+      }),
+      tailwindcss(),
+      tanstackStart({
+        srcDirectory: "src",
+        prerender: {
+          enabled: false, // We can't enable prerendering until Nitro fixes their preview server soonTM.
+          filter({ path }) {
+            return !path.startsWith("/file-explorer");
+          },
         },
-      },
-      importProtection: {
-        enabled: true,
-        behavior: {
-          dev: "mock",
-          build: "error",
+        importProtection: {
+          enabled: true,
+          behavior: {
+            dev: "mock",
+            build: "error",
+          },
         },
-      },
-      server: {
-        entry: "server.ts",
-      },
-    }),
-    react(),
-    babel({
-      presets: [reactCompilerPreset()],
-    }),
-    Inspect({
-      build: true,
-    }),
-  ],
-  build: {
-    rolldownOptions: {
-      experimental: {
-        lazyBarrel: true,
-      },
-    },
-    minify: env.mode === "build",
-  },
-  resolve: {
-    alias: [
-      {
-        // eslint-disable-next-line e18e/prefer-static-regex
-        find: /^use-sync-external-store\/shim$/,
-        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
-      },
-      {
-        // eslint-disable-next-line e18e/prefer-static-regex
-        find: /^use-sync-external-store\/shim\/index\.js$/,
-        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
-      },
-      {
-        // eslint-disable-next-line e18e/prefer-static-regex
-        find: /^use-sync-external-store\/shim\/with-selector$/,
-        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
-      },
-      {
-        // eslint-disable-next-line e18e/prefer-static-regex
-        find: /^use-sync-external-store\/shim\/with-selector\.js$/,
-        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
-      },
+        server: {
+          entry: "server.ts",
+        },
+      }),
+      react(),
+      babel({
+        presets: [reactCompilerPreset()],
+      }),
+      Inspect({
+        build: true,
+      }),
     ],
-  },
-}));
+    build: {
+      rolldownOptions: {
+        experimental: {
+          lazyBarrel: true,
+        },
+      },
+      minify: env.mode === "build",
+    },
+    resolve: {
+      alias: [
+        {
+        // eslint-disable-next-line e18e/prefer-static-regex
+          find: /^use-sync-external-store\/shim$/,
+          replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
+        },
+        {
+        // eslint-disable-next-line e18e/prefer-static-regex
+          find: /^use-sync-external-store\/shim\/index\.js$/,
+          replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
+        },
+        {
+        // eslint-disable-next-line e18e/prefer-static-regex
+          find: /^use-sync-external-store\/shim\/with-selector$/,
+          replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
+        },
+        {
+        // eslint-disable-next-line e18e/prefer-static-regex
+          find: /^use-sync-external-store\/shim\/with-selector\.js$/,
+          replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
+        },
+      ],
+    },
+  };
+});
