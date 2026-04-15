@@ -176,7 +176,7 @@ function buildStatsHeaders(files: Entry[], base: Record<string, string>): Record
   };
 }
 
-function getFileSizeFromHeaders(headers: Headers): string | null {
+export function getFileSizeFromHeaders(headers: Headers): string | null {
   const contentLength = headers.get("content-length");
   if (contentLength) return contentLength;
 

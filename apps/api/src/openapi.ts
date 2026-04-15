@@ -7,6 +7,7 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 export const OPENAPI_TAGS = {
   VERSIONS: "Versions",
   FILES: "Files",
+  REPORTS: "Reports",
   WELL_KNOWN: "Well-Known",
 } as const satisfies Record<string, string>;
 
@@ -74,6 +75,16 @@ export function buildOpenApiConfig(
           These endpoints provide secure access to official Unicode data through our API,
           with built-in caching and path validation. Detailed usage examples and path
           formats are documented in the individual endpoint specifications.
+        `,
+      },
+      {
+        name: OPENAPI_TAGS.REPORTS,
+        description: dedent`
+          Proxy and virtual file-explorer endpoints for Unicode Technical Reports.
+
+          These endpoints expose report slugs as virtual directories and individual
+          report revisions as HTML files, so clients can browse reports similarly
+          to the Unicode file explorer.
         `,
       },
       {
