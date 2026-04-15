@@ -1,5 +1,11 @@
-export { ApiErrorSchema, UCDWellKnownConfigSchema } from "./api";
-export type { ApiError, UCDWellKnownConfig } from "./api";
+export {
+  ApiErrorSchema,
+  UCDWellKnownConfigSchema,
+} from "./api";
+export type {
+  ApiError,
+  UCDWellKnownConfig,
+} from "./api";
 export {
   BackendDirectoryEntrySchema,
   BackendEntryListSchema,
@@ -18,6 +24,16 @@ export { LockfileSchema, SnapshotSchema } from "./lockfile";
 export type { Lockfile, LockfileInput, Snapshot } from "./lockfile";
 export { ExpectedFileSchema, UCDStoreVersionManifestSchema } from "./manifest";
 export type { ExpectedFile, UCDStoreVersionManifest } from "./manifest";
+export {
+  ReportRevisionReferenceSchema,
+  UnicodeReportRevisionMetadataSchema,
+  UnicodeReportSummarySchema,
+} from "./reports";
+export type {
+  ReportRevisionReference,
+  UnicodeReportRevisionMetadata,
+  UnicodeReportSummary,
+} from "./reports";
 export {
   UnicodeFileTreeNodeSchema,
   UnicodeFileTreeSchema,

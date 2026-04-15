@@ -41,6 +41,12 @@ export const UCDWellKnownConfigSchema = z.object({
     files: z.string(),
 
     /**
+     * Base path for Unicode report operations
+     * @example "/api/v1/reports"
+     */
+    reports: z.string(),
+
+    /**
      * Path template to the canonical per-version manifest endpoint
      * @example "/api/v1/versions/{version}/manifest"
      */

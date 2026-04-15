@@ -70,7 +70,6 @@ describe("ApiErrorSchema", () => {
   });
 });
 
-// eslint-disable-next-line test/prefer-lowercase-title
 describe("UCDWellKnownConfigSchema", () => {
   it("should validate a complete config", () => {
     const validConfig = {
@@ -78,6 +77,7 @@ describe("UCDWellKnownConfigSchema", () => {
       endpoints: {
         files: "/api/v1/files",
         manifest: "/.well-known/ucd-store/{version}.json",
+        reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
       versions: ["16.0.0", "15.1.0", "15.0.0"],
@@ -90,6 +90,7 @@ describe("UCDWellKnownConfigSchema", () => {
         endpoints: {
           files: "/api/v1/files",
           manifest: "/.well-known/ucd-store/{version}.json",
+          reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
         versions: ["16.0.0", "15.1.0", "15.0.0"],
@@ -102,6 +103,7 @@ describe("UCDWellKnownConfigSchema", () => {
       endpoints: {
         files: "/api/v1/files",
         manifest: "/.well-known/ucd-store/{version}.json",
+        reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
     };
@@ -121,6 +123,7 @@ describe("UCDWellKnownConfigSchema", () => {
       endpoints: {
         files: "/api/v1/files",
         manifest: "/.well-known/ucd-store/{version}.json",
+        reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
       versions: [],
@@ -152,6 +155,7 @@ describe("UCDWellKnownConfigSchema", () => {
         endpoints: {
           files: "/api/v1/files",
           manifest: "/.well-known/ucd-store/{version}.json",
+          reports: "/api/v1/reports",
           // missing versions
         },
       },
@@ -159,6 +163,7 @@ describe("UCDWellKnownConfigSchema", () => {
         endpoints: {
           files: "/api/v1/files",
           // missing manifest
+          reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
       },
@@ -166,7 +171,16 @@ describe("UCDWellKnownConfigSchema", () => {
         endpoints: {
           // missing files
           manifest: "/.well-known/ucd-store/{version}.json",
+          reports: "/api/v1/reports",
           versions: "/api/v1/versions",
+        },
+      },
+      {
+        endpoints: {
+          files: "/api/v1/files",
+          manifest: "/.well-known/ucd-store/{version}.json",
+          versions: "/api/v1/versions",
+          // missing reports
         },
       },
     ];
@@ -183,6 +197,7 @@ describe("UCDWellKnownConfigSchema", () => {
       endpoints: {
         files: "/api/v1/files",
         manifest: "/.well-known/ucd-store/{version}.json",
+        reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
       versions: "16.0.0", // should be array
