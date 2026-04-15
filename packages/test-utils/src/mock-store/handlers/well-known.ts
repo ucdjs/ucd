@@ -103,6 +103,7 @@ export const wellKnownConfig = defineMockRouteHandler({
               files: "/api/v1/files",
               manifest: "/api/v1/versions/{version}/manifest",
               versions: "/api/v1/versions",
+              reports: "/api/v1/reports",
             },
             versions,
           } satisfies typeof providedResponse);
