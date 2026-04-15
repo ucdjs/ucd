@@ -29,8 +29,8 @@
     "db:studio": "drizzle-kit studio",
     "db:prepare": "node ./scripts/prepare-d1-migrations.ts",
     "db:apply:local": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --local",
-    "db:apply:preview": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env preview",
-    "db:apply:production": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env production"
+    "db:apply:preview": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env preview --remote",
+    "db:apply:production": "pnpm db:prepare && wrangler d1 migrations apply UCD_DATA --env production --remote"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:backend",
