@@ -216,9 +216,9 @@ jobs:
 
       - name: apply api d1 migrations
         if: ${{ !inputs.dry-run && matrix.app == 'api' }}
-        run: pnpm --filter=@ucdjs/api wrangler d1 migrations apply UCD_DATA --env $CF_ENVIRONMENT
+        run: pnpm --filter=@ucdjs/api run "db:apply:$CF_ENVIRONMENT"
         env:
-          CF_ENVIRONMENT: ${{ inputs.cloudflare-env }}
+          CF_ENVIRONMENT: ${{ inputs.environment }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
