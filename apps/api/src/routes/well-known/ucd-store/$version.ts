@@ -11,6 +11,7 @@ import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import { badGateway, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
+import { WELL_KNOWN_UCD_STORE_VERSION_CACHE_NAME } from "../../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
 
 const VERSION_PARAM = {
@@ -99,7 +100,7 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
   // `/.well-known/ucd-store/{version}.json` and the deprecation window ends.
   // We register the route separately to avoid, having weird behavior with the OpenAPI schema.
   router.get("/ucd-store/:version{.*\\.json}", cache({
-    cacheName: "ucdjs:well-known:ucd-store-version",
+    cacheName: WELL_KNOWN_UCD_STORE_VERSION_CACHE_NAME,
     cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
   }), async (c) => {
     // We need to remove the .json extension from the version parameter.

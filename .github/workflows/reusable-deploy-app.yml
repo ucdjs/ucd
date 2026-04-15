@@ -58,6 +58,9 @@ on:
       CF_ACCOUNT_ID:
         description: Cloudflare Account ID
         required: true
+      TASK_API_KEY:
+        description: Task API key for authenticated maintenance endpoints
+        required: true
 
 # remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -227,6 +230,27 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
 
+      - name: reindex api support versions
+        if: ${{ !inputs.dry-run && matrix.app == 'api' }}
+        env:
+          BASE_URL: ${{ inputs.environment == 'production' && 'https://api.ucdjs.dev' || 'https://preview.api.ucdjs.dev' }}
+          KEY: ${{ secrets.TASK_API_KEY }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail-with-body -X POST \
+              -H "Content-Type: application/json" \
+              -H "X-UCDJS-Task-Key: $KEY" \
+              -d '{}' \
+              "$BASE_URL/_tasks/reindex-versions"; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 5 ]; then
+              exit 1
+            fi
+
+            sleep 10
+          done
 
       - name: deploy web
         id: deploy-web

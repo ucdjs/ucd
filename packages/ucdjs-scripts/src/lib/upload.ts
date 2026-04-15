@@ -1,12 +1,9 @@
-import type { UnicodeVersion as SchemaUnicodeVersion } from "@ucdjs/schemas";
 import type {
   GeneratedManifest,
   UploadResult,
 } from "../types";
 import { logger } from "./logger";
 import { createManifestTar } from "./manifest";
-
-type UnicodeVersionType = SchemaUnicodeVersion["type"];
 
 const MANIFEST_BUNDLE_ETAG_HEADER = "X-UCD-Manifest-Bundle-Etag";
 
@@ -153,7 +150,7 @@ export async function uploadManifest(
     logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
 
     try {
-      const queued = await uploadRawManifest(tar, manifest.version, manifest.date, manifest.status, options);
+      const queued = await uploadRawManifest(tar, manifest.version, options);
       logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
 
       const completed = await waitForUploadCompletion(queued.workflowId, options);
@@ -186,17 +183,11 @@ export interface RawUploadOptions {
 export async function uploadRawManifest(
   tar: Uint8Array,
   version: string,
-  date: string | null,
-  status: UnicodeVersionType,
   options: RawUploadOptions,
 ): Promise<TaskUploadQueuedResult> {
   const { baseUrl, taskKey } = options;
   const url = new URL("/_tasks/upload-manifest", baseUrl);
   url.searchParams.set("version", version);
-  if (date != null) {
-    url.searchParams.set("date", date);
-  }
-  url.searchParams.set("status", status);
 
   const headers: Record<string, string> = {
     "Content-Type": "application/x-tar",

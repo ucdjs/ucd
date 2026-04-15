@@ -68,13 +68,6 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
       baseUrl: config.baseUrl,
       taskKey: config.taskKey,
       async shouldSkip(manifest) {
-        const versionResponse = await fetch(new URL(`/api/v1/versions/${manifest.version}`, config.baseUrl));
-
-        if (!versionResponse.ok) {
-          logger.info(`Uploading ${manifest.version}: version record is missing or unavailable (${versionResponse.status})`);
-          return false;
-        }
-
         const localEtag = createManifestEtag(manifest);
         const remoteEtag = await getRemoteManifestEtag(manifest.version, {
           baseUrl: config.baseUrl,
@@ -85,6 +78,12 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
           logger.info(`Skipping ${manifest.version}: no manifest changes detected (${localEtag})`);
           return true;
         }
+
+        logger.info(
+          remoteEtag
+            ? `Uploading ${manifest.version}: manifest changed (${localEtag})`
+            : `Uploading ${manifest.version}: remote manifest is missing or has no ETag`,
+        );
 
         return false;
       },

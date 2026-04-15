@@ -9,6 +9,7 @@ import { MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UnicodeVersionListSchema } from "@ucdjs/schemas";
 import { desc } from "drizzle-orm";
 import { cache } from "hono/cache";
+import { V1_VERSIONS_LIST_CACHE_NAME } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const log = createLogger("ucd:api:v1_versions");
@@ -19,7 +20,7 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({
-      cacheName: "ucdjs:v1_versions:list",
+      cacheName: V1_VERSIONS_LIST_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],

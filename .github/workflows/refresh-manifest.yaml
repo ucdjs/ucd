@@ -53,31 +53,30 @@ jobs:
       - name: install to symlink
         run: pnpm install --frozen-lockfile
 
+      - name: reindex supported versions
+        env:
+          BASE_URL: ${{ matrix.env == 'prod' && 'https://api.ucdjs.dev' || 'https://preview.api.ucdjs.dev' }}
+          KEY: ${{ secrets.TASK_API_KEY }}
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if curl --fail-with-body -X POST \
+              -H "Content-Type: application/json" \
+              -H "X-UCDJS-Task-Key: $KEY" \
+              -d '{}' \
+              "$BASE_URL/_tasks/reindex-versions"; then
+              exit 0
+            fi
+
+            if [ "$attempt" -eq 5 ]; then
+              exit 1
+            fi
+
+            sleep 10
+          done
+
       - name: refresh manifests
         env:
           UCDJS_TASK_KEY: ${{ secrets.TASK_API_KEY }}
           ENV: ${{ matrix.env }}
         run: |
           pnpm ucdjs-scripts refresh-manifests --env "$ENV"
-
-      - name: purge cache
-        env:
-          BASE_URL: ${{ matrix.env == 'prod' && 'https://api.ucdjs.dev' || 'https://preview.api.ucdjs.dev' }}
-          CACHE_NAME: ucdjs:well-known:ucd-store
-          KEY: ${{ secrets.TASK_API_KEY }}
-        run: |
-          echo "Purging cache for versioned manifests..."
-          purge_response=$(curl -s -w "\n%{http_code}" -G \
-            -H "X-UCDJS-Task-Key: $KEY" \
-            --data-urlencode "cacheName=$CACHE_NAME" \
-            --data-urlencode "path=/.well-known/ucd-store" \
-            "$BASE_URL/_tasks/purge-cache")
-
-          purge_status=$(echo "$purge_response" | tail -1)
-          if [ "$purge_status" = "200" ]; then
-            echo "Cache purged successfully"
-          else
-            echo "Warning: Failed to purge cache (status: $purge_status)"
-            purge_body=$(echo "$purge_response" | sed '$d')
-            echo "Response: $purge_body"
-          fi

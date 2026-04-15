@@ -1,23 +1,30 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
-import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
-import { resolveUCDVersion } from "@unicode-utils/core";
+import {
+  clearCacheEntry,
+  getApiOriginForEnvironment,
+  MAX_TAR_SIZE_BYTES,
+} from "@ucdjs-internal/worker-utils";
+import { UNICODE_STABLE_VERSION } from "@unicode-utils/core";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { parseTar } from "nanotar";
-import { createDatabase } from "../db/index";
-import { versions } from "../db/schema";
+import {
+  V1_VERSIONS_DETAIL_CACHE_NAME,
+  V1_VERSIONS_MANIFEST_CACHE_NAME,
+  V1_VERSIONS_ROUTER_BASE_PATH,
+  WELL_KNOWN_ROUTER_BASE_PATH,
+  WELL_KNOWN_UCD_STORE_VERSION_CACHE_NAME,
+} from "../constants";
 
 const LEADING_DOT_SLASH_RE = /^\.\//;
 
 interface ManifestUploadParams {
   version: string;
-  date: string | null;
-  status: "stable" | "draft" | "unsupported";
   r2Key: string;
 }
 
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
   async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep) {
-    const { version, date, status, r2Key } = event.payload;
+    const { version, r2Key } = event.payload;
     const startTime = Date.now();
 
     const files = await step.do("extract-tar", async () => {
@@ -118,72 +125,42 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       // eslint-disable-next-line no-console
       console.log(`[manifest-upload]: Validated ${files.length} files in R2 for version ${version}`);
 
-      const db = createDatabase(this.env.UCD_DATA);
-      const now = new Date();
-      const [major = 0, minor = 0, patch = 0] = version.split(".").map((part) => Number.parseInt(part, 10) || 0);
-      const mappedUcdVersion = resolveUCDVersion(version);
-      const snapshot = files.find((file) => file.name === `${version}/snapshot.json` || file.name === "snapshot.json");
-
-      await db
-        .insert(versions)
-        .values({
-          version,
-          major,
-          minor,
-          patch,
-          documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-          date,
-          url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
-          mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
-          status,
-          manifestPath: `${version}/manifest.json`,
-          snapshotPath: snapshot ? `${version}/snapshot.json` : null,
-          fileCount: files.length,
-          totalSize: files.reduce((sum, file) => sum + file.data.byteLength, 0),
-          publishedAt: now,
-          indexedAt: now,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .onConflictDoUpdate({
-          target: versions.version,
-          set: {
-            major,
-            minor,
-            patch,
-            documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-            date,
-            url: `https://www.unicode.org/Public/${mappedUcdVersion}`,
-            mappedUcdVersion: mappedUcdVersion === version ? null : mappedUcdVersion,
-            status,
-            manifestPath: `${version}/manifest.json`,
-            snapshotPath: snapshot ? `${version}/snapshot.json` : null,
-            fileCount: files.length,
-            totalSize: files.reduce((sum, file) => sum + file.data.byteLength, 0),
-            publishedAt: now,
-            indexedAt: now,
-            updatedAt: now,
-          },
-        });
-
       return { validated: true, fileCount: files.length };
     });
 
     await step.do("purge-caches", async () => {
-      const cacheNames = ["v1_versions", "v1_files", "ucd_store"];
       const origin = getApiOriginForEnvironment(this.env.ENVIRONMENT);
+      const purgeTargets = [
+        {
+          cacheName: V1_VERSIONS_DETAIL_CACHE_NAME,
+          path: `${V1_VERSIONS_ROUTER_BASE_PATH}/${version}`,
+        },
+        {
+          cacheName: V1_VERSIONS_MANIFEST_CACHE_NAME,
+          path: `${V1_VERSIONS_ROUTER_BASE_PATH}/${version}/manifest`,
+        },
+        {
+          cacheName: WELL_KNOWN_UCD_STORE_VERSION_CACHE_NAME,
+          path: `${WELL_KNOWN_ROUTER_BASE_PATH}/ucd-store/${version}.json`,
+        },
+      ];
 
-      const purgePromises = cacheNames.map(async (name) => {
+      if (version === UNICODE_STABLE_VERSION) {
+        purgeTargets.push({
+          cacheName: V1_VERSIONS_DETAIL_CACHE_NAME,
+          path: `${V1_VERSIONS_ROUTER_BASE_PATH}/latest`,
+        });
+      }
+
+      const purgePromises = purgeTargets.map(async ({ cacheName, path }) => {
         try {
-          const cache = await caches.open(name);
-          // Purge version-specific paths
-          await cache.delete(new Request(`${origin}/api/v1/versions/${version}`));
-          await cache.delete(new Request(`${origin}/api/v1/files/${version}`));
+          const clearCache = await clearCacheEntry(cacheName);
+          await clearCache(`${origin}${path}`);
           // eslint-disable-next-line no-console
-          console.log(`[manifest-upload]: Purged ${name} cache for version ${version}`);
+          console.log(`[manifest-upload]: Purged ${cacheName} cache for ${path}`);
         } catch (err) {
           // Log but don't fail if cache purge fails
-          console.warn(`[manifest-upload]: Failed to purge ${name} cache:`, err);
+          console.warn(`[manifest-upload]: Failed to purge ${cacheName} cache for ${path}:`, err);
         }
       });
 

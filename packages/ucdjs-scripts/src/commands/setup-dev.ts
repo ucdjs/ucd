@@ -6,6 +6,7 @@ import { uploadManifest } from "#lib/upload";
 import { getUpstreamVersions } from "#lib/upstream-versions";
 import { getMonorepoRoot, parseVersions } from "#lib/utils";
 import { unstable_startWorker } from "wrangler";
+import { reindexVersions } from "./reindex-versions";
 
 const logger = createLogger("setup-dev");
 
@@ -16,22 +17,6 @@ const DEV_VERSIONS = [
   "16.0.0",
   "15.1.0",
   "15.0.0",
-  "14.0.0",
-  "13.0.0",
-  "12.1.0",
-  "12.0.0",
-  "11.0.0",
-  "10.0.0",
-  "9.0.0",
-  "8.0.0",
-  "7.0.0",
-  "6.3.0",
-  "6.2.0",
-  "6.1.0",
-  "6.0.0",
-  "5.2.0",
-  "5.1.0",
-  "5.0.0",
   "4.1.0",
   "4.0.0",
   "3.0.0",
@@ -57,6 +42,16 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
   });
 
   try {
+    await worker.ready;
+    const baseUrl = (await worker.url).toString();
+    logger.info(`Local API worker ready at ${baseUrl}`);
+
+    logger.info(`Reindexing local D1 support metadata for seeded versions: ${versions.join(", ")}`);
+    await reindexVersions({
+      baseUrl,
+      versions: versions.join(","),
+    });
+
     const upstreamVersions = await getUpstreamVersions();
 
     if (upstreamVersions.length === 0) {
@@ -67,13 +62,14 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
     const manifests = await generateManifests({
       versions,
       upstreamVersions,
+      apiBaseUrl: baseUrl,
       batchSize,
     });
 
     logger.info(`Generated ${manifests.length} manifests`);
 
     const result: UploadResult = await uploadManifest(manifests, {
-      baseUrl: "http://127.0.0.1:8787",
+      baseUrl,
     });
 
     logger.info("Upload complete!");

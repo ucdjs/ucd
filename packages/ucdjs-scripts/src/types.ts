@@ -13,6 +13,13 @@ export interface RefreshManifestsOptions extends GlobalOptions {
   batchSize?: number;
 }
 
+export interface ReindexVersionsOptions extends GlobalOptions {
+  env?: string;
+  baseUrl?: string;
+  taskKey?: string;
+  versions?: string;
+}
+
 export interface SetupDevOptions extends GlobalOptions {
   versions?: string;
   batchSize?: number;

@@ -22,6 +22,11 @@ import {
 import { traverse } from "apache-autoindex-parse/traverse";
 import { eq } from "drizzle-orm";
 import { cache } from "hono/cache";
+import {
+  V1_VERSIONS_DETAIL_CACHE_NAME,
+  V1_VERSIONS_FILE_TREE_CACHE_NAME,
+  V1_VERSIONS_MANIFEST_CACHE_NAME,
+} from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { calculateStatistics } from "./utils";
 
@@ -37,7 +42,7 @@ const GET_VERSION_ROUTE = createRoute({
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({
-      cacheName: "ucdjs:v1_versions:version",
+      cacheName: V1_VERSIONS_DETAIL_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],
@@ -112,7 +117,7 @@ const GET_VERSION_MANIFEST_ROUTE = createRoute({
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({
-      cacheName: "ucdjs:v1_versions:manifest",
+      cacheName: V1_VERSIONS_MANIFEST_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
@@ -168,7 +173,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({
-      cacheName: "ucdjs:v1_versions:file-tree",
+      cacheName: V1_VERSIONS_FILE_TREE_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 1 week
     }),
   ],
