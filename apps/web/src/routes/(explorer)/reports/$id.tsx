@@ -301,7 +301,8 @@ function RenderPanel({
           ? html.replace(/<head([^>]*)>/i, `<head$1><base href="${upstreamUrl}">`)
           : `<base href="${upstreamUrl}">${html}`}
         className="h-[70vh] w-full bg-white"
-        sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+        // Keep upstream report HTML isolated from the parent application.
+        sandbox="allow-popups"
       />
     </div>
   );
