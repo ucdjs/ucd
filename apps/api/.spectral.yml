@@ -20,3 +20,9 @@ overrides:
     rules:
       luxass/no-file-extensions-in-paths: off
       luxass/paths-kebab-case: off
+
+  - files:
+      - ../../ucd-generated/api/openapi.json#/paths/~1api~1v1~1reports~1%7BreportId%7D~1rev~1%7BrevId%7D~1html
+    rules:
+      luxass/no-file-extensions-in-paths: off
+      luxass/paths-kebab-case: off

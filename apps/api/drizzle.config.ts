@@ -13,4 +13,5 @@ export default defineConfig({
     // eslint-disable-next-line node/prefer-global/process
     token: process.env.CLOUDFLARE_D1_TOKEN!,
   },
+  verbose: true,
 });

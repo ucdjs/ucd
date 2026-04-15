@@ -1,6 +1,6 @@
 import type { GeneratedManifest } from "../src/types";
 import { describe, expect, it } from "vitest";
-import { createManifestEtag } from "../src/lib/manifest";
+import { createManifestEtag, generateManifests } from "../src/lib/manifest";
 
 function createGeneratedManifest(): GeneratedManifest {
   return {
@@ -25,6 +25,8 @@ function createGeneratedManifest(): GeneratedManifest {
       },
     },
     fileCount: 1,
+    date: "2024-06-11",
+    status: "stable",
   };
 }
 
@@ -47,5 +49,13 @@ describe("createManifestEtag", () => {
     const second = createGeneratedManifest();
 
     expect(createManifestEtag(first)).toBe(createManifestEtag(second));
+  });
+});
+
+describe("generateManifests", () => {
+  it("should fail when no versions are provided", async () => {
+    await expect(generateManifests()).rejects.toThrow(
+      "No Unicode versions provided. Pass --versions or provide upstreamVersions.",
+    );
   });
 });

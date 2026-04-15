@@ -12,6 +12,7 @@ export interface FileViewerProps {
   /** Absolute URL to the raw file */
   fileUrl: string;
   onDownload: () => void;
+  viewportClassName?: string;
 }
 
 export interface LineSelection {
@@ -61,6 +62,7 @@ export function FileViewer({
   fileUrl,
   fileName,
   onDownload,
+  viewportClassName,
 }: FileViewerProps) {
   const lineCount = useMemo(() => countLinesFromHtml(html), [html]);
   const contentRef = useRef<HTMLDivElement | null>(null);
@@ -220,7 +222,7 @@ export function FileViewer({
         </div>
       </div>
       <div className="px-0">
-        <div className="relative bg-muted/30 overflow-hidden">
+        <div className={cn("relative bg-muted/30 overflow-auto", viewportClassName)}>
           <div className="flex">
             {/* Line numbers */}
             <div className="shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
@@ -250,7 +252,7 @@ export function FileViewer({
               <div
                 ref={contentRef}
                 className="file-viewer-shiki"
-                dangerouslySetInnerHTML={{ __html: `<pre>${html}</pre>` }}
+                dangerouslySetInnerHTML={{ __html: html }}
               />
             </div>
           </div>
@@ -262,13 +264,14 @@ export function FileViewer({
 
 export interface FileViewerSkeletonProps {
   fileName: string;
+  viewportClassName?: string;
 }
 
 /**
  * Skeleton loading state for FileViewer
  * Shows the card shell with loading placeholders for content
  */
-export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
+export function FileViewerSkeleton({ fileName, viewportClassName }: FileViewerSkeletonProps) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-background">
       <div className="flex min-h-11 flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/20 px-3 py-2">
@@ -289,7 +292,7 @@ export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
         </div>
       </div>
       <div>
-        <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
+        <div className={cn("relative rounded-lg border border-border bg-muted/30 overflow-auto", viewportClassName)}>
           <div className="flex">
             {/* Line numbers skeleton */}
             <div className="shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono w-12">

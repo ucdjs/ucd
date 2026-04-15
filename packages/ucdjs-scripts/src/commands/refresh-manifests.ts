@@ -4,6 +4,7 @@ import { createLogger } from "#lib/logger";
 import { createManifestEtag, generateManifests } from "#lib/manifest";
 import { getRemoteManifestEtag, uploadManifest } from "#lib/upload";
 import { parseVersions } from "#lib/utils";
+import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
 const logger = createLogger("refresh-manifests");
 const WEAK_ETAG_PREFIX_RE = /^W\//i;
@@ -30,10 +31,22 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
     logger.info("Dry run mode enabled - no changes will be made");
   }
 
+  let upstreamVersions;
+  if (!versions) {
+    upstreamVersions = UNICODE_VERSION_METADATA.map((version) => ({
+      version: version.version,
+      date: version.date,
+      mappedUcdVersion: version.mappedUcdVersion ?? undefined,
+      status: version.type,
+    }));
+    logger.info(`Resolved ${upstreamVersions.length} Unicode versions from @unicode-utils/core`);
+  }
+
   // Generate manifests
   logger.info("Generating manifests...");
   const manifests = await generateManifests({
     versions,
+    upstreamVersions,
     apiBaseUrl: config.apiBaseUrl,
     batchSize,
   });

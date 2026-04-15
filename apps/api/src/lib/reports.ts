@@ -1,4 +1,5 @@
 import type { StatusCode } from "hono/utils/http-status";
+import type { UnicodeAssetResult } from "./files";
 import { trimLeadingSlash } from "@luxass/utils";
 import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
 import {
@@ -8,7 +9,6 @@ import {
 } from "@ucdjs/env";
 import { determineContentTypeFromExtension } from "../routes/v1_files/utils";
 import { getFileSizeFromHeaders } from "./files";
-import type { UnicodeAssetResult } from "./files";
 
 const REPORTS_BASE_URL = "https://www.unicode.org/reports";
 const REPORT_API_BASE_PATH = "/api/v1/reports";
@@ -103,6 +103,7 @@ function getUpstreamRevisionPath(reportId: string, revId: string): string | null
     return `${normalizedReportId}/proposed.html`;
   }
 
+  // eslint-disable-next-line e18e/prefer-static-regex
   if (/^\d+$/.test(revId)) {
     return `${normalizedReportId}/${normalizedReportId}-${revId}.html`;
   }
@@ -111,7 +112,9 @@ function getUpstreamRevisionPath(reportId: string, revId: string): string | null
 }
 
 function collectReportInfo(html: string, reportId: string) {
+  // eslint-disable-next-line e18e/prefer-static-regex
   const titleMatch = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)
+    // eslint-disable-next-line e18e/prefer-static-regex
     ?? html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
   const title = titleMatch?.[1] ? stripHtml(titleMatch[1]) || null : null;
 
@@ -147,6 +150,7 @@ function collectReportInfo(html: string, reportId: string) {
     }
 
     const rawRevision = pathname.slice(prefix.length, -".html".length);
+    // eslint-disable-next-line e18e/prefer-static-regex
     if (!/^\d+$/.test(rawRevision)) {
       continue;
     }
@@ -160,6 +164,7 @@ function collectReportInfo(html: string, reportId: string) {
   const orderedRevisions = [...revisions].toSorted((a, b) => a - b);
   const currentRevision = orderedRevisions.at(-1)
     ?? (() => {
+      // eslint-disable-next-line e18e/prefer-static-regex
       const textMatch = html.match(/Revision[\s\S]{0,200}?(\d+)/i);
       if (!textMatch?.[1]) {
         return null;
@@ -207,6 +212,7 @@ export async function listUnicodeReports(): Promise<UnicodeReportSummary[]> {
       continue;
     }
 
+    // eslint-disable-next-line e18e/prefer-static-regex
     const reportMatch = /^\/reports\/(tr\d[a-z0-9-]*)\/$/i.exec(url.pathname);
     if (reportMatch?.[1]) {
       reportIds.add(reportMatch[1].toLowerCase());
@@ -215,7 +221,7 @@ export async function listUnicodeReports(): Promise<UnicodeReportSummary[]> {
 
   const limit = createConcurrencyLimiter(4);
   const reports = await Promise.all(
-    [...reportIds].map((reportId) => limit(getUnicodeReportSummary, reportId)),
+    Array.from(reportIds, (reportId) => limit(getUnicodeReportSummary, reportId)),
   );
 
   return reports.filter((report): report is UnicodeReportSummary => report != null);

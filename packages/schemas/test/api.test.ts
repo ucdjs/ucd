@@ -70,7 +70,7 @@ describe("ApiErrorSchema", () => {
   });
 });
 
-describe("UCDWellKnownConfigSchema", () => {
+describe("uCDWellKnownConfigSchema", () => {
   it("should validate a complete config", () => {
     const validConfig = {
       version: "1.0",

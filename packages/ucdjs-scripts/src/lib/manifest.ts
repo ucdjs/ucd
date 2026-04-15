@@ -193,19 +193,20 @@ export async function generateManifests(
     batchSize = 5,
   } = options;
 
-  const { client, endpoints } = await getClientContext(apiBaseUrl);
   const versionsByVersion = new Map((upstreamVersions ?? []).map((version) => [version.version, version]));
 
   let versionsToProcess: Array<{ version: string }>;
 
   if (inputVersions && inputVersions.length > 0) {
     versionsToProcess = inputVersions.map((v) => ({ version: v }));
+  } else if (upstreamVersions && upstreamVersions.length > 0) {
+    versionsToProcess = upstreamVersions.map((v) => ({ version: v.version }));
+    logger.info(`Using ${versionsToProcess.length} upstream Unicode versions`);
   } else {
-    logger.info(`Fetching versions from ${apiBaseUrl}...`);
-    versionsToProcess = (upstreamVersions ?? []).map((v) => ({ version: v.version }));
-    logger.info(`Found ${versionsToProcess.length} versions to process`);
+    throw new Error("No Unicode versions provided. Pass --versions or provide upstreamVersions.");
   }
 
+  const { client, endpoints } = await getClientContext(apiBaseUrl);
   const results: GeneratedManifest[] = [];
   const fileCache = new Map<string, ExpectedFile[]>();
 

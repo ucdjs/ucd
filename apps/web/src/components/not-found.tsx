@@ -89,3 +89,25 @@ export function VersionNotFound({ version }: { version?: string }) {
     />
   );
 }
+
+export function ReportNotFound({ reportId, revId }: { reportId?: string; revId?: string }) {
+  return (
+    <NotFoundLayout
+      title={revId ? "Report revision not found" : "Unicode report not found"}
+      description={revId
+        ? "The report revision you requested isn't published or available anymore."
+        : "The report you requested doesn't exist or isn't published."}
+      hint={reportId
+        ? revId
+          ? `${reportId} @ ${revId}`
+          : reportId
+        : undefined}
+      actions={(
+        <>
+          <Button render={<Link to="/reports">Browse reports</Link>} />
+          <Button variant="outline" render={<Link to="/">Go home</Link>} />
+        </>
+      )}
+    />
+  );
+}

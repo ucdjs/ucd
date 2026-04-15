@@ -17,6 +17,7 @@ import { Route as appSearchRouteImport } from './routes/(app)/search'
 import { Route as appCodepointInspectorRouteImport } from './routes/(app)/codepoint-inspector'
 import { Route as explorerReportsRouteRouteImport } from './routes/(explorer)/reports/route'
 import { Route as explorerFileExplorerRouteRouteImport } from './routes/(explorer)/file-explorer/route'
+import { Route as explorerReportsIndexRouteImport } from './routes/(explorer)/reports/index'
 import { Route as appVIndexRouteImport } from './routes/(app)/v/index'
 import { Route as explorerReportsIdRouteImport } from './routes/(explorer)/reports/$id'
 import { Route as explorerFileExplorerSplatRouteImport } from './routes/(explorer)/file-explorer/$'
@@ -74,6 +75,11 @@ const explorerFileExplorerRouteRoute =
     path: '/file-explorer',
     getParentRoute: () => rootRouteImport,
   } as any)
+const explorerReportsIndexRoute = explorerReportsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => explorerReportsRouteRoute,
+} as any)
 const appVIndexRoute = appVIndexRouteImport.update({
   id: '/v/',
   path: '/v/',
@@ -168,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/reports/$id': typeof explorerReportsIdRoute
   '/v/': typeof appVIndexRoute
+  '/reports/': typeof explorerReportsIndexRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
@@ -181,7 +188,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
-  '/reports': typeof explorerReportsRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
   '/versions': typeof homeVersionsRoute
@@ -190,6 +196,7 @@ export interface FileRoutesByTo {
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/reports/$id': typeof explorerReportsIdRoute
   '/v': typeof appVIndexRoute
+  '/reports': typeof explorerReportsIndexRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
@@ -216,6 +223,7 @@ export interface FileRoutesById {
   '/(explorer)/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/(explorer)/reports/$id': typeof explorerReportsIdRoute
   '/(app)/v/': typeof appVIndexRoute
+  '/(explorer)/reports/': typeof explorerReportsIndexRoute
   '/(app)/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
   '/(app)/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewRoute
   '/(app)/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
@@ -241,6 +249,7 @@ export interface FileRouteTypes {
     | '/file-explorer/$'
     | '/reports/$id'
     | '/v/'
+    | '/reports/'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
@@ -254,7 +263,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/file-explorer'
-    | '/reports'
     | '/codepoint-inspector'
     | '/search'
     | '/versions'
@@ -263,6 +271,7 @@ export interface FileRouteTypes {
     | '/file-explorer/$'
     | '/reports/$id'
     | '/v'
+    | '/reports'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/(explorer)/file-explorer/$'
     | '/(explorer)/reports/$id'
     | '/(app)/v/'
+    | '/(explorer)/reports/'
     | '/(app)/v/$version/bidi-linebreak'
     | '/(app)/v/$version/font-glyph-view'
     | '/(app)/v/$version/grapheme-visualizer'
@@ -364,6 +374,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/file-explorer'
       preLoaderRoute: typeof explorerFileExplorerRouteRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(explorer)/reports/': {
+      id: '/(explorer)/reports/'
+      path: '/'
+      fullPath: '/reports/'
+      preLoaderRoute: typeof explorerReportsIndexRouteImport
+      parentRoute: typeof explorerReportsRouteRoute
     }
     '/(app)/v/': {
       id: '/(app)/v/'
@@ -563,11 +580,13 @@ const explorerReportsRevRouteRouteWithChildren =
 interface explorerReportsRouteRouteChildren {
   explorerReportsRevRouteRoute: typeof explorerReportsRevRouteRouteWithChildren
   explorerReportsIdRoute: typeof explorerReportsIdRoute
+  explorerReportsIndexRoute: typeof explorerReportsIndexRoute
 }
 
 const explorerReportsRouteRouteChildren: explorerReportsRouteRouteChildren = {
   explorerReportsRevRouteRoute: explorerReportsRevRouteRouteWithChildren,
   explorerReportsIdRoute: explorerReportsIdRoute,
+  explorerReportsIndexRoute: explorerReportsIndexRoute,
 }
 
 const explorerReportsRouteRouteWithChildren =
