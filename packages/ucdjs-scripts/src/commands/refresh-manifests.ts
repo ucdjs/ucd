@@ -68,6 +68,13 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
       baseUrl: config.baseUrl,
       taskKey: config.taskKey,
       async shouldSkip(manifest) {
+        const versionResponse = await fetch(new URL(`/api/v1/versions/${manifest.version}`, config.baseUrl));
+
+        if (!versionResponse.ok) {
+          logger.info(`Uploading ${manifest.version}: version record is missing or unavailable (${versionResponse.status})`);
+          return false;
+        }
+
         const localEtag = createManifestEtag(manifest);
         const remoteEtag = await getRemoteManifestEtag(manifest.version, {
           baseUrl: config.baseUrl,
