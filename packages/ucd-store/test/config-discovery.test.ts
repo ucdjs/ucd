@@ -112,6 +112,7 @@ describe("config discovery integration", () => {
             files: "/api/v1/files",
             manifest: "/.well-known/ucd-store/{version}.json",
             versions: "/api/v1/versions",
+            reports: "/api/v1/reports",
           },
           versions: ["16.0.0", "15.1.0"],
         },
@@ -168,6 +169,7 @@ describe("config discovery integration", () => {
             files: "/api/v1/files",
             manifest: "/.well-known/ucd-store/{version}.json",
             versions: "/api/v1/versions",
+            reports: "/api/v1/reports",
           },
           versions: ["16.0.0", "15.1.0"], // Config claims these versions exist
         },
