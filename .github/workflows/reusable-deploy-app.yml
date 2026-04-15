@@ -40,6 +40,11 @@ on:
         required: false
         default: false
         type: boolean
+      skip-tests:
+        description: Skip API test step for manual deployments
+        required: false
+        default: false
+        type: boolean
 
     secrets:
       TURBO_TOKEN:
@@ -183,7 +188,7 @@ jobs:
         run: pnpm --filter=@ucdjs/api run lint:openapi
 
       - name: test
-        if: matrix.app == 'api'
+        if: ${{ matrix.app == 'api' && !inputs.skip-tests }}
         run: pnpm run test
 
       - name: generate api version

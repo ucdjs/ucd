@@ -13,6 +13,11 @@ on:
         required: false
         default: all
         type: string
+      skip-tests:
+        description: Skip API tests for this manual deployment
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -146,6 +151,7 @@ jobs:
       include-pr-comment: false
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: ${{ github.event.inputs.app == 'api' || github.event.inputs.app == 'all' }}
+      skip-tests: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip-tests == 'true' }}
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}

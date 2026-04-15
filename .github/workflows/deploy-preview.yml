@@ -13,6 +13,11 @@ on:
         required: false
         default: all
         type: string
+      skip-tests:
+        description: Skip API tests for this manual deployment
+        required: false
+        default: false
+        type: boolean
   pull_request:
     branches:
       - main
@@ -226,6 +231,7 @@ jobs:
       include-pr-comment: ${{ github.event_name == 'pull_request' }}
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
+      skip-tests: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip-tests == 'true' }}
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
