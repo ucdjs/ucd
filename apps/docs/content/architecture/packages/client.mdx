@@ -10,7 +10,7 @@ import { Cards, Card } from 'fumadocs-ui/components/card';
 ## Role
 
 - Discovers endpoints from the `.well-known` config.
-- Exposes typed resource wrappers for files, versions, and config.
+- Exposes typed resource wrappers for files, reports, versions, and config.
 - Defines the consumer-facing request and error contract used by higher-level packages.
 
 ## Related Docs
@@ -29,10 +29,11 @@ The client has two construction modes:
 - `createUCDClient(baseUrl)` performs `.well-known` discovery first
 - `createUCDClientWithConfig(baseUrl, config)` skips discovery and builds resources directly
 
-Once constructed, the client exposes three resource namespaces:
+Once constructed, the client exposes four resource namespaces:
 
 - `config`
 - `files`
+- `reports`
 - `versions`
 
 Each resource returns `{ data, error }` style results instead of throwing for normal request failures.
@@ -64,7 +65,7 @@ sequenceDiagram
     Client-->>Caller: throw
   else config valid
     Disc-->>Client: validated endpoint config
-    Client->>Res: create files/config/versions resources
+    Client->>Res: create files/config/reports/versions resources
     Res-->>Client: UCDClient
     Client-->>Caller: client instance
   end
@@ -79,7 +80,7 @@ sequenceDiagram
   participant Res as Resource factory
 
   Caller->>Client: createUCDClientWithConfig(baseUrl, config)
-  Client->>Res: create files/config/versions resources
+  Client->>Res: create files/config/reports/versions resources
   Res-->>Client: UCDClient
   Client-->>Caller: client instance
 ```
@@ -133,6 +134,46 @@ sequenceDiagram
   end
 ```
 
+### `client.reports.list()`, `client.reports.get(reportId)`, and `client.reports.getRevision(reportId, revId)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Reports as reports resource
+  participant Fetch as customFetch.safe()
+  participant API as reports endpoints
+
+  Caller->>Reports: list() or get(...) or getRevision(...)
+  Reports->>Fetch: request JSON + apply schema
+  Fetch->>API: GET /api/v1/reports...
+  API-->>Fetch: JSON response
+
+  alt response validates
+    Fetch-->>Reports: { data, error: null, response }
+    Reports-->>Caller: { data, error: null, response }
+  else request or schema fails
+    Fetch-->>Reports: { data: null, error }
+    Reports-->>Caller: { data: null, error }
+  end
+```
+
+### `client.reports.getHtml(reportId, revId)`
+
+```mermaid
+sequenceDiagram
+  actor Caller
+  participant Reports as reports.getHtml()
+  participant Fetch as customFetch.safe()
+  participant API as report HTML endpoint
+
+  Caller->>Reports: getHtml(reportId, revId)
+  Reports->>Fetch: request text/html
+  Fetch->>API: GET /api/v1/reports/{reportId}/rev/{revId}/html
+  API-->>Fetch: HTML response
+  Fetch-->>Reports: { data, error, response }
+  Reports-->>Caller: { data, error, response }
+```
+
 ### `client.versions.getManifest(version)`
 
 ```mermaid
@@ -181,5 +222,6 @@ These diagrams also define the most useful client test buckets:
 - discovery success, fetch failure, and invalid `.well-known` config
 - safe-path validation for `files.get()`
 - successful resource fetches with schema validation
+- report metadata and HTML fetches
 - invalid version format for `getManifest()`
 - normalization of request failures into `{ data, error }`

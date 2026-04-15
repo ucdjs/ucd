@@ -30,6 +30,7 @@ describe("ucd client", () => {
       endpoints: {
         files: "/api/v1/files",
         manifest: "/.well-known/ucd-store/{version}.json",
+        reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
     };
@@ -46,9 +47,11 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.reports).toBeDefined();
       expect(client.config).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.reports).toHaveProperty("list");
       expect(client.config).toHaveProperty("get");
     });
 
@@ -87,6 +90,7 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.reports).toBeDefined();
 
       const { data: versions, error } = await client.versions.list();
 
@@ -102,6 +106,7 @@ describe("ucd client", () => {
         endpoints: {
           files: "/custom/files",
           manifest: "/custom/files/manifest.json",
+          reports: "/custom/reports",
           versions: "/custom/versions",
         },
         versions: ["16.0.0"],
@@ -112,9 +117,11 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.reports).toBeDefined();
       expect(client.config).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.reports).toHaveProperty("list");
       expect(client.config).toHaveProperty("get");
     });
 
@@ -125,6 +132,7 @@ describe("ucd client", () => {
         endpoints: {
           files: "/custom/files",
           manifest: "/custom/files/manifest.json",
+          reports: "/custom/reports",
           versions: "/custom/versions",
         },
         versions: ["16.0.0"],
@@ -135,9 +143,11 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.reports).toBeDefined();
       expect(client.config).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.reports).toHaveProperty("list");
       expect(client.config).toHaveProperty("get");
     });
 
@@ -147,6 +157,7 @@ describe("ucd client", () => {
         endpoints: {
           files: "/custom/files",
           manifest: "/custom/files/manifest.json",
+          reports: "/custom/reports",
           versions: "/custom/versions",
         },
         versions: ["16.0.0", "15.1.0"],
@@ -163,6 +174,7 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.reports).toBeDefined();
 
       const { data: versions, error } = await client.versions.list();
 

@@ -36,7 +36,7 @@ export async function discoverEndpointsFromConfig(baseUrl: string): Promise<UCDW
  *
  * This function returns the build-time injected __UCD_ENDPOINT_DEFAULT_CONFIG__ if present;
  * otherwise it falls back to a hard-coded default object containing a version and
- * the common API endpoint paths for files, manifest and versions.
+ * the common API endpoint paths for files, reports, manifest and versions.
  *
  * The returned value conforms to the UCDWellKnownConfig schema and is used when
  * discovery via discoverEndpointsFromConfig() is not possible or a local default
@@ -55,6 +55,7 @@ export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
     endpoints: {
       files: "/api/v1/files",
       manifest: "/api/v1/versions/{version}/manifest",
+      reports: "/api/v1/reports",
       versions: "/api/v1/versions",
     },
     // versions array is optional for backward compatibility

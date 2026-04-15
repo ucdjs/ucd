@@ -3,7 +3,7 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-A TypeScript-first client for the UCD.js API with resource-based helpers for files, versions, version manifests, and published server configuration.
+A TypeScript-first client for the UCD.js API with resource-based helpers for files, reports, versions, version manifests, and published server configuration.
 
 ## Installation
 
@@ -59,6 +59,7 @@ const client = createUCDClientWithConfig("https://example.com", {
   endpoints: {
     files: "/custom/api/files",
     manifest: "/custom/api/versions/{version}/manifest",
+    reports: "/custom/api/reports",
     versions: "/custom/api/versions",
   },
 });
@@ -108,6 +109,10 @@ The returned client exposes resource helpers:
 - `client.versions.list()` to list available Unicode versions
 - `client.versions.getFileTree(version)` to fetch a version's file tree
 - `client.versions.getManifest(version)` to read the canonical per-version manifest
+- `client.reports.list()` to list Unicode reports and adjacent revisions
+- `client.reports.get(reportId)` to read the latest revision metadata for a report
+- `client.reports.getRevision(reportId, revId)` to read metadata for a specific revision
+- `client.reports.getHtml(reportId, revId)` to fetch the HTML document for a revision
 - `client.config.get()` to read `/.well-known/ucd-config.json`
 
 ### Fetch a file

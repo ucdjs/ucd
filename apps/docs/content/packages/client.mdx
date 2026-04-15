@@ -9,7 +9,7 @@ import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Client
 
-The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It provides resource-based helpers for Unicode data files, versions, version manifests, and published server configuration.
+The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It provides resource-based helpers for Unicode data files, reports, versions, version manifests, and published server configuration.
 
 ## Getting Started
 
@@ -72,6 +72,7 @@ This matters when an installation serves the API from a non-default path. For ex
 
 - `/.well-known/ucd-config.json` on the main origin
 - `/edge/api/files` for files
+- `/edge/api/reports` for reports
 - `/edge/api/versions` for versions
 
 The client types stay the same because the config points the resource wrappers at the correct paths.
@@ -86,6 +87,7 @@ const client = createUCDClientWithConfig("https://example.com", {
   endpoints: {
     files: "/edge/api/files",
     manifest: "/edge/api/versions/{version}/manifest",
+    reports: "/edge/api/reports",
     versions: "/edge/api/versions",
   },
 });
@@ -97,20 +99,21 @@ const client = createUCDClientWithConfig("https://example.com", {
 flowchart TD
   A["createUCDClient(baseUrl)"] --> B["GET /.well-known/ucd-config.json"]
   B --> C["Validate UCDWellKnownConfig"]
-  C --> D["Create files + versions resources from config.endpoints"]
+  C --> D["Create files + reports + versions resources from config.endpoints"]
 
   E["createUCDClientWithConfig(baseUrl, config)"] --> D
 
   D --> F["client.files.get(path)"]
-  D --> G["client.versions.list() / getFileTree(version)"]
+  D --> G["client.reports.list() / get(reportId)"]
+  D --> H["client.versions.list() / getFileTree(version)"]
 
-  H["client.config.get()"] --> I["GET /.well-known/ucd-config.json"]
-  J["client.versions.getManifest(version)"] --> K["GET config.endpoints.manifest"]
+  I["client.config.get()"] --> J["GET /.well-known/ucd-config.json"]
+  K["client.versions.getManifest(version)"] --> L["GET config.endpoints.manifest"]
 ```
 
 ## Resources
 
-The client provides three primary resource namespaces. You access them as properties on the instantiated `client` object.
+The client provides four primary resource namespaces. You access them as properties on the instantiated `client` object.
 
 <TypeTable
   type={{
@@ -122,6 +125,10 @@ The client provides three primary resource namespaces. You access them as proper
       description: 'Get information about available Unicode versions',
       type: 'VersionsResource',
     },
+    reports: {
+      description: 'List Unicode reports and fetch revision metadata or HTML',
+      type: 'ReportsResource',
+    },
     config: {
       description: "Read the published well-known config from /.well-known/ucd-config.json",
       type: 'ConfigResource',
@@ -131,7 +138,7 @@ The client provides three primary resource namespaces. You access them as proper
 
 ### Examples
 
-<Tabs items={['files', 'versions', 'config']}>
+<Tabs items={['files', 'reports', 'versions', 'config']}>
   <Tab value="files">
     ```typescript
     const { data: fileContent, error } = await client.files.get("16.0.0/ucd/UnicodeData.txt");
@@ -142,6 +149,25 @@ The client provides three primary resource namespaces. You access them as proper
     }
 
     console.log("File content:", fileContent);
+    ```
+  </Tab>
+  <Tab value="reports">
+    ```typescript
+    // List reports
+    const { data: reports, error } = await client.reports.list();
+
+    if (error) {
+      console.error("Failed to fetch reports:", error.message);
+      return;
+    }
+
+    // Get latest metadata for a report
+    const { data: report } = await client.reports.get("tr44");
+    console.log("Latest report revision:", report?.revision);
+
+    // Get a specific revision document
+    const { data: html } = await client.reports.getHtml("tr44", "36");
+    console.log("Report HTML:", html);
     ```
   </Tab>
   <Tab value="versions">

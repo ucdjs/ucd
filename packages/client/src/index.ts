@@ -1,13 +1,18 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { ConfigResource } from "./resources/config";
 import type { FilesResource } from "./resources/files";
+import type { ReportsResource } from "./resources/reports";
 import type { VersionsResource } from "./resources/versions";
 import { createConfigResource } from "./resources/config";
 import { createFilesResource } from "./resources/files";
+import { createReportsResource } from "./resources/reports";
 import { createVersionsResource } from "./resources/versions";
 import { discoverEndpointsFromConfig } from "./ucd-config";
 
-export { discoverEndpointsFromConfig, getDefaultUCDEndpointConfig } from "./ucd-config";
+export {
+  discoverEndpointsFromConfig,
+  getDefaultUCDEndpointConfig,
+} from "./ucd-config";
 
 export interface UCDClient {
   /**
@@ -19,6 +24,11 @@ export interface UCDClient {
    * Access version-related endpoints
    */
   versions: VersionsResource;
+
+  /**
+   * Access report-related endpoints
+   */
+  reports: ReportsResource;
 
   /**
    * Access configuration endpoints
@@ -38,6 +48,11 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
     endpoints: endpointConfig,
   });
 
+  const reports = createReportsResource({
+    baseUrl,
+    endpoints: endpointConfig,
+  });
+
   const config = createConfigResource({
     baseUrl,
   });
@@ -45,6 +60,7 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
   return {
     files,
     versions,
+    reports,
     config,
   };
 }
@@ -68,6 +84,9 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
  *
  * // Get configuration
  * const config = await client.config.get();
+ *
+ * // Get report metadata
+ * const report = await client.reports.get('tr44');
  *
  * // Get manifest for a version
  * const manifest = await client.versions.getManifest('16.0.0');
@@ -93,6 +112,7 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
  *   endpoints: {
  *     files: '/api/v1/files',
  *     manifest: '/api/v1/versions/{version}/manifest',
+ *     reports: '/api/v1/reports',
  *     versions: '/api/v1/versions',
  *   },
  * });

@@ -12,6 +12,7 @@ describe("createConfigResource", () => {
     endpoints: {
       files: "/api/v1/files",
       manifest: "/.well-known/ucd-store/{version}.json",
+      reports: "/api/v1/reports",
       versions: "/api/v1/versions",
     },
     versions: ["17.0.0", "16.0.0", "15.1.0"],
@@ -47,6 +48,7 @@ describe("createConfigResource", () => {
       expect(data).toHaveProperty("endpoints");
       expect(data!.endpoints).toHaveProperty("files");
       expect(data!.endpoints).toHaveProperty("manifest");
+      expect(data!.endpoints).toHaveProperty("reports");
       expect(data!.endpoints).toHaveProperty("versions");
       expect(data).toHaveProperty("versions");
       expect(Array.isArray(data!.versions)).toBe(true);
@@ -58,6 +60,7 @@ describe("createConfigResource", () => {
         endpoints: {
           files: "/api/v1/files",
           manifest: "/.well-known/ucd-store/{version}.json",
+          reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
       };

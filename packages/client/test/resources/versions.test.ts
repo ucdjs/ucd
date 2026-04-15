@@ -8,6 +8,7 @@ describe("createVersionsResource", () => {
   const endpoints = {
     files: "/api/v1/files",
     manifest: "/.well-known/ucd-store/{version}.json",
+    reports: "/api/v1/reports",
     versions: "/api/v1/versions",
   };
 

@@ -14,6 +14,7 @@ describe("discoverEndpointsFromConfig", () => {
             endpoints: {
               files: "/api/v1/files",
               manifest: "/.well-known/ucd-store/{version}.json",
+              reports: "/api/v1/reports",
               versions: "/api/v1/versions",
             },
             versions: [],
@@ -30,6 +31,7 @@ describe("discoverEndpointsFromConfig", () => {
         endpoints: {
           files: "/api/v1/files",
           manifest: "/.well-known/ucd-store/{version}.json",
+          reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
         versions: [],
@@ -43,6 +45,7 @@ describe("discoverEndpointsFromConfig", () => {
             endpoints: {
               files: "/api/v1/files",
               manifest: "/.well-known/ucd-store/{version}.json",
+              reports: "/api/v1/reports",
               versions: "/api/v1/versions",
             },
           });
@@ -97,6 +100,7 @@ describe("discoverEndpointsFromConfig", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
+              reports: "/api/v1/reports",
             },
           });
         }],
@@ -115,6 +119,7 @@ describe("discoverEndpointsFromConfig", () => {
             endpoints: {
               files: 123,
               manifest: "/.well-known/ucd-store/{version}.json",
+              reports: "/api/v1/reports",
               versions: "/api/v1/versions",
             },
           });
@@ -136,6 +141,7 @@ describe("discoverEndpointsFromConfig", () => {
             endpoints: {
               files: "/v2/files",
               manifest: "/v2/files/manifest.json",
+              reports: "/v2/reports",
               versions: "/v2/versions",
             },
           });
@@ -147,6 +153,7 @@ describe("discoverEndpointsFromConfig", () => {
       expect(config.endpoints).toEqual({
         files: "/v2/files",
         manifest: "/v2/files/manifest.json",
+        reports: "/v2/reports",
         versions: "/v2/versions",
       });
     });
@@ -161,6 +168,7 @@ describe("discoverEndpointsFromConfig", () => {
             endpoints: {
               files: "/api/files",
               manifest: "/api/manifest",
+              reports: "/api/reports",
               versions: "/api/versions",
             },
           });
@@ -171,6 +179,7 @@ describe("discoverEndpointsFromConfig", () => {
 
       expect(config.endpoints.files).toBe("/api/files");
       expect(config.endpoints.manifest).toBe("/api/manifest");
+      expect(config.endpoints.reports).toBe("/api/reports");
       expect(config.endpoints.versions).toBe("/api/versions");
     });
   });
