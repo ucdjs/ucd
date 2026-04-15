@@ -3,7 +3,6 @@ import { defineConfig } from "tsdown";
 
 export const baseConfig = {
   entry: ["./src/index.ts"],
-  exports: true,
   format: ["esm"],
   clean: true,
   dts: true,
@@ -24,14 +23,27 @@ export const baseConfig = {
 } satisfies TSDownOptions;
 
 export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
-  const merged = {
-    ...baseConfig,
-    ...overrides,
-    inputOptions: {
-      ...(baseConfig.inputOptions ?? {}),
-      ...(overrides.inputOptions ?? {}),
-    },
-  } as TSDownOptions;
+  return defineConfig(() => {
+    const defaultExports = {
+      packageJson: true,
+      // We don't want to write the "inlinedDependencies"..
+      inlinedDependencies: false,
+    };
 
-  return defineConfig(merged);
+    return {
+      exports:
+        overrides.exports && typeof overrides.exports === "object"
+          ? {
+              ...defaultExports,
+              ...overrides.exports,
+            }
+          : overrides.exports ?? defaultExports,
+      ...baseConfig,
+      ...overrides,
+      inputOptions: {
+        ...(baseConfig.inputOptions ?? {}),
+        ...(overrides.inputOptions ?? {}),
+      },
+    } as TSDownOptions;
+  });
 }

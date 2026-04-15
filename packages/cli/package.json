@@ -69,42 +69,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "inlinedDependencies": {
-    "@ai-sdk/gateway": "3.0.88",
-    "@ai-sdk/openai": "3.0.50",
-    "@ai-sdk/provider": "3.0.8",
-    "@ai-sdk/provider-utils": "4.0.22",
-    "@clack/core": "1.2.0",
-    "@clack/prompts": "1.2.0",
-    "@luxass/utils": "2.7.3",
-    "@opentelemetry/api": [
-      "1.9.0",
-      "1.9.1"
-    ],
-    "@rolldown/pluginutils": "1.0.0-rc.13",
-    "@unicode-utils/core": "0.12.0-beta.27",
-    "@unicode-utils/metadata": "0.12.0-beta.27",
-    "@unicode-utils/parser": "0.12.0-beta.27",
-    "@vercel/oidc": "3.1.0",
-    "ai": "6.0.146",
-    "defu": "6.1.6",
-    "eventsource-parser": "3.0.6",
-    "farver": "0.4.2",
-    "fast-string-truncated-width": "1.2.1",
-    "fast-string-width": "1.1.0",
-    "fast-wrap-ansi": "0.1.6",
-    "fdir": "6.5.0",
-    "hookable": "6.1.0",
-    "nanotar": "0.3.0",
-    "obug": "2.1.1",
-    "pathe": "2.0.3",
-    "picomatch": "4.0.4",
-    "rolldown": "1.0.0-rc.13",
-    "sisteransi": "1.0.5",
-    "termenv": "0.4.2",
-    "tinyglobby": "0.2.15",
-    "yargs-parser": "22.0.0",
-    "zod": "4.3.6"
   }
 }
