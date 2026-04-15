@@ -67,6 +67,12 @@ describe("well-known", () => {
         success: true,
         schema: UCDWellKnownConfigSchema,
         data: {
+          endpoints: {
+            files: "/api/v1/files",
+            manifest: "/api/v1/versions/{version}/manifest",
+            reports: "/api/v1/reports",
+            versions: "/api/v1/versions",
+          },
           versions: ["16.0.0", "15.1.0"],
         },
       });

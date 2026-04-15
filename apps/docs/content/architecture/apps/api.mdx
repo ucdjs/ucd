@@ -82,7 +82,7 @@ sequenceDiagram
   Client->>Config: GET /.well-known/ucd-config.json
   Config->>Build: construct endpoint config
   Build-->>Config: validated discovery payload
-  Config-->>Client: endpoint URLs for files, versions, schemas, config
+  Config-->>Client: endpoint URLs for files, reports, versions, schemas, config
 ```
 
 ### OpenAPI document request

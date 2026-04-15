@@ -4,23 +4,9 @@ import { listUnicodeReports } from "#lib/reports";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "@ucdjs-internal/worker-utils";
+import { UnicodeReportSummarySchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-
-export const ReportRevisionReferenceSchema = z.object({
-  revId: z.string(),
-  revision: z.number().nullable(),
-  htmlPath: z.string(),
-  upstreamUrl: z.string().url(),
-});
-
-export const UnicodeReportSummarySchema = z.object({
-  id: z.string(),
-  title: z.string().nullable(),
-  latest: ReportRevisionReferenceSchema.nullable(),
-  previous: ReportRevisionReferenceSchema.nullable(),
-  next: ReportRevisionReferenceSchema.nullable(),
-});
 
 const UnicodeReportSummaryListSchema = z.array(UnicodeReportSummarySchema);
 

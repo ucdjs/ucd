@@ -1,5 +1,4 @@
-import { z } from "@hono/zod-openapi";
-import { ReportRevisionReferenceSchema } from "./list";
+export { UnicodeReportRevisionMetadataSchema } from "@ucdjs/schemas";
 
 export const NUMERIC_REVISION_ID_RE = /^\d+$/;
 
@@ -24,11 +23,3 @@ export const REVISION_ID_PARAM = {
   },
   description: "A numeric revision id or the special proposed revision",
 } as const;
-
-export const UnicodeReportRevisionMetadataSchema = z.object({
-  reportId: z.string(),
-  title: z.string().nullable(),
-  revision: ReportRevisionReferenceSchema,
-  previous: ReportRevisionReferenceSchema.nullable(),
-  next: ReportRevisionReferenceSchema.nullable(),
-});

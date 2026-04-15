@@ -10,6 +10,7 @@ import { desc } from "drizzle-orm";
 import { cache } from "hono/cache";
 import {
   V1_FILES_ROUTER_BASE_PATH,
+  V1_REPORTS_ROUTER_BASE_PATH,
   V1_VERSIONS_ROUTER_BASE_PATH,
 } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
@@ -46,6 +47,7 @@ const UCD_CONFIG_ROUTE = createRoute({
                 endpoints: {
                   files: V1_FILES_ROUTER_BASE_PATH,
                   manifest: `${V1_VERSIONS_ROUTER_BASE_PATH}/{version}/manifest`,
+                  reports: V1_REPORTS_ROUTER_BASE_PATH,
                   versions: V1_VERSIONS_ROUTER_BASE_PATH,
                 },
                 versions: ["17.0.0", "16.0.0", "15.1.0"],
@@ -77,6 +79,7 @@ export function registerUcdConfigRoute(router: OpenAPIHono<HonoEnv>) {
       endpoints: {
         files: V1_FILES_ROUTER_BASE_PATH,
         manifest: `${V1_VERSIONS_ROUTER_BASE_PATH}/{version}/manifest`,
+        reports: V1_REPORTS_ROUTER_BASE_PATH,
         versions: V1_VERSIONS_ROUTER_BASE_PATH,
       },
       versions: supportedVersions.map((version) => version.version),

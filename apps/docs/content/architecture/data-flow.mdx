@@ -27,7 +27,7 @@ flowchart TD
 
   subgraph Serving["Serving Layer"]
     WK[".well-known/ucd-config.json\n(endpoint discovery)"]
-    API["UCD API\n(/files, /versions)"]
+    API["UCD API\n(/files, /reports, /versions)"]
     WK --> API
   end
 
@@ -84,6 +84,7 @@ The store is served over HTTP. A `.well-known/ucd-config.json` document is publi
   "version": "0.1",
   "endpoints": {
     "files": "/api/v1/files",
+    "reports": "/api/v1/reports",
     "versions": "/api/v1/versions",
     "manifest": "/api/v1/versions/{version}/manifest"
   }
@@ -102,8 +103,9 @@ flowchart LR
   B --> C["Validate UCDWellKnownConfig"]
   C --> D["Build resource wrappers"]
   D --> E["client.files.get(path)"]
-  D --> F["client.versions.list()"]
-  D --> G["client.versions.getManifest(version)"]
+  D --> F["client.reports.list()"]
+  D --> G["client.versions.list()"]
+  D --> H["client.versions.getManifest(version)"]
 ```
 
 Alternatively, `createUCDClientWithConfig()` skips the discovery request and accepts the config object directly - useful when the endpoint map is known ahead of time or when the `.well-known` endpoint is unavailable.
