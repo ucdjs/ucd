@@ -1,17 +1,11 @@
 import { ExplorerBreadcrumbsBase } from "#components/explorer/explorer-breadcrumbs-base";
-import { Link, useChildMatches, useSearch } from "@tanstack/react-router";
+import { Link, useMatches } from "@tanstack/react-router";
 import { FileText } from "lucide-react";
 
 export function ReportsExplorerBreadcrumbs() {
-  const [childMatch] = useChildMatches();
-  const params = (childMatch?.params as { id?: string; rev?: string } | undefined) ?? {};
-  const search = useSearch({ strict: false }) as { rev?: string };
+  const params = (useMatches().at(-1)?.params as { id?: string; rev?: string } | undefined) ?? {};
   const reportId = typeof params.id === "string" ? params.id : "";
-  const revId = typeof search.rev === "string"
-    ? search.rev
-    : typeof params.rev === "string"
-      ? params.rev
-      : "";
+  const revId = typeof params.rev === "string" ? params.rev : "";
   const segments = [];
 
   if (reportId) {

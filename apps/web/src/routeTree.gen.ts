@@ -19,18 +19,18 @@ import { Route as explorerReportsRouteRouteImport } from './routes/(explorer)/re
 import { Route as explorerFileExplorerRouteRouteImport } from './routes/(explorer)/file-explorer/route'
 import { Route as explorerReportsIndexRouteImport } from './routes/(explorer)/reports/index'
 import { Route as appVIndexRouteImport } from './routes/(app)/v/index'
-import { Route as explorerReportsIdRouteImport } from './routes/(explorer)/reports/$id'
 import { Route as explorerFileExplorerSplatRouteImport } from './routes/(explorer)/file-explorer/$'
-import { Route as explorerReportsRevRouteRouteImport } from './routes/(explorer)/reports/rev/route'
+import { Route as explorerReportsIdRouteRouteImport } from './routes/(explorer)/reports/$id/route'
 import { Route as appVVersionRouteRouteImport } from './routes/(app)/v/$version/route'
+import { Route as explorerReportsIdIndexRouteImport } from './routes/(explorer)/reports/$id/index'
 import { Route as appVVersionIndexRouteImport } from './routes/(app)/v/$version/index'
-import { Route as explorerReportsRevRevRouteImport } from './routes/(explorer)/reports/rev/$rev'
 import { Route as explorerFileExplorerVSplatRouteImport } from './routes/(explorer)/file-explorer/v.$'
 import { Route as appVVersionNormalizationPreviewRouteImport } from './routes/(app)/v/$version/normalization-preview'
 import { Route as appVVersionGraphemeVisualizerRouteImport } from './routes/(app)/v/$version/grapheme-visualizer'
 import { Route as appVVersionFontGlyphViewRouteImport } from './routes/(app)/v/$version/font-glyph-view'
 import { Route as appVVersionBidiLinebreakRouteImport } from './routes/(app)/v/$version/bidi-linebreak'
 import { Route as appVVersionBlocksIndexRouteImport } from './routes/(app)/v/$version/blocks/index'
+import { Route as explorerReportsIdRevRevRouteImport } from './routes/(explorer)/reports/$id/rev/$rev'
 import { Route as appVVersionUHexRouteImport } from './routes/(app)/v/$version/u/$hex'
 import { Route as appVVersionBlocksIdRouteImport } from './routes/(app)/v/$version/blocks/$id'
 
@@ -85,20 +85,15 @@ const appVIndexRoute = appVIndexRouteImport.update({
   path: '/v/',
   getParentRoute: () => appRouteRoute,
 } as any)
-const explorerReportsIdRoute = explorerReportsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => explorerReportsRouteRoute,
-} as any)
 const explorerFileExplorerSplatRoute =
   explorerFileExplorerSplatRouteImport.update({
     id: '/$',
     path: '/$',
     getParentRoute: () => explorerFileExplorerRouteRoute,
   } as any)
-const explorerReportsRevRouteRoute = explorerReportsRevRouteRouteImport.update({
-  id: '/rev',
-  path: '/rev',
+const explorerReportsIdRouteRoute = explorerReportsIdRouteRouteImport.update({
+  id: '/$id',
+  path: '/$id',
   getParentRoute: () => explorerReportsRouteRoute,
 } as any)
 const appVVersionRouteRoute = appVVersionRouteRouteImport.update({
@@ -106,15 +101,15 @@ const appVVersionRouteRoute = appVVersionRouteRouteImport.update({
   path: '/v/$version',
   getParentRoute: () => appRouteRoute,
 } as any)
+const explorerReportsIdIndexRoute = explorerReportsIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => explorerReportsIdRouteRoute,
+} as any)
 const appVVersionIndexRoute = appVVersionIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => appVVersionRouteRoute,
-} as any)
-const explorerReportsRevRevRoute = explorerReportsRevRevRouteImport.update({
-  id: '/$rev',
-  path: '/$rev',
-  getParentRoute: () => explorerReportsRevRouteRoute,
 } as any)
 const explorerFileExplorerVSplatRoute =
   explorerFileExplorerVSplatRouteImport.update({
@@ -151,6 +146,11 @@ const appVVersionBlocksIndexRoute = appVVersionBlocksIndexRouteImport.update({
   path: '/blocks/',
   getParentRoute: () => appVVersionRouteRoute,
 } as any)
+const explorerReportsIdRevRevRoute = explorerReportsIdRevRevRouteImport.update({
+  id: '/rev/$rev',
+  path: '/rev/$rev',
+  getParentRoute: () => explorerReportsIdRouteRoute,
+} as any)
 const appVVersionUHexRoute = appVVersionUHexRouteImport.update({
   id: '/u/$hex',
   path: '/u/$hex',
@@ -170,9 +170,8 @@ export interface FileRoutesByFullPath {
   '/versions': typeof homeVersionsRoute
   '/': typeof homeIndexRoute
   '/v/$version': typeof appVVersionRouteRouteWithChildren
-  '/reports/rev': typeof explorerReportsRevRouteRouteWithChildren
+  '/reports/$id': typeof explorerReportsIdRouteRouteWithChildren
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
-  '/reports/$id': typeof explorerReportsIdRoute
   '/v/': typeof appVIndexRoute
   '/reports/': typeof explorerReportsIndexRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
@@ -180,10 +179,11 @@ export interface FileRoutesByFullPath {
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof appVVersionNormalizationPreviewRoute
   '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
-  '/reports/rev/$rev': typeof explorerReportsRevRevRoute
   '/v/$version/': typeof appVVersionIndexRoute
+  '/reports/$id/': typeof explorerReportsIdIndexRoute
   '/v/$version/blocks/$id': typeof appVVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof appVVersionUHexRoute
+  '/reports/$id/rev/$rev': typeof explorerReportsIdRevRevRoute
   '/v/$version/blocks/': typeof appVVersionBlocksIndexRoute
 }
 export interface FileRoutesByTo {
@@ -192,9 +192,7 @@ export interface FileRoutesByTo {
   '/search': typeof appSearchRoute
   '/versions': typeof homeVersionsRoute
   '/': typeof homeIndexRoute
-  '/reports/rev': typeof explorerReportsRevRouteRouteWithChildren
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
-  '/reports/$id': typeof explorerReportsIdRoute
   '/v': typeof appVIndexRoute
   '/reports': typeof explorerReportsIndexRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
@@ -202,10 +200,11 @@ export interface FileRoutesByTo {
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof appVVersionNormalizationPreviewRoute
   '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
-  '/reports/rev/$rev': typeof explorerReportsRevRevRoute
   '/v/$version': typeof appVVersionIndexRoute
+  '/reports/$id': typeof explorerReportsIdIndexRoute
   '/v/$version/blocks/$id': typeof appVVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof appVVersionUHexRoute
+  '/reports/$id/rev/$rev': typeof explorerReportsIdRevRevRoute
   '/v/$version/blocks': typeof appVVersionBlocksIndexRoute
 }
 export interface FileRoutesById {
@@ -219,9 +218,8 @@ export interface FileRoutesById {
   '/(home)/versions': typeof homeVersionsRoute
   '/(home)/': typeof homeIndexRoute
   '/(app)/v/$version': typeof appVVersionRouteRouteWithChildren
-  '/(explorer)/reports/rev': typeof explorerReportsRevRouteRouteWithChildren
+  '/(explorer)/reports/$id': typeof explorerReportsIdRouteRouteWithChildren
   '/(explorer)/file-explorer/$': typeof explorerFileExplorerSplatRoute
-  '/(explorer)/reports/$id': typeof explorerReportsIdRoute
   '/(app)/v/': typeof appVIndexRoute
   '/(explorer)/reports/': typeof explorerReportsIndexRoute
   '/(app)/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakRoute
@@ -229,10 +227,11 @@ export interface FileRoutesById {
   '/(app)/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerRoute
   '/(app)/v/$version/normalization-preview': typeof appVVersionNormalizationPreviewRoute
   '/(explorer)/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
-  '/(explorer)/reports/rev/$rev': typeof explorerReportsRevRevRoute
   '/(app)/v/$version/': typeof appVVersionIndexRoute
+  '/(explorer)/reports/$id/': typeof explorerReportsIdIndexRoute
   '/(app)/v/$version/blocks/$id': typeof appVVersionBlocksIdRoute
   '/(app)/v/$version/u/$hex': typeof appVVersionUHexRoute
+  '/(explorer)/reports/$id/rev/$rev': typeof explorerReportsIdRevRevRoute
   '/(app)/v/$version/blocks/': typeof appVVersionBlocksIndexRoute
 }
 export interface FileRouteTypes {
@@ -245,9 +244,8 @@ export interface FileRouteTypes {
     | '/versions'
     | '/'
     | '/v/$version'
-    | '/reports/rev'
-    | '/file-explorer/$'
     | '/reports/$id'
+    | '/file-explorer/$'
     | '/v/'
     | '/reports/'
     | '/v/$version/bidi-linebreak'
@@ -255,10 +253,11 @@ export interface FileRouteTypes {
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
     | '/file-explorer/v/$'
-    | '/reports/rev/$rev'
     | '/v/$version/'
+    | '/reports/$id/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
+    | '/reports/$id/rev/$rev'
     | '/v/$version/blocks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -267,9 +266,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/versions'
     | '/'
-    | '/reports/rev'
     | '/file-explorer/$'
-    | '/reports/$id'
     | '/v'
     | '/reports'
     | '/v/$version/bidi-linebreak'
@@ -277,10 +274,11 @@ export interface FileRouteTypes {
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
     | '/file-explorer/v/$'
-    | '/reports/rev/$rev'
     | '/v/$version'
+    | '/reports/$id'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
+    | '/reports/$id/rev/$rev'
     | '/v/$version/blocks'
   id:
     | '__root__'
@@ -293,9 +291,8 @@ export interface FileRouteTypes {
     | '/(home)/versions'
     | '/(home)/'
     | '/(app)/v/$version'
-    | '/(explorer)/reports/rev'
-    | '/(explorer)/file-explorer/$'
     | '/(explorer)/reports/$id'
+    | '/(explorer)/file-explorer/$'
     | '/(app)/v/'
     | '/(explorer)/reports/'
     | '/(app)/v/$version/bidi-linebreak'
@@ -303,10 +300,11 @@ export interface FileRouteTypes {
     | '/(app)/v/$version/grapheme-visualizer'
     | '/(app)/v/$version/normalization-preview'
     | '/(explorer)/file-explorer/v/$'
-    | '/(explorer)/reports/rev/$rev'
     | '/(app)/v/$version/'
+    | '/(explorer)/reports/$id/'
     | '/(app)/v/$version/blocks/$id'
     | '/(app)/v/$version/u/$hex'
+    | '/(explorer)/reports/$id/rev/$rev'
     | '/(app)/v/$version/blocks/'
   fileRoutesById: FileRoutesById
 }
@@ -389,13 +387,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appVIndexRouteImport
       parentRoute: typeof appRouteRoute
     }
-    '/(explorer)/reports/$id': {
-      id: '/(explorer)/reports/$id'
-      path: '/$id'
-      fullPath: '/reports/$id'
-      preLoaderRoute: typeof explorerReportsIdRouteImport
-      parentRoute: typeof explorerReportsRouteRoute
-    }
     '/(explorer)/file-explorer/$': {
       id: '/(explorer)/file-explorer/$'
       path: '/$'
@@ -403,11 +394,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof explorerFileExplorerSplatRouteImport
       parentRoute: typeof explorerFileExplorerRouteRoute
     }
-    '/(explorer)/reports/rev': {
-      id: '/(explorer)/reports/rev'
-      path: '/rev'
-      fullPath: '/reports/rev'
-      preLoaderRoute: typeof explorerReportsRevRouteRouteImport
+    '/(explorer)/reports/$id': {
+      id: '/(explorer)/reports/$id'
+      path: '/$id'
+      fullPath: '/reports/$id'
+      preLoaderRoute: typeof explorerReportsIdRouteRouteImport
       parentRoute: typeof explorerReportsRouteRoute
     }
     '/(app)/v/$version': {
@@ -417,19 +408,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appVVersionRouteRouteImport
       parentRoute: typeof appRouteRoute
     }
+    '/(explorer)/reports/$id/': {
+      id: '/(explorer)/reports/$id/'
+      path: '/'
+      fullPath: '/reports/$id/'
+      preLoaderRoute: typeof explorerReportsIdIndexRouteImport
+      parentRoute: typeof explorerReportsIdRouteRoute
+    }
     '/(app)/v/$version/': {
       id: '/(app)/v/$version/'
       path: '/'
       fullPath: '/v/$version/'
       preLoaderRoute: typeof appVVersionIndexRouteImport
       parentRoute: typeof appVVersionRouteRoute
-    }
-    '/(explorer)/reports/rev/$rev': {
-      id: '/(explorer)/reports/rev/$rev'
-      path: '/$rev'
-      fullPath: '/reports/rev/$rev'
-      preLoaderRoute: typeof explorerReportsRevRevRouteImport
-      parentRoute: typeof explorerReportsRevRouteRoute
     }
     '/(explorer)/file-explorer/v/$': {
       id: '/(explorer)/file-explorer/v/$'
@@ -472,6 +463,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/v/$version/blocks/'
       preLoaderRoute: typeof appVVersionBlocksIndexRouteImport
       parentRoute: typeof appVVersionRouteRoute
+    }
+    '/(explorer)/reports/$id/rev/$rev': {
+      id: '/(explorer)/reports/$id/rev/$rev'
+      path: '/rev/$rev'
+      fullPath: '/reports/$id/rev/$rev'
+      preLoaderRoute: typeof explorerReportsIdRevRevRouteImport
+      parentRoute: typeof explorerReportsIdRouteRoute
     }
     '/(app)/v/$version/u/$hex': {
       id: '/(app)/v/$version/u/$hex'
@@ -563,29 +561,29 @@ const explorerFileExplorerRouteRouteWithChildren =
     explorerFileExplorerRouteRouteChildren,
   )
 
-interface explorerReportsRevRouteRouteChildren {
-  explorerReportsRevRevRoute: typeof explorerReportsRevRevRoute
+interface explorerReportsIdRouteRouteChildren {
+  explorerReportsIdIndexRoute: typeof explorerReportsIdIndexRoute
+  explorerReportsIdRevRevRoute: typeof explorerReportsIdRevRevRoute
 }
 
-const explorerReportsRevRouteRouteChildren: explorerReportsRevRouteRouteChildren =
+const explorerReportsIdRouteRouteChildren: explorerReportsIdRouteRouteChildren =
   {
-    explorerReportsRevRevRoute: explorerReportsRevRevRoute,
+    explorerReportsIdIndexRoute: explorerReportsIdIndexRoute,
+    explorerReportsIdRevRevRoute: explorerReportsIdRevRevRoute,
   }
 
-const explorerReportsRevRouteRouteWithChildren =
-  explorerReportsRevRouteRoute._addFileChildren(
-    explorerReportsRevRouteRouteChildren,
+const explorerReportsIdRouteRouteWithChildren =
+  explorerReportsIdRouteRoute._addFileChildren(
+    explorerReportsIdRouteRouteChildren,
   )
 
 interface explorerReportsRouteRouteChildren {
-  explorerReportsRevRouteRoute: typeof explorerReportsRevRouteRouteWithChildren
-  explorerReportsIdRoute: typeof explorerReportsIdRoute
+  explorerReportsIdRouteRoute: typeof explorerReportsIdRouteRouteWithChildren
   explorerReportsIndexRoute: typeof explorerReportsIndexRoute
 }
 
 const explorerReportsRouteRouteChildren: explorerReportsRouteRouteChildren = {
-  explorerReportsRevRouteRoute: explorerReportsRevRouteRouteWithChildren,
-  explorerReportsIdRoute: explorerReportsIdRoute,
+  explorerReportsIdRouteRoute: explorerReportsIdRouteRouteWithChildren,
   explorerReportsIndexRoute: explorerReportsIndexRoute,
 }
 
