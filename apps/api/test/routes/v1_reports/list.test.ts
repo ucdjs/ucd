@@ -4,7 +4,7 @@ import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import { createReportHtml, createReportsIndexHtml } from "./_helpers";
+import { createReportHtml, createReportsIndexHtml, createUnavailableProposedReportHtml } from "./_helpers";
 
 describe("v1_reports", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -124,6 +124,90 @@ describe("v1_reports", () => {
       });
 
       await expect(json()).resolves.toEqual([]);
+    });
+
+    it("ignores proposed revisions when the proposed page is the unavailable placeholder", async () => {
+      mockFetch([
+        ["GET", "https://www.unicode.org/reports/", () => {
+          return HttpResponse.text(createReportsIndexHtml(), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+        ["GET", "https://www.unicode.org/reports/tr9/", () => {
+          return HttpResponse.text(createReportHtml({
+            reportId: "tr9",
+            title: "Unicode Bidirectional Algorithm",
+            currentRevision: 51,
+            previousRevision: 50,
+          }), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+        ["GET", "https://www.unicode.org/reports/tr44/", () => {
+          return HttpResponse.text(createReportHtml({
+            reportId: "tr44",
+            title: "Unicode Character Database",
+            currentRevision: 36,
+            previousRevision: 34,
+            includeProposed: true,
+          }), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+        ["GET", "https://www.unicode.org/reports/tr44/proposed.html", () => {
+          return HttpResponse.text(createUnavailableProposedReportHtml(), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
+
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/reports"),
+        env,
+      );
+
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+      });
+
+      await expect(json()).resolves.toEqual([
+        {
+          id: "tr9",
+          title: "Unicode Bidirectional Algorithm",
+          latest: {
+            revId: "51",
+            revision: 51,
+            htmlPath: "/api/v1/reports/tr9/rev/51/html",
+            upstreamUrl: "https://www.unicode.org/reports/tr9/",
+          },
+          previous: {
+            revId: "50",
+            revision: 50,
+            htmlPath: "/api/v1/reports/tr9/rev/50/html",
+            upstreamUrl: "https://www.unicode.org/reports/tr9/tr9-50.html",
+          },
+          next: null,
+        },
+        {
+          id: "tr44",
+          title: "Unicode Character Database",
+          latest: {
+            revId: "36",
+            revision: 36,
+            htmlPath: "/api/v1/reports/tr44/rev/36/html",
+            upstreamUrl: "https://www.unicode.org/reports/tr44/",
+          },
+          previous: {
+            revId: "34",
+            revision: 34,
+            htmlPath: "/api/v1/reports/tr44/rev/34/html",
+            upstreamUrl: "https://www.unicode.org/reports/tr44/tr44-34.html",
+          },
+          next: null,
+        },
+      ]);
     });
   });
 });

@@ -4,7 +4,7 @@ import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import { createReportHtml } from "./_helpers";
+import { createReportHtml, createUnavailableProposedReportHtml } from "./_helpers";
 
 describe("v1_reports", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -144,6 +144,26 @@ describe("v1_reports", () => {
         message: "Report revision not found",
       });
     });
+
+    it("returns 404 for proposed metadata when the proposed page is the unavailable placeholder", async () => {
+      mockFetch([
+        ["GET", "https://www.unicode.org/reports/tr44/proposed.html", () => {
+          return HttpResponse.text(createUnavailableProposedReportHtml(), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
+
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/reports/tr44/rev/proposed"),
+        env,
+      );
+
+      expect(response).toBeApiError({
+        status: 404,
+        message: "Report revision not found",
+      });
+    });
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -223,6 +243,26 @@ describe("v1_reports", () => {
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/reports/tr44/rev/999/html"),
+        env,
+      );
+
+      expect(response).toBeApiError({
+        status: 404,
+        message: "Resource not found",
+      });
+    });
+
+    it("returns 404 for proposed HTML when the proposed page is the unavailable placeholder", async () => {
+      mockFetch([
+        ["GET", "https://www.unicode.org/reports/tr44/proposed.html", () => {
+          return HttpResponse.text(createUnavailableProposedReportHtml(), {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
+
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/reports/tr44/rev/proposed/html"),
         env,
       );
 

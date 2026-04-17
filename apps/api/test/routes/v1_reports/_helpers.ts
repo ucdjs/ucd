@@ -39,3 +39,25 @@ export function createReportHtml({
     </html>
   `;
 }
+
+export function createUnavailableProposedReportHtml({
+  title = "Proposed Update Not Available",
+}: {
+  title?: string;
+} = {}): string {
+  return `
+    <!doctype html>
+    <html>
+      <head>
+        <title>${title}</title>
+      </head>
+      <body>
+        <h1>${title}</h1>
+        <p>
+          There is no proposed update of this technical report available at this time.
+          See the latest version.
+        </p>
+      </body>
+    </html>
+  `;
+}

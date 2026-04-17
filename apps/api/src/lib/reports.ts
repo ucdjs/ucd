@@ -75,6 +75,13 @@ function stripHtml(value: string): string {
     .trim();
 }
 
+function isUnavailableProposedReportHtml(html: string): boolean {
+  const text = stripHtml(html).replaceAll(/\s+/g, " ").trim();
+  return text.includes("Proposed Update Not Available")
+    && text.includes("There is no proposed update of this technical report available at this time.")
+    && text.includes("See the latest version");
+}
+
 async function getRawReportAsset(path: string, method: ReportAssetMethod = "GET"): Promise<RawReportAssetResult> {
   const normalizedPath = trimLeadingSlash(path.trim());
   const url = normalizedPath ? `${REPORTS_BASE_URL}/${normalizedPath}` : `${REPORTS_BASE_URL}/`;
@@ -182,6 +189,20 @@ function collectReportInfo(html: string, reportId: string) {
   };
 }
 
+async function getAvailableProposedReportHtml(reportId: string): Promise<string | null> {
+  const proposedAsset = await getRawReportAsset(`${reportId}/proposed.html`, "GET");
+  if (!proposedAsset.ok) {
+    return null;
+  }
+
+  const proposedHtml = await proposedAsset.response.text();
+  if (isUnavailableProposedReportHtml(proposedHtml)) {
+    return null;
+  }
+
+  return proposedHtml;
+}
+
 export function isValidReportId(reportId: string): boolean {
   return REPORT_ID_RE.test(reportId);
 }
@@ -246,10 +267,11 @@ export async function getUnicodeReportSummary(reportId: string): Promise<Unicode
     : latestInfo.revisions.toReversed().find((revision) => revision < latestRevision) ?? null;
 
   let nextRevision: number | null = null;
+  let hasAvailableProposed = false;
   if (latestInfo.hasProposed) {
-    const proposedAsset = await getRawReportAsset(`${normalizedReportId}/proposed.html`, "GET");
-    if (proposedAsset.ok) {
-      const proposedHtml = await proposedAsset.response.text();
+    const proposedHtml = await getAvailableProposedReportHtml(normalizedReportId);
+    if (proposedHtml) {
+      hasAvailableProposed = true;
       nextRevision = collectReportInfo(proposedHtml, normalizedReportId).currentRevision;
     }
   }
@@ -273,7 +295,7 @@ export async function getUnicodeReportSummary(reportId: string): Promise<Unicode
           previousRevision,
           `${REPORTS_BASE_URL}/${normalizedReportId}/${normalizedReportId}-${previousRevision}.html`,
         ),
-    next: latestInfo.hasProposed
+    next: hasAvailableProposed
       ? createRevisionReference(
           normalizedReportId,
           "proposed",
@@ -304,6 +326,9 @@ export async function getUnicodeReportRevisionMetadata(
 
   const normalizedReportId = reportId.toLowerCase();
   const html = await asset.response.text();
+  if (revId === "proposed" && isUnavailableProposedReportHtml(html)) {
+    return null;
+  }
   const info = collectReportInfo(html, normalizedReportId);
   const resolvedRevision = revId === "proposed"
     ? info.currentRevision
@@ -314,6 +339,9 @@ export async function getUnicodeReportRevisionMetadata(
   const nextRevision = resolvedRevision == null
     ? null
     : info.revisions.find((revision) => revision > resolvedRevision) ?? null;
+  const hasAvailableProposed = revId !== "proposed" && info.hasProposed
+    ? await getAvailableProposedReportHtml(normalizedReportId) != null
+    : false;
 
   return {
     reportId: normalizedReportId,
@@ -341,7 +369,7 @@ export async function getUnicodeReportRevisionMetadata(
           nextRevision,
           `${REPORTS_BASE_URL}/${normalizedReportId}/${normalizedReportId}-${nextRevision}.html`,
         )
-      : info.hasProposed && revId !== "proposed"
+      : hasAvailableProposed
         ? createRevisionReference(
             normalizedReportId,
             "proposed",
@@ -407,6 +435,28 @@ export async function getUnicodeReportHtml(
 
   if (size) {
     headers[UCD_STAT_SIZE_HEADER] = size;
+  }
+
+  if (revId === "proposed") {
+    const html = await asset.response.text();
+    if (isUnavailableProposedReportHtml(html)) {
+      return {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+        kind: "error",
+        body: JSON.stringify({
+          status: 404,
+          message: "Resource not found",
+        }),
+      };
+    }
+
+    return {
+      status: 200,
+      kind: "file",
+      headers,
+      body: new Response(html).body,
+    };
   }
 
   return {
