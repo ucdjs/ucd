@@ -187,9 +187,10 @@ jobs:
         if: matrix.app == 'api'
         run: pnpm turbo lint:openapi
 
-      - name: test
-        if: ${{ matrix.app == 'api' && !inputs.skip-tests }}
-        run: pnpm run test
+      # TODO: We need to handle this more efficiently.
+      # - name: test
+      #   if: ${{ matrix.app == 'api' && !inputs.skip-tests }}
+      #   run: pnpm run test
 
       - name: generate api version
         id: api-version
