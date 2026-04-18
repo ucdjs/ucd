@@ -113,6 +113,89 @@ describe("createFilesResource", () => {
       expect(data).toBeNull();
       expect(error).toBeDefined();
     });
+
+    it("should pass directory query params through to the request", async () => {
+      const directoryListing = [
+        { type: "file", name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt" },
+      ];
+
+      mockFetch([
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd`, ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get("pattern")).toBe("*.txt");
+          expect(url.searchParams.get("sort")).toBe("lastModified");
+          expect(url.searchParams.get("order")).toBe("desc");
+          expect(url.searchParams.get("type")).toBe("files");
+          expect(url.searchParams.get("query")).toBe("Uni");
+          return HttpResponse.json(directoryListing);
+        }],
+      ]);
+
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { data, error } = await filesResource.get("16.0.0/ucd", {
+        pattern: "*.txt",
+        sort: "lastModified",
+        order: "desc",
+        type: "files",
+        query: "Uni",
+      });
+
+      expect(error).toBeNull();
+      expect(data).toEqual(directoryListing);
+    });
+  });
+
+  describe("head()", () => {
+    it("should fetch file metadata successfully", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}${endpoints.files}/16.0.0/ucd/UnicodeData.txt`, () => {
+          return new HttpResponse(null, {
+            headers: {
+              "content-type": "text/plain; charset=utf-8",
+              "content-length": "1024",
+            },
+          });
+        }],
+      ]);
+
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { data, error, response } = await filesResource.head("16.0.0/ucd/UnicodeData.txt");
+
+      expect(error).toBeNull();
+      expect(data).toBeNull();
+      expect(response?.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+      expect(response?.headers.get("content-length")).toBe("1024");
+    });
+
+    it("should pass query params through for head requests", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}${endpoints.files}/16.0.0/ucd`, ({ request }) => {
+          const url = new URL(request.url);
+          expect(url.searchParams.get("pattern")).toBe("*.txt");
+          expect(url.searchParams.get("sort")).toBe("name");
+          expect(url.searchParams.get("order")).toBe("asc");
+          expect(url.searchParams.get("type")).toBe("files");
+          expect(url.searchParams.get("query")).toBe("Uni");
+          return new HttpResponse(null, {
+            headers: {
+              "content-type": "application/json",
+            },
+          });
+        }],
+      ]);
+
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { error, response } = await filesResource.head("16.0.0/ucd", {
+        pattern: "*.txt",
+        sort: "name",
+        order: "asc",
+        type: "files",
+        query: "Uni",
+      });
+
+      expect(error).toBeNull();
+      expect(response?.ok).toBe(true);
+    });
   });
 
   describe("custom configuration", () => {
