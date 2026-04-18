@@ -30,6 +30,11 @@ export interface ReportsResource {
    * Get the HTML document for a specific report revision.
    */
   getHtml: (reportId: string, revId: string) => Promise<SafeFetchResponse<string>>;
+
+  /**
+   * Get the raw upstream HTML document for a specific report revision.
+   */
+  getRaw: (reportId: string, revId: string) => Promise<SafeFetchResponse<string>>;
 }
 
 export interface CreateReportsResourceOptions {
@@ -70,6 +75,14 @@ export function createReportsResource(options: CreateReportsResourceOptions): Re
 
     async getHtml(reportId: string, revId: string) {
       const url = new URL(`${endpoints.reports}/${encodeURIComponent(reportId)}/rev/${encodeURIComponent(revId)}/html`, baseUrl);
+
+      return customFetch.safe<string, "text">(url.toString(), {
+        parseAs: "text",
+      });
+    },
+
+    async getRaw(reportId: string, revId: string) {
+      const url = new URL(`${endpoints.reports}/${encodeURIComponent(reportId)}/rev/${encodeURIComponent(revId)}/raw`, baseUrl);
 
       return customFetch.safe<string, "text">(url.toString(), {
         parseAs: "text",

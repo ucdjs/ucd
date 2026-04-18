@@ -87,6 +87,9 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
  *
  * // Get report metadata
  * const report = await client.reports.get('tr44');
+
+ * // Get raw report HTML
+ * const rawHtml = await client.reports.getRaw('tr44', '36');
  *
  * // Get manifest for a version
  * const manifest = await client.versions.getManifest('16.0.0');

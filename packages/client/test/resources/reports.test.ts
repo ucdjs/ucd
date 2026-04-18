@@ -155,4 +155,53 @@ describe("createReportsResource", () => {
       expect(data).toBe(html);
     });
   });
+
+  describe("getRaw()", () => {
+    it("should fetch the raw report HTML document", async () => {
+      const html = "<html><body><script>alert('raw')</script></body></html>";
+
+      mockFetch([
+        ["GET", `${baseUrl}${endpoints.reports}/tr44/rev/36/raw`, () => {
+          return HttpResponse.text(html, {
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+            },
+          });
+        }],
+      ]);
+
+      const reportsResource = createReportsResource({ baseUrl, endpoints });
+      const { data, error } = await reportsResource.getRaw("tr44", "36");
+
+      expect(error).toBeNull();
+      expect(data).toBe(html);
+    });
+
+    it("should work with custom reports paths", async () => {
+      const html = "<html><body>custom raw</body></html>";
+      const customReportsPath = "/custom/reports";
+
+      mockFetch([
+        ["GET", `${baseUrl}${customReportsPath}/tr44/rev/proposed/raw`, () => {
+          return HttpResponse.text(html, {
+            headers: {
+              "content-type": "text/html; charset=utf-8",
+            },
+          });
+        }],
+      ]);
+
+      const reportsResource = createReportsResource({
+        baseUrl,
+        endpoints: {
+          ...endpoints,
+          reports: customReportsPath,
+        },
+      });
+      const { data, error } = await reportsResource.getRaw("tr44", "proposed");
+
+      expect(error).toBeNull();
+      expect(data).toBe(html);
+    });
+  });
 });
