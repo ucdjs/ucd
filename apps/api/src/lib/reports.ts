@@ -1,29 +1,34 @@
-import type { StatusCode } from "hono/utils/http-status";
 import type { UnicodeAssetResult } from "./files";
-import { trimLeadingSlash } from "@luxass/utils";
 import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
 import {
-  DEFAULT_USER_AGENT,
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
 } from "@ucdjs/env";
 import { determineContentTypeFromExtension } from "../routes/v1_files/utils";
 import { getFileSizeFromHeaders } from "./files";
+import {
+  getReportUpstreamRevisionPath,
+  getUpstreamAsset,
+  REPORT_HOSTS,
+  REPORTS_BASE_URL,
+} from "./upstream";
 
-const REPORTS_BASE_URL = "https://www.unicode.org/reports";
 const REPORT_API_BASE_PATH = "/api/v1/reports";
-const REPORT_HOSTS = new Set(["unicode.org", "www.unicode.org"]);
 const REPORT_ID_RE = /^tr\d[a-z0-9-]*$/i;
 const LINK_HREF_RE = /<a[^>]+\bhref=(["'])(.*?)\1/gi;
-
-type ReportAssetMethod = "GET" | "HEAD";
-
-interface RawReportAssetResult {
-  ok: boolean;
-  status: StatusCode;
-  response: Response;
-  extension: string;
-}
+const REPORT_PREVIEW_BUCKET_PREFIX = "reports/preview";
+const REPORT_PREVIEW_CONTENT_TYPE = "text/html; charset=utf-8";
+const REPORT_PREVIEW_CSP = [
+  "default-src 'none'",
+  "script-src 'none'",
+  "style-src 'unsafe-inline' https://www.unicode.org",
+  "img-src data: https://www.unicode.org",
+  "font-src https://www.unicode.org data:",
+  "connect-src 'none'",
+  "frame-src 'none'",
+  "object-src 'none'",
+  "form-action 'none'",
+].join("; ");
 
 export interface UnicodeReportRevisionReference {
   revId: string;
@@ -82,40 +87,129 @@ function isUnavailableProposedReportHtml(html: string): boolean {
     && text.includes("See the latest version");
 }
 
-async function getRawReportAsset(path: string, method: ReportAssetMethod = "GET"): Promise<RawReportAssetResult> {
-  const normalizedPath = trimLeadingSlash(path.trim());
-  const url = normalizedPath ? `${REPORTS_BASE_URL}/${normalizedPath}` : `${REPORTS_BASE_URL}/`;
-  const response = await fetch(url, {
-    method,
-    headers: {
-      "User-Agent": DEFAULT_USER_AGENT,
-    },
-  });
-
-  const leaf = normalizedPath.split("/").pop() ?? "";
-  const extension = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
-
-  return {
-    ok: response.ok,
-    status: response.status as StatusCode,
-    response,
-    extension,
-  };
+function getReportPreviewStorageKey(reportId: string, revId: string): string {
+  return `${REPORT_PREVIEW_BUCKET_PREFIX}/${reportId.toLowerCase()}/${revId}.html`;
 }
 
-function getUpstreamRevisionPath(reportId: string, revId: string): string | null {
-  const normalizedReportId = reportId.toLowerCase();
+function isUnsafeJavaScriptUrl(value: string): boolean {
+  // eslint-disable-next-line no-control-regex
+  return value.replaceAll(/[\u0000-\u0020]+/g, "").toLowerCase().startsWith("javascript:");
+}
 
-  if (revId === "proposed") {
-    return `${normalizedReportId}/proposed.html`;
+function createReportPreviewHeaders(source: {
+  etag?: string | null;
+  uploaded?: Date | null;
+  lastModified?: string | null;
+} = {}): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": REPORT_PREVIEW_CONTENT_TYPE,
+    "Content-Security-Policy": REPORT_PREVIEW_CSP,
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    [UCD_STAT_TYPE_HEADER]: "file",
+  };
+
+  if (source.etag) {
+    headers.ETag = source.etag;
   }
 
+  if (source.uploaded) {
+    headers["Last-Modified"] = source.uploaded.toUTCString();
+  } else if (source.lastModified) {
+    headers["Last-Modified"] = source.lastModified;
+  }
+
+  return headers;
+}
+
+async function sanitizeReportPreviewHtml(html: string, upstreamUrl: string): Promise<string> {
+  let sawHead = false;
+
+  const rewritten = await new HTMLRewriter()
+    .on("head", {
+      element(element) {
+        sawHead = true;
+        element.prepend(`<base href="${upstreamUrl}">`, { html: true });
+      },
+    })
+    .on("base", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("script", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("iframe", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("object", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("embed", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("meta[http-equiv]", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("link[rel='preload'][as='script']", {
+      element(element) {
+        element.remove();
+      },
+    })
+    .on("*", {
+      element(element) {
+        for (const attribute of [...element.attributes]) {
+          const [name, value] = attribute;
+          if (!name || !value) {
+            continue;
+          }
+
+          const normalizedName = name.toLowerCase();
+          if (normalizedName.startsWith("on")) {
+            element.removeAttribute(name);
+            continue;
+          }
+
+          if (
+            (normalizedName === "href"
+              || normalizedName === "src"
+              || normalizedName === "action"
+              || normalizedName === "formaction")
+            && isUnsafeJavaScriptUrl(value)
+          ) {
+            element.removeAttribute(name);
+          }
+        }
+      },
+    })
+    .transform(new Response(html, {
+      headers: { "Content-Type": REPORT_PREVIEW_CONTENT_TYPE },
+    }))
+    .text();
+
+  if (sawHead) {
+    return rewritten;
+  }
+
+  // Some upstream documents omit a <head>; inject one so relative assets resolve from Unicode.org.
   // eslint-disable-next-line e18e/prefer-static-regex
-  if (/^\d+$/.test(revId)) {
-    return `${normalizedReportId}/${normalizedReportId}-${revId}.html`;
+  if (/<html\b[^>]*>/i.test(rewritten)) {
+    // eslint-disable-next-line e18e/prefer-static-regex
+    return rewritten.replace(/<html\b([^>]*)>/i, `<html$1><head><base href="${upstreamUrl}"></head>`);
   }
 
-  return null;
+  return `<!doctype html><html><head><base href="${upstreamUrl}"></head><body>${rewritten}</body></html>`;
 }
 
 function collectReportInfo(html: string, reportId: string) {
@@ -190,7 +284,7 @@ function collectReportInfo(html: string, reportId: string) {
 }
 
 async function getAvailableProposedReportHtml(reportId: string): Promise<string | null> {
-  const proposedAsset = await getRawReportAsset(`${reportId}/proposed.html`, "GET");
+  const proposedAsset = await getUpstreamAsset(REPORTS_BASE_URL, `${reportId}/proposed.html`, "GET");
   if (!proposedAsset.ok) {
     return null;
   }
@@ -208,7 +302,7 @@ export function isValidReportId(reportId: string): boolean {
 }
 
 export async function listUnicodeReports(): Promise<UnicodeReportSummary[]> {
-  const asset = await getRawReportAsset("", "GET");
+  const asset = await getUpstreamAsset(REPORTS_BASE_URL, "", "GET");
   if (!asset.ok) {
     throw new Error("Unable to fetch Unicode reports index");
   }
@@ -254,7 +348,7 @@ export async function getUnicodeReportSummary(reportId: string): Promise<Unicode
   }
 
   const normalizedReportId = reportId.toLowerCase();
-  const latestAsset = await getRawReportAsset(`${normalizedReportId}/`, "GET");
+  const latestAsset = await getUpstreamAsset(REPORTS_BASE_URL, `${normalizedReportId}/`, "GET");
   if (!latestAsset.ok) {
     return null;
   }
@@ -314,12 +408,12 @@ export async function getUnicodeReportRevisionMetadata(
     return null;
   }
 
-  const upstreamPath = getUpstreamRevisionPath(reportId, revId);
+  const upstreamPath = getReportUpstreamRevisionPath(reportId, revId);
   if (!upstreamPath) {
     return null;
   }
 
-  const asset = await getRawReportAsset(upstreamPath, "GET");
+  const asset = await getUpstreamAsset(REPORTS_BASE_URL, upstreamPath, "GET");
   if (!asset.ok) {
     return null;
   }
@@ -381,6 +475,7 @@ export async function getUnicodeReportRevisionMetadata(
 }
 
 export async function getUnicodeReportHtml(
+  bucket: R2Bucket | null | undefined,
   reportId: string,
   revId: string,
 ): Promise<UnicodeAssetResult> {
@@ -393,7 +488,7 @@ export async function getUnicodeReportHtml(
     };
   }
 
-  const upstreamPath = getUpstreamRevisionPath(reportId, revId);
+  const upstreamPath = getReportUpstreamRevisionPath(reportId, revId);
   if (!upstreamPath) {
     return {
       status: 400,
@@ -403,7 +498,93 @@ export async function getUnicodeReportHtml(
     };
   }
 
-  const asset = await getRawReportAsset(upstreamPath, "GET");
+  if (bucket && revId !== "proposed") {
+    const cachedPreview = await bucket.get(getReportPreviewStorageKey(reportId, revId));
+    if (cachedPreview) {
+      return {
+        status: 200,
+        kind: "file",
+        headers: createReportPreviewHeaders({
+          etag: cachedPreview.httpEtag ?? (cachedPreview.etag ? `"${cachedPreview.etag}"` : null),
+          uploaded: cachedPreview.uploaded,
+        }),
+        body: cachedPreview.body,
+      };
+    }
+  }
+
+  const asset = await getUpstreamAsset(REPORTS_BASE_URL, upstreamPath, "GET");
+  if (!asset.ok) {
+    return {
+      status: asset.status === 404 ? 404 : 502,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({
+        status: asset.status === 404 ? 404 : 502,
+        message: asset.status === 404 ? "Resource not found" : "Bad Gateway",
+      }),
+    };
+  }
+
+  const html = await asset.response.text();
+  if (revId === "proposed" && isUnavailableProposedReportHtml(html)) {
+    return {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({
+        status: 404,
+        message: "Resource not found",
+      }),
+    };
+  }
+
+  const upstreamUrl = revId === "proposed"
+    ? `${REPORTS_BASE_URL}/${reportId.toLowerCase()}/proposed.html`
+    : `${REPORTS_BASE_URL}/${reportId.toLowerCase()}/${reportId.toLowerCase()}-${revId}.html`;
+  const previewHtml = await sanitizeReportPreviewHtml(html, upstreamUrl);
+  const headers = createReportPreviewHeaders({
+    lastModified: asset.response.headers.get("last-modified"),
+  });
+
+  if (bucket && revId !== "proposed") {
+    await bucket.put(getReportPreviewStorageKey(reportId, revId), previewHtml, {
+      httpMetadata: { contentType: REPORT_PREVIEW_CONTENT_TYPE },
+    });
+  }
+
+  return {
+    status: 200,
+    kind: "file",
+    headers,
+    body: new Response(previewHtml).body,
+  };
+}
+
+export async function getUnicodeReportRawHtml(
+  reportId: string,
+  revId: string,
+): Promise<UnicodeAssetResult> {
+  if (!isValidReportId(reportId)) {
+    return {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({ status: 400, message: "Invalid report id" }),
+    };
+  }
+
+  const upstreamPath = getReportUpstreamRevisionPath(reportId, revId);
+  if (!upstreamPath) {
+    return {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({ status: 400, message: "Invalid revision id" }),
+    };
+  }
+
+  const asset = await getUpstreamAsset(REPORTS_BASE_URL, upstreamPath, "GET");
   if (!asset.ok) {
     return {
       status: asset.status === 404 ? 404 : 502,
