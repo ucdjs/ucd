@@ -17,6 +17,7 @@ export interface ResponseMap {
   text: string;
   arrayBuffer: ArrayBuffer;
   stream: ReadableStream<Uint8Array>;
+  __internal_head__: null;
 }
 
 export type ResponseType = keyof ResponseMap | "json";
