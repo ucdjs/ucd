@@ -214,6 +214,10 @@ function createCustomFetch(): CustomFetch {
             = context.response.body || (context.response as any)._bodyInit; // (see refs above)
           break;
         }
+        case "__internal_head__": {
+          context.response.data = null as MappedResponseType<R, T>;
+          break;
+        }
         default: {
           context.response.data = await context.response[responseType]() as MappedResponseType<R, T>;
         }
