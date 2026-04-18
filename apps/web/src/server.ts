@@ -16,15 +16,12 @@ declare module "@tanstack/react-start" {
   }
 }
 
-// eslint-disable-next-line antfu/no-top-level-await
-const client = await createUCDClient(UCDJS_API_BASE_URL);
-
 export default createServerEntry({
   async fetch(request) {
     return handler.fetch(request, {
       context: {
         apiBaseUrl: UCDJS_API_BASE_URL,
-        client,
+        client: await createUCDClient(UCDJS_API_BASE_URL),
       },
     });
   },
