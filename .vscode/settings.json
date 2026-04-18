@@ -34,6 +34,7 @@
   },
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
+    "*.handler.ts": "$(capture).handler.ts,$(capture).ts,$(capture).openapi.ts",
     // group test files e.g.
     // utils.windows.test.ts, utils.unix.test.ts, utils.test.ts
     "*.test.ts": "$(capture).*.test.ts"
