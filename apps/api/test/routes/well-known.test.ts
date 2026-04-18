@@ -4,7 +4,7 @@ import { createDatabase } from "#db";
 import { versions } from "#db/schema";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { env } from "cloudflare:workers";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import { executeRequest } from "../helpers/request";
 
 beforeEach(async () => {

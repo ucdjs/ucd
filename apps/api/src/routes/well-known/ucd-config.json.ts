@@ -12,18 +12,18 @@ import { V1_FILES_ROUTER_BASE_PATH, V1_REPORTS_ROUTER_BASE_PATH, V1_VERSIONS_ROU
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const UCD_CONFIG_ROUTE = createRoute({
-  method: "get",
-  path: "/ucd-config.json",
-  operationId: "getWellKnownConfig",
+  "method": "get",
+  "path": "/ucd-config.json",
+  "operationId": "getWellKnownConfig",
   "x-ucd-client-method": "config.get",
-  tags: [OPENAPI_TAGS.WELL_KNOWN],
-  middleware: [
+  "tags": [OPENAPI_TAGS.WELL_KNOWN],
+  "middleware": [
     cache({
       cacheName: WELL_KNOWN_UCD_CONFIG_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],
-  description: dedent`
+  "description": dedent`
     ## UCD Configuration
 
     This endpoint retrieves the UCD configuration, including available API endpoints for accessing Unicode data resources.
@@ -32,7 +32,7 @@ const UCD_CONFIG_ROUTE = createRoute({
     > The configuration follows the [UCD.js Well-Known Configuration](https://docs.ucdjs.dev/usage/well-known) specification.
 
   `,
-  responses: {
+  "responses": {
     200: {
       content: {
         "application/json": {

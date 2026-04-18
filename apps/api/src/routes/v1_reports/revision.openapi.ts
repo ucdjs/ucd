@@ -9,23 +9,23 @@ import {
 } from "./shared";
 
 export const GET_REPORT_REVISION_ROUTE = createRoute({
-  method: "get",
-  path: "/{reportId}/rev/{revId}",
-  operationId: "getReportRevision",
+  "method": "get",
+  "path": "/{reportId}/rev/{revId}",
+  "operationId": "getReportRevision",
   "x-ucd-client-method": "reports.getRevision",
-  tags: [OPENAPI_TAGS.REPORTS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.REPORTS],
+  "middleware": [
     cache({
       cacheName: "ucdjs:v1_reports:revision",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
-  parameters: [
+  "parameters": [
     REPORT_ID_PARAM,
     REVISION_ID_PARAM,
   ],
-  description: "Fetch metadata for a specific report revision without downloading the HTML document.",
-  responses: {
+  "description": "Fetch metadata for a specific report revision without downloading the HTML document.",
+  "responses": {
     200: {
       description: "Unicode report revision metadata",
       content: {

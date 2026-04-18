@@ -19,12 +19,12 @@ import {
 } from "./openapi-params";
 
 export const WILDCARD_ROUTE = createRoute({
-  method: "get",
-  path: "/{wildcard}",
-  operationId: "getFile",
+  "method": "get",
+  "path": "/{wildcard}",
+  "operationId": "getFile",
   "x-ucd-client-method": "files.get",
-  tags: [OPENAPI_TAGS.FILES],
-  parameters: [
+  "tags": [OPENAPI_TAGS.FILES],
+  "parameters": [
     WILDCARD_PARAM,
     PATTERN_QUERY_PARAM,
     QUERY_PARAM,
@@ -32,7 +32,7 @@ export const WILDCARD_ROUTE = createRoute({
     SORT_QUERY_PARAM,
     ORDER_QUERY_PARAM,
   ],
-  description: dedent`
+  "description": dedent`
     This endpoint proxies requests to Unicode.org's Public directory, streaming files directly while transforming directory listings into structured JSON.
 
     All paths are relative to \`/api/v1/files\` - for example, requesting \`/api/v1/files/15.1.0/ucd/emoji/emoji-data.txt\` fetches the emoji data file from Unicode version 15.1.0.
@@ -59,7 +59,7 @@ export const WILDCARD_ROUTE = createRoute({
 
     Directory responses are automatically transformed into JSON arrays containing file and directory entries. Files are streamed directly from Unicode.org with appropriate content types.
   `,
-  responses: {
+  "responses": {
     200: {
       description: "Response from Unicode.org",
       headers: {
@@ -179,12 +179,12 @@ export const WILDCARD_ROUTE = createRoute({
 });
 
 export const METADATA_WILDCARD_ROUTE = createRoute({
-  method: "head",
-  path: "/{wildcard}",
-  operationId: "headFile",
+  "method": "head",
+  "path": "/{wildcard}",
+  "operationId": "headFile",
   "x-ucd-client-method": "files.head",
-  tags: [OPENAPI_TAGS.FILES],
-  parameters: [
+  "tags": [OPENAPI_TAGS.FILES],
+  "parameters": [
     WILDCARD_PARAM,
     PATTERN_QUERY_PARAM,
     QUERY_PARAM,
@@ -192,7 +192,7 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
     SORT_QUERY_PARAM,
     ORDER_QUERY_PARAM,
   ],
-  description: dedent`
+  "description": dedent`
     Retrieve metadata about a file or directory without downloading the content. Useful for checking existence, file size, and other metadata.
 
     All paths are relative to \`/api/v1/files\`. Directory paths always include a trailing slash (e.g., \`/15.1.0/ucd/charts/\`), while file paths do not.
@@ -200,7 +200,7 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
     > [!NOTE]
     > This endpoint returns the same headers as the \`GET\` request (file size, directory entry counts, last modified timestamps, content type) without the response body.
   `,
-  responses: {
+  "responses": {
     200: {
       description: "Response from Unicode.org",
       headers: {

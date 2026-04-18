@@ -15,18 +15,18 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 const log = createLogger("ucd:api:v1_versions");
 
 const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
-  method: "get",
-  path: "/",
-  operationId: "listVersions",
+  "method": "get",
+  "path": "/",
+  "operationId": "listVersions",
   "x-ucd-client-method": "versions.list",
-  tags: [OPENAPI_TAGS.VERSIONS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.VERSIONS],
+  "middleware": [
     cache({
       cacheName: V1_VERSIONS_LIST_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],
-  description: dedent`
+  "description": dedent`
     ## List Supported Unicode Versions
 
     This endpoint retrieves the Unicode versions currently supported by UCD.js.
@@ -35,7 +35,7 @@ const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
     - Includes **draft versions** when they are published and supported
     - Supports **caching** for performance optimization
   `,
-  responses: {
+  "responses": {
     200: {
       content: {
         "application/json": {

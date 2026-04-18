@@ -5,22 +5,22 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { REPORT_ID_PARAM, UnicodeReportRevisionMetadataSchema } from "./shared";
 
 export const GET_REPORT_ROUTE = createRoute({
-  method: "get",
-  path: "/{reportId}",
-  operationId: "getReport",
+  "method": "get",
+  "path": "/{reportId}",
+  "operationId": "getReport",
   "x-ucd-client-method": "reports.get",
-  tags: [OPENAPI_TAGS.REPORTS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.REPORTS],
+  "middleware": [
     cache({
       cacheName: "ucdjs:v1_reports:report",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
-  parameters: [
+  "parameters": [
     REPORT_ID_PARAM,
   ],
-  description: "Resolve a report id to its latest revision metadata.",
-  responses: {
+  "description": "Resolve a report id to its latest revision metadata.",
+  "responses": {
     200: {
       description: "Latest Unicode report revision metadata",
       content: {

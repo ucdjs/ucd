@@ -11,24 +11,24 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 const UnicodeReportSummaryListSchema = z.array(UnicodeReportSummarySchema);
 
 const LIST_REPORTS_ROUTE = createRoute({
-  method: "get",
-  path: "/",
-  operationId: "listReports",
+  "method": "get",
+  "path": "/",
+  "operationId": "listReports",
   "x-ucd-client-method": "reports.list",
-  tags: [OPENAPI_TAGS.REPORTS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.REPORTS],
+  "middleware": [
     cache({
       cacheName: "ucdjs:v1_reports:list",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
-  description: dedent`
+  "description": dedent`
     List Unicode reports with adjacent revision metadata.
 
     Each entry includes the current revision exposed by the Unicode reports site,
     the prior revision when available, and the next proposed revision when one exists.
   `,
-  responses: {
+  "responses": {
     200: {
       description: "List of Unicode reports",
       content: {

@@ -15,22 +15,22 @@ const GET_VERSION_FILE_TREE_ROUTE_DOCS = dedent`
 `;
 
 export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
-  method: "get",
-  path: "/{version}/file-tree",
-  operationId: "getVersionFileTree",
+  "method": "get",
+  "path": "/{version}/file-tree",
+  "operationId": "getVersionFileTree",
   "x-ucd-client-method": "versions.getFileTree",
-  tags: [OPENAPI_TAGS.VERSIONS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.VERSIONS],
+  "middleware": [
     cache({
       cacheName: V1_VERSIONS_FILE_TREE_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 1 week
     }),
   ],
-  parameters: [
+  "parameters": [
     VERSION_ROUTE_PARAM,
   ],
-  description: GET_VERSION_FILE_TREE_ROUTE_DOCS,
-  responses: {
+  "description": GET_VERSION_FILE_TREE_ROUTE_DOCS,
+  "responses": {
     200: {
       content: {
         "application/json": {

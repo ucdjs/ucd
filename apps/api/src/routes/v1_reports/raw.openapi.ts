@@ -6,27 +6,27 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { REPORT_ID_PARAM, REVISION_ID_PARAM } from "./shared";
 
 export const GET_REPORT_RAW_ROUTE = createRoute({
-  method: "get",
-  path: "/{reportId}/rev/{revId}/raw",
-  operationId: "getReportRaw",
+  "method": "get",
+  "path": "/{reportId}/rev/{revId}/raw",
+  "operationId": "getReportRaw",
   "x-ucd-client-method": "reports.getRaw",
-  tags: [OPENAPI_TAGS.REPORTS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.REPORTS],
+  "middleware": [
     cache({
       cacheName: "ucdjs:v1_reports:raw",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
-  parameters: [
+  "parameters": [
     REPORT_ID_PARAM,
     REVISION_ID_PARAM,
   ],
-  description: dedent`
+  "description": dedent`
     Fetch the raw upstream HTML document for a specific Unicode report revision.
 
     This returns the original document body without preview sanitization.
   `,
-  responses: {
+  "responses": {
     200: {
       description: "Raw HTML report document",
       content: {

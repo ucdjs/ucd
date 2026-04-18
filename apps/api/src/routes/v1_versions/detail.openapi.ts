@@ -8,21 +8,21 @@ import { V1_VERSIONS_DETAIL_CACHE_NAME } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 export const GET_VERSION_ROUTE = createRoute({
-  method: "get",
-  path: "/{version}",
-  operationId: "getVersion",
+  "method": "get",
+  "path": "/{version}",
+  "operationId": "getVersion",
   "x-ucd-client-method": "versions.get",
-  tags: [OPENAPI_TAGS.VERSIONS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.VERSIONS],
+  "middleware": [
     cache({
       cacheName: V1_VERSIONS_DETAIL_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],
-  parameters: [
+  "parameters": [
     VERSION_ROUTE_PARAM,
   ],
-  description: dedent`
+  "description": dedent`
     ## Get Unicode Version Details
 
     This endpoint retrieves detailed information about a specific Unicode version.
@@ -32,7 +32,7 @@ export const GET_VERSION_ROUTE = createRoute({
     - Returns **statistics** about characters, blocks, and scripts (if available)
     - Supports **caching** for performance optimization
   `,
-  responses: {
+  "responses": {
     200: {
       content: {
         "application/json": {

@@ -19,21 +19,21 @@ const VERSION_MANIFEST_PARAM = {
 } as const;
 
 export const GET_VERSION_MANIFEST_ROUTE = createRoute({
-  method: "get",
-  path: "/{version}/manifest",
-  operationId: "getVersionManifest",
+  "method": "get",
+  "path": "/{version}/manifest",
+  "operationId": "getVersionManifest",
   "x-ucd-client-method": "versions.getManifest",
-  tags: [OPENAPI_TAGS.VERSIONS],
-  middleware: [
+  "tags": [OPENAPI_TAGS.VERSIONS],
+  "middleware": [
     cache({
       cacheName: V1_VERSIONS_MANIFEST_CACHE_NAME,
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`,
     }),
   ],
-  parameters: [
+  "parameters": [
     VERSION_MANIFEST_PARAM,
   ],
-  description: dedent`
+  "description": dedent`
     ## Get Unicode Version Manifest
 
     This endpoint returns the canonical per-version manifest for the requested Unicode version.
@@ -43,7 +43,7 @@ export const GET_VERSION_MANIFEST_ROUTE = createRoute({
     - \`path\`: Path for the \`/api/v1/files\` endpoint
     - \`storePath\`: Path for the Store HTTP surface
   `,
-  responses: {
+  "responses": {
     200: {
       content: {
         "application/json": {
