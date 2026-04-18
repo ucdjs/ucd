@@ -1,7 +1,6 @@
 import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-viewer";
 import {
   reportCodeQueryOptions,
-  reportHtmlQueryOptions,
   reportQueryOptions,
   reportRevisionQueryOptions,
 } from "#functions/reports";
@@ -34,12 +33,6 @@ export const Route = createFileRoute("/(explorer)/reports/$id/rev/$rev")({
       reportRevisionQueryOptions(params.id, params.rev),
     );
 
-    if (deps.view !== "code") {
-      await context.queryClient.prefetchQuery(
-        reportHtmlQueryOptions(params.id, params.rev),
-      );
-    }
-
     if (deps.view !== "render") {
       await context.queryClient.prefetchQuery(
         reportCodeQueryOptions(params.id, params.rev),
@@ -49,24 +42,24 @@ export const Route = createFileRoute("/(explorer)/reports/$id/rev/$rev")({
     return {
       latestRevId: latest.revision.revId,
       report,
+      previewUrl: new URL(report.revision.htmlPath, context.apiBaseUrl).toString(),
+      rawFileUrl: new URL(`/api/v1/reports/${report.reportId}/rev/${report.revision.revId}/raw`, context.apiBaseUrl).toString(),
     };
   },
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { report } = Route.useLoaderData();
+  const { previewUrl, rawFileUrl, report } = Route.useLoaderData();
   const view = reportRouteApi.useSearch().view ?? "split";
 
   const fileName = `${report.reportId}-${report.revision.revId}.html`;
-  const fileUrl = report.revision.htmlPath;
-  const upstreamUrl = report.revision.upstreamUrl;
 
   async function handleDownload() {
     try {
       if (typeof document === "undefined" || typeof window === "undefined") return;
 
-      const response = await fetch(fileUrl);
+      const response = await fetch(rawFileUrl);
 
       if (!response.ok) {
         throw new Error(`Failed to download file: ${response.status} ${response.statusText}`);
@@ -94,9 +87,7 @@ function RouteComponent() {
     return (
       <Suspense fallback={<RenderPaneFallback />}>
         <RenderPane
-          reportId={report.reportId}
-          revId={report.revision.revId}
-          upstreamUrl={upstreamUrl}
+          previewUrl={previewUrl}
         />
       </Suspense>
     );
@@ -109,7 +100,7 @@ function RouteComponent() {
           reportId={report.reportId}
           revId={report.revision.revId}
           fileName={fileName}
-          fileUrl={fileUrl}
+          fileUrl={rawFileUrl}
           onDownload={handleDownload}
         />
       </Suspense>
@@ -123,15 +114,13 @@ function RouteComponent() {
           reportId={report.reportId}
           revId={report.revision.revId}
           fileName={fileName}
-          fileUrl={fileUrl}
+          fileUrl={rawFileUrl}
           onDownload={handleDownload}
         />
       </Suspense>
       <Suspense fallback={<RenderPaneFallback />}>
         <RenderPane
-          reportId={report.reportId}
-          revId={report.revision.revId}
-          upstreamUrl={upstreamUrl}
+          previewUrl={previewUrl}
         />
       </Suspense>
     </div>
@@ -139,16 +128,10 @@ function RouteComponent() {
 }
 
 function RenderPane({
-  reportId,
-  revId,
-  upstreamUrl,
+  previewUrl,
 }: {
-  reportId: string;
-  revId: string;
-  upstreamUrl: string;
+  previewUrl: string;
 }) {
-  const { data: html } = useSuspenseQuery(reportHtmlQueryOptions(reportId, revId));
-
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-background">
       <div className="flex items-center justify-between border-b border-border bg-muted/20 px-3 py-2">
@@ -157,11 +140,7 @@ function RenderPane({
       </div>
       <iframe
         title="Unicode report preview"
-        // eslint-disable-next-line e18e/prefer-static-regex
-        srcDoc={/<head[^>]*>/i.test(html)
-          // eslint-disable-next-line e18e/prefer-static-regex
-          ? html.replace(/<head([^>]*)>/i, `<head$1><base href="${upstreamUrl}">`)
-          : `<base href="${upstreamUrl}">${html}`}
+        src={previewUrl}
         className="h-[70vh] w-full bg-white"
         sandbox="allow-popups"
       />

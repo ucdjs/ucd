@@ -15,9 +15,15 @@ export default defineConfig((env) => {
     "https://api.ucdjs.dev",
     "https://preview.api.ucdjs.dev",
   ];
+  const frameSrc = [
+    "'self'",
+    "https://api.ucdjs.dev",
+    "https://preview.api.ucdjs.dev",
+  ];
 
   if (env.command === "serve") {
     connectSrc.push("http://localhost:8787");
+    frameSrc.push("http://localhost:8787");
   }
 
   return {
@@ -42,6 +48,7 @@ export default defineConfig((env) => {
                 "style-src 'self' 'unsafe-inline'",
                 "img-src 'self' data:",
                 `connect-src ${connectSrc.join(" ")}`,
+                `frame-src ${frameSrc.join(" ")}`,
                 "frame-ancestors 'none'",
                 "base-uri 'self'",
                 "form-action 'self'",

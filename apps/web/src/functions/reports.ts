@@ -94,32 +94,10 @@ export function reportRevisionQueryOptions(reportId: string, revId: string) {
   });
 }
 
-export const fetchReportHtml = createServerFn({ method: "GET" })
-  .inputValidator((data: { reportId: string; revId: string }) => data)
-  .handler(async ({ context, data }) => {
-    const res = await fetch(`${context.apiBaseUrl}/api/v1/reports/${data.reportId}/rev/${data.revId}/html`, {
-      headers: { accept: "text/html" },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch report HTML ${data.reportId}@${data.revId}`);
-    }
-
-    return res.text();
-  });
-
-export function reportHtmlQueryOptions(reportId: string, revId: string) {
-  return queryOptions({
-    queryKey: ["reports", reportId, "rev", revId, "html"],
-    queryFn: () => fetchReportHtml({ data: { reportId, revId } }),
-    enabled: Boolean(reportId && revId),
-  });
-}
-
 export const fetchReportCode = createServerFn({ method: "GET" })
   .inputValidator((data: { reportId: string; revId: string }) => data)
   .handler(async ({ context, data }) => {
-    const res = await fetch(`${context.apiBaseUrl}/api/v1/reports/${data.reportId}/rev/${data.revId}/html`, {
+    const res = await fetch(new URL(`/api/v1/reports/${data.reportId}/rev/${data.revId}/raw`, context.apiBaseUrl), {
       headers: { accept: "text/html" },
     });
 
