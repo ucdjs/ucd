@@ -1,4 +1,4 @@
-import type { UnicodeVersionList } from "@ucdjs/schemas";
+import type { UnicodeVersionDetails, UnicodeVersionList } from "@ucdjs/schemas";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { HttpResponse, mockFetch } from "@ucdjs/test-utils/msw";
 import { describe, expect, it } from "vitest";
@@ -43,6 +43,23 @@ describe("createVersionsResource", () => {
       ],
     },
   ];
+
+  const mockVersionDetails = {
+    version: "16.0.0",
+    documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+    date: "2024",
+    url: "https://www.unicode.org/Public/16.0.0",
+    mappedUcdVersion: null,
+    type: "stable",
+    statistics: {
+      totalCharacters: 149813,
+      newCharacters: 5185,
+      totalBlocks: 331,
+      newBlocks: 4,
+      totalScripts: 165,
+      newScripts: 2,
+    },
+  } satisfies UnicodeVersionDetails;
 
   describe("list()", () => {
     it("should fetch all Unicode versions successfully", async () => {
@@ -106,6 +123,37 @@ describe("createVersionsResource", () => {
 
       expect(data).toBeNull();
       expect(error).toBeDefined();
+    });
+  });
+
+  describe("get()", () => {
+    it("should fetch version details successfully", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/16.0.0`, () => {
+          return HttpResponse.json(mockVersionDetails);
+        }],
+      ]);
+
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
+      const { data, error } = await versionsResource.get("16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toEqual(mockVersionDetails);
+    });
+
+    it("should handle 404 errors for missing versions", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/99.0.0`, () => {
+          return new HttpResponse(null, { status: 404 });
+        }],
+      ]);
+
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
+      const { data, error } = await versionsResource.get("99.0.0");
+
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 404);
     });
   });
 

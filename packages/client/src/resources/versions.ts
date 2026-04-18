@@ -1,14 +1,20 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
-import type { UCDStoreVersionManifest, UCDWellKnownConfig } from "@ucdjs/schemas";
+import type {
+  UCDStoreVersionManifest,
+  UCDWellKnownConfig,
+  UnicodeVersionDetails,
+} from "@ucdjs/schemas";
 import type { paths } from "../.generated/api";
 import { customFetch } from "@ucdjs-internal/shared";
 import {
   UCDStoreVersionManifestSchema,
   UnicodeFileTreeSchema,
+  UnicodeVersionDetailsSchema,
   UnicodeVersionListSchema,
 } from "@ucdjs/schemas";
 
 type VersionsListResponse = paths["/api/v1/versions"]["get"]["responses"][200]["content"]["application/json"];
+type VersionDetailsResponse = UnicodeVersionDetails;
 type FileTreeResponse = paths["/api/v1/versions/{version}/file-tree"]["get"]["responses"][200]["content"]["application/json"];
 const VERSION_FORMAT_REGEX = /^\d+\.\d+\.\d+$/;
 
@@ -18,6 +24,14 @@ export interface VersionsResource {
    * @return {Promise<SafeFetchResponse<VersionsListResponse>>} An array of available Unicode version strings
    */
   list: () => Promise<SafeFetchResponse<VersionsListResponse>>;
+
+  /**
+   * Get details for a specific Unicode version
+   *
+   * @param {string} version - The Unicode version (e.g., "16.0.0")
+   * @returns {Promise<SafeFetchResponse<VersionDetailsResponse>>} Version metadata and statistics
+   */
+  get: (version: string) => Promise<SafeFetchResponse<VersionDetailsResponse>>;
 
   /**
    * Get the file tree for a specific Unicode version
@@ -51,6 +65,15 @@ export function createVersionsResource(options: CreateVersionsResourceOptions): 
       return customFetch.safe<VersionsListResponse, "json">(url.toString(), {
         parseAs: "json",
         schema: UnicodeVersionListSchema,
+      });
+    },
+
+    async get(version: string) {
+      const url = new URL(`${endpoints.versions}/${version}`, baseUrl);
+
+      return customFetch.safe<VersionDetailsResponse, "json">(url.toString(), {
+        parseAs: "json",
+        schema: UnicodeVersionDetailsSchema,
       });
     },
 
