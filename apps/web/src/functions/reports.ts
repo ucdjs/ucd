@@ -97,12 +97,12 @@ export function reportRevisionQueryOptions(reportId: string, revId: string) {
 export const fetchReportCode = createServerFn({ method: "GET" })
   .inputValidator((data: { reportId: string; revId: string }) => data)
   .handler(async ({ context, data }) => {
-    const res = await fetch(new URL(`/api/v1/reports/${data.reportId}/rev/${data.revId}/raw`, context.apiBaseUrl), {
+    const res = await fetch(`${context.apiBaseUrl}/api/v1/reports/${data.reportId}/rev/${data.revId}/html`, {
       headers: { accept: "text/html" },
     });
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch report source ${data.reportId}@${data.revId}`);
+      throw new Error(`Failed to fetch report preview ${data.reportId}@${data.revId}`);
     }
 
     return highlight(await res.text(), "html");
