@@ -33,15 +33,22 @@ function applyFileQuery(url: URL, query: FileGetQueryOptions | FileHeadQueryOpti
 
 export interface FilesResource {
   /**
-   * Get a file or directory listing from the Unicode data
+   * Get a file or directory listing from the Unicode data.
    *
    * @param {string} path - The path to the file (e.g., "16.0.0/ucd/UnicodeData.txt")
+   * @param {FileGetQueryOptions} [query] - Optional query parameters for filtering or sorting directory listings
    * @returns {Promise<SafeFetchResponse<FileResponse[keyof FileResponse]>>} File content as text, JSON, or other format depending on the file type
    */
   get: (path: string, query?: FileGetQueryOptions) => Promise<SafeFetchResponse<FileResponse[keyof FileResponse]>>;
 
   /**
    * Get metadata for a file or directory without downloading the response body.
+   *
+   * Supports the same directory listing query parameters as `get()`.
+   *
+   * @param {string} path - The path to the file (e.g., "16.0.0/ucd/UnicodeData.txt")
+   * @param {FileHeadQueryOptions} [query] - Optional query parameters for filtering or sorting directory listings
+   * @returns {Promise<SafeFetchResponse<null>>} Metadata for the file or directory
    */
   head: (path: string, query?: FileHeadQueryOptions) => Promise<SafeFetchResponse<null>>;
 }

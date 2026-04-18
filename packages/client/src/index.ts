@@ -79,8 +79,22 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
  * // List all versions
  * const versions = await client.versions.list();
  *
+ * // Get details for one version
+ * const version = await client.versions.get('16.0.0');
+ *
  * // Get a file
  * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
+ *
+ * // List only matching files from a directory
+ * const files = await client.files.get('16.0.0/ucd', {
+ *   pattern: '*.txt',
+ *   sort: 'lastModified',
+ *   order: 'desc',
+ *   type: 'files',
+ * });
+ *
+ * // Read file metadata without downloading the body
+ * const fileHead = await client.files.head('16.0.0/ucd/UnicodeData.txt');
  *
  * // Get configuration
  * const config = await client.config.get();
@@ -123,8 +137,20 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
  * // List all versions
  * const versions = await client.versions.list();
  *
+ * // Get details for one version
+ * const version = await client.versions.get('16.0.0');
+ *
  * // Get a file
  * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
+ *
+ * // Filter a directory listing
+ * const filteredFiles = await client.files.get('16.0.0/ucd', {
+ *   query: 'Uni',
+ *   type: 'files',
+ * });
+ *
+ * // Get file metadata
+ * const fileHead = await client.files.head('16.0.0/ucd/UnicodeData.txt');
  * ```
  */
 export function createUCDClientWithConfig(baseUrl: string, endpointConfig: UCDWellKnownConfig): UCDClient {

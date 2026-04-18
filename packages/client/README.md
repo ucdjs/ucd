@@ -105,8 +105,10 @@ Version manifest requests follow the configured `endpoints.manifest` value. By d
 
 The returned client exposes resource helpers:
 
-- `client.files.get(path)` to fetch a Unicode file or directory listing
+- `client.files.get(path, query?)` to fetch a Unicode file or directory listing
+- `client.files.head(path, query?)` to read file or directory metadata without downloading the body
 - `client.versions.list()` to list available Unicode versions
+- `client.versions.get(version)` to fetch metadata and statistics for a specific Unicode version
 - `client.versions.getFileTree(version)` to fetch a version's file tree
 - `client.versions.getManifest(version)` to read the canonical per-version manifest
 - `client.reports.list()` to list Unicode reports and adjacent revisions
@@ -124,6 +126,59 @@ if (error) {
   console.error("Failed to fetch file:", error.message);
 } else {
   console.log("File content:", fileContent);
+}
+```
+
+### Filter a directory listing
+
+`client.files.get()` and `client.files.head()` both accept the typed file query parameters generated from OpenAPI:
+
+- `query` for prefix matching
+- `pattern` for glob filtering
+- `sort` for `name` or `lastModified`
+- `order` for `asc` or `desc`
+- `type` for `all`, `files`, or `directories`
+
+```typescript
+const { data: files, error } = await client.files.get("16.0.0/ucd", {
+  query: "Uni",
+  pattern: "*.txt",
+  sort: "lastModified",
+  order: "desc",
+  type: "files",
+});
+
+if (error) {
+  console.error("Failed to fetch filtered directory listing:", error.message);
+} else {
+  console.log("Filtered files:", files);
+}
+```
+
+### Read file metadata with `HEAD`
+
+```typescript
+const { data, error, response } = await client.files.head("16.0.0/ucd/UnicodeData.txt");
+
+if (error) {
+  console.error("Failed to read file metadata:", error.message);
+} else {
+  console.log("No response body:", data); // null
+  console.log("Content-Type:", response?.headers.get("Content-Type"));
+  console.log("Content-Length:", response?.headers.get("Content-Length"));
+}
+```
+
+### Read version details
+
+```typescript
+const { data: version, error } = await client.versions.get("16.0.0");
+
+if (error) {
+  console.error("Failed to fetch version details:", error.message);
+} else {
+  console.log("Version type:", version.type);
+  console.log("Statistics:", version.statistics);
 }
 ```
 
