@@ -185,7 +185,7 @@ jobs:
 
       - name: validate openapi
         if: matrix.app == 'api'
-        run: pnpm --filter=@ucdjs/api run lint:openapi
+        run: pnpm turbo lint:openapi
 
       - name: test
         if: ${{ matrix.app == 'api' && !inputs.skip-tests }}
