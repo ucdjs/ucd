@@ -8,7 +8,12 @@ import { MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { desc } from "drizzle-orm";
 import { cache } from "hono/cache";
-import { V1_FILES_ROUTER_BASE_PATH, V1_REPORTS_ROUTER_BASE_PATH, V1_VERSIONS_ROUTER_BASE_PATH, WELL_KNOWN_UCD_CONFIG_CACHE_NAME } from "../../constants";
+import {
+  V1_FILES_ROUTER_BASE_PATH,
+  V1_REPORTS_ROUTER_BASE_PATH,
+  V1_VERSIONS_ROUTER_BASE_PATH,
+  WELL_KNOWN_UCD_CONFIG_CACHE_NAME,
+} from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const UCD_CONFIG_ROUTE = createRoute({
