@@ -35,6 +35,7 @@ describe("handler: /.well-known/ucd-config.json", () => {
           files: "/custom/files",
           manifest: "/custom/manifest",
           versions: "/custom/versions",
+          reports: "/custom/reports",
         },
         versions: [],
       };
@@ -51,69 +52,6 @@ describe("handler: /.well-known/ucd-config.json", () => {
       const data = await response.json();
 
       expect(data).toEqual(customConfig);
-    });
-  });
-});
-
-describe("handler: /.well-known/ucd-store/{version}.json", () => {
-  describe("default response", () => {
-    it("should return default store manifest", async () => {
-      mockStoreApi({
-        responses: {
-          "/api/v1/versions/{version}/manifest": true,
-        },
-      });
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json",
-      );
-      expect(response.ok).toBe(true);
-
-      const data = await response.json();
-      expect(data).toHaveProperty("expectedFiles");
-      expect(Array.isArray(data.expectedFiles)).toBe(true);
-    });
-  });
-
-  describe("custom response", () => {
-    it("should accept custom manifest data", async () => {
-      const customManifest = {
-        expectedFiles: [{
-          name: "custom.txt",
-          path: "/16.0.0/ucd/custom.txt",
-          storePath: "/16.0.0/custom.txt",
-        }],
-      };
-
-      mockStoreApi({
-        responses: {
-          "/api/v1/versions/{version}/manifest": customManifest,
-        },
-      });
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/api/v1/versions/16.0.0/manifest",
-
-      );
-      const data = await response.json();
-
-      expect(data).toEqual(customManifest);
-    });
-  });
-
-  describe("version validation", () => {
-    it("should return 404 for non-existent version", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/versions/{version}/manifest": true,
-        },
-      });
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store/99.0.0.json",
-      );
-      expect(response.status).toBe(404);
     });
   });
 });

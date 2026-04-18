@@ -33,8 +33,6 @@ import {
 
 const debug = createDebugger("ucdjs:test-utils:mock-store");
 const PATH_PARAM_RE = /\{(\w+)\}/g;
-const CANONICAL_MANIFEST_ENDPOINT = "/api/v1/versions/{version}/manifest";
-const LEGACY_MANIFEST_ENDPOINT = "/.well-known/ucd-store/{version}.json";
 
 function coerceProvidedResponseForRoute<Endpoint extends EndpointWithGet>(
   _route: RouteHandlerDefinition<Endpoint>,
@@ -198,14 +196,6 @@ function resolveEndpointResponse(
 
   if (response !== undefined) {
     return response;
-  }
-
-  if (endpoint === CANONICAL_MANIFEST_ENDPOINT) {
-    return responses?.[LEGACY_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
-  }
-
-  if (endpoint === LEGACY_MANIFEST_ENDPOINT) {
-    return responses?.[CANONICAL_MANIFEST_ENDPOINT as keyof typeof responses] ?? false;
   }
 
   return false;

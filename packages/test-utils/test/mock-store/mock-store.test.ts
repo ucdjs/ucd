@@ -37,8 +37,9 @@ describe("mockStoreApi", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           versions: "/api/v1/versions",
+          reports: "/api/v1/reports",
         },
         versions: [],
       };
@@ -399,9 +400,9 @@ describe("mockStoreApi", () => {
 
       const urls = [
         `${customBase}/api/v1/versions`,
+        `${customBase}/api/v1/versions/16.0.0/manifest`,
         `${customBase}/api/v1/versions/16.0.0/file-tree`,
         `${customBase}/api/v1/files/16.0.0/ucd/ArabicShaping.txt`,
-        `${customBase}/.well-known/ucd-store/16.0.0.json`,
         `${customBase}/.well-known/ucd-config.json`,
       ];
 

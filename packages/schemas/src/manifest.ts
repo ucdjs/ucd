@@ -43,7 +43,7 @@ export const UCDStoreVersionManifestSchema = z.object({
   id: "UCDStoreVersionManifest",
   description: dedent`
     Response schema for per-version manifest endpoint.
-    Matches the canonical \`/api/v1/versions/{version}/manifest\` route and the deprecated \`/.well-known/ucd-store/{version}.json\` alias.
+    Matches the canonical \`/api/v1/versions/{version}/manifest\` route.
   `,
 });
 

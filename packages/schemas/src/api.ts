@@ -72,7 +72,6 @@ export const UCDWellKnownConfigSchema = z.object({
     This configuration provides clients with the necessary information to interact with the UCD API server, including endpoint paths and optional metadata about the server itself.
 
     The \`manifest\` endpoint points to the canonical per-version manifest route, typically \`/api/v1/versions/{version}/manifest\`.
-    Deployments may keep the deprecated alias \`/.well-known/ucd-store/{version}.json\` for backward compatibility.
   `,
 });
 

@@ -96,7 +96,7 @@ After reading the full `apps/api/src` tree:
 - `/api/v1/versions/{version}` is fully D1-backed for metadata, with extra statistics read from R2 when available.
 - `/.well-known/ucd-config.json` is also D1-backed for the `versions` array.
 - `/api/v1/versions/{version}/file-tree` does not use D1. It traverses upstream Unicode.org directly.
-- `/api/v1/versions/{version}/manifest` and `/.well-known/ucd-store/{version}.json` read manifests from R2.
+- `/api/v1/versions/{version}/manifest` read manifests from R2.
 - The manifest upload workflow writes published manifest files to R2 and purges caches, but does not write D1 support rows.
 
 ## Implementation Direction

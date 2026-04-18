@@ -76,7 +76,7 @@ describe("uCDWellKnownConfigSchema", () => {
       version: "1.0",
       endpoints: {
         files: "/api/v1/files",
-        manifest: "/.well-known/ucd-store/{version}.json",
+        manifest: "/api/v1/versions/{version}/manifest",
         reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
@@ -89,7 +89,7 @@ describe("uCDWellKnownConfigSchema", () => {
         version: "1.0",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
@@ -102,7 +102,7 @@ describe("uCDWellKnownConfigSchema", () => {
     const minimalConfig = {
       endpoints: {
         files: "/api/v1/files",
-        manifest: "/.well-known/ucd-store/{version}.json",
+        manifest: "/api/v1/versions/{version}/manifest",
         reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
@@ -122,7 +122,7 @@ describe("uCDWellKnownConfigSchema", () => {
       version: "1.0",
       endpoints: {
         files: "/api/v1/files",
-        manifest: "/.well-known/ucd-store/{version}.json",
+        manifest: "/api/v1/versions/{version}/manifest",
         reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },
@@ -154,7 +154,7 @@ describe("uCDWellKnownConfigSchema", () => {
       {
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           reports: "/api/v1/reports",
           // missing versions
         },
@@ -170,7 +170,7 @@ describe("uCDWellKnownConfigSchema", () => {
       {
         endpoints: {
           // missing files
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           reports: "/api/v1/reports",
           versions: "/api/v1/versions",
         },
@@ -178,7 +178,7 @@ describe("uCDWellKnownConfigSchema", () => {
       {
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store/{version}.json",
+          manifest: "/api/v1/versions/{version}/manifest",
           versions: "/api/v1/versions",
           // missing reports
         },
@@ -196,7 +196,7 @@ describe("uCDWellKnownConfigSchema", () => {
       version: 1, // should be string
       endpoints: {
         files: "/api/v1/files",
-        manifest: "/.well-known/ucd-store/{version}.json",
+        manifest: "/api/v1/versions/{version}/manifest",
         reports: "/api/v1/reports",
         versions: "/api/v1/versions",
       },

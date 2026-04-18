@@ -7,7 +7,7 @@ import { createVersionsResource } from "../../src/resources/versions";
 describe("createVersionsResource", () => {
   const endpoints = {
     files: "/api/v1/files",
-    manifest: "/.well-known/ucd-store/{version}.json",
+    manifest: "/api/v1/versions/{version}/manifest",
     reports: "/api/v1/reports",
     versions: "/api/v1/versions",
   };

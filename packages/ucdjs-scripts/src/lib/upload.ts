@@ -82,42 +82,36 @@ export async function waitForUploadCompletion(
 }
 
 export async function getRemoteManifestEtag(version: string, options: RawUploadOptions): Promise<string | null> {
-  const manifestUrls = [
-    new URL(`/api/v1/versions/${version}/manifest`, options.baseUrl),
-    new URL(`/.well-known/ucd-store/${version}.json`, options.baseUrl),
-  ];
+  const url = new URL(`/api/v1/versions/${version}/manifest`, options.baseUrl);
+  const headResponse = await fetch(url.toString(), {
+    method: "HEAD",
+  });
 
-  for (const url of manifestUrls) {
-    const headResponse = await fetch(url.toString(), {
-      method: "HEAD",
-    });
-
-    if (headResponse.ok) {
-      const headEtag = headResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
-        ?? headResponse.headers.get("ETag")?.trim();
-      if (headEtag) {
-        return headEtag;
-      }
+  if (headResponse.ok) {
+    const headEtag = headResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
+      ?? headResponse.headers.get("ETag")?.trim();
+    if (headEtag) {
+      return headEtag;
     }
+  }
 
-    const getResponse = await fetch(url.toString(), {
-      method: "GET",
-    });
+  const getResponse = await fetch(url.toString(), {
+    method: "GET",
+  });
 
-    if (getResponse.ok) {
-      const getEtag = getResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
-        ?? getResponse.headers.get("ETag")?.trim();
-      if (getEtag) {
-        return getEtag;
-      }
+  if (getResponse.ok) {
+    const getEtag = getResponse.headers.get(MANIFEST_BUNDLE_ETAG_HEADER)?.trim()
+      ?? getResponse.headers.get("ETag")?.trim();
+    if (getEtag) {
+      return getEtag;
     }
+  }
 
-    if (headResponse.status !== 404 && getResponse.status !== 404) {
-      logger.warn(
-        `Failed to fetch remote ETag for ${version} from ${url.pathname} (HEAD ${headResponse.status}, GET ${getResponse.status}).`,
-      );
-      return null;
-    }
+  if (headResponse.status !== 404 && getResponse.status !== 404) {
+    logger.warn(
+      `Failed to fetch remote ETag for ${version} from ${url.pathname} (HEAD ${headResponse.status}, GET ${getResponse.status}).`,
+    );
+    return null;
   }
 
   return null;
