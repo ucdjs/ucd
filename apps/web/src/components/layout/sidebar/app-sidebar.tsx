@@ -1,7 +1,22 @@
 import type { ComponentProps } from "react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ClientOnly, Link, useLoaderData, useMatch, useNavigate } from "@tanstack/react-router";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInput,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  ThemeToggle,
+  ThemeToggleFallback,
+  UcdLogo,
+} from "@ucdjs-internal/shared-ui/components";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Type } from "lucide-react";
 import { Suspense, useState } from "react";
 import { VersionSwitcher } from "../../version-switcher";
@@ -18,6 +33,7 @@ const VERSION_ITEMS = [
 
 const TOOLS_ITEMS = [
   { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
+  { to: "/reports", icon: Lightbulb, label: "Reports" },
 ] as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {

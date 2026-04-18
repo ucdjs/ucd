@@ -3,7 +3,7 @@ import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/ver
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ClientOnly, createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { Button, Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton, ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
-import { ArrowRight, ArrowUpRight, Check, ChevronsUpDown, Code2, Layers, Search, Terminal } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BarChart, Check, ChevronsUpDown, Code2, Layers, Search, Terminal } from "lucide-react";
 import { Suspense, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/(home)/")({
@@ -163,6 +163,11 @@ function HomePage() {
             <Link to="/file-explorer" className="inline-flex items-center gap-1.5 hover:text-foreground">
               <Terminal className="size-3.5" />
               File explorer
+            </Link>
+            <span>•</span>
+            <Link to="/reports" className="inline-flex items-center gap-1.5 hover:text-foreground">
+              <BarChart className="size-3.5" />
+              Reports
             </Link>
             <span>•</span>
             <a
