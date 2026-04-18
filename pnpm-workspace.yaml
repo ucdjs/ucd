@@ -26,7 +26,7 @@ packages:
 
 catalogs:
   build:
-    turbo: 2.9.4
+    turbo: 2.9.6
     "@ucdjs/release-scripts": 0.1.7
     tsdown: 0.21.7
     typescript: 6.0.2
@@ -34,7 +34,7 @@ catalogs:
     nanotar: 0.3.0
     openapi-typescript: 7.13.0
     tsx: 4.21.0
-    rolldown: 1.0.0-rc.13
+    rolldown: 1.0.0-rc.15
     "@rollup/plugin-babel": 7.0.0
     babel-plugin-react-compiler: 1.0.0
     vite-plugin-inspect: 11.3.3
@@ -47,8 +47,8 @@ catalogs:
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     rolldown-plugin-dts: 0.23.2
-    drizzle-kit: 1.0.0-beta.20
-    tinyglobby: 0.2.15
+    drizzle-kit: 1.0.0-beta.9-e89174b
+    tinyglobby: 0.2.16
     "@ucdjs/textmate-grammars": 0.0.0
     "@rolldown/plugin-babel": 0.2.2
 
@@ -62,8 +62,8 @@ catalogs:
     jsdom: 29.0.1
     vitest: 4.1.2
     vitest-testdirs: 4.4.3
-    msw: 2.12.14
-    "@cloudflare/vitest-pool-workers": 0.14.1
+    msw: 2.13.2
+    "@cloudflare/vitest-pool-workers": 0.14.3
 
   lint:
     "@luxass/eslint-config": 7.4.2
@@ -83,10 +83,10 @@ catalogs:
     "@luxass/utils": 2.7.3
     farver: 0.4.2
     yargs-parser: 22.0.0
-    defu: 6.1.6
+    defu: 6.1.7
     zod: 4.3.6
-    "@ai-sdk/openai": 3.0.50
-    ai: 6.0.146
+    "@ai-sdk/openai": 3.0.52
+    ai: 6.0.158
     picomatch: 4.0.4
     apache-autoindex-parse: 5.0.2
     pathe: 2.0.3
@@ -103,39 +103,39 @@ catalogs:
     "@opentelemetry/resources": 2.6.1
 
   backend:
-    wrangler: 4.80.0
+    wrangler: 4.81.1
     "@hono/zod-openapi": 1.2.4
-    "@scalar/hono-api-reference": 0.10.6
+    "@scalar/hono-api-reference": 0.10.7
     hono: 4.12.10
-    "@cloudflare/workers-types": 4.20260405.1
+    "@cloudflare/workers-types": 4.20260411.1
     h3: 2.0.1-rc.20
-    crossws: 0.4.4
-    drizzle-orm: 1.0.0-beta.20
+    crossws: 0.4.5
+    drizzle-orm: 1.0.0-beta.9-e89174b
 
   types:
     "@types/picomatch": 4.0.3
-    "@types/node": 22.19.15
+    "@types/node": 22.19.17
     "@types/yargs-parser": 21.0.3
     "@types/react": 19.2.14
     "@types/react-dom": 19.2.3
-    "@types/vscode": 1.110.0
+    "@types/vscode": 1.115.0
     "@types/mdx": 2.0.13
 
   frontend:
-    react: 19.2.4
-    react-dom: 19.2.4
-    "@tanstack/react-router": 1.168.10
+    react: 19.2.5
+    react-dom: 19.2.5
+    "@tanstack/react-router": 1.168.13
     "@tanstack/react-router-devtools": 1.166.11
     "@tanstack/zod-adapter": 1.166.9
-    "@tanstack/react-devtools": 0.10.1
-    "@tanstack/react-form": 1.28.6
-    "@tanstack/react-query": 5.96.2
-    "@tanstack/react-query-devtools": 5.96.2
+    "@tanstack/react-devtools": 0.10.2
+    "@tanstack/react-form": 1.29.0
+    "@tanstack/react-query": 5.97.0
+    "@tanstack/react-query-devtools": 5.97.0
     "@tanstack/react-router-ssr-query": 1.166.10
-    "@tanstack/react-start": 1.167.16
+    "@tanstack/react-start": 1.167.24
     zustand: 5.0.12
     sonner: 2.0.7
-    lucide-react: 1.7.0
+    lucide-react: 1.8.0
     "@icons-pack/react-simple-icons": 13.13.0
     nitro: 3.0.260311-beta
     # nitro: npm:nitro-nightly@latest
@@ -159,8 +159,8 @@ catalogs:
 
   docs:
     fumadocs-mdx: 14.2.11
-    fumadocs-core: 16.7.10
-    fumadocs-ui: 16.7.10
+    fumadocs-core: 16.7.11
+    fumadocs-ui: 16.7.11
     playwright: 1.59.1
     rehype-mermaid: 3.0.0
 
@@ -176,7 +176,7 @@ overrides:
   esbuild: 0.28.0
   semver: 7.7.4
   solid-js: 1.9.12
-  undici-types: 7.24.6
+  undici-types: 7.24.7
   vite: 8.0.3
 
 patchedDependencies:
