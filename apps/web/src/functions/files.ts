@@ -3,7 +3,6 @@ import type { SearchQueryParams } from "../lib/file-explorer";
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import {
   UCD_STAT_SIZE_HEADER,
   UCD_STAT_TYPE_HEADER,
@@ -73,37 +72,30 @@ function normalizeFilesQueryOptions(options: FilesQueryOptions = {}): Normalized
 export const fetchFiles = createServerFn({ method: "GET" })
   .inputValidator((data: FileQueryParams) => data)
   .handler(async ({ data, context }) => {
-    const request = getRequest();
-    const signal = request.signal;
-    const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const normalized = normalizeFilesQueryOptions(data);
-    const url = new URL(normalized.path, `${baseFilesUrl}/`);
-
-    if (normalized.query) {
-      url.searchParams.set("query", normalized.query);
-    }
-
-    url.searchParams.set("pattern", normalized.pattern);
-    url.searchParams.set("sort", normalized.sort);
-    url.searchParams.set("order", normalized.order);
-
-    if (normalized.type !== "all") {
-      url.searchParams.set("type", normalized.type);
-    }
+    const fileQuery = {
+      query: normalized.query || undefined,
+      pattern: normalized.pattern,
+      sort: normalized.sort,
+      order: normalized.order,
+      type: normalized.type,
+    } as const;
 
     let statType = normalized.statType ?? null;
     let contentType = "text/plain";
     let size = normalized.size;
+    let downloadUrl: string | null = null;
 
     const shouldFetchHead = !statType || (statType === "file" && size === null);
 
     if (shouldFetchHead) {
-      const headRes = await fetch(url, { method: "HEAD", signal });
+      const { error, response: headRes } = await context.client.files.head(normalized.path, fileQuery);
 
-      if (!headRes.ok) {
-        throw new Error(`Failed to fetch: ${headRes.statusText}`);
+      if (error || !headRes?.ok) {
+        throw new Error(`Failed to fetch: ${error?.statusText || headRes?.statusText || "Unknown error"}`);
       }
 
+      downloadUrl = headRes.url;
       statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
       contentType = headRes.headers.get("Content-Type") || "text/plain";
       const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
@@ -118,16 +110,17 @@ export const fetchFiles = createServerFn({ method: "GET" })
         type: "file-too-large",
         size: knownSize,
         contentType,
-        downloadUrl: url.toString(),
+        downloadUrl: downloadUrl || normalized.path,
       };
     }
 
-    const res = await fetch(url, { signal });
+    const { data: responseData, error, response: res } = await context.client.files.get(normalized.path, fileQuery);
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch: ${res.statusText}`);
+    if (error || !res?.ok) {
+      throw new Error(`Failed to fetch: ${error?.statusText || res?.statusText || "Unknown error"}`);
     }
 
+    downloadUrl = res.url;
     const responseStatType = res.headers.get(UCD_STAT_TYPE_HEADER) ?? statType;
     const responseContentType = res.headers.get("Content-Type") || contentType;
     const responseSizeHeader = res.headers.get(UCD_STAT_SIZE_HEADER) || res.headers.get("Content-Length");
@@ -147,12 +140,16 @@ export const fetchFiles = createServerFn({ method: "GET" })
         type: "file-too-large",
         size: responseSize,
         contentType: responseContentType,
-        downloadUrl: url.toString(),
+        downloadUrl: downloadUrl || normalized.path,
       };
     }
 
     if (resolvedStatType === "file") {
-      const content = await res.text();
+      if (typeof responseData !== "string") {
+        throw new TypeError(`Unexpected file response type: ${typeof responseData}`);
+      }
+
+      const content = responseData;
       const contentSize = new TextEncoder().encode(content).byteLength;
 
       if (contentSize > MAX_INLINE_FILE_SIZE) {
@@ -160,7 +157,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
           type: "file-too-large",
           size: contentSize,
           contentType: responseContentType,
-          downloadUrl: url.toString(),
+          downloadUrl: downloadUrl || normalized.path,
         };
       }
 
@@ -176,11 +173,15 @@ export const fetchFiles = createServerFn({ method: "GET" })
 
     // Directory listing (JSON)
     if (isJson) {
-      const files = (await res.json()) as FileEntry[];
+      const files = responseData as FileEntry[];
       return { type: "directory", files };
     }
 
-    const content = await res.text();
+    if (typeof responseData !== "string") {
+      throw new TypeError(`Unexpected text response type: ${typeof responseData}`);
+    }
+
+    const content = responseData;
     const contentSize = new TextEncoder().encode(content).byteLength;
     const fileName = normalized.path.split("/").filter(Boolean).pop() || "file";
     const html = await highlight(content, getShikiLanguage(fileName));
@@ -244,20 +245,14 @@ export function directoryListingQueryOptions(options: DirectoryListingQueryOptio
 export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: { path: string }) => data)
   .handler(async ({ data, context }) => {
-    const request = getRequest();
-    const signal = request.signal;
+    const { error, response: headRes } = await context.client.files.head(data.path);
 
-    const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
-    const url = new URL(data.path, `${baseFilesUrl}/`);
-
-    const headRes = await fetch(url, { method: "HEAD", signal });
-
-    if (headRes.status === 404) {
+    if (error?.status === 404 || headRes?.status === 404) {
       throw notFound();
     }
 
-    if (!headRes.ok) {
-      throw new Error(`Failed to fetch: ${headRes.statusText}`);
+    if (error || !headRes?.ok) {
+      throw new Error(`Failed to fetch: ${error?.statusText || headRes?.statusText || "Unknown error"}`);
     }
 
     const statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
