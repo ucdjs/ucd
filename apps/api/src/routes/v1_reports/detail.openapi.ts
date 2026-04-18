@@ -7,6 +7,8 @@ import { REPORT_ID_PARAM, UnicodeReportRevisionMetadataSchema } from "./shared";
 export const GET_REPORT_ROUTE = createRoute({
   method: "get",
   path: "/{reportId}",
+  operationId: "getReport",
+  "x-ucd-client-method": "reports.get",
   tags: [OPENAPI_TAGS.REPORTS],
   middleware: [
     cache({

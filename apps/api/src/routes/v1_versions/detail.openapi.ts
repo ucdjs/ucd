@@ -10,6 +10,8 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 export const GET_VERSION_ROUTE = createRoute({
   method: "get",
   path: "/{version}",
+  operationId: "getVersion",
+  "x-ucd-client-method": "versions.get",
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({

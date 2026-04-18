@@ -17,6 +17,8 @@ const GET_VERSION_FILE_TREE_ROUTE_DOCS = dedent`
 export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
   method: "get",
   path: "/{version}/file-tree",
+  operationId: "getVersionFileTree",
+  "x-ucd-client-method": "versions.getFileTree",
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({

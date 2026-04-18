@@ -17,6 +17,8 @@ const log = createLogger("ucd:api:v1_versions");
 const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
+  operationId: "listVersions",
+  "x-ucd-client-method": "versions.list",
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({

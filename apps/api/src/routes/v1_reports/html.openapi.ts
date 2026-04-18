@@ -8,6 +8,8 @@ import { REPORT_ID_PARAM, REVISION_ID_PARAM } from "./shared";
 export const GET_REPORT_HTML_ROUTE = createRoute({
   method: "get",
   path: "/{reportId}/rev/{revId}/html",
+  operationId: "getReportHtml",
+  "x-ucd-client-method": "reports.getHtml",
   tags: [OPENAPI_TAGS.REPORTS],
   middleware: [
     cache({

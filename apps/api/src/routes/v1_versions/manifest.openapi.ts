@@ -21,6 +21,8 @@ const VERSION_MANIFEST_PARAM = {
 export const GET_VERSION_MANIFEST_ROUTE = createRoute({
   method: "get",
   path: "/{version}/manifest",
+  operationId: "getVersionManifest",
+  "x-ucd-client-method": "versions.getManifest",
   tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({

@@ -13,6 +13,8 @@ const UnicodeReportSummaryListSchema = z.array(UnicodeReportSummarySchema);
 const LIST_REPORTS_ROUTE = createRoute({
   method: "get",
   path: "/",
+  operationId: "listReports",
+  "x-ucd-client-method": "reports.list",
   tags: [OPENAPI_TAGS.REPORTS],
   middleware: [
     cache({

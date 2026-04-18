@@ -11,6 +11,8 @@ import {
 export const GET_REPORT_REVISION_ROUTE = createRoute({
   method: "get",
   path: "/{reportId}/rev/{revId}",
+  operationId: "getReportRevision",
+  "x-ucd-client-method": "reports.getRevision",
   tags: [OPENAPI_TAGS.REPORTS],
   middleware: [
     cache({

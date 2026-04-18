@@ -14,6 +14,8 @@ import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 const UCD_CONFIG_ROUTE = createRoute({
   method: "get",
   path: "/ucd-config.json",
+  operationId: "getWellKnownConfig",
+  "x-ucd-client-method": "config.get",
   tags: [OPENAPI_TAGS.WELL_KNOWN],
   middleware: [
     cache({

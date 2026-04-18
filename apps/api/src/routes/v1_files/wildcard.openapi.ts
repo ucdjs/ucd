@@ -21,6 +21,8 @@ import {
 export const WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
+  operationId: "getFile",
+  "x-ucd-client-method": "files.get",
   tags: [OPENAPI_TAGS.FILES],
   parameters: [
     WILDCARD_PARAM,
@@ -179,6 +181,8 @@ export const WILDCARD_ROUTE = createRoute({
 export const METADATA_WILDCARD_ROUTE = createRoute({
   method: "head",
   path: "/{wildcard}",
+  operationId: "headFile",
+  "x-ucd-client-method": "files.head",
   tags: [OPENAPI_TAGS.FILES],
   parameters: [
     WILDCARD_PARAM,
