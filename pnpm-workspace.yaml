@@ -57,10 +57,10 @@ catalogs:
     "@testing-library/react-hooks": 8.0.1
     "@testing-library/react": 16.3.2
     "@testing-library/user-event": 14.6.1
-    "@vitest/expect": 4.1.2
-    "@vitest/ui": 4.1.2
-    jsdom: 29.0.1
-    vitest: 4.1.2
+    "@vitest/expect": 4.1.4
+    "@vitest/ui": 4.1.4
+    jsdom: 29.0.2
+    vitest: 4.1.4
     vitest-testdirs: 4.4.3
     msw: 2.12.14
     "@cloudflare/vitest-pool-workers": 0.14.1
