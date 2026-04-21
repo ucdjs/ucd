@@ -1,6 +1,6 @@
-import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-viewer";
-import { LargeFileWarning } from "#components/file-explorer/large-file-warning";
-import { NonRenderableFile } from "#components/file-explorer/non-renderable-file";
+import { FileViewer, FileViewerSkeleton } from "#components/explorer/file/file-viewer";
+import { LargeFileWarning } from "#components/explorer/file/large-file-warning";
+import { NonRenderableFile } from "#components/explorer/file/non-renderable-file";
 import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useHotkey } from "@tanstack/react-hotkeys";

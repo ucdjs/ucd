@@ -1,4 +1,4 @@
-import { EntryList } from "#components/file-explorer/entry-list";
+import { EntryList } from "#components/explorer/file/entry-list";
 import { ExplorerNotFound } from "#components/not-found";
 import { directoryListingQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";

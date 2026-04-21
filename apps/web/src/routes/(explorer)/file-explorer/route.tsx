@@ -1,7 +1,7 @@
-import { ExplorerBreadcrumbs } from "#components/file-explorer/explorer-breadcrumbs";
-import { ExplorerHeader } from "#components/file-explorer/explorer-header";
-import { ExplorerSidebar } from "#components/file-explorer/explorer-sidebar";
-import { ExplorerToolbar } from "#components/file-explorer/explorer-toolbar";
+import { ExplorerBreadcrumbs } from "#components/explorer/file/explorer-breadcrumbs";
+import { ExplorerHeader } from "#components/explorer/file/explorer-header";
+import { ExplorerSidebar } from "#components/explorer/file/explorer-sidebar";
+import { ExplorerToolbar } from "#components/explorer/file/explorer-toolbar";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { createFileRoute, Outlet, useChildMatches } from "@tanstack/react-router";
 import { toast } from "@ucdjs-internal/shared-ui/components";

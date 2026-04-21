@@ -1,6 +1,6 @@
 import { Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 import { Download, FileWarning } from "lucide-react";
-import { getFileTypeDescription } from "../../lib/file-explorer";
+import { getFileTypeDescription } from "../../../lib/file-explorer";
 
 export interface NonRenderableFileProps {
   fileName: string;

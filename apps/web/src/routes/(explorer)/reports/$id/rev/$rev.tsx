@@ -1,4 +1,4 @@
-import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-viewer";
+import { FileViewer, FileViewerSkeleton } from "#components/explorer/file/file-viewer";
 import {
   reportCodeQueryOptions,
   reportQueryOptions,

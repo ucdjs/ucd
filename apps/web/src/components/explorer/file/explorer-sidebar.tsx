@@ -1,4 +1,4 @@
-import type { SearchQueryParams } from "../../lib/file-explorer";
+import type { SearchQueryParams } from "../../../lib/file-explorer";
 import { directoryListingQueryOptions } from "#functions/files";
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -6,8 +6,8 @@ import { useParams, useSearch } from "@tanstack/react-router";
 import { Input, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { Search } from "lucide-react";
 import { useDeferredValue, useMemo } from "react";
-import { buildRootSidebarNodes } from "../../lib/file-explorer-tree";
-import { useFileExplorerSidebarStore } from "../../stores/file-explorer-sidebar";
+import { buildRootSidebarNodes } from "../../../lib/file-explorer-tree";
+import { useFileExplorerSidebarStore } from "../../../stores/file-explorer-sidebar";
 import { ExplorerFileTree } from "./explorer-file-tree";
 
 export function ExplorerSidebar() {

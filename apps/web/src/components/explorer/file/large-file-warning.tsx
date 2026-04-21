@@ -1,6 +1,6 @@
 import { Button } from "@ucdjs-internal/shared-ui/components";
 import { Download, FileDown } from "lucide-react";
-import { formatFileSize, PREVIEW_LIMIT_LABEL } from "../../lib/file-explorer";
+import { formatFileSize, PREVIEW_LIMIT_LABEL } from "../../../lib/file-explorer";
 
 export interface LargeFileWarningProps {
   fileName: string;

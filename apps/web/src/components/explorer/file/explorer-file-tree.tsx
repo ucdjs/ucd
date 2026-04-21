@@ -1,6 +1,6 @@
 import type { FilesResponse } from "#functions/files";
-import type { SearchQueryParams } from "../../lib/file-explorer";
-import type { SidebarNode } from "../../lib/file-explorer-tree";
+import type { SearchQueryParams } from "../../../lib/file-explorer";
+import type { SidebarNode } from "../../../lib/file-explorer-tree";
 import { directoryListingQueryOptions } from "#functions/files";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -14,8 +14,8 @@ import {
   normalizeDirectoryEntries,
   TREE_INDENT,
   TREE_PADDING,
-} from "../../lib/file-explorer-tree";
-import { useFileExplorerSidebarStore } from "../../stores/file-explorer-sidebar";
+} from "../../../lib/file-explorer-tree";
+import { useFileExplorerSidebarStore } from "../../../stores/file-explorer-sidebar";
 import { ExplorerTreeEntry } from "./explorer-entry";
 
 interface ExplorerFileTreeProps {
