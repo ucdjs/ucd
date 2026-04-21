@@ -1,9 +1,10 @@
+import { ExplorerSidebarShell } from "#components/explorer/sidebar/explorer-sidebar-shell";
 import { reportsQueryOptions } from "#functions/reports";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams, useSearch } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Input, Skeleton } from "@ucdjs-internal/shared-ui/components";
-import { FileText, Search } from "lucide-react";
+import { SidebarMenu, SidebarMenuItem, Skeleton } from "@ucdjs-internal/shared-ui/components";
+import { FileText } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
 
 export function ReportsExplorerSidebar() {
@@ -28,41 +29,34 @@ export function ReportsExplorerSidebar() {
   const sharedSearch = search.view && search.view !== "split" ? { view: search.view } : {};
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="sticky top-0 z-10 bg-background px-4 py-2">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Filter reports..."
-            className="h-8 pl-8"
-          />
-        </div>
-      </div>
+    <ExplorerSidebarShell
+      query={query}
+      onQueryChange={setQuery}
+      placeholder="Filter reports..."
+    >
+      <SidebarMenu className="gap-1">
+        <SidebarMenuItem>
+          <Link
+            to="/reports"
+            search={sharedSearch}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
+              !currentReportId
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+            )}
+          >
+            <FileText className="size-4 shrink-0 text-amber-500" />
+            <span className="font-medium">All reports</span>
+          </Link>
+        </SidebarMenuItem>
 
-      <div className="flex-1 overflow-auto px-2 pb-4">
-        <Link
-          to="/reports"
-          search={sharedSearch}
-          className={cn(
-            "mb-2 flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors",
-            !currentReportId
-              ? "bg-primary/10 text-primary"
-              : "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-          )}
-        >
-          <FileText className="size-4 shrink-0 text-amber-500" />
-          <span className="font-medium">All reports</span>
-        </Link>
+        {filteredReports.map((report) => {
+          const active = report.id === currentReportId;
 
-        <div className="space-y-1">
-          {filteredReports.map((report) => {
-            const active = report.id === currentReportId;
-
-            return (
+          return (
+            <SidebarMenuItem key={report.id}>
               <Link
-                key={report.id}
                 to="/reports/$id"
                 params={{ id: report.id }}
                 search={sharedSearch}
@@ -85,11 +79,11 @@ export function ReportsExplorerSidebar() {
                   </div>
                 </div>
               </Link>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+            </SidebarMenuItem>
+          );
+        })}
+      </SidebarMenu>
+    </ExplorerSidebarShell>
   );
 }
 

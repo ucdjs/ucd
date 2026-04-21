@@ -25,3 +25,16 @@
   z-index: 1;
   min-height: 100%;
 }
+
+.file-viewer-link {
+  color: var(--shiki-token-link, #2563eb);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 40%, transparent);
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.15s;
+  cursor: pointer;
+}
+
+.file-viewer-link:hover {
+  text-decoration-color: currentColor;
+}
