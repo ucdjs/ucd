@@ -42,6 +42,8 @@ export function escapeHtml(text: string): string {
     .replaceAll("'", "&#39;");
 }
 
+const URL_RE = /https?:\/\/[^\s<>&"')\]]+[^\s<>&"')\].,;:!?]/g;
+
 function wrapLinesAsHtml(text: string): string {
   const lines = text.split("\n");
   const escapedLines = lines.map(
@@ -57,6 +59,60 @@ const lineTransformer: ShikiTransformer = {
   },
 };
 
+const linkifyTransformer: ShikiTransformer = {
+  name: "ucd:linkify-urls",
+  span(node) {
+    if (!node.children.some((c) => c.type === "text" && c.value.includes("://"))) {
+      return;
+    }
+
+    const newChildren: typeof node.children = [];
+    let changed = false;
+
+    for (const child of node.children) {
+      if (child.type !== "text") {
+        newChildren.push(child);
+        continue;
+      }
+
+      const matches = [...child.value.matchAll(URL_RE)];
+      if (!matches.length) {
+        newChildren.push(child);
+        continue;
+      }
+
+      changed = true;
+      let lastIndex = 0;
+      for (const match of matches) {
+        if (match.index > lastIndex) {
+          newChildren.push({ type: "text", value: child.value.slice(lastIndex, match.index) });
+        }
+
+        newChildren.push({
+          type: "element",
+          tagName: "a",
+          properties: {
+            href: match[0],
+            class: "file-viewer-link",
+            target: "_blank",
+            rel: "noopener noreferrer",
+          },
+          children: [{ type: "text", value: match[0] }],
+        });
+        lastIndex = match.index + match[0].length;
+      }
+
+      if (lastIndex < child.value.length) {
+        newChildren.push({ type: "text", value: child.value.slice(lastIndex) });
+      }
+    }
+
+    if (changed) {
+      node.children = newChildren;
+    }
+  },
+};
+
 export async function highlight(code: string, lang: string): Promise<string> {
   if (code.length > MAX_HIGHLIGHT_SIZE) {
     return wrapLinesAsHtml(code);
@@ -68,7 +124,7 @@ export async function highlight(code: string, lang: string): Promise<string> {
       lang,
       theme: "ucd-code",
       rootStyle: false,
-      transformers: [lineTransformer],
+      transformers: [lineTransformer, linkifyTransformer],
     });
   } catch {
     return wrapLinesAsHtml(code);
