@@ -1,6 +1,6 @@
-import { ReportsExplorerBreadcrumbs } from "#components/reports-explorer/explorer-breadcrumbs";
-import { ReportsExplorerHeader } from "#components/reports-explorer/explorer-header";
-import { ReportsExplorerSidebar } from "#components/reports-explorer/explorer-sidebar";
+import { ReportsExplorerBreadcrumbs } from "#components/explorer/reports/explorer-breadcrumbs";
+import { ReportsExplorerHeader } from "#components/explorer/reports/explorer-header";
+import { ReportsExplorerSidebar } from "#components/explorer/reports/explorer-sidebar";
 import { reportsQueryOptions } from "#functions/reports";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Suspense } from "react";
