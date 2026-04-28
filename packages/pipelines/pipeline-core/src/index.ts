@@ -43,6 +43,19 @@ export {
 } from "./filters";
 
 export type {
+  PipelineHookContext,
+  PipelineHookPhase,
+  PipelineHooks,
+  PipelineOutputHookContext,
+  PipelineParseHookContext,
+  PipelineResolveHookContext,
+  PipelineRouteHookContext,
+  PipelineVersionHookContext,
+} from "./hooks";
+
+export { hasPipelineHooks } from "./hooks";
+
+export type {
   FilesystemOutputSinkDefinition,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
