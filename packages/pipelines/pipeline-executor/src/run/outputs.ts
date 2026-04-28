@@ -3,6 +3,8 @@ import type {
   FileContext,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
+  PipelineHooks,
+  PipelineLogger,
 } from "@ucdjs/pipeline-core";
 import type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
 import type { PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
@@ -61,6 +63,8 @@ export async function materializeOutputs(options: {
   definitions: readonly NormalizedRouteOutputDefinition[];
   runtime: PipelineExecutionRuntime;
   pipelineId: string;
+  hooks?: PipelineHooks;
+  logger: PipelineLogger;
   locatorRegistry?: Map<string, OutputLocatorReservation>;
   parentSpanContext: SpanContext;
 }): Promise<MaterializeOutputsResult> {
@@ -73,6 +77,8 @@ export async function materializeOutputs(options: {
     definitions,
     runtime,
     pipelineId,
+    hooks,
+    logger,
     locatorRegistry,
     parentSpanContext,
   } = options;
@@ -114,6 +120,20 @@ export async function materializeOutputs(options: {
         });
 
         try {
+          await hooks?.output?.({
+            phase: "start",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+          });
           outputSpan.addEvent("output.produced", {
             "pipeline.id": pipelineId,
             "pipeline.version": version,
@@ -168,6 +188,21 @@ export async function materializeOutputs(options: {
             locator,
             status: "written",
           });
+          await hooks?.output?.({
+            phase: "end",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+            status: "written",
+          });
         } catch (error) {
           const reservation = locatorRegistry?.get(locator);
           if (
@@ -211,6 +246,22 @@ export async function materializeOutputs(options: {
             locator,
             status: "failed",
             error: errorMessage,
+          });
+          await hooks?.output?.({
+            phase: "end",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+            status: "failed",
+            error,
           });
           writeErrors.push({ error, outputId, routeId });
         }

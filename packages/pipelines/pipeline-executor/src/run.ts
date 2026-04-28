@@ -39,6 +39,7 @@ interface RunCtx {
   runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   logger: PipelineLogger;
+  hooks: AnyPipelineDefinition["hooks"];
   versions: string[];
   routesByLayer: AnyPipelineRouteDefinition[][];
   routeOutputs: Map<string, readonly NormalizedRouteOutputDefinition[]>;
@@ -100,6 +101,11 @@ export async function run(options: RunPipelineOptions): Promise<PipelineExecutio
       "pipeline.id": ctx.pipeline.id,
       "pipeline.versions": ctx.versions,
     });
+    await ctx.hooks?.pipeline?.({
+      phase: "start",
+      pipelineId: ctx.pipeline.id,
+      logger: ctx.logger,
+    });
 
     const versionResults = await Promise.all(
       ctx.versions.map((version) => runVersion(ctx, version)),
@@ -122,6 +128,8 @@ export async function run(options: RunPipelineOptions): Promise<PipelineExecutio
           definitions: batch.definitions,
           runtime: ctx.runtime,
           pipelineId: ctx.pipeline.id,
+          hooks: ctx.hooks,
+          logger: ctx.logger,
           locatorRegistry,
           parentSpanContext: batch.parentSpanContext,
         });
@@ -149,6 +157,12 @@ export async function run(options: RunPipelineOptions): Promise<PipelineExecutio
       "summary.duration.ms": durationMs,
       "execution.status": status,
     });
+    await ctx.hooks?.pipeline?.({
+      phase: "end",
+      pipelineId: ctx.pipeline.id,
+      logger: ctx.logger,
+      error: errors.length > 0 ? errors : undefined,
+    });
 
     return {
       id: ctx.pipeline.id,
@@ -171,6 +185,7 @@ function createRunCtx(options: RunPipelineOptions): RunCtx {
     runtime,
     source: createSourceAdapter(pipeline, logger, { priorResults }),
     logger,
+    hooks: pipeline.hooks,
     versions,
     routesByLayer: buildRoutesByLayer(pipeline),
     routeOutputs: buildRouteOutputs(pipeline),
@@ -213,6 +228,12 @@ async function runVersion(ctx: RunCtx, version: string): Promise<VersionExecutio
     versionSpan.setAttributes({
       "pipeline.id": ctx.pipeline.id,
       "pipeline.version": version,
+    });
+    await ctx.hooks?.version?.({
+      phase: "start",
+      pipelineId: ctx.pipeline.id,
+      version,
+      logger: ctx.logger,
     });
 
     const versionContext = createVersionContext(ctx, version);
@@ -290,6 +311,13 @@ async function runVersion(ctx: RunCtx, version: string): Promise<VersionExecutio
     }
 
     versionSpan.setAttribute("duration.ms", performance.now() - startPerf);
+    await ctx.hooks?.version?.({
+      phase: "end",
+      pipelineId: ctx.pipeline.id,
+      version,
+      logger: ctx.logger,
+      error: result.errors.length > 0 ? result.errors : undefined,
+    });
   });
 
   return result;
@@ -341,11 +369,29 @@ async function executeMatchedFile(
         version,
         file,
         logger: ctx.logger,
+        hooks: ctx.hooks,
         source: ctx.source,
         runtime: ctx.runtime,
         routeDataMap: versionContext.routeDataMap,
       };
+      await ctx.hooks?.route?.({
+        phase: "start",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: route.id,
+        logger: ctx.logger,
+      });
       const result = await loadRouteResult(ctx, route, routeSpan, routeCtx);
+      await ctx.hooks?.route?.({
+        phase: "end",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: route.id,
+        logger: ctx.logger,
+        outputs: result.outputs,
+      });
 
       routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
       return {
@@ -359,6 +405,15 @@ async function executeMatchedFile(
       };
     } catch (error) {
       const routeError = recordSpanError(routeSpan, error, "route", file, version, route.id);
+      await ctx.hooks?.route?.({
+        phase: "end",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: route.id,
+        logger: ctx.logger,
+        error,
+      });
       routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
       return {
         success: false,
@@ -469,17 +524,35 @@ async function executeFallbackFile(
         version,
         file,
         logger: ctx.logger,
+        hooks: ctx.hooks,
         source: ctx.source,
         runtime: ctx.runtime,
         routeDataMap: versionContext.routeDataMap,
       };
       const fallback = ctx.pipeline.fallback!;
+      await ctx.hooks?.route?.({
+        phase: "start",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: "__fallback__",
+        logger: ctx.logger,
+      });
       const outputs = await executeParseResolve({
         ctx: routeCtx,
         routeId: "__fallback__",
         parser: fallback.parser,
         filter: fallback.filter,
         resolver: fallback.resolver,
+      });
+      await ctx.hooks?.route?.({
+        phase: "end",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: "__fallback__",
+        logger: ctx.logger,
+        outputs,
       });
       routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
       return {
@@ -493,6 +566,15 @@ async function executeFallbackFile(
       };
     } catch (error) {
       const routeError = recordSpanError(routeSpan, error, "file", file, version);
+      await ctx.hooks?.route?.({
+        phase: "end",
+        pipelineId: ctx.pipeline.id,
+        version,
+        file,
+        routeId: "__fallback__",
+        logger: ctx.logger,
+        error,
+      });
       routeSpan.setAttribute("duration.ms", performance.now() - startPerf);
       return {
         success: false,

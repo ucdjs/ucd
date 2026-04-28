@@ -1,5 +1,5 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipeline-core";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createPipelineExecutor } from "../src/executor";
 import {
   buildRouteOutputs,
@@ -236,5 +236,71 @@ describe("getRouteData", () => {
     const summaryOutput = result?.data.find((d: any) => d.property === "Summary") as any;
     expect(summaryOutput).toBeDefined();
     expect(summaryOutput.meta.priorOutputCount).toBe(2);
+  });
+});
+
+describe("pipeline hooks", () => {
+  it("calls lifecycle hooks with phase-aware contexts", async () => {
+    const files = [createMockFile("Test.txt")];
+    const contents = { "ucd/Test.txt": "0041;A" };
+    const events: string[] = [];
+
+    const pipeline = definePipeline({
+      id: "hook-test",
+      name: "Hook Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource(files, contents)],
+      routes: [definePipelineRoute({
+        id: "test-route",
+        filter: byName("Test.txt"),
+        parser: mockParser,
+        resolver: async (ctx, rows) => {
+          const entries = [];
+          for await (const row of rows) {
+            entries.push({ codePoint: row.codePoint!, value: row.value as string });
+          }
+          return [{ version: ctx.version, property: "Test", file: ctx.file.name, entries }];
+        },
+      })],
+      hooks: {
+        pipeline: vi.fn((ctx) => {
+          events.push(`pipeline:${ctx.phase}`);
+        }),
+        version: vi.fn((ctx) => {
+          events.push(`version:${ctx.phase}:${ctx.version}`);
+        }),
+        route: vi.fn((ctx) => {
+          events.push(`route:${ctx.phase}:${ctx.routeId}`);
+        }),
+        parse: vi.fn((ctx) => {
+          events.push(`parse:${ctx.phase}:${ctx.rowCount ?? ""}`);
+        }),
+        resolve: vi.fn((ctx) => {
+          events.push(`resolve:${ctx.phase}:${ctx.outputs?.length ?? ""}`);
+        }),
+        output: vi.fn((ctx) => {
+          events.push(`output:${ctx.phase}:${ctx.outputId}:${ctx.status ?? ""}`);
+        }),
+      },
+    });
+
+    const executor = createPipelineExecutor({});
+    const [result] = await executor.run([pipeline]);
+
+    expect(result?.status).toBe("completed");
+    expect(events).toEqual([
+      "pipeline:start",
+      "version:start:16.0.0",
+      "route:start:test-route",
+      "parse:start:",
+      "resolve:start:",
+      "resolve:end:1",
+      "parse:end:1",
+      "route:end:test-route",
+      "version:end:16.0.0",
+      "output:start:default:",
+      "output:end:default:written",
+      "pipeline:end",
+    ]);
   });
 });

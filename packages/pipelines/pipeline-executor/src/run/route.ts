@@ -35,6 +35,15 @@ export async function executeParseResolve(options: ExecuteParseResolveOptions): 
       "file.version": ctx.file.version,
     });
 
+    await ctx.hooks?.parse?.({
+      phase: "start",
+      pipelineId: ctx.pipelineId,
+      version: ctx.version,
+      file: ctx.file,
+      routeId,
+      logger: ctx.logger,
+    });
+
     const parseCtx = buildParseContext(ctx);
     const parsedRows = parser(parseCtx);
 
@@ -63,10 +72,41 @@ export async function executeParseResolve(options: ExecuteParseResolveOptions): 
         "file.version": ctx.file.version,
       });
 
-      const outputs = await resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
-      const arr = Array.isArray(outputs) ? outputs : [outputs];
-      resolveSpan.setAttribute("output.count", arr.length);
-      return arr;
+      await ctx.hooks?.resolve?.({
+        phase: "start",
+        pipelineId: ctx.pipelineId,
+        version: ctx.version,
+        file: ctx.file,
+        routeId,
+        logger: ctx.logger,
+      });
+
+      try {
+        const outputs = await resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
+        const arr = Array.isArray(outputs) ? outputs : [outputs];
+        resolveSpan.setAttribute("output.count", arr.length);
+        await ctx.hooks?.resolve?.({
+          phase: "end",
+          pipelineId: ctx.pipelineId,
+          version: ctx.version,
+          file: ctx.file,
+          routeId,
+          logger: ctx.logger,
+          outputs: arr,
+        });
+        return arr;
+      } catch (error) {
+        await ctx.hooks?.resolve?.({
+          phase: "end",
+          pipelineId: ctx.pipelineId,
+          version: ctx.version,
+          file: ctx.file,
+          routeId,
+          logger: ctx.logger,
+          error,
+        });
+        throw error;
+      }
     }) as unknown[];
 
     // Set row counts after the resolver has lazily consumed the parse iterator
@@ -74,6 +114,18 @@ export async function executeParseResolve(options: ExecuteParseResolveOptions): 
     parseSpan.setAttributes({
       "row.count": total,
       "filtered.row.count": filtered,
+    });
+
+    await ctx.hooks?.parse?.({
+      phase: "end",
+      pipelineId: ctx.pipelineId,
+      version: ctx.version,
+      file: ctx.file,
+      routeId,
+      logger: ctx.logger,
+      rowCount: total,
+      filteredRowCount: filtered,
+      outputs: outputArray,
     });
 
     return outputArray;
