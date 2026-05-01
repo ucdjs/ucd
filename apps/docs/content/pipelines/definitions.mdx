@@ -109,7 +109,7 @@ Available hooks are:
 | `resolve` | resolver execution for a route |
 | `output` | output materialization and writes |
 
-Hooks are best for side effects such as metrics, custom logging, notifications, or lightweight bookkeeping. If a hook throws, the executor treats that as an execution error, so avoid using hooks for optional best-effort work unless you handle errors inside the hook.
+Hooks are best for side effects such as metrics, custom logging, notifications, or lightweight bookkeeping. If a hook throws, the executor logs the hook failure and continues; hook failures do not change the pipeline result.
 
 ## Loading Pipelines
 

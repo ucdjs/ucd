@@ -53,7 +53,7 @@ export const pipeline = definePipeline({
 | `resolve(ctx)` | route fields plus `outputs` or `error` on end |
 | `output(ctx)` | route fields plus `outputIndex`, `outputId`, `property`, `sink`, `locator`, and `status` on end |
 
-Every hook context includes `phase: "start" | "end"`. Hooks may be async and are intended for side effects. Throwing from a hook fails the current execution path.
+Every hook context includes `phase: "start" | "end"`. Hooks may be async and are intended for side effects. If a hook throws, the executor logs the hook failure and continues; hook failures do not change the pipeline result.
 
 ## Source helpers
 

@@ -303,4 +303,133 @@ describe("pipeline hooks", () => {
       "pipeline:end",
     ]);
   });
+
+  it("does not turn a written output into a failure when the output end hook throws", async () => {
+    const files = [createMockFile("Test.txt")];
+    const contents = { "ucd/Test.txt": "0041;A" };
+    const events: string[] = [];
+
+    const pipeline = definePipeline({
+      id: "output-hook-error-test",
+      name: "Output Hook Error Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource(files, contents)],
+      routes: [definePipelineRoute({
+        id: "test-route",
+        filter: byName("Test.txt"),
+        parser: mockParser,
+        resolver: async (ctx, rows) => {
+          const entries = [];
+          for await (const row of rows) {
+            entries.push({ codePoint: row.codePoint!, value: row.value as string });
+          }
+          return [{ version: ctx.version, property: "Test", file: ctx.file.name, entries }];
+        },
+      })],
+      hooks: {
+        output: vi.fn((ctx) => {
+          events.push(`output:${ctx.phase}:${ctx.status ?? ""}`);
+          if (ctx.phase === "end" && ctx.status === "written") {
+            throw new Error("output hook failed");
+          }
+        }),
+      },
+    });
+
+    const executor = createPipelineExecutor({});
+    const [result] = await executor.run([pipeline]);
+
+    expect(result?.status).toBe("completed");
+    expect(result?.errors).toEqual([]);
+    expect(result?.outputManifest).toHaveLength(1);
+    expect(result?.outputManifest[0]).toEqual(expect.objectContaining({ status: "written" }));
+    expect(events).toEqual([
+      "output:start:",
+      "output:end:written",
+    ]);
+  });
+
+  it("emits resolve end once when the resolve end hook throws", async () => {
+    const files = [createMockFile("Test.txt")];
+    const contents = { "ucd/Test.txt": "0041;A" };
+    const events: string[] = [];
+
+    const pipeline = definePipeline({
+      id: "resolve-hook-error-test",
+      name: "Resolve Hook Error Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource(files, contents)],
+      routes: [definePipelineRoute({
+        id: "test-route",
+        filter: byName("Test.txt"),
+        parser: mockParser,
+        resolver: async (ctx, rows) => {
+          const entries = [];
+          for await (const row of rows) {
+            entries.push({ codePoint: row.codePoint!, value: row.value as string });
+          }
+          return [{ version: ctx.version, property: "Test", file: ctx.file.name, entries }];
+        },
+      })],
+      hooks: {
+        resolve: vi.fn((ctx) => {
+          events.push(`resolve:${ctx.phase}:${ctx.error == null ? "ok" : "error"}`);
+          if (ctx.phase === "end") {
+            throw new Error("resolve hook failed");
+          }
+        }),
+      },
+    });
+
+    const executor = createPipelineExecutor({});
+    const [result] = await executor.run([pipeline]);
+
+    expect(result?.status).toBe("completed");
+    expect(result?.errors).toEqual([]);
+    expect(events).toEqual([
+      "resolve:start:ok",
+      "resolve:end:ok",
+    ]);
+  });
+
+  it("emits parse and resolve end hooks with errors when the resolver throws", async () => {
+    const files = [createMockFile("Test.txt")];
+    const contents = { "ucd/Test.txt": "0041;A" };
+    const events: string[] = [];
+
+    const pipeline = definePipeline({
+      id: "resolver-error-hook-test",
+      name: "Resolver Error Hook Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource(files, contents)],
+      routes: [definePipelineRoute({
+        id: "test-route",
+        filter: byName("Test.txt"),
+        parser: mockParser,
+        resolver: async () => {
+          throw new Error("resolver failed");
+        },
+      })],
+      hooks: {
+        parse: vi.fn((ctx) => {
+          events.push(`parse:${ctx.phase}:${ctx.error == null ? "ok" : "error"}`);
+        }),
+        resolve: vi.fn((ctx) => {
+          events.push(`resolve:${ctx.phase}:${ctx.error == null ? "ok" : "error"}`);
+        }),
+      },
+    });
+
+    const executor = createPipelineExecutor({});
+    const [result] = await executor.run([pipeline]);
+
+    expect(result?.status).toBe("failed");
+    expect(result?.errors[0]?.message).toContain("resolver failed");
+    expect(events).toEqual([
+      "parse:start:ok",
+      "resolve:start:ok",
+      "resolve:end:error",
+      "parse:end:error",
+    ]);
+  });
 });

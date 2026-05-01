@@ -24,9 +24,7 @@ export interface PipelineParseHookContext extends PipelineRouteHookContext {
   filteredRowCount?: number;
 }
 
-export interface PipelineResolveHookContext extends PipelineRouteHookContext {
-  outputs?: readonly unknown[];
-}
+export type PipelineResolveHookContext = PipelineRouteHookContext;
 
 export interface PipelineOutputHookContext extends PipelineRouteHookContext {
   outputIndex: number;
