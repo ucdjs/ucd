@@ -1,4 +1,5 @@
 import type { DAG } from "./dag";
+import type { PipelineHooks } from "./hooks";
 import type { AnyPipelineRouteDefinition, InferRoutesOutput, PipelineRouteDefinition, ResolveContext } from "./route";
 import type { InferSourceIds, PipelineSourceDefinition } from "./source";
 import type { ParseContext, ParsedRow, PipelineFilter } from "./types";
@@ -84,6 +85,11 @@ export interface PipelineDefinitionSpec<
    * Fallback handler for files that don't match any route.
    */
   fallback?: TFallback;
+
+  /**
+   * Lifecycle hooks for observing pipeline execution.
+   */
+  hooks?: PipelineHooks;
 }
 
 export type PipelineDefinitionOptions<
@@ -202,6 +208,7 @@ export function definePipeline<
     strict: options.strict ?? false,
     concurrency: options.concurrency ?? 4,
     fallback: options.fallback,
+    hooks: options.hooks,
     dag: dagResult.dag!,
     tags: options.tags ?? [],
   };

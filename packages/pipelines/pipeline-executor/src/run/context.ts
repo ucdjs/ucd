@@ -1,6 +1,7 @@
 import type {
   FileContext,
   ParseContext,
+  PipelineHooks,
   PipelineLogger,
   ResolveContext,
   TransformContext,
@@ -15,6 +16,7 @@ export interface ExecutionContext {
   version: string;
   file: FileContext;
   logger: PipelineLogger;
+  hooks?: PipelineHooks;
   source: SourceAdapter;
   runtime: PipelineExecutionRuntime;
   routeDataMap: Record<string, unknown[]>;

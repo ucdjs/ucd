@@ -18,6 +18,43 @@ This page is a compact reference for the pipeline authoring surface that exists 
 | `@ucdjs/pipeline-core` | `pipelineOutputSource(...)` | Consume published outputs from another pipeline |
 | `@ucdjs/pipeline-core` | `filesystemSink(...)` | Persist route outputs to the filesystem |
 
+## Pipeline hooks
+
+Pipeline definitions can include lifecycle hooks:
+
+```ts
+import { definePipeline } from "@ucdjs/pipeline-core";
+
+export const pipeline = definePipeline({
+  id: "with-hooks",
+  name: "With Hooks",
+  versions: ["1.0.0"],
+  inputs: [source],
+  routes: [route],
+  hooks: {
+    resolve(ctx) {
+      if (ctx.phase === "end" && ctx.error == null) {
+        ctx.logger.info("Resolved route", {
+          routeId: ctx.routeId,
+          outputs: ctx.outputs?.length ?? 0,
+        });
+      }
+    },
+  },
+});
+```
+
+| Hook | Context highlights |
+|---|---|
+| `pipeline(ctx)` | `phase`, `pipelineId`, `logger`, `error` on failed end |
+| `version(ctx)` | pipeline fields plus `version` |
+| `route(ctx)` | version fields plus `file`, `routeId`, `outputs`, `error` |
+| `parse(ctx)` | route fields plus `rowCount` and `filteredRowCount` on end |
+| `resolve(ctx)` | route fields plus `outputs` or `error` on end |
+| `output(ctx)` | route fields plus `outputIndex`, `outputId`, `property`, `sink`, `locator`, and `status` on end |
+
+Every hook context includes `phase: "start" | "end"`. Hooks may be async and are intended for side effects. If a hook throws, the executor logs the hook failure and continues; hook failures do not change the pipeline result.
+
 ## Source helpers
 
 | Import | Purpose |

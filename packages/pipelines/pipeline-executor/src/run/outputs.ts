@@ -3,6 +3,8 @@ import type {
   FileContext,
   NormalizedRouteOutputDefinition,
   OutputSinkDefinition,
+  PipelineHooks,
+  PipelineLogger,
 } from "@ucdjs/pipeline-core";
 import type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
 import type { PipelineOutputManifestEntry } from "@ucdjs/pipeline-core/tracing";
@@ -12,6 +14,7 @@ import {
   resolveOutputDestination,
   serializeOutputValue,
 } from "@ucdjs/pipeline-core/outputs";
+import { runPipelineHook } from "./hooks";
 
 export type { ResolvedOutputDestination } from "@ucdjs/pipeline-core/outputs";
 export { DEFAULT_FALLBACK_OUTPUTS, getOutputProperty, renderOutputPathTemplate, resolveOutputDestination, serializeOutputValue } from "@ucdjs/pipeline-core/outputs";
@@ -61,6 +64,8 @@ export async function materializeOutputs(options: {
   definitions: readonly NormalizedRouteOutputDefinition[];
   runtime: PipelineExecutionRuntime;
   pipelineId: string;
+  hooks?: PipelineHooks;
+  logger: PipelineLogger;
   locatorRegistry?: Map<string, OutputLocatorReservation>;
   parentSpanContext: SpanContext;
 }): Promise<MaterializeOutputsResult> {
@@ -73,6 +78,8 @@ export async function materializeOutputs(options: {
     definitions,
     runtime,
     pipelineId,
+    hooks,
+    logger,
     locatorRegistry,
     parentSpanContext,
   } = options;
@@ -114,6 +121,20 @@ export async function materializeOutputs(options: {
         });
 
         try {
+          await runPipelineHook("output:start", () => hooks?.output?.({
+            phase: "start",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+          }), { logger });
           outputSpan.addEvent("output.produced", {
             "pipeline.id": pipelineId,
             "pipeline.version": version,
@@ -168,6 +189,21 @@ export async function materializeOutputs(options: {
             locator,
             status: "written",
           });
+          await runPipelineHook("output:end", () => hooks?.output?.({
+            phase: "end",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+            status: "written",
+          }), { logger });
         } catch (error) {
           const reservation = locatorRegistry?.get(locator);
           if (
@@ -212,6 +248,22 @@ export async function materializeOutputs(options: {
             status: "failed",
             error: errorMessage,
           });
+          await runPipelineHook("output:end", () => hooks?.output?.({
+            phase: "end",
+            pipelineId,
+            version,
+            file,
+            routeId,
+            logger,
+            outputs: [output],
+            outputIndex,
+            outputId,
+            property,
+            sink,
+            locator,
+            status: "failed",
+            error,
+          }), { logger });
           writeErrors.push({ error, outputId, routeId });
         }
       }, { parentSpanContext });

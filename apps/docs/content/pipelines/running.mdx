@@ -47,6 +47,30 @@ Pipelines can be executed either through the CLI or programmatically with `@ucdj
 
 The executor orders pipelines that depend on published outputs, resolves source files, evaluates route filters, respects the route DAG, materializes outputs, and emits logs and traces to the host.
 
+## Hooks during execution
+
+Pipeline definitions can include `hooks` for side effects during execution. Hooks run inside the executor lifecycle and receive `ctx.phase` as either `"start"` or `"end"`.
+
+```ts
+const pipeline = definePipeline({
+  id: "with-hooks",
+  name: "With Hooks",
+  versions: ["1.0.0"],
+  inputs: [source],
+  routes: [route],
+  hooks: {
+    route(ctx) {
+      ctx.logger.info("Route lifecycle", {
+        phase: ctx.phase,
+        routeId: ctx.routeId,
+      });
+    },
+  },
+});
+```
+
+Use hooks when the pipeline itself owns the side effect, such as custom metrics, notifications, or extra bookkeeping. Use executor-level `onLog` when the host application wants to collect logs from many pipelines in one place.
+
 ## Useful CLI flags
 
 - `--cwd <path>` to change the discovery root

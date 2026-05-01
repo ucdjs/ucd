@@ -10,6 +10,7 @@ import type {
 import type { ExecutionContext } from "./context";
 import { applyTransforms } from "@ucdjs/pipeline-core";
 import { buildParseContext, buildResolveContext, buildTransformContext } from "./context";
+import { runPipelineHook } from "./hooks";
 
 export interface ExecuteParseResolveOptions {
   ctx: ExecutionContext;
@@ -35,48 +36,108 @@ export async function executeParseResolve(options: ExecuteParseResolveOptions): 
       "file.version": ctx.file.version,
     });
 
-    const parseCtx = buildParseContext(ctx);
-    const parsedRows = parser(parseCtx);
+    await runPipelineHook("parse:start", () => ctx.hooks?.parse?.({
+      phase: "start",
+      pipelineId: ctx.pipelineId,
+      version: ctx.version,
+      file: ctx.file,
+      routeId,
+      logger: ctx.logger,
+    }), { logger: ctx.logger });
 
-    const { iter: filteredRowsIter, getCounts } = createFilteredRowIter(
-      parsedRows,
-      ctx.file,
-      filter,
-      ctx.logger,
-    );
+    let outputArray: unknown[] | undefined;
+    let parseError: unknown;
+    let getCounts = (): { total: number; filtered: number } => ({ total: 0, filtered: 0 });
 
-    const resolverRows = (transforms && transforms.length > 0)
-      ? applyTransforms(buildTransformContext(ctx), filteredRowsIter, transforms)
-      : filteredRowsIter;
+    try {
+      const parseCtx = buildParseContext(ctx);
+      const parsedRows = parser(parseCtx);
 
-    const resolveCtx = buildResolveContext(ctx, routeId);
+      const filteredRows = createFilteredRowIter(
+        parsedRows,
+        ctx.file,
+        filter,
+        ctx.logger,
+      );
+      getCounts = filteredRows.getCounts;
 
-    const outputArray = await ctx.runtime.startSpan("resolve", async (resolveSpan) => {
-      resolveSpan.setAttributes({
-        "pipeline.id": ctx.pipelineId,
-        "pipeline.version": ctx.version,
-        "route.id": routeId,
-        "file.path": ctx.file.path,
-        "file.name": ctx.file.name,
-        "file.dir": ctx.file.dir,
-        "file.ext": ctx.file.ext,
-        "file.version": ctx.file.version,
+      const resolverRows = (transforms && transforms.length > 0)
+        ? applyTransforms(buildTransformContext(ctx), filteredRows.iter, transforms)
+        : filteredRows.iter;
+
+      const resolveCtx = buildResolveContext(ctx, routeId);
+
+      outputArray = await ctx.runtime.startSpan("resolve", async (resolveSpan) => {
+        resolveSpan.setAttributes({
+          "pipeline.id": ctx.pipelineId,
+          "pipeline.version": ctx.version,
+          "route.id": routeId,
+          "file.path": ctx.file.path,
+          "file.name": ctx.file.name,
+          "file.dir": ctx.file.dir,
+          "file.ext": ctx.file.ext,
+          "file.version": ctx.file.version,
+        });
+
+        await runPipelineHook("resolve:start", () => ctx.hooks?.resolve?.({
+          phase: "start",
+          pipelineId: ctx.pipelineId,
+          version: ctx.version,
+          file: ctx.file,
+          routeId,
+          logger: ctx.logger,
+        }), { logger: ctx.logger });
+
+        let resolveOutputs: unknown[] | undefined;
+        let resolveError: unknown;
+
+        try {
+          const outputs = await resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
+          resolveOutputs = Array.isArray(outputs) ? outputs : [outputs];
+          resolveSpan.setAttribute("output.count", resolveOutputs.length);
+          return resolveOutputs;
+        } catch (error) {
+          resolveError = error;
+          throw error;
+        } finally {
+          await runPipelineHook("resolve:end", () => ctx.hooks?.resolve?.({
+            phase: "end",
+            pipelineId: ctx.pipelineId,
+            version: ctx.version,
+            file: ctx.file,
+            routeId,
+            logger: ctx.logger,
+            outputs: resolveOutputs,
+            error: resolveError,
+          }), { logger: ctx.logger });
+        }
+      }) as unknown[];
+
+      return outputArray;
+    } catch (error) {
+      parseError = error;
+      throw error;
+    } finally {
+      // Set row counts after the resolver has lazily consumed the parse iterator
+      const { total, filtered } = getCounts();
+      parseSpan.setAttributes({
+        "row.count": total,
+        "filtered.row.count": filtered,
       });
 
-      const outputs = await resolver(resolveCtx, resolverRows as AsyncIterable<ParsedRow>);
-      const arr = Array.isArray(outputs) ? outputs : [outputs];
-      resolveSpan.setAttribute("output.count", arr.length);
-      return arr;
-    }) as unknown[];
-
-    // Set row counts after the resolver has lazily consumed the parse iterator
-    const { total, filtered } = getCounts();
-    parseSpan.setAttributes({
-      "row.count": total,
-      "filtered.row.count": filtered,
-    });
-
-    return outputArray;
+      await runPipelineHook("parse:end", () => ctx.hooks?.parse?.({
+        phase: "end",
+        pipelineId: ctx.pipelineId,
+        version: ctx.version,
+        file: ctx.file,
+        routeId,
+        logger: ctx.logger,
+        rowCount: total,
+        filteredRowCount: filtered,
+        outputs: outputArray,
+        error: parseError,
+      }), { logger: ctx.logger });
+    }
   }) as Promise<unknown[]>;
 }
 

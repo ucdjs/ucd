@@ -83,6 +83,41 @@ resolver: async (ctx, rows) => {
 
 If you prefer, you can also emit `console.log(...)` output and let the runtime capture it, but `ctx.logger` is the clearer default because it keeps the log entry structured.
 
+## 6. Add hooks for lifecycle-level debugging
+
+When you need to debug transitions rather than route internals, add pipeline `hooks`. Hooks are useful for seeing whether a route reached `resolve`, whether output writing started, or whether a lifecycle ended with an error.
+
+```ts
+export const debugPipeline = definePipeline({
+  id: "debug-pipeline",
+  name: "Debug Pipeline",
+  versions: ["1.0.0"],
+  inputs: [source],
+  routes: [route],
+  hooks: {
+    resolve(ctx) {
+      ctx.logger.info("Resolve hook", {
+        phase: ctx.phase,
+        routeId: ctx.routeId,
+        file: ctx.file.path,
+        outputs: ctx.outputs?.length,
+        failed: ctx.error != null,
+      });
+    },
+    output(ctx) {
+      ctx.logger.info("Output hook", {
+        phase: ctx.phase,
+        outputId: ctx.outputId,
+        status: ctx.status,
+        locator: ctx.locator,
+      });
+    },
+  },
+});
+```
+
+Hooks should stay lightweight. If you only need logs from inside parser, transform, or resolver code, prefer `ctx.logger` directly in that code.
+
 ## What to check when it fails
 
 - If discovery fails, check the file name pattern and export shape.

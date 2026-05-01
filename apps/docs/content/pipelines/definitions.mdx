@@ -23,6 +23,7 @@ export const myPipeline = definePipeline({
   strict: false,
   concurrency: 4,
   fallback: undefined,
+  hooks: undefined,
 });
 ```
 
@@ -38,6 +39,7 @@ export const myPipeline = definePipeline({
 - `strict`: when `true`, unmatched files without a fallback are treated as errors
 - `concurrency`: maximum number of route executions processed in parallel
 - `fallback`: optional handler for unmatched files
+- `hooks`: optional lifecycle callbacks for side effects around execution
 - `tags`: optional metadata for classification and tooling
 
 ## DAG validation happens at definition time
@@ -63,6 +65,51 @@ In that example, `sizesAfterColorsRoute` depends on `colorsRoute`, so the DAG fo
 ## Fallback behavior
 
 `fallback` is for files that pass the pipeline-wide include filter but do not match any route. It has its own parser and resolver and is useful when you want a controlled catch-all instead of ignoring unmatched files.
+
+## Lifecycle hooks
+
+Use `hooks` when a pipeline should run side effects around execution lifecycle points. Hooks receive a context object with `phase: "start" | "end"`, so a single hook can handle both sides of the lifecycle.
+
+```ts
+export const hookedPipeline = definePipeline({
+  id: "hooked-pipeline",
+  name: "Hooked Pipeline",
+  versions: ["1.0.0"],
+  inputs: [mySource],
+  routes: [myRoute],
+  hooks: {
+    resolve(ctx) {
+      if (ctx.phase === "start") {
+        ctx.logger.info("Resolve started", {
+          routeId: ctx.routeId,
+          file: ctx.file.path,
+        });
+      }
+
+      if (ctx.phase === "end") {
+        ctx.logger.info("Resolve finished", {
+          routeId: ctx.routeId,
+          outputs: ctx.outputs?.length ?? 0,
+          failed: ctx.error != null,
+        });
+      }
+    },
+  },
+});
+```
+
+Available hooks are:
+
+| Hook | Fires around |
+|---|---|
+| `pipeline` | the full pipeline execution |
+| `version` | each Unicode version |
+| `route` | each matched route execution, including fallback as `__fallback__` |
+| `parse` | parser and transform consumption for a route |
+| `resolve` | resolver execution for a route |
+| `output` | output materialization and writes |
+
+Hooks are best for side effects such as metrics, custom logging, notifications, or lightweight bookkeeping. If a hook throws, the executor logs the hook failure and continues; hook failures do not change the pipeline result.
 
 ## Loading Pipelines
 
