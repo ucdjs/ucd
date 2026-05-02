@@ -8,6 +8,14 @@ import { toast } from "@ucdjs-internal/shared-ui/components";
 import { Suspense, useCallback } from "react";
 
 export const Route = createFileRoute("/(explorer)/file-explorer")({
+  head: () => ({
+    meta: [
+      {
+        name: "robots",
+        content: "noindex, nofollow",
+      },
+    ],
+  }),
   component: FileExplorerLayout,
 });
 
