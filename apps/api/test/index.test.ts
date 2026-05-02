@@ -3,6 +3,44 @@ import { env } from "cloudflare:workers";
 import { assert, describe, expect, it } from "vitest";
 import { executeRequest } from "./helpers/request";
 
+describe("root", () => {
+  it("responds with the endpoint map when HTML is not accepted", async () => {
+    const { response, json } = await executeRequest(
+      new Request("https://api.ucdjs.dev/", {
+        headers: {
+          accept: "application/json",
+        },
+      }),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(await json()).toEqual({
+      versions_url: "https://api.ucdjs.dev/api/v1/versions",
+      files_url: "https://api.ucdjs.dev/api/v1/files",
+      reports_url: "https://api.ucdjs.dev/api/v1/reports",
+      well_known_url: "https://api.ucdjs.dev/.well-known/ucd-config.json",
+      openapi_url: "https://api.ucdjs.dev/openapi.json",
+    });
+  });
+
+  it("responds with Scalar when HTML is accepted", async () => {
+    const { response, text } = await executeRequest(
+      new Request("https://api.ucdjs.dev/", {
+        headers: {
+          accept: "text/html,application/json",
+        },
+      }),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    expect(await text()).toContain("/openapi.json");
+  });
+});
+
 describe("error handling", () => {
   it("respond with a 404", async () => {
     const { response } = await executeRequest(
