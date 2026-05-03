@@ -1,5 +1,16 @@
 # @ucdjs/client
 
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.2.0...@ucdjs/client@0.3.0) (2026-05-03)
+
+
+### 🚀 Features
+* enhance file and version retrieval methods ([dc31a949](https://github.com/ucdjs/ucd/commit/dc31a9493ce1651e01e8ec4cb6de4bb0007564b4)) (by [@luxass](https://github.com/luxass))
+* add get method to fetch Unicode version details ([12891c07](https://github.com/ucdjs/ucd/commit/12891c07cccd430d260266e7f73781cac3c1b3a5)) (by [@luxass](https://github.com/luxass))
+* add query parameter support for get and head methods ([e0349977](https://github.com/ucdjs/ucd/commit/e03499770ed806663991d9610951aedeb409937a)) (by [@luxass](https://github.com/luxass))
+* add getRaw method to fetch raw report HTML ([eb6b5c4e](https://github.com/ucdjs/ucd/commit/eb6b5c4edc3fdcdf98cda75b629a79dff50846d5)) (by [@luxass](https://github.com/luxass))
+* add reports resource support ([cf512f77](https://github.com/ucdjs/ucd/commit/cf512f77a0d390f4a4df05170aca5a8d50a8e2be)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.10...@ucdjs/client@0.2.0) (2026-04-04)
 
 

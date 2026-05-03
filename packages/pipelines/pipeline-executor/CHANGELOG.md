@@ -1,5 +1,16 @@
 # @ucdjs/pipeline-executor
 
+## [0.0.1-beta.13](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-executor@0.0.1-beta.12...@ucdjs/pipeline-executor@0.0.1-beta.13) (2026-05-03)
+
+
+### 🚀 Features
+* implement pipeline lifecycle hooks for execution tracking ([4a5e9f1d](https://github.com/ucdjs/ucd/commit/4a5e9f1d009bece3c8bd7045bbe662e5d197445b)) (by [@luxass](https://github.com/luxass))
+* enhance run() for concurrent version execution and output merging ([a455170c](https://github.com/ucdjs/ucd/commit/a455170ccc6a84141e23b5c08ebf3c163e8b09b8)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* isolate lifecycle hook failures ([d261b416](https://github.com/ucdjs/ucd/commit/d261b416fd37dc841e84e8172f0a4174413833b3)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-executor@0.0.1-beta.11...@ucdjs/pipeline-executor@0.0.1-beta.12) (2026-04-04)
 
 

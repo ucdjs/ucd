@@ -1,5 +1,17 @@
 # @ucdjs/pipeline-core
 
+## [0.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.11...@ucdjs/pipeline-core@0.0.1-beta.12) (2026-05-03)
+
+
+### 🚀 Features
+* add pipeline hooks for lifecycle management ([f53508f1](https://github.com/ucdjs/ucd/commit/f53508f108f6d7d9f33d5819584888957e694509)) (by [@luxass](https://github.com/luxass))
+* enhance run() for concurrent version execution and output merging ([a455170c](https://github.com/ucdjs/ucd/commit/a455170ccc6a84141e23b5c08ebf3c163e8b09b8)) (by [@luxass](https://github.com/luxass))
+* export ALL_STABLE_VERSIONS and ALL_VERSIONS from shared module ([80e7ab29](https://github.com/ucdjs/ucd/commit/80e7ab29cb1f55564df0d37c4b2c408bfd89dcab)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* isolate lifecycle hook failures ([d261b416](https://github.com/ucdjs/ucd/commit/d261b416fd37dc841e84e8172f0a4174413833b3)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-core@0.0.1-beta.10...@ucdjs/pipeline-core@0.0.1-beta.11) (2026-04-04)
 
 

@@ -1,5 +1,15 @@
 # @ucdjs/cli
 
+## [0.3.1-beta.13](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.12...@ucdjs/cli@0.3.1-beta.13) (2026-05-03)
+
+
+### 🚀 Features
+* accept options object in loadPipelineFile and escalate bundle warnings to errors ([1fe3a763](https://github.com/ucdjs/ucd/commit/1fe3a763d1e1895984fed6c6a44a9ab1f553a63d)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* improve error handling and reporting in pipeline loading functions ([8374bb24](https://github.com/ucdjs/ucd/commit/8374bb24f748a2ed686f099541df329e9783e428)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.3.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.11...@ucdjs/cli@0.3.1-beta.12) (2026-04-04)
 
 
