@@ -1,13 +1,11 @@
 # @ucdjs-internal/worker-utils
 
-## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.0.1-beta.10...@ucdjs-internal/worker-utils@0.1.0) (2026-04-04)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.1.0...@ucdjs-internal/worker-utils@0.1.0) (2026-05-03)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.0.1-beta.10...@ucdjs-internal/worker-utils@0.1.0)
-
-
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.1.0...@ucdjs-internal/worker-utils@0.1.0)
 ## [0.0.1-beta.10](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.0.1-beta.10...@ucdjs-internal/worker-utils@0.0.1-beta.10) (2026-04-03)
 
 

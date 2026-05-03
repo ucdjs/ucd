@@ -5,7 +5,6 @@
 
 ### 🚀 Features
 * integrate zustand for state management in file explorer ([794a93b0](https://github.com/ucdjs/ucd/commit/794a93b01b0406168ae8c4b75991ce82772d074d)) (by [@luxass](https://github.com/luxass))
-* integrate zustand for state management in file explorer ([794a93b0](https://github.com/ucdjs/ucd/commit/794a93b01b0406168ae8c4b75991ce82772d074d)) (by [@luxass](https://github.com/luxass))
 
 
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.11...@ucdjs/lockfile@0.2.0) (2026-04-04)

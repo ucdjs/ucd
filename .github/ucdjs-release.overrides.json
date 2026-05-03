@@ -54,5 +54,29 @@
   "@ucdjs/utils": {
     "type": "patch",
     "version": "0.2.2"
+  },
+  "@ucdjs/codegen": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/env": {
+    "type": "none",
+    "version": "0.2.0"
+  },
+  "@ucdjs/path-utils": {
+    "type": "none",
+    "version": "0.2.0"
+  },
+  "@ucdjs/pipeline-graph": {
+    "type": "none",
+    "version": "0.0.1-beta.11"
+  },
+  "@ucdjs/pipeline-presets": {
+    "type": "none",
+    "version": "0.0.1-beta.11"
+  },
+  "@ucdjs-internal/worker-utils": {
+    "type": "none",
+    "version": "0.1.0"
   }
 }

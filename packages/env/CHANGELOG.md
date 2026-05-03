@@ -1,13 +1,11 @@
 # @ucdjs/env
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.11...@ucdjs/env@0.2.0) (2026-04-04)
+## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.2.0...@ucdjs/env@0.2.0) (2026-05-03)
 
 
 *No significant changes*
 
-##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.11...@ucdjs/env@0.2.0)
-
-
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.2.0...@ucdjs/env@0.2.0)
 ## [0.1.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.11...@ucdjs/env@0.1.1-beta.11) (2026-04-03)
 
 
