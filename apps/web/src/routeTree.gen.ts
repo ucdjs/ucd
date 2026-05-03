@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RscRouteImport } from './routes/rsc'
 import { Route as homeRouteRouteImport } from './routes/(home)/route'
 import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as homeIndexRouteImport } from './routes/(home)/index'
@@ -34,6 +35,11 @@ import { Route as explorerReportsIdRevRevRouteImport } from './routes/(explorer)
 import { Route as appVVersionUHexRouteImport } from './routes/(app)/v/$version/u/$hex'
 import { Route as appVVersionBlocksIdRouteImport } from './routes/(app)/v/$version/blocks/$id'
 
+const RscRoute = RscRouteImport.update({
+  id: '/rsc',
+  path: '/rsc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const homeRouteRoute = homeRouteRouteImport.update({
   id: '/(home)',
   getParentRoute: () => rootRouteImport,
@@ -163,6 +169,7 @@ const appVVersionBlocksIdRoute = appVVersionBlocksIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/rsc': typeof RscRoute
   '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/reports': typeof explorerReportsRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/v/$version/blocks/': typeof appVVersionBlocksIndexRoute
 }
 export interface FileRoutesByTo {
+  '/rsc': typeof RscRoute
   '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(app)': typeof appRouteRouteWithChildren
   '/(home)': typeof homeRouteRouteWithChildren
+  '/rsc': typeof RscRoute
   '/(explorer)/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/(explorer)/reports': typeof explorerReportsRouteRouteWithChildren
   '/(app)/codepoint-inspector': typeof appCodepointInspectorRoute
@@ -237,6 +246,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/rsc'
     | '/file-explorer'
     | '/reports'
     | '/codepoint-inspector'
@@ -261,6 +271,7 @@ export interface FileRouteTypes {
     | '/v/$version/blocks/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/rsc'
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(app)'
     | '/(home)'
+    | '/rsc'
     | '/(explorer)/file-explorer'
     | '/(explorer)/reports'
     | '/(app)/codepoint-inspector'
@@ -311,12 +323,20 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   appRouteRoute: typeof appRouteRouteWithChildren
   homeRouteRoute: typeof homeRouteRouteWithChildren
+  RscRoute: typeof RscRoute
   explorerFileExplorerRouteRoute: typeof explorerFileExplorerRouteRouteWithChildren
   explorerReportsRouteRoute: typeof explorerReportsRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/rsc': {
+      id: '/rsc'
+      path: '/rsc'
+      fullPath: '/rsc'
+      preLoaderRoute: typeof RscRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(home)': {
       id: '/(home)'
       path: ''
@@ -593,6 +613,7 @@ const explorerReportsRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   appRouteRoute: appRouteRouteWithChildren,
   homeRouteRoute: homeRouteRouteWithChildren,
+  RscRoute: RscRoute,
   explorerFileExplorerRouteRoute: explorerFileExplorerRouteRouteWithChildren,
   explorerReportsRouteRoute: explorerReportsRouteRouteWithChildren,
 }

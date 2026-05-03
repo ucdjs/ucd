@@ -55,6 +55,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@vitejs/plugin-react": "catalog:build",
+    "@vitejs/plugin-rsc": "catalog:frontend",
     "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",

@@ -34,15 +34,15 @@ catalogs:
     nanotar: 0.3.0
     openapi-typescript: 7.13.0
     tsx: 4.21.0
-    rolldown: 1.0.0-rc.13
+    rolldown: 1.0.0-rc.16
     "@rollup/plugin-babel": 7.0.0
     babel-plugin-react-compiler: 1.0.0
     vite-plugin-inspect: 11.3.3
     tailwindcss: 4.2.2
     "@tailwindcss/vite": 4.2.2
     "@vitejs/plugin-react": 6.0.1
-    vite: 8.0.3
-    "@tanstack/router-plugin": 1.167.12
+    vite: 8.0.10
+    "@tanstack/router-plugin": 1.167.22
     "@tanstack/devtools-vite": 0.6.0
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
@@ -124,15 +124,16 @@ catalogs:
   frontend:
     react: 19.2.4
     react-dom: 19.2.4
-    "@tanstack/react-router": 1.168.10
-    "@tanstack/react-router-devtools": 1.166.11
+    "@tanstack/react-router": 1.168.23
+    "@tanstack/react-router-devtools": 1.166.13
     "@tanstack/zod-adapter": 1.166.9
-    "@tanstack/react-devtools": 0.10.1
+    "@tanstack/react-devtools": 0.10.2
     "@tanstack/react-form": 1.28.6
     "@tanstack/react-query": 5.96.2
     "@tanstack/react-query-devtools": 5.96.2
-    "@tanstack/react-router-ssr-query": 1.166.10
-    "@tanstack/react-start": 1.167.16
+    "@tanstack/react-router-ssr-query": 1.166.11
+    "@tanstack/react-start": 1.167.42
+    "@vitejs/plugin-rsc": 0.5.24
     zustand: 5.0.12
     sonner: 2.0.7
     lucide-react: 1.7.0
@@ -177,7 +178,7 @@ overrides:
   semver: 7.7.4
   solid-js: 1.9.12
   undici-types: 7.24.6
-  vite: 8.0.3
+  vite: 8.0.10
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.5.0": patches/@asteasolutions__zod-to-openapi@8.5.0.patch

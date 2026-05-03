@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import rsc from "@vitejs/plugin-rsc";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import Inspect from "vite-plugin-inspect";
@@ -66,6 +67,9 @@ export default defineConfig((env) => {
       }),
       tailwindcss(),
       tanstackStart({
+        rsc: {
+          enabled: true,
+        },
         srcDirectory: "src",
         prerender: {
           enabled: false, // We can't enable prerendering until Nitro fixes their preview server soonTM.
@@ -84,6 +88,7 @@ export default defineConfig((env) => {
           entry: "server.ts",
         },
       }),
+      rsc(),
       react(),
       babel({
         presets: [reactCompilerPreset()],
@@ -103,22 +108,22 @@ export default defineConfig((env) => {
     resolve: {
       alias: [
         {
-        // eslint-disable-next-line e18e/prefer-static-regex
+          // eslint-disable-next-line e18e/prefer-static-regex
           find: /^use-sync-external-store\/shim$/,
           replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
         },
         {
-        // eslint-disable-next-line e18e/prefer-static-regex
+          // eslint-disable-next-line e18e/prefer-static-regex
           find: /^use-sync-external-store\/shim\/index\.js$/,
           replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
         },
         {
-        // eslint-disable-next-line e18e/prefer-static-regex
+          // eslint-disable-next-line e18e/prefer-static-regex
           find: /^use-sync-external-store\/shim\/with-selector$/,
           replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
         },
         {
-        // eslint-disable-next-line e18e/prefer-static-regex
+          // eslint-disable-next-line e18e/prefer-static-regex
           find: /^use-sync-external-store\/shim\/with-selector\.js$/,
           replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
         },
