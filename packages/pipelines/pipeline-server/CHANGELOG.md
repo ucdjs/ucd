@@ -1,5 +1,21 @@
 # @ucdjs/pipeline-server
 
+## [0.0.1-beta.14](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.13...@ucdjs/pipeline-server@0.0.1-beta.14) (2026-05-03)
+
+
+### 🚀 Features
+* implement source issue logging and deduplication ([9447b5e6](https://github.com/ucdjs/ucd/commit/9447b5e6bff64bd7d223ddc04866e5acebd8bb4a)) (by [@luxass](https://github.com/luxass))
+* add support for additional local pipeline sources in development ([9ed149f2](https://github.com/ucdjs/ucd/commit/9ed149f2b3f61ff9c6a25cbfeb954cbc60e152f4)) (by [@luxass](https://github.com/luxass))
+* add execution and tracing APIs ([f48d342d](https://github.com/ucdjs/ucd/commit/f48d342d51d22b2e670db66e50f99fa294f13ecb)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* change variable declaration from let to const for path ([2fca7d73](https://github.com/ucdjs/ucd/commit/2fca7d73708d0b47305163e4c519a47ee564189f)) (by [@luxass](https://github.com/luxass))
+* improve error handling and reporting in pipeline loading functions ([8374bb24](https://github.com/ucdjs/ucd/commit/8374bb24f748a2ed686f099541df329e9783e428)) (by [@luxass](https://github.com/luxass))
+* use native loader ([c6eec723](https://github.com/ucdjs/ucd/commit/c6eec723aba31e728b84aa63260521e22c008b2c)) (by [@luxass](https://github.com/luxass))
+* make sure to import modules correctly in local dev ([0129ddb4](https://github.com/ucdjs/ucd/commit/0129ddb460f256b63af5cf2897bec630c971ae2c)) (by [@luxass](https://github.com/luxass))
+* update sources router import in tests ([9663dfba](https://github.com/ucdjs/ucd/commit/9663dfba0e5f0d17ce9025c5903fe7fcce9c77df)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.13](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-server@0.0.1-beta.12...@ucdjs/pipeline-server@0.0.1-beta.13) (2026-04-04)
 
 

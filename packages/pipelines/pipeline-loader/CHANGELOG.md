@@ -1,5 +1,17 @@
 # @ucdjs/pipeline-loader
 
+## [0.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.11...@ucdjs/pipeline-loader@0.0.1-beta.12) (2026-05-03)
+
+
+### 🚀 Features
+* enhance loadPipelinesFromPaths to accept options object ([08ea9f0c](https://github.com/ucdjs/ucd/commit/08ea9f0c9156299b3aa5d9335e78337935547946)) (by [@luxass](https://github.com/luxass))
+* accept options object in loadPipelineFile and escalate bundle warnings to errors ([1fe3a763](https://github.com/ucdjs/ucd/commit/1fe3a763d1e1895984fed6c6a44a9ab1f553a63d)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* normalize file paths to use native separators ([7ce4d0f5](https://github.com/ucdjs/ucd/commit/7ce4d0f52eafc64287c4ea1b7437ac02c32e8539)) (by [@luxass](https://github.com/luxass))
+* improve error handling and reporting in pipeline loading functions ([8374bb24](https://github.com/ucdjs/ucd/commit/8374bb24f748a2ed686f099541df329e9783e428)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.11](https://github.com/ucdjs/ucd/compare/@ucdjs/pipeline-loader@0.0.1-beta.10...@ucdjs/pipeline-loader@0.0.1-beta.11) (2026-04-04)
 
 

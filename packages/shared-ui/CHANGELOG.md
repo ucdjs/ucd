@@ -1,5 +1,14 @@
 # @ucdjs-internal/shared-ui
 
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.2.0...@ucdjs-internal/shared-ui@0.3.0) (2026-05-03)
+
+
+### 🚀 Features
+* implement ExplorerSidebarShell for improved layout ([01794c5c](https://github.com/ucdjs/ucd/commit/01794c5c16f474373f4e758084490d29783a0d74)) (by [@luxass](https://github.com/luxass))
+* add sonner toast component and integration ([8231c781](https://github.com/ucdjs/ucd/commit/8231c781acd36714e98a567158621a105acadf47)) (by [@luxass](https://github.com/luxass))
+* add sonner toast component and integration ([8231c781](https://github.com/ucdjs/ucd/commit/8231c781acd36714e98a567158621a105acadf47)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.8...@ucdjs-internal/shared-ui@0.2.0) (2026-04-04)
 
 
