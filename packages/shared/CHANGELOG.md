@@ -1,5 +1,16 @@
 # @ucdjs-internal/shared
 
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.2.0...@ucdjs-internal/shared@0.3.0) (2026-05-03)
+
+
+### 🚀 Features
+* handle __internal_head__ response in customFetch ([1cba62ac](https://github.com/ucdjs/ucd/commit/1cba62acea97274821529010d238fd462bc7ec46)) (by [@luxass](https://github.com/luxass))
+* add ALL_VERSIONS and ALL_STABLE_VERSIONS functions ([cc3853ef](https://github.com/ucdjs/ucd/commit/cc3853ef3ee0e0d5f27cab7bb7b2cfe6730f738e)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* add __internal_head__ to ResponseMap interface ([fcf888cd](https://github.com/ucdjs/ucd/commit/fcf888cd4426a0ca340fb1e949cc5c9fee5b9342)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.10...@ucdjs-internal/shared@0.2.0) (2026-04-04)
 
 

@@ -1,5 +1,15 @@
 # @ucdjs/ucd-store
 
+## [1.0.1-beta.13](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.12...@ucdjs/ucd-store@1.0.1-beta.13) (2026-05-03)
+
+
+### 🚀 Features
+* add purge cache and reindex routes with tests ([4372e27a](https://github.com/ucdjs/ucd/commit/4372e27a0090e977737463b3576e4f0907ab1e40)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* align exports and integration coverage ([1fbc03ab](https://github.com/ucdjs/ucd/commit/1fbc03abb5db0f4a00756704d6a757b8fec02d5e)) (by [@luxass](https://github.com/luxass))
+
+
 ## [1.0.1-beta.12](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.11...@ucdjs/ucd-store@1.0.1-beta.12) (2026-04-04)
 
 

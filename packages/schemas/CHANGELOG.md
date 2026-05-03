@@ -1,5 +1,13 @@
 # @ucdjs/schemas
 
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.2.0...@ucdjs/schemas@0.3.0) (2026-05-03)
+
+
+### 🚀 Features
+* add Unicode report API schemas ([d0690c3e](https://github.com/ucdjs/ucd/commit/d0690c3e43ae8a60b6b5c67fc31780aa29f9606a)) (by [@luxass](https://github.com/luxass))
+* add UnicodeVersionTypeSchema and update UnicodeVersionSchema ([03715de7](https://github.com/ucdjs/ucd/commit/03715de79889f668176f4b218617a92160dd3700)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.10...@ucdjs/schemas@0.2.0) (2026-04-04)
 
 

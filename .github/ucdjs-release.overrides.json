@@ -1,0 +1,58 @@
+{
+  "@ucdjs/cli": {
+    "type": "patch",
+    "version": "0.3.1-beta.13"
+  },
+  "@ucdjs/client": {
+    "type": "minor",
+    "version": "0.3.0"
+  },
+  "@ucdjs/fs-backend": {
+    "type": "patch",
+    "version": "0.1.0-beta.5"
+  },
+  "@ucdjs/lockfile": {
+    "type": "minor",
+    "version": "0.3.0"
+  },
+  "@ucdjs/pipeline-core": {
+    "type": "patch",
+    "version": "0.0.1-beta.12"
+  },
+  "@ucdjs/pipeline-executor": {
+    "type": "patch",
+    "version": "0.0.1-beta.13"
+  },
+  "@ucdjs/pipeline-loader": {
+    "type": "patch",
+    "version": "0.0.1-beta.12"
+  },
+  "@ucdjs/pipeline-server": {
+    "type": "patch",
+    "version": "0.0.1-beta.14"
+  },
+  "@ucdjs/schemas": {
+    "type": "minor",
+    "version": "0.3.0"
+  },
+  "@ucdjs-internal/shared": {
+    "type": "minor",
+    "version": "0.3.0"
+  },
+  "@ucdjs-internal/shared-ui": {
+    "type": "minor",
+    "version": "0.3.0"
+  },
+  "@ucdjs/test-utils": {
+    "type": "patch",
+    "version": "1.0.2"
+  },
+  "@ucdjs/ucd-store": {
+    "type": "patch",
+    "version": "1.0.1-beta.13"
+  },
+  "@ucdjs/utils": {
+    "type": "patch",
+    "version": "0.2.2"
+  }
+}

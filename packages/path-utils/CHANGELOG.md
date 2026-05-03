@@ -1,5 +1,13 @@
 # @ucdjs/path-utils
 
+## [0.2.1](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.2.0...@ucdjs/path-utils@0.2.1) (2026-05-03)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.2.0...@ucdjs/path-utils@0.2.1)
+
+
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.10...@ucdjs/path-utils@0.2.0) (2026-04-04)
 
 
