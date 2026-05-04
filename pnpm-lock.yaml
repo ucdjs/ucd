@@ -697,9 +697,6 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
-      '@ucdjs/ucd-store':
-        specifier: workspace:*
-        version: link:../../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
         version: 0.12.0-beta.27

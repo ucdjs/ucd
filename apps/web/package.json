@@ -31,7 +31,6 @@
     "@tanstack/react-start": "catalog:frontend",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:runtime",
     "lucide-react": "catalog:frontend",
     "react": "catalog:frontend",
